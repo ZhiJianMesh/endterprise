@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="content-type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:image/ico;base64,aWNv">
+<link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
+<title>CRM</title>
+</head>
+<body style="overflow:hidden"><div id="app" v-cloak><router-view></router-view></div></body>
+<script src="/assets/v3/vue.js"></script>
+<script src="/assets/v3/vue-router.js"></script>
+<script src="/assets/v3/quasar.js"></script>
+<script src="/assets/v3/osadapter.js"></script>
+<script src="/assets/v3/echarts.js"></script>
+<script type="module">
+import Language from "./language.js"
+import DateInput from "/assets/v3/components/date_input.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
+import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+
+const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+
+//router定义
+const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
+routes:[
+{path:'/home', component:()=>import('./home.js')},
+{path:'/customers', component:()=>import('./customers.js')},
+{path:'/customer', component:()=>import('./customer.js')},
+{path:'/contacts', component:()=>import('./contacts.js')},
+{path:'/contact', component:()=>import('./contact.js')},
+{path:'/orders', component:()=>import('./orders.js')},
+{path:'/order', component:()=>import('./order.js')},
+{path:'/services', component:()=>import('./services.js')},
+{path:'/service', component:()=>import('./service.js')},
+{path:'/payments', component:()=>import('./payments.js')},
+{path:'/payment', component:()=>import('./payment.js')},
+{path:'/orders', component:()=>import('./orders.js')},
+{path:'/order', component:()=>import('./order.js')},
+{path:'/tasks', component:()=>import('./tasks.js')},
+{path:'/task', component:()=>import('./task.js')},
+{path:'/brief', component:()=>import('./brief.js')},
+{path:'/balance', component:()=>import('./balance.js')},
+{path:'/settings', component:()=>import('./settings.js')},
+{path:'/employees', component:()=>import('/user/pub/employees.js')},
+{path:'/flowdef', component:()=>import('/workflow/pub/settings.js')}
+]});
+
+//常量定义
+const icons={
+ customer:"business",
+ contact:"contacts",
+ order:"event_note",
+ service:"build",
+ payment:"credit_card",
+ touchlog:"perm_phone_msg",
+ task:"playlist_add_check"
+};
+
+//service定义
+const service = {
+name:"crm",N_PAGE:10,N_SMPG:5,WF:"workflow",
+CLIENTW:document.documentElement.clientWidth,
+userinfo:{},/*帐号基本信息缓存*/
+flowsteps:{customer:[],order:[],service:[],payment:[]},/*工作流步骤定义缓存*/
+tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
+skus:[],//商品缓存
+encodeExt(ext) { //return {a:xx,b:yy...}
+    return JSON.stringify(ext);
+},
+decodeExt(extStr,tmpl) { //return {a:xx,b:yy,...}
+    var o={};
+    try{o=JSON.parse(extStr);}catch(err){}
+    for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
+        if(o[k]) {
+            continue;
+        }
+        if(tmpl[k].t=='b') {
+            o[k]=false; //vue3不必用this.$set方法
+        } else {
+            o[k]='';
+        }
+    }
+    return o;
+},
+template(n,refresh){return new Promise(function(resolve,reject){
+    if(!refresh){
+        if(Object.keys(this.tmpl[n]).length>0) {
+            resolve(this.tmpl[n]);
+            return;
+        }
+    }
+    var url="/api/proxy/gettemplate?name="+n;
+    request({method:"GET",url:url}, this.name).then(function(resp){
+        if(resp.code!=RetCode.OK || !('data' in resp) || !('v' in resp.data)) {
+            Console.info("request template `"+n+"` failed:" + resp.code + ",info:" + resp.info);
+            resolve({'cmt':{n:tags.comment,t:'s'}});//只有一个备注字段
+            return;
+        }
+        this.tmpl[n]=resp.data.v;
+        resolve(this.tmpl[n]);
+    }.bind(this));
+}.bind(this))
+},
+baseInfo() {
+    var opts={method:"GET",url:"/api/getbaseinfo?"};
+    request(opts, SERVICE_USER).then(function(resp) {
+        if(resp.code!=0) {
+            console.info("request failed:" + resp.code + ",info:" + resp.info);
+            return;
+        }
+        this.userinfo=resp.data;
+    }.bind(this));
+},
+skuList() {return new Promise(function(resolve,reject){
+    if(this.skus.length>0){
+        resolve(this.skus);
+        return;
+    }
+    var url="/api/sku/list";
+    request({method:"GET",url:url}, this.name).then(function(resp){
+        if(resp.code != 0) {
+            resolve([]);
+            return;
+        }
+        this.skus=resp.data.skus;
+        resolve(this.skus);
+    }.bind(this));
+}.bind(this));
+},
+flowDef(id,refresh) {return new Promise(function(resolve,reject){
+    if(!refresh) {
+        if(this.flowsteps[id]){
+            resolve(this.flowsteps[id]);
+            return;
+        }
+    }
+
+    var url="/api/flow/info?flowid="+id
+    request({method:"GET",url:url}, this.WF).then(function(resp){
+        if(resp.code!=0) {
+            reject(url + ",code:"+resp.code+",info:"+resp.info);
+            return;
+        }
+        var sd={name:resp.data.dispName,maxStep:0,steps:[]};//steps definition
+        //step,type,name,ext,comment
+        var maxStep=0;
+        resp.data.steps.forEach(function(s) {
+            sd.steps[s.step]={step:s.step,type:s.type,title:s.name+'('+s.comment+')',ext:s.ext,comment:s.comment};
+            if(s.step>sd.maxStep){
+                sd.maxStep=s.step;
+            }
+        });
+        this.flowsteps[id]=sd;
+        resolve(sd);
+    }.bind(this));
+}.bind(this));
+},
+go_back() { //返回，在页面中通过service.go_back调用
+    router.back();
+},
+jumpTo(url) {
+    router.push(url);
+}
+};
+
+//app主体定义
+const app = Vue.createApp({
+provide:{tags:tags, service:service, icons:icons},
+created(){
+    service.baseInfo();
+    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+},
+setup() {
+    //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用
+    window.sys_go_back = () => {
+        Console.info("current page:" + router.currentRoute.value.path);
+        if(router.currentRoute.value.path!='/home') {
+            router.back();
+            return true;
+        }
+        return false;
+    }
+}
+});
+
+app.use(Quasar);
+app.use(router);
+//注册全局组件
+app.component('component-user-selecter', UserSelector);
+app.component('component-alert-dialog', AlertDialog);
+app.component('component-confirm-dialog', ConfirmDialog);
+app.component('component-date-input', DateInput);
+//启动APP
+app.mount('#app');
+</script>
+</html>

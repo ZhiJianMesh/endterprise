@@ -1,0 +1,277 @@
+export default {
+en:{
+  app_name:"Extream CRM",
+  ok:"OK",
+  cancel:"Cancel",
+  modify:"Modify",
+  remove:"Delete",
+  add:"Add",
+  reset:"Reset"
+},
+cn:{
+  app_name:"极简CRM",
+  ok:"确定",
+  cancel:"取消",
+  close:"关闭",
+  modify:"修改",
+  remove:"删除",
+  add:"增加",
+  save:"保存",
+  search:"搜索",
+
+  more:"扩展信息",
+  
+  contract:"合同",
+  account:"帐号",
+  creator:"创建人",
+  
+  createAt:"创建时间",
+  touchCtnt:"沟通内容",
+  relationCmt:"关系描述",
+  addCust:"创建客户",
+  addContact:"增加联系人",
+  addOrder:"创建订单",
+  addTouchlog:"增加联系记录",
+  address:"地址",
+  taxid:"统一信用码",
+  business:"主营业务",
+  signers:"权签人",
+  contactLevel:"重要度",
+  sex:"性别",
+  yearsOld:"岁",
+  sexName:['男','女'],
+  sexImg:['/crm/imgs/man.png','/crm/imgs/woman.png'],
+  unknown:"未知",
+  
+  accListPls:"请输入正确的帐号",
+  taxidPls:"统一信用码需由18位字母、数组的组合而成",
+
+  alert:"注意",
+  failToCall:"调用失败",
+  wrongWfDef:"工作流定义存在错误",
+  cfmToDel:"请确认是否删除",
+
+  custName:"名称",
+  balance:"余额",
+  oprSuccess:"操作成功",
+  oprFailed:"操作失败",
+  touchlog:"联系记录",
+  contactRelations:"联系人之间关系",
+  relations:"周边关系",
+  serviceLogs:"服务记录",
+  reports:"业务报表",
+  revenue:"新增收入(元)",
+  orderNum:"新增订单(个)",
+  logNum:"新增服务(次)",
+  logVal:"新增服务值(个)",
+  vipNum:"新增会员(个)",
+  orderBal:"订单余额(元)",
+  
+  unit:{y:"元",g:"个"},
+  pkgUnit:{'0':'次','1':"元"},
+  pkgName:"名称",
+  pkgClass:"计费类型",
+  pkgPrice:"售价",
+  pkgVal:"价值",
+  pkgAlert1:"1）删除套餐不会影响已经生效的订单；",
+  pkgAlert2:"2）新增同名同计费类型的套餐会覆盖原有套餐。",
+  segTypes:{'s':'文字','n':"数值",'d':'日期'},
+  segName:"字段名称",
+  segType:"字段类型",
+  extSegs:"扩展字段",
+  vipHome:"会员详情",
+  baseInfo:"基本信息",
+  name:"称呼",
+  mobile:"手机",
+  pwd:"密码",
+  role:"角色",
+
+  checkOrder:"校验订单",
+  addConsume:"增加消费记录",
+  addEmployee:"增加雇员",
+  consumeVal:"消费额",
+  comment:"备注",
+  template:"模板",
+  noOrders:"尚无订单，不可以创建消费记录，请点击会员详情，创建订单。",
+  failed:"失败",
+  checking:"请输入正确的会员密码进行校验",
+  accountExists:"雇员已存在，请输入其他帐号！",
+  mobilePls:"请输入11位正确的手机号！",
+  checkOk:"您的订单一切正常！",
+  checkFailed:"您输入的密码有误，或您的订单被篡改过！",
+  exceedsDayNum:"报表周期不可超过31天！",
+  invalidRange:"报表周期至少1个月，最多12个月",
+  wrongFlowState:"工作流状态错乱，请确认是否清除？",
+  noSkuDef:"无商品定义，不可以创建订单",
+  unHandled:"未处理",
+  onlyMine:"只看我的",
+
+  segTypes:{'s':'文字','n':"数值",'d':'日期','b':'是否'},
+  segName:"显示名称",
+  segType:"类型",
+  segKey:"字段名",
+  segKeyRule:"字段名必须以字母开头，包括多个字母或数字",
+  
+  levels:['未知','普通','一般','重要','很重要','关键人物'],
+  errMsgs:{
+    '5101':"回款总额超过合同总额",
+    '5102':"订单尚未确认，不可创建回款",
+    '5103':"处于审批流程中的订单不可更改",
+    '5104':"已结束的服务信息不可更改",
+    '5105':"已结束的回款信息不可更改",
+    '5106':"输入的帐号不符合要求",
+    '5107':"商品已被使用，不可删除",
+    'unknown':"未知错误"
+  },
+  date2str:function(dt) {
+    var s=dt.getFullYear()+'/';
+    var v=dt.getMonth()+1;
+    if(v<10) {
+        s+='0';
+    }
+    s+=v+'/';
+    v=dt.getDate();
+    if(v<10) {
+        s+='0';
+    }
+    s+=v;
+    return s;
+  },
+  sta2icon:function(s){
+    if(s==0) {
+      return 'star_border';
+    }
+    if(s==100) {
+      return 'star';
+    }
+    return 'star_half';
+  },
+  home:{
+    tasks:"我的待办",
+    customers:"我的客户",
+    contacts:"我的联系人",
+    orders:"我的订单",
+    payments:"我的回款",
+    services:"我的服务单",
+    template:"模板设置",
+    employee:"雇员管理",
+    settings:"系统设置",
+    flowDef:"工作流设置",
+    bulletin:"简报",
+    balance:"结算"
+  },
+  customer:{
+    title:"客户",
+    name:"名称",
+    ordNum:"订单数",
+    address:"地址",
+    createAt:"创建时间",
+    creator:"创建人",
+    taxid:"统一信用码",
+    status:"审批状态",
+    business:"主营业务",
+    comment:"备注",
+    lastestTl:"最近联系记录"
+  },
+  contact:{
+    title:"联系人",
+    cname:"客户",
+    name:"称呼",
+    address:"住址",
+    createAt:"创建时间",
+    creator:"创建人",
+    status:"状态",
+    level:"重要度",
+    phone:'电话',
+    sex:"性别",
+    post:"职位",
+    birthday:"出生年月",
+    comment:"备注"
+  },
+  order:{
+    title:"订单",
+    code:"订单号",
+    status:"审批状态",
+    cname:"客户",
+    price:"合同价",
+    payment:"回款总额",
+    service:"服务成本",
+    needPay:"待回款",
+    skuName:"商品",
+    skuPrice:"目录价",
+    creator:"创建人",
+    createAt:"创建时间",
+    signAt:"确定时间",
+    fileNo:"合同文本",
+    taxid:"统一信用码"
+  },
+  payment:{
+    title:"回款",
+    amount:"回款金额",
+    status:"审批状态",
+    cname:"客户",
+    skuName:"商品",
+    creator:"创建人",
+    price:"合同总金额",
+    createAt:"创建时间"
+  },
+  service:{
+    title:"服务",
+    cost:"实际成本",
+    budget:"预算成本",
+    status:"审批状态",
+    cname:"客户",
+    skuName:"商品",
+    creator:"创建人",
+    price:"合同总金额",
+    createAt:"创建时间"
+  },
+  report:{
+    customer:"客户",
+    contact:"联系人",
+    ord:"订单",
+    service:"服务",
+    payment:"回款数",
+    contract:"合同额",
+    revenue:"回款额",
+    cost:"服务成本",
+    main:"简报",
+    sku:"商品结算",
+    month:"月度收支"
+  },
+  menu:{
+    deliver:"转交",
+    remove:"删除",
+    deliverTo:"转交给",
+    export:"导出"
+  },
+  share:{
+    title:"数据分享",
+    to:"分享给",
+    endT:"结束日期",
+    O:"全权",
+    S:"只读"
+  },
+  sku:{
+    title:"待售商品",
+    no:"内部编号",
+    name:"名称",
+    cost:"成本",
+    price:"建议售价",
+    lowest:"最低售价",
+    highest:"最高售价",
+    comment:"描述"
+  },
+  flow:{
+    opinion:"意见",
+    agree:'同意',
+    disAgree:'不同意',
+    finish:"完成",
+    reject:"返回",
+    nextStep:"下一步"
+  }
+},
+weekDays:{type:Array, default:["日","一","二","三","四","五","六"]},
+months:{type:Array, default:["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"]},
+calClose:{type:String, default:'关闭'}
+};
