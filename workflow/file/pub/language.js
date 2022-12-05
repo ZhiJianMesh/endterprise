@@ -1,0 +1,32 @@
+export default {
+en:{
+    app_name:"Workflow settings",
+    close:"Close",
+    ok:"OK",
+    cancel:"Cancel",
+    alert:"Alert",
+},
+cn:{
+    app_name:"工作流设置",
+    close:"关闭",
+    ok:"确认",
+    cancel:"取消",
+    alert:"注意",
+    stepNo:"步骤",
+    modify:"修改",
+    save:"保存",
+    comment:"工作流描述",
+    failToCall:"调用失败",
+    changeNotSaved:"修改的内容尚未保存，请确认是否放弃？",
+    step:{
+        step:"序号",
+        name:"名称",
+        type:"签名",
+        callback:"回调接口",
+        ext:"扩展",
+        comment:"描述"
+    },
+    errMsgs:{},
+    flowTypes:{O:'单人签字',M:'多人会签'}
+}
+};
