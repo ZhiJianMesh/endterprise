@@ -1,0 +1,144 @@
+export default {
+inject:['service', 'tags'],
+data(){return {
+    companyName:'',
+    account:'',
+    nickName:'',
+    email:'',
+    mobile:'',
+    chgPwdDlg:false,
+    oldPwd:'',
+    newPwd:'',
+    cfmPwd:'',
+    editBase:false,
+    hidePwd:{o:true,n:true,c:true}
+}},
+created() {
+    this.companyName=Http.companyName();
+    this.get_userbase();
+},
+methods:{
+get_userbase() {
+    request({method:"GET",url:"/api/getBaseInfo"}, SERVICE_USER).then(function(resp) {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.account=resp.data.account;
+        this.nickName=resp.data.nickName;
+        this.email=resp.data.email;
+        this.mobile=resp.data.mobile;
+    }.bind(this));
+},
+changePwd() {
+    if(this.oldPwd==''||this.newPwd==''||this.newPwd!=this.cfmPwd){
+        this.$refs.errDlg.show(this.tags.invalidPwd);
+        return;
+    }
+    var req={oldPassword:this.oldPwd,newPassword:this.newPwd,confirmPassword:this.cfmPwd};
+    request({method:"POST",url:"/api/changePassword",data:req}, SERVICE_USER).then(function(resp) {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.chgPwdDlg=false
+    }.bind(this));
+},
+editBtnClk(){
+    if(!this.editBase) {
+        this.editBase=true;
+        return;
+    }
+    var req={nickName:this.nickName,mobile:this.mobile,email:this.email};
+    request({method:"POST",url:"/api/setBaseInfo",data:req}, SERVICE_USER).then(function(resp) {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+        }
+        this.editBase=false;
+    }.bind(this));
+}
+},
+
+template: `
+<q-layout view="lHh lpr lFf" container style="height:100vh">
+ <q-header class="bg-grey-1 text-primary">
+    <q-toolbar>
+      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-toolbar-title>{{tags.home.personal}} - {{account}}</q-toolbar-title>
+      <q-btn flat round :icon="editBase?'check_circle':'edit'" dense @click="editBtnClk"></q-btn>
+    </q-toolbar>
+ </q-header>
+  <q-page-container>
+   <q-page class="q-pa-md">
+<q-list class="q-pa-md">
+ <q-item>
+  <q-item-section>{{tags.nickName}}</q-item-section>
+  <q-item-section v-show="!editBase">{{nickName}}</q-item-section>
+  <q-item-section v-show="editBase"><q-input v-model="nickName"></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.email}}</q-item-section>
+  <q-item-section v-show="!editBase">{{email}}</q-item-section>
+  <q-item-section v-show="editBase"><q-input v-model="email"
+  :rules="[v=>/.+@.+/.test(v) || tags.invalidEmail]"></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.mobile}}</q-item-section>
+  <q-item-section v-show="!editBase">{{mobile}}</q-item-section>
+  <q-item-section v-show="editBase"><q-input v-model="mobile" maxlength=11
+  :rules="[v=>/1[0-9]{10}/.test(v) || tags.invalidMobile]"></q-input></q-item-section>
+ </q-item>
+ <q-item clickable v-ripple @click="chgPwdDlg=true">
+  <q-item-section>{{tags.chgPwd}}</q-item-section>
+  <q-item-section avatar>
+    <q-icon name="chevron_right" class="text-primary"></q-icon>
+  </q-item-section>
+ </q-item>
+</q-list>
+    </q-page>
+  </q-page-container>
+</q-layout>
+
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
+ :close="tags.close" ref="errDlg"></component-alert-dialog>
+ 
+<!-- change password dialog -->
+<q-dialog v-model="chgPwdDlg">
+  <q-card style="min-width:62vw;max-width:80vw">
+    <q-card-section>
+      <div class="text-h6">{{tags.chgPwd}}-{{account}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+      <q-input dense v-model="oldPwd" autofocus :type="hidePwd.o?'password':'text'"
+       :label="tags.oldPwd" :rules="[val => !!val || tags.oldPwd + '' + tags.cantbeNull]">
+         <template v-slot:append>
+          <q-icon :name="hidePwd.o ? 'visibility_off':'visibility'"
+            class="cursor-pointer" @click="hidePwd.o=!hidePwd.o"></q-icon>
+        </template>
+      </q-input>
+      <q-input dense v-model="newPwd" autofocus :type="hidePwd.n?'password':'text'"
+       :label="tags.newPwd" :rules="[val => !!val || tags.newPwd + '' + tags.cantbeNull]">
+         <template v-slot:append>
+          <q-icon :name="hidePwd.n ? 'visibility_off':'visibility'"
+            class="cursor-pointer" @click="hidePwd.n=!hidePwd.n"></q-icon>
+        </template>
+      </q-input>
+      <q-input dense v-model="cfmPwd" autofocus :type="hidePwd.c?'password':'text'"
+       :label="tags.cfmPwd" :rules="[
+        val => !!val || tags.cfmPwd + ' ' + tags.cantbeNull,
+        val => val==newPwd || tags.cfmPwd + ',' + tags.newPwd + ' ' + tags.mustbeEqual
+        ]">
+         <template v-slot:append>
+          <q-icon :name="hidePwd.c ? 'visibility_off':'visibility'"
+            class="cursor-pointer" @click="hidePwd.c=!hidePwd.c"></q-icon>
+        </template>
+      </q-input>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn color="primary" :label="tags.ok" @click="changePwd"></q-btn>
+      <q-btn color="primary" flat :label="tags.cancel" v-close-popup></q-btn>
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+`
+}

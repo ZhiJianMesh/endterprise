@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+    <meta charset="utf-8">
+    <meta name="content-type" content="text/html;charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/ico;base64,aWNv">
+    <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
+</head>
+<body><div id="app"><router-view></router-view></div></body>
+<script src="/assets/v3/vue.js"></script>
+<script src="/assets/v3/vue-router.js"></script>
+<script src="/assets/v3/quasar.js"></script>
+<script src="/assets/v3/osadapter.js"></script>
+<script type="module">
+import Language from "./settings/language.js"
+import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+
+const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+//-------------------------------------------router定义
+const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
+routes:[
+{path:'/home', component:()=>import('./settings/home.js')},
+{path:'/advice', component:()=>import('./settings/advice.js')},
+{path:'/personal', component:()=>import('./settings/personal.js')},
+{path:'/faultreport', component:()=>import('./settings/faultreport.js')},
+{path:'/company', component:()=>import('./settings/company.js')}
+]});
+//-------------------------------------------service定义
+const service={
+name:"settings",N_PAGE:10,N_SMPG:5,
+user:{account:'',nickName:''},
+go_back() { //返回，在页面中通过service.go_back调用
+    router.back();
+}
+};
+//-------------------------------------------app主体定义
+const app = Vue.createApp({
+provide:{tags:tags, service:service},
+created(){
+    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+},
+setup() {
+    //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用
+    window.sys_go_back = () => {
+        if(this.$router.currentRoute.path==="/home") {
+            return false;
+        }
+        this.$router.back();
+        return true;
+    }
+}
+});
+
+app.use(Quasar);
+app.use(router);
+//--------------------------注册全局组件
+app.component('component-alert-dialog', AlertDialog);
+app.component('component-confirm-dialog', ConfirmDialog);
+//-------------------------------------------启动APP
+app.mount('#app');
+</script>
+</html>

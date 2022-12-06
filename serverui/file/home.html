@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="content-type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:image/ico;base64,aWNv">
+<link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
+<title>Home</title>
+</head>
+<body>
+<div id="app" class="q-pa-none">
+<q-layout view="lHh lpr lFf" container style="height:100vh" v-cloak>
+<q-header elevated>
+    <q-toolbar>
+        <q-avatar square><q-icon name="home"></q-icon></q-avatar>
+        <q-toolbar-title>{{tags.home}}</q-toolbar-title>
+    </q-toolbar>
+</q-header>
+<q-page-container>
+  <q-page class="text-center">
+    <div class="text-h4 q-pt-md">{{runtime}}</div>
+    <div class="text-subtitle1 q-pt-md">{{startupAt}}@{{address}}</div>
+    <div>
+     <q-chip><q-avatar color="primary" text-color="white" icon="folder_special"></q-avatar>{{cid}}</q-chip>
+     <q-chip><q-avatar color="primary" text-color="white" icon="bookmark_border"></q-avatar>{{apiCalls}}</q-chip>
+     <q-chip><q-avatar color="secondary" text-color="white" icon="bookmark"></q-avatar>{{fileCalls}}</q-chip>
+    </div>
+    <div class="q-pt-md">
+     <q-circular-progress :indeterminate="progVal==1||progVal==2" size="9em" show-value
+      @click="alter" :thickness="0.2" color="yellow" center-color="red"
+      track-color="transparent" class="text-white q-ma-md" :value="progVal" dense>
+      <q-icon name="power_settings_new" size="2em" color="white"></q-icon>
+     </q-circular-progress>
+    </div>
+    <div><img :src="statusImg" style="max-height:11em"></div>
+  </q-page>
+</q-page-container>
+</q-layout>
+<component-alert-dialog :title="tags.failToCall" :close="tags.close" ref="errDlg"></component-alert-dialog>
+<register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
+</div>
+</body>
+<script src="/assets/v3/vue.js"></script>
+<script src="/assets/v3/quasar.js"></script>
+<script src="/assets/v3/osadapter.js"></script>
+<script type="module">
+import Language from "./language.js"
+import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import RegisterDialog from "./register.js"
+
+const SRV_INITIALIZED=1;
+const SRV_RUNNING=2;
+const SRV_CLOSED=3;
+const SRV_FAILTOSTART=4;
+
+const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+//-------------------------------------------app主体定义
+const app = Vue.createApp({
+data(){return{
+    tags:tags,
+    runtime:"",
+    startupAt:"",
+    address:"",
+    statusImg:"./imgs/static_gears.png",
+    apiCalls:0,
+    fileCalls:0,
+    progVal:0,
+    cid:0,
+    timer:null
+}},
+created(){
+    this.init();
+},
+methods:{
+alter(){
+    if(parseInt(this.cid)==0) {
+        this.$refs.regDlg.show(()=>{
+            this.init()
+        });
+        return;
+    }
+    if(this.progVal!=1&&this.progVal!=2) {
+        this.progVal=Server.getServerState()==SRV_RUNNING?2:1;
+        var jsCbId = __regsiterCallback(resp => {
+            this.progVal=100;
+        });
+        Server.alter(jsCbId);
+    }
+},
+refresh(force) {
+    var srvState=Server.getServerState();
+    if(srvState==SRV_RUNNING) {
+        if(this.progVal==1||force) {//按了开始
+            this.progVal=100;
+            this.statusImg="./imgs/running_gears.gif";
+            this.address=Server.address();
+            this.startupAt=new Date(Server.startupAt()).toLocaleString();
+        }
+        var t=Server.runTime();
+        var day=parseInt(t/1440);
+        t%=1440;
+        var hour=parseInt(t/60);
+        t%=60;
+        this.runtime=day+this.tags.day+hour+this.tags.hour+t+this.tags.minute;
+        this.apiCalls=Server.apiCalls();
+        this.fileCalls=Server.fileCalls();
+    } else {
+        if(force || (this.progVal==2 && srvState==SRV_CLOSED) //按了停止
+           || (this.progVal==1 && srvState==SRV_FAILTOSTART)) {//按了开始，但是启动失败了
+            this.progVal=0;
+            this.statusImg="./imgs/static_gears.png";
+        }
+    }
+},
+check() {
+    this.refresh(false);
+},
+init() {
+    this.runtime='0'+this.tags.day+'0'+this.tags.hour+'0'+this.tags.minute;
+    this.startupAt=new Date(Server.startupAt()).toLocaleString();
+    this.address=Server.address();
+    this.cid=Server.companyId();
+    this.refresh(true);
+    if(this.timer != null) {
+        clearInterval(this.timer)
+    }
+    this.timer = setInterval(this.check, 1500)
+}
+}
+});
+app.use(Quasar);
+app.component('component-alert-dialog', AlertDialog);
+app.component('register-dialog', RegisterDialog);
+app.mount('#app');
+</script>
+</html>

@@ -1,0 +1,60 @@
+export default {
+en:{
+  ok:"OK",
+  cancel:"Cancel",
+  app_name:"Settings",
+  cfg_person:"Personal",
+  cfg_collections:"Collections",
+  cfg_system:"System",
+  modify:"Modify"
+},
+cn:{
+  app_name:"设置",
+  ok:"确定",
+  cancel:"取消",
+  close:"关闭",
+  save:"保存",
+  login:"登录",
+  logout:"退出",
+  email:"邮箱",
+  invalidEmail:"请输入正确的邮箱",
+  invalidMobile:"请输入正确的手机号",
+  companyId:"公司编号",
+  companyName:"公司名称",
+  serverAddr:"服务端地址",
+  inPubCloud:"公网访问",
+  mobile:"手机号",
+  mobilePls:"请输入11位手机号码",
+  emailPls:"请输入正确的邮箱",
+  home:{
+      personal:"账号信息",
+      company:"公司信息",
+      faultreport:"故障上报",
+      advice:"意见反馈",
+      about:"关于"
+  },
+  advice:'意见',
+  send:"发送",
+  email:"邮箱",
+  account:"账号",
+  chgPwd:"修改密码",
+  cantbeNull:"不能为空",
+  mustbeEqual:"必须相同",
+  selfSet:"自定义",
+  pwd:"密码",
+  oldPwd:"原密码",
+  newPwd:"新密码",
+  cfmPwd:"确认密码",
+  invalidPwd:"密码参数错误，请更正后再尝试",
+  nickName:"昵称",
+  failToCall:"调用失败",
+  
+  logPath:"日志路径",
+  
+  errMsgs:{
+    'unknown':"未知错误",
+    '5101':"请在‘公司信息’中设置公司编号之后再尝试",
+    '5102':"没有合适的服务器可以使用"
+  }
+}
+};
