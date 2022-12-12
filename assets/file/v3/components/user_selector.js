@@ -16,7 +16,7 @@ search_users(val,update) {
   }
   update(() => {
     var opts={method:"GET",url:"/api/search?limit=10&s="+val};
-    request(opts, "user").then(function(resp){
+    request(opts, SERVICE_USER).then(function(resp){
         if(resp.code!=0) {
             this.accOptions=[]
             return;

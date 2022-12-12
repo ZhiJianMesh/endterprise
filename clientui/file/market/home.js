@@ -17,8 +17,8 @@ fetch_apps() {
         return;
     }
     
-    var url="/service/list?cid="+Http.cid();
-    request({method:"GET", url:url,private:false}, "company").then(resp=>{
+    var url="/list?cid="+Http.cid();
+    request({method:"GET", url:url}, "httpdns").then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -26,7 +26,14 @@ fetch_apps() {
         this.apps=resp.data.services;
         for(var i in this.apps) {
             var o=this.apps[i];
-            o['icon']="/" + o.service + "/favicon.png";
+            var icon=App.serviceIcon(o.service);
+            if(icon!="") {
+                o['icon']=icon;
+            } else {
+                o['icon']="/" + o.service + "/favicon.png";
+            }
+            var v = parseInt(o.ver);
+            o.version=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
             this.service.list[o.service]=o;
         }
     })
@@ -51,7 +58,7 @@ template: `
           <img :src="a.icon">
         </q-avatar></q-item-section>
         <q-item-section>
-         <q-item-label>{{a.displayName}}</q-item-label>
+         <q-item-label>{{a.displayName}}/{{a.service}}</q-item-label>
          <q-item-label>{{a.author}}</q-item-label>
         </q-item-section>
       </q-item>

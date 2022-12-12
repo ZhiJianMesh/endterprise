@@ -46,12 +46,12 @@ chkCredit(code) {
 },
 template: `
 <q-dialog v-model="registerDlg">
- <q-card style="min-width:60vw">
+ <q-card style="min-width:60vw" bordered>
   <q-card-section><div class="text-h6">{{title}}</div></q-card-section>
   <q-card-section class="q-pt-none">
    <q-input v-model="creditCode" :label="tags.creditCode" dense maxlength=18
    :rules="[v=>chkCredit(v)||tags.creditCodePls]"></q-input>
-   <q-input v-model="name" :label="tags.companyName" dense maxlength=50 dense></q-input>
+   <q-input v-model="name" :label="tags.companyName" maxlength=50 dense></q-input>
    <q-input v-model="pwd" :label="tags.pwd" dense maxlength=20 :type="pwdVisible ? 'text':'password'">
     <template v-slot:append>
       <q-icon :name="pwdVisible ? 'visibility':'visibility_off'"

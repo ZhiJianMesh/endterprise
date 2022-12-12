@@ -4,10 +4,19 @@ data(){return {
     advice:'',
     email:'',
     mobile:'',
+    report_service:"",
+    services:[],
     id:''
 }},
 created() {
     this.id=new Date().toLocaleDateString();
+    var list = JSON.parse(App.list());
+    var services=[];
+    for(var i in list) {
+        services.push({label:list[i].displayName,value:list[i].name});
+    }
+    this.report_service=list[0].name;
+    this.services=services;
 },
 methods:{
 send_tocloud(){
@@ -25,7 +34,14 @@ template: `
     <q-page class="q-pa-md">    
  <q-list class="q-pa-md">
   <q-item>
-   <q-item-section><q-input type="textarea" v-model="advice" :label="tags.advice" autogrow outlined></q-input></q-item-section>
+   <q-item-section>
+    <q-select outlined v-model="report_service" :options="services" :label="tags.service"></q-select>
+   </q-item-section>
+  </q-item>
+  <q-item>
+    <q-item-section>
+	 <q-input type="textarea" v-model="advice" :label="tags.advice" autogrow outlined></q-input>
+	</q-item-section>
   </q-item>
   <q-item>
    <q-item-section><q-input v-model="email" :label="tags.email"
@@ -37,7 +53,7 @@ template: `
   </q-item>
 </q-list>
 <div align="center">
-   <q-btn color="primary" icon="send" :label="tags.send" @click="send_tocloud"></q-btn>
+   <q-btn color="primary" icon-right="send" :label="tags.send" @click="send_tocloud" rounded></q-btn>
 </div>
     </q-page>
   </q-page-container>

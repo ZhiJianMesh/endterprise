@@ -34,6 +34,7 @@ cn:{
       about:"关于"
   },
   advice:'意见',
+  service:"服务",
   send:"发送",
   email:"邮箱",
   account:"账号",
@@ -48,7 +49,9 @@ cn:{
   invalidPwd:"密码参数错误，请更正后再尝试",
   nickName:"昵称",
   failToCall:"调用失败",
-  
+  alert:"提示",
+  companySaved:"公司信息已保存，并且找到了合适的服务器",
+
   logPath:"日志路径",
   
   errMsgs:{

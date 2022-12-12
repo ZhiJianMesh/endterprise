@@ -25,6 +25,7 @@ cn:{
   pwd:"密码",
   updateAt:"更新于",
   author:"作者",
+  version:"版本",
 
   install:"安装",
   unInstall:"卸载",

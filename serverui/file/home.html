@@ -27,7 +27,7 @@
      <q-chip><q-avatar color="secondary" text-color="white" icon="bookmark"></q-avatar>{{fileCalls}}</q-chip>
     </div>
     <div class="q-pt-md">
-     <q-circular-progress :indeterminate="progVal==1||progVal==2" size="9em" show-value
+     <q-circular-progress :indeterminate="state==2" size="9em" show-value
       @click="alter" :thickness="0.2" color="yellow" center-color="red"
       track-color="transparent" class="text-white q-ma-md" :value="progVal" dense>
       <q-icon name="power_settings_new" size="2em" color="white"></q-icon>
@@ -49,10 +49,9 @@ import Language from "./language.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import RegisterDialog from "./register.js"
 
-const SRV_INITIALIZED=1;
-const SRV_RUNNING=2;
-const SRV_CLOSED=3;
-const SRV_FAILTOSTART=4;
+const SRV_ALTERING=2;
+const SRV_RUNNING=3;
+const SRV_CLOSED=4;
 
 const l=(typeof os)=='undefined' ? navigator.language : os.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
@@ -66,6 +65,7 @@ data(){return{
     statusImg:"./imgs/static_gears.png",
     apiCalls:0,
     fileCalls:0,
+    state:0,
     progVal:0,
     cid:0,
     timer:null
@@ -81,54 +81,63 @@ alter(){
         });
         return;
     }
-    if(this.progVal!=1&&this.progVal!=2) {
-        this.progVal=Server.getServerState()==SRV_RUNNING?2:1;
-        var jsCbId = __regsiterCallback(resp => {
-            this.progVal=100;
-        });
-        Server.alter(jsCbId);
-    }
-},
-refresh(force) {
-    var srvState=Server.getServerState();
-    if(srvState==SRV_RUNNING) {
-        if(this.progVal==1||force) {//按了开始
-            this.progVal=100;
-            this.statusImg="./imgs/running_gears.gif";
-            this.address=Server.address();
-            this.startupAt=new Date(Server.startupAt()).toLocaleString();
+    this.getState().then(resp=>{
+        if(resp.data.state==SRV_ALTERING) {
+            return; //正在启动中，不接受点击
         }
-        var t=Server.runTime();
-        var day=parseInt(t/1440);
-        t%=1440;
-        var hour=parseInt(t/60);
-        t%=60;
-        this.runtime=day+this.tags.day+hour+this.tags.hour+t+this.tags.minute;
-        this.apiCalls=Server.apiCalls();
-        this.fileCalls=Server.fileCalls();
+        this.state=SRV_ALTERING;
+        Server.alter(__regsiterCallback(r => {
+            //start、stop、state中都返回了全部的状态信息，且在jsserver中保存了
+            this.displayState(r);
+        }));
+    });
+},
+chgStateDisp(){
+    if(this.state==SRV_RUNNING) {
+        this.progVal=100;
+        this.statusImg="./imgs/running_gears.gif";
+        this.startupAt=new Date(Server.startupAt()).toLocaleString();
     } else {
-        if(force || (this.progVal==2 && srvState==SRV_CLOSED) //按了停止
-           || (this.progVal==1 && srvState==SRV_FAILTOSTART)) {//按了开始，但是启动失败了
-            this.progVal=0;
-            this.statusImg="./imgs/static_gears.png";
-        }
+        this.progVal=0;
+        this.statusImg="./imgs/static_gears.png";
     }
 },
-check() {
-    this.refresh(false);
+displayState(resp) {
+    this.state=resp.data.state;
+    this.chgStateDisp();
+    var t=Server.runTime();
+    var day=parseInt(t/1440);
+    t%=1440;
+    var hour=parseInt(t/60);
+    t%=60;
+    this.runtime=day+this.tags.day+hour+this.tags.hour+t+this.tags.minute;
+    this.apiCalls=Server.apiCalls();
+    this.fileCalls=Server.fileCalls();
+    this.address=Server.address();
+},
+refresh() {
+    this.getState().then(resp=>{this.displayState(resp)})
+},
+getState() {
+    return new Promise((resolve, reject)=>{
+        Server.getState(__regsiterCallback(resp => {
+            this.state=resp.data.state;
+            resolve(resp);
+        }));
+    });
 },
 init() {
     this.runtime='0'+this.tags.day+'0'+this.tags.hour+'0'+this.tags.minute;
     this.startupAt=new Date(Server.startupAt()).toLocaleString();
     this.address=Server.address();
     this.cid=Server.companyId();
-    this.refresh(true);
+    this.refresh();
     if(this.timer != null) {
         clearInterval(this.timer)
     }
-    this.timer = setInterval(this.check, 1500)
+    this.timer = setInterval(this.refresh, 1500)
 }
-}
+}//end of methods
 });
 app.use(Quasar);
 app.component('component-alert-dialog', AlertDialog);

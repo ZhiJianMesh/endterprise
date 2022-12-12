@@ -1,6 +1,6 @@
 const SERVICE_USER="user";
 const SERVICE_CONFIG="config";
-const COMPANY_ID="123";
+const COMPANY_ID="40";
 const COMPANY_NAME="store_company_name";
 const RetCode={
 OK:0,
@@ -235,6 +235,10 @@ function cloneObj(obj) {
     throw new Error("Unable to clone obj! Its type isn't supported.");
 }
 
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 function readText(txt) {
     return new Promise(function(resolve, reject){
         console.info("read text " + txt);
@@ -283,25 +287,54 @@ const View = {
     undefineOrientation() {}
 }
 const Server = {
-    getServerState() {return 2},
+    state:0,
+    getState(jsCbId) {
+        __default_jscb(jsCbId,{code:0,data:{state:this.state}});
+    },
     fileCalls() {return 29999},
     apiCalls() {return 1000},
-    alter() {this.isRunning=!this.isRunning},
+    alter(jsCbId) {
+        this.state=2;
+        if(this.state!=3) {
+            sleep(3000).then(()=> {
+                this.state=3;
+                __default_jscb(jsCbId,{code:0,data:{state:3}});
+            })
+        } else {
+            sleep(1000).then(()=> {
+                this.state=4;
+                __default_jscb(jsCbId,{code:0,data:{state:4}});
+            })
+        }
+    },
     address() {return "192.168.1.1"},
     runTime() {return 100000},
     startupAt() {return 1657157855534},
-    isServiceInstalled(s){return false},
-	installService(s){},
+    getServiceVer(s){return 1000},
+    serviceIcon(s) {return "/" + s + "/favicon.png"},
+	installService(s,jsCbId){
+		for(var i=0;i<100;i++) {
+			sleep(30 * i).then(()=>{
+				installProgress(1,"test"+i);
+			})
+		}
+		sleep(3000).then(()=>{
+			__default_jscb(jsCbId,{code:0});
+		})
+	},
 	unInstallService(s){},
     refreshConsoleToken(){return '1234567890123456'},
-    getServices(){return JSON.stringify([
-        {name:"crm",dispName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png"},
-        {name:"member",dispName:"会员",author:"Lgy",level:4, favicon:"/member/favicon.png"},
-        {name:"user",dispName:"用户服务",author:"Lgy",level:3, favicon:"/user/favicon.png"},
-        {name:"enstu",dispName:"英语教学",author:"Lgy",level:100, favicon:"/enstu/favicon.png"},
-        {name:"bios",dispName:"注册发现服务",author:"Lgy",level:0, favicon:"/bios/favicon.png"},
-        {name:"oauth2",dispName:"鉴权服务",author:"Lgy",level:1, favicon:"/assets/favicon.png"}
-    ])},
+    getServices(jsCbId){
+        var data={code:RetCode.OK, data:{services:[
+            {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
+            {name:"member",displayName:"会员",author:"Lgy",level:4, favicon:"/member/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
+            {name:"user",displayName:"用户服务",author:"Lgy",level:3, favicon:"/user/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
+            {name:"enstu",displayName:"英语教学",author:"Lgy",level:100, favicon:"/enstu/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
+            {name:"bios",displayName:"注册发现服务",author:"Lgy",level:0, favicon:"/bios/favicon.png", version:"0.1.0",updatable:false},
+            {name:"oauth2",displayName:"鉴权服务",author:"Lgy",level:1, favicon:"/assets/favicon.png", version:"0.1.0",updatable:false}
+        ]}};
+        __default_jscb(jsCbId,data);
+    },
     backup(){},
     backupTime(){return 1657157855534},
     backupKey(){return "test"},
@@ -374,26 +407,27 @@ const Http={
 }
 
 const App={
-    openApp:function(app) {location.href='/' + app + '/index.html'},
-    install:function(app, jsCbId) {
+    openApp(app) {location.href='/' + app + '/index.html'},
+    install(app, jsCbId) {
          Console.info("install app " + app);
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success"});
     },
-    unInstall:function(service, jsCbId) {
+    unInstall(service, jsCbId) {
          console.info("uninstall app " + app);
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success"});
     },
-    list:function() { return JSON.stringify([
-        {name:"crm",displayName:"客户关系管理",author:"Lgy"},
-        {name:"member",displayName:"会员",author:"Lgy"},
-        {name:"user",displayName:"用户服务",author:"Lgy"},
-        {name:"enstu",displayName:"英语教学",author:"Lgy"},
-        {name:"bios",displayName:"注册发现服务",author:"Lgy"},
-        {name:"oauth2",displayName:"鉴权服务",author:"Lgy"}
+    serviceIcon(s) {return "/" + s + "/favicon.png"},
+    list() { return JSON.stringify([
+        {name:"crm",displayName:"客户关系管理",version:"1000"},
+        {name:"member",displayName:"会员",version:"1000"},
+        {name:"user",displayName:"用户服务",version:"1000"},
+        {name:"enstu",displayName:"英语教学",version:"1000"},
+        {name:"bios",displayName:"注册发现服务",version:"1000"},
+        {name:"oauth2",displayName:"鉴权服务",version:"1000"}
     ])},
-    isInstalled:function(){return true},
-    isBuiltin:function(app) {return app=="market"||app=="settings"||app=="about"||app=="assets"},
-	getLogPath:function(){return "d:\\work\\code\\release"},
+    isInstalled(){return true},
+    isBuiltin(app) {return app=="market"||app=="settings"||app=="about"||app=="assets"},
+	getLogPath(){return "d:\\work\\code\\release"},
     build(){return {ver:"0.1.0",os:"android",brand:"njhx",language:"zh_CN",agent:"mc_android_0.1.0"}}
 }
 

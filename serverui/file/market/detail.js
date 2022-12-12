@@ -1,21 +1,22 @@
 export default {
 inject: ['service', 'tags'],
 data() {return {
-    id: this.$route.query.id,
-    app: {}, //service,dispName,author,type,stars,installs,cmt,recentUpd,baseUrls
+    name: this.$route.query.service,
+    app: {}, //service,displayName,author,type,stars,installs,cmt,recentUpd,baseUrls
     subTitle:'',
     preImgNo:0,
     intro:{descrs:[],images:[]},
     baseUrl:'',
     action: this.tags.waitting,
-    imgWidth:'45vw'
+    imgWidth:'45vw',
+    install:{percent:0,info:"",dlg:false,disable:false}
 }},
 created() {
     if(document.documentElement.clientWidth>document.documentElement.clientHeight) {
         this.imgWidth="30vw";
     }
     this.app=this.emptyDtl();
-    request({method:"GET",url:"/api/market/detail?id="+this.id, private:false},"devops").then(resp=>{
+    request({method:"GET",url:"/api/service/detail?service="+this.name, private:false},"devops").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -29,13 +30,18 @@ created() {
         }
         this.app['icon']=s+"/file/favicon.png";
         var v = parseInt(resp.data.ver);
+        this.app['intVer']=v;
         this.app.ver=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
         this.baseUrl=s+"/release/" +this.app.ver;
 
         var dt=new Date(resp.data.recentUpd);
         this.app['updateAt']=dt.toLocaleDateString();
-        if(Server.isServiceInstalled(this.app.service)) {
+        var locVer = Server.getServiceVer(this.app.service);
+        if(locVer>0) {
             this.action=this.tags.update;
+            if(locVer>=v) {//本地版本不低于服务端版本
+                this.install.disable=true;
+            }
         } else {
             this.action=this.tags.install;
         }
@@ -47,16 +53,22 @@ created() {
             return;
         }
         var intro=o.introduce;
-        for(var i in intro.images) {
-            var src=intro.images[i].src;
-            if(src.substring(0,1)=="/") {
-                intro.images[i].src=this.baseUrl+src;
-            } else {
-                intro.images[i].src=this.baseUrl+'/'+src;
+        if(intro.images && intro.images.length>0) {
+            for(var i in intro.images) {
+                var src=intro.images[i].src;
+                if(src.substring(0,1)=="/") {
+                    intro.images[i].src=this.baseUrl+src;
+                } else {
+                    intro.images[i].src=this.baseUrl+'/'+src;
+                }
             }
+            this.subTitle = intro.images[0].info;
         }
         this.intro=intro;
     });
+},
+mounted() {
+  window.installProgress = this.progress;//用于显示进度
 },
 methods: {
 scroll(event) {
@@ -71,29 +83,35 @@ scroll(event) {
     }
 },
 appAction() {
-    var jsCbId=__regsiterCallback(this.refreshUI)
-    if (Server.isServiceInstalled(this.app.service)) {
-        Server.unInstallService(this.id, jsCbId);
+	this.install={dlg:true,percent:0,info:"",disable:false};
+    var jsCbId=__regsiterCallback(this.refreshUI);
+    var locVer=Server.getServiceVer(this.app.service);
+    if (locVer>0) {
+        Server.updateService(this.app.service, jsCbId);
     } else {
-        Server.installService(this.id, jsCbId);
+        Server.installService(this.app.service, jsCbId);
     }
-    this.action=this.tags.waitting;
 },
 refreshUI(resp) {
     if(resp.code != RetCode.OK) {
         this.$refs.errDlg.showErr(resp.code, resp.info);
     }
     Console.info("App " + this.app.service + " action over");
-    if (Server.isServiceInstalled(this.app.service)) {
-        this.action = this.tags.unInstall;
-        console.info("App " + this.app.service + " is installed");
+    this.install={dlg:false,percent:0,info:"",disable:false};
+    var locVer=Server.getServiceVer(this.app.service);
+    if (locVer>0) {
+        if(locVer>=this.app.intVer) {
+            this.install.disable=true;
+        }
+        this.action = this.tags.update;
+        Console.info("App " + this.app.service + " is installed");
     } else {
         this.action = this.tags.install;
-        console.info("App " + this.app.service + " is not installed");
+        Console.info("App " + this.app.service + " is not installed");
     }
 },
 giveStar() {
-    request({method:"GET",url:"/api/market/star?id="+this.id},"devops").then(resp=>{
+    request({method:"GET",url:"/api/service/star?service="+this.name},"devops").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -102,41 +120,47 @@ giveStar() {
     });
 },
 emptyDtl() {
-    return {service:'', dispName:'', author:'', type:'', ver:'',
+    return {service:'', displayName:'', author:'', type:'', ver:'',intVer:0,
      stars:0, installs:0, cmt:'', recentUpd:'', baseUrl:''}
+},
+progress(inc,info){
+    if(this.install.percent+inc>100) {
+		this.install.percent=100;
+	} else {
+		this.install.percent+=inc;
+	}
+    this.install.info=info;
 }
 },
 template: `
 <q-layout view="lHh lpr lFf" container style="height:100vh;">
   <q-header class="bg-grey-1 text-primary">
-   <q-list class="q-pa-sm">
+   <q-list class="q-pa-sm" dense>
     <q-item>
-     <q-item-section avatar>
+     <q-item-section thumbnail>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
      </q-avatar></q-item-section>
      <q-item-section avatar><q-avatar square><img :src="app.icon"></q-avatar></q-item-section>
      <q-item-section>
-      <q-item-label>{{app.dispName}}</q-item-label>
-      <q-item-label caption>{{app.ver}}</q-item-label>
-      </q-item-section>
-     <q-item-section side>
-        <q-item-label caption>{{app.author}}</q-item-label>
-        <q-item-label caption>{{tags.updateAt}} {{app.updateAt}}</q-item-label>
+      <q-item-label>{{app.displayName}}/{{app.service}}</q-item-label>
+      <q-item-label caption>{{tags.author}} {{app.author}}</q-item-label>
+      <q-item-label caption>{{tags.version}} {{app.ver}}</q-item-label>
+      <q-item-label caption>{{tags.updateAt}} {{app.updateAt}}</q-item-label>
      </q-item-section>
     </q-item>
    </q-list>
   </q-header>
   <q-footer bordered class="bg-white text-primary">
     <q-toolbar class="row justify-center">
-      <q-btn rounded color="primary" :label="action" @click="appAction"></q-btn>
+      <q-btn rounded color="primary" :label="action" @click="appAction" :disable="install.disable"></q-btn>
     </q-toolbar>
   </q-footer>
   
    <q-page-container>
      <q-page class="q-pa-none">
 <div class="q-py-xs q-px-md" @click="giveStar">
-  <q-chip outline color="yellow" text-color="white" icon="star">{{app.stars}}</q-chip>
-  <q-chip outline color="primary" text-color="white" icon="cloud_download">{{app.installs}}</q-chip>
+ <q-chip outline color="yellow" text-color="white" icon="star">{{app.stars}}</q-chip>
+ <q-chip outline color="primary" text-color="white" icon="cloud_download">{{app.installs}}</q-chip>
 </div>
 <q-list class="q-pa-sm">
 <q-item>
@@ -160,6 +184,13 @@ template: `
     </q-page>
   </q-page-container>
 </q-layout>
+
+<q-dialog v-model="install.dlg" persistent>
+  <q-card style="min-width:62vw" class="q-pa-lg">
+     <q-linear-progress :value="install.percent/100" color="primary" size="xl"></q-linear-progress>
+     <div>{{install.info}}</div>
+  </q-card>
+</q-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 `
 }

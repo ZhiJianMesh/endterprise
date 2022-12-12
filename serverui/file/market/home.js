@@ -5,18 +5,21 @@ data() {return {
     locServices:[],
     search:'',
     tab:'market',
-    page:{cur:1, max:0}
+    page:{cur:1, max:0},
+    install:{percent:0,info:"",dlg:false}
 }},
 created(){
-    var ss=Server.getServices();
-    this.locServices=JSON.parse(ss);
+    this.getLocServices();
     this.queryService(1);
+},
+mounted() {
+  window.installProgress = this.progress;
 },
 methods:{
 queryService(pg) {
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;    
-    var url="/market/list?offset="+offset+"&num="+this.service.N_PAGE;
+    var url="/service/list?offset="+offset+"&num="+this.service.N_PAGE;
     request({method:"GET", url:url, private:false}, "devops").then(resp=>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
@@ -34,7 +37,7 @@ searchService() {
         this.queryService(1);
         return;
     }
-    var url="/market/search?s="+this.search+"&limit="+this.service.N_PAGE;
+    var url="/service/search?s="+this.search+"&limit="+this.service.N_PAGE;
     request({method:"GET",url:url, private:false}, "devops").then(function(resp){
         if(resp.code != RetCode.OK) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
@@ -53,31 +56,70 @@ fmt_services(rows) {
     var services=[];
     var row,s;
     var dt=new Date();
-    var ss, n;
+    var ss, n, icon;
     for(var i in data) {
         row=data[i];
         s={};
         for(var c in cols) {
             s[cols[c]]=row[c];
         }
-        ss=JSON.parse(s.baseUrls);
-        n=Math.floor(Math.random()*ss.length);//随机选择一个
-        s['icon']=ss[n] + "/file/favicon.png";
+        icon=Server.serviceIcon(s.service);
+        if(icon!="") {//已安装则显示本地icon
+            s['icon']=icon;
+        } else {
+            ss=JSON.parse(s.baseUrls);
+            n=Math.floor(Math.random()*ss.length);//随机选择一个
+            s['icon']=ss[n] + "/file/favicon.png";
+        }
         dt.setTime(s.recentUpd);
         s.updateAt=dt.toLocaleDateString();
         services.push(s);
     }
     this.mktServices=services;
 },
-detail(id) {
-    this.$router.push('/detail?id='+id)
+detail(service) {
+    this.$router.push('/detail?service='+service)
 },
 update(service) {
-	Server.updateService(service);
+    this.install={dlg:true,percent:0,info:""};
+    var jsCbId=__regsiterCallback(resp=> {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+        } else {
+            this.getLocServices();
+        }
+    });
+	Server.updateService(service, jsCbId);
 },
 unInstall(service) {
-	Server.unInstallService(service);
-}
+    var jsCbId=__regsiterCallback(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+        } else {
+            this.getLocServices();
+        }
+    });
+	Server.unInstallService(service,jsCbId);
+},
+getLocServices() {
+    this.install={dlg:false,percent:0,info:""};
+    var jsCbId=__regsiterCallback(resp=> {
+        if(resp.code != RetCode.OK) {
+            Console.warn("code:"+resp.code+",info:"+resp.info);
+            return;
+        }
+        this.locServices=resp.data.services;
+    });
+    Server.getServices(jsCbId);
+},
+progress(inc,info){
+     if(this.install.percent+inc>100) {
+ 		this.install.percent=100;
+ 	} else {
+ 		this.install.percent+=inc;
+ 	}
+     this.install.info=info;
+ }
 },
 
 template: `
@@ -108,12 +150,12 @@ template: `
       boundary-numbers="false" @update:model-value="queryService"></q-pagination>
    </div>
    <q-list padding>
-    <q-item v-for="s in mktServices" clickable @click="detail(s.id)">
+    <q-item v-for="s in mktServices" clickable @click="detail(s.service)">
       <q-item-section avatar top>
-        <q-avatar><img :src="s.icon" style="max-height:2em"></q-avatar>
+        <q-avatar square><img :src="s.icon" style="max-height:2em"></q-avatar>
       </q-item-section>
       <q-item-section>
-        <q-item-label lines="1">{{s.dispName}}/{{s.service}}</q-item-label>
+        <q-item-label lines="1">{{s.displayName}}/{{s.service}}</q-item-label>
         <q-item-label caption>{{s.author}}</q-item-label>
         <q-item-label caption>{{tags.updateAt}} {{s.updateAt}}</q-item-label>
       </q-item-section>
@@ -135,17 +177,32 @@ template: `
          <q-avatar square><img :src="s.favicon"></q-avatar>
        </q-item-section>
        <q-item-section class="text-left">
-         <q-item-label overline>{{s.dispName}}/{{s.name}}
+         <q-item-label overline>{{s.displayName}}/{{s.name}}
 		  <q-badge :label="tags.unInstall" @click="unInstall(s.name)" v-if="s.level>4"></q-badge>
 		 </q-item-label>
          <q-item-label caption>{{s.author}}</q-item-label>
        </q-item-section>
-       <q-item-section side @click="update(s.name)" class="q-mt-xs text-weight-bold text-primary">{{tags.update}}</q-item-section>
+       <q-item-section side v-if="s.updatable">
+	    <q-item-label class="q-mt-xs text-weight-bold text-primary"
+	    @click="update(s.name)">{{tags.update}}</q-item-label>
+		<q-item-label caption>{{s.version}} -> {{s.srvVer}}</q-item-label>
+	   </q-item-section>
+	   <q-item-section side v-else>
+        <q-item-label caption>{{s.version}}</q-item-label>
+       </q-item-section>
      </q-item>
    </q-list>
  </q-tab-panel>
 </q-page>
 </q-page-container>
 </q-layout>
+
+<q-dialog v-model="install.dlg" persistent>
+  <q-card style="min-width:62vw" class="q-pa-lg">
+     <q-linear-progress :value="install.percent/100" color="primary" size="xl"></q-linear-progress>
+     <div>{{install.info}}</div>
+  </q-card>
+</q-dialog>
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 `
 }

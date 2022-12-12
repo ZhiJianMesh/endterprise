@@ -7,36 +7,59 @@ data() {return {
         displayName: "",
         version: "",
         author: "",
-        level: 10000,
+        level: 100,
         icon: ""
     },
     intro: {},
     subTitle: '',
     preImgNo:0,
     isNormal:true,
-    action: this.tags.waitting
+    imgWidth:'45vw',
+    action: ''
 }},
 created() {
+    if(document.documentElement.clientWidth>document.documentElement.clientHeight) {
+        this.imgWidth="30vw";
+    }
     this.isNormal=!App.isBuiltin(this.name);
     request({method:"GET",url:"/api/introduce"},this.name).then(function(resp) {
         if (resp.code!=RetCode.OK) {
-            this.intro = {description: this.app.displayName, images:[]};
+            this.intro = {descrs: [this.app.displayName], images:[]};
             return;
         }
-        this.intro = resp.data;
-        if (this.intro.images.length > 0) {
-            this.subTitle = this.intro.images[0].info;
+        var intro=resp.data;
+        if (intro.images && intro.images.length > 0) {
+            var baseUrl='/'+this.name;
+            for(var i in intro.images) {
+                var src=intro.images[i].src;
+                if(src.substring(0,1)=="/") {
+                    intro.images[i].src=baseUrl+src;
+                } else {
+                    intro.images[i].src=baseUrl+'/'+src;
+                }
+            }
+            this.subTitle = intro.images[0].info;
         }
+        this.intro=intro;
     }.bind(this));
+
     this.app = this.service.list[this.name];
-    if(this.isNormal) {
-        this.action = App.isInstalled(this.name) ? this.tags.unInstall : this.tags.install;
-    } else {
-        this.action=this.tags.update; //内置应用只可更新
-    }
+    request({method:"GET",url:"/api/client_info"},this.name).then(resp => {
+        if (resp.code!=RetCode.OK) {
+            return;
+        }
+        if(App.verToInt(this.app.version)<App.verToInt(resp.data.version)) {
+            if(this.isNormal) {
+                this.action = App.isInstalled(this.name) ? this.tags.unInstall : this.tags.install;
+            } else {
+                this.action=this.tags.update; //内置应用只可更新
+            }
+        } else {
+            this.action="";
+        }
+    });
 },
 methods: {
-imgUrl(url){return '/'+this.name+url},
 scroll(event) {
     if(!this.intro||!this.intro.images) {
         return;
@@ -65,14 +88,13 @@ refreshUI(resp) {
     if(resp.code != RetCode.OK) {
         this.$refs.errDlg.showErr(resp.code, resp.info);
     }
-    console.info("App " + this.name + " action over");
     if(this.isNormal) {
         if (App.isInstalled(this.name)) {
             this.action = this.tags.unInstall;
-            console.info("App " + this.name + " is installed");
+            Console.info("App " + this.name + " is installed");
         } else {
             this.action = this.tags.install;
-            console.info("App " + this.name + " is not installed");
+            Console.info("App " + this.name + " is not installed");
         }
     } else {
         this.action=this.tags.update; //内置应用只可更新
@@ -91,13 +113,14 @@ template: `
       <img :src="app.icon">
      </q-avatar></q-item-section>
      <q-item-section>
-      <q-item-label class="text-h6">{{app.displayName}}</q-item-label>
-      <q-item-label caption>{{app.version}} / {{app.author}}</q-item-label>
+      <q-item-label>{{app.displayName}}/{{app.service}}</q-item-label>
+      <q-item-label caption>{{tags.author}} {{app.author}}</q-item-label>
+      <q-item-label caption>{{tags.version}} {{app.version}}</q-item-label>
      </q-item-section>
     </q-item>
    </q-list>
   </q-header>
-  <q-footer bordered class="bg-white text-primary">
+  <q-footer bordered class="bg-white text-primary" v-if="action!=''">
     <q-toolbar class="row justify-center">
       <q-btn rounded color="primary" :label="action" @click="appAction"></q-btn>
     </q-toolbar>
@@ -108,7 +131,7 @@ template: `
 <q-list class="q-pa-md">
 <q-item>
  <q-item-section>
-  <q-item-label>{{intro.description}}</q-item-label>
+  <q-item-label v-for="descr in intro.descrs" style="text-indent:2em;">{{descr}}</q-item-label>
   <q-item-label caption>{{subTitle}}</q-item-label>
  </q-item-section>
 </q-item>
@@ -118,7 +141,7 @@ template: `
   <q-scroll-area style="height:60vh;width:100%;" horizontal @scroll="scroll">
   <div class="row no-wrap">
    <div v-for="img in intro.images" class="q-pa-sm">
-    <q-img :src="imgUrl(img.src)" style="width:45vw;"></q-img>
+    <q-img :src="img.src" :style="{width:imgWidth}"></q-img>
    </div>
   </div>
   </q-scroll-area>
