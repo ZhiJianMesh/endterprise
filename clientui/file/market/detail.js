@@ -13,8 +13,9 @@ data() {return {
     intro: {},
     subTitle: '',
     preImgNo:0,
-    isNormal:true,
     imgWidth:'45vw',
+    isNormal:true,
+	isInstalled:true,
     action: ''
 }},
 created() {
@@ -44,20 +45,7 @@ created() {
     }.bind(this));
 
     this.app = this.service.list[this.name];
-    request({method:"GET",url:"/api/client_info"},this.name).then(resp => {
-        if (resp.code!=RetCode.OK) {
-            return;
-        }
-        if(App.verToInt(this.app.version)<App.verToInt(resp.data.version)) {
-            if(this.isNormal) {
-                this.action = App.isInstalled(this.name) ? this.tags.unInstall : this.tags.install;
-            } else {
-                this.action=this.tags.update; //内置应用只可更新
-            }
-        } else {
-            this.action="";
-        }
-    });
+	this.refreshAction();
 },
 methods: {
 scroll(event) {
@@ -72,57 +60,67 @@ scroll(event) {
     }
 },
 appAction() {
-    var jsCbId=__regsiterCallback(this.refreshUI)
-    if(this.isNormal) {
-        if (App.isInstalled(this.name)) {
-            App.unInstall(this.name, jsCbId);
-        } else {
-            App.install(this.name, jsCbId);
-        }
+    var jsCbId=__regsiterCallback(this.refreshAction)
+    if(this.action==this.tags.install) {
+		App.install(this.name, jsCbId);
     } else {
         App.update(this.name, jsCbId);
     }
     this.action=this.tags.waitting;
 },
-refreshUI(resp) {
-    if(resp.code != RetCode.OK) {
-        this.$refs.errDlg.showErr(resp.code, resp.info);
+unInstall() {
+	if(!this.isNormal) {
+		return;
+	}
+    var jsCbId=__regsiterCallback(this.refreshAction)
+	App.unInstall(this.name, jsCbId);
+	this.action=this.tags.waitting;
+},
+refreshAction(r) {
+	if(r && r.code != RetCode.OK) {
+        this.$refs.errDlg.showErr(r.code, r.info);
     }
-    if(this.isNormal) {
-        if (App.isInstalled(this.name)) {
-            this.action = this.tags.unInstall;
-            Console.info("App " + this.name + " is installed");
-        } else {
-            this.action = this.tags.install;
-            Console.info("App " + this.name + " is not installed");
-        }
-    } else {
-        this.action=this.tags.update; //内置应用只可更新
-    }
+	this.isInstalled=App.isInstalled(this.name);
+	if (this.isInstalled){
+		request({method:"GET",url:"/api/client_info"}, this.name).then(resp => {
+			if (resp.code!=RetCode.OK) {
+				Console.warn("Fail to get client info " + resp);
+				return;
+			}
+			if(App.verToInt(this.app.version)<App.verToInt(resp.data.version)) {
+				this.action=this.tags.update;
+			} else {
+				this.action="";
+			}
+		});
+	} else {
+		this.action = this.tags.install;
+	}
 }
 },
 template: `
 <q-layout view="lHh lpr lFf" container style="height:100vh;">
-  <q-header class="bg-grey-1 text-primary">
+  <q-header class="bg-grey-3">
    <q-list class="q-pa-sm">
     <q-item>
      <q-item-section avatar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.go_back" class="text-primary"></q-btn>
      </q-avatar></q-item-section>
      <q-item-section avatar><q-avatar square>
       <img :src="app.icon">
      </q-avatar></q-item-section>
      <q-item-section>
-      <q-item-label>{{app.displayName}}/{{app.service}}</q-item-label>
+      <q-item-label class="text-primary">{{app.displayName}}/{{app.service}}</q-item-label>
       <q-item-label caption>{{tags.author}} {{app.author}}</q-item-label>
       <q-item-label caption>{{tags.version}} {{app.version}}</q-item-label>
      </q-item-section>
     </q-item>
    </q-list>
   </q-header>
-  <q-footer bordered class="bg-white text-primary" v-if="action!=''">
+  <q-footer bordered class="bg-grey-2">
     <q-toolbar class="row justify-center">
-      <q-btn rounded color="primary" :label="action" @click="appAction"></q-btn>
+      <q-btn rounded color="primary" :label="action" @click="appAction" v-show="action!=''"></q-btn>
+      <q-btn outline rounded color="primary" :label="tags.unInstall" @click="unInstall" v-show="isNormal && isInstalled"></q-btn>
     </q-toolbar>
   </q-footer>
   
@@ -141,7 +139,7 @@ template: `
   <q-scroll-area style="height:60vh;width:100%;" horizontal @scroll="scroll">
   <div class="row no-wrap">
    <div v-for="img in intro.images" class="q-pa-sm">
-    <q-img :src="img.src" :style="{width:imgWidth}"></q-img>
+    <q-img :src="img.src" :style="{width:imgWidth}" @click="subTitle=img.info"></q-img>
    </div>
   </div>
   </q-scroll-area>

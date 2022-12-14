@@ -2,14 +2,14 @@ export default {
 inject: ['service', 'tags'],
 data() {return {
     name: this.$route.query.service,
-    app: {}, //service,displayName,author,type,stars,installs,cmt,recentUpd,baseUrls
+    app: {}, //service,displayName,author,type,level,ver,stars,installs,cmt,recentUpd,baseUrls
     subTitle:'',
     preImgNo:0,
     intro:{descrs:[],images:[]},
     baseUrl:'',
     action: this.tags.waitting,
     imgWidth:'45vw',
-    install:{percent:0,info:"",dlg:false,disable:false}
+    install:{percent:0,info:"",dlg:false,hasNew:false,normal:false}
 }},
 created() {
     if(document.documentElement.clientWidth>document.documentElement.clientHeight) {
@@ -36,15 +36,7 @@ created() {
 
         var dt=new Date(resp.data.recentUpd);
         this.app['updateAt']=dt.toLocaleDateString();
-        var locVer = Server.getServiceVer(this.app.service);
-        if(locVer>0) {
-            this.action=this.tags.update;
-            if(locVer>=v) {//本地版本不低于服务端版本
-                this.install.disable=true;
-            }
-        } else {
-            this.action=this.tags.install;
-        }
+		this.refreshUI();
         return this.service.getExternal({url:this.baseUrl + "/introduction.json"});
     }).then((s)=> {
         if(!s) {return}
@@ -83,7 +75,9 @@ scroll(event) {
     }
 },
 appAction() {
-	this.install={dlg:true,percent:0,info:"",disable:false};
+    this.install.dlg=true;
+    this.install.percent=0;
+    this.install.info="";
     var jsCbId=__regsiterCallback(this.refreshUI);
     var locVer=Server.getServiceVer(this.app.service);
     if (locVer>0) {
@@ -93,16 +87,14 @@ appAction() {
     }
 },
 refreshUI(resp) {
-    if(resp.code != RetCode.OK) {
+    if(resp && resp.code != RetCode.OK) {
         this.$refs.errDlg.showErr(resp.code, resp.info);
     }
-    Console.info("App " + this.app.service + " action over");
-    this.install={dlg:false,percent:0,info:"",disable:false};
+    this.install={dlg:false,percent:0,info:"",hasNew:true,normal:false};
     var locVer=Server.getServiceVer(this.app.service);
-    if (locVer>0) {
-        if(locVer>=this.app.intVer) {
-            this.install.disable=true;
-        }
+    if (locVer>0) {//已安装，否则<=0
+        this.install.hasNew=locVer<this.app.intVer;
+		this.install.normal=this.app.level>4;
         this.action = this.tags.update;
         Console.info("App " + this.app.service + " is installed");
     } else {
@@ -123,6 +115,10 @@ emptyDtl() {
     return {service:'', displayName:'', author:'', type:'', ver:'',intVer:0,
      stars:0, installs:0, cmt:'', recentUpd:'', baseUrl:''}
 },
+unInstall() {
+    var jsCbId=__regsiterCallback(this.refreshUI);
+	Server.unInstallService(this.app.service,jsCbId);
+},
 progress(inc,info){
     if(this.install.percent+inc>100) {
 		this.install.percent=100;
@@ -134,15 +130,15 @@ progress(inc,info){
 },
 template: `
 <q-layout view="lHh lpr lFf" container style="height:100vh;">
-  <q-header class="bg-grey-1 text-primary">
+  <q-header class="bg-grey-3">
    <q-list class="q-pa-sm" dense>
     <q-item>
      <q-item-section thumbnail>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.go_back" class="text-primary"></q-btn>
      </q-avatar></q-item-section>
      <q-item-section avatar><q-avatar square><img :src="app.icon"></q-avatar></q-item-section>
      <q-item-section>
-      <q-item-label>{{app.displayName}}/{{app.service}}</q-item-label>
+      <q-item-label class="text-primary">{{app.displayName}}/{{app.service}}</q-item-label>
       <q-item-label caption>{{tags.author}} {{app.author}}</q-item-label>
       <q-item-label caption>{{tags.version}} {{app.ver}}</q-item-label>
       <q-item-label caption>{{tags.updateAt}} {{app.updateAt}}</q-item-label>
@@ -150,12 +146,13 @@ template: `
     </q-item>
    </q-list>
   </q-header>
-  <q-footer bordered class="bg-white text-primary">
+  <q-footer bordered class="bg-grey-2">
     <q-toolbar class="row justify-center">
-      <q-btn rounded color="primary" :label="action" @click="appAction" :disable="install.disable"></q-btn>
+      <q-btn rounded color="primary" :label="action" @click="appAction" v-show="install.hasNew"></q-btn>
+	  <q-btn outline rounded color="primary" :label="tags.unInstall" @click="unInstall" v-show="install.normal"></q-btn>
     </q-toolbar>
   </q-footer>
-  
+
    <q-page-container>
      <q-page class="q-pa-none">
 <div class="q-py-xs q-px-md" @click="giveStar">
@@ -174,7 +171,7 @@ template: `
   <q-scroll-area style="height:60vh;width:100%;" horizontal @scroll="scroll">
   <div class="row no-wrap">
    <div v-for="img in intro.images" class="q-pa-sm">
-	<q-img :src="img.src" :style="{width:imgWidth}"></q-img>
+	<q-img :src="img.src" :style="{width:imgWidth}" @click="subTitle=img.info"></q-img>
    </div>
   </div>
   </q-scroll-area>
