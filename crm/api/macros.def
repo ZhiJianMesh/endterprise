@@ -59,6 +59,6 @@
         "method":"POST",
         "url":"/userid",
         "tokenSign":"OAUTH",
-        "parameters":"{accounts:#ACCLIST#}"
+        "parameters":"{\"accounts\":#ACCLIST#}"
     }
 }
