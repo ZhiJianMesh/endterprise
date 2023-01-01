@@ -40,7 +40,7 @@ cn:{
   sex:"性别",
   yearsOld:"岁",
   sexName:['男','女'],
-  sexImg:['/crm/imgs/man.png','/crm/imgs/woman.png'],
+  sexImg:['svguse:/assets/imgs/meshicons.svg#man','svguse:/assets/imgs/meshicons.svg#woman'],
   unknown:"未知",
   
   accListPls:"请输入正确的帐号",

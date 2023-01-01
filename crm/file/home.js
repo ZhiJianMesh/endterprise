@@ -107,7 +107,7 @@ template:`
   </q-item>
   <q-item clickable @click="service.jumpTo('/brief')">
     <q-item-section avatar>
-      <q-icon name="trending_up" color="red"></q-icon>
+      <q-icon name="svguse:/assets/imgs/meshicons.svg#barChart" color="red"></q-icon>
     </q-item-section>
     <q-item-section>
       <q-item-label>{{tags.home.bulletin}}</q-item-label>
@@ -117,7 +117,7 @@ template:`
   </q-item>
   <q-item clickable @click="service.jumpTo('/balance')" v-if="role=='admin'||role=='finance'">
     <q-item-section avatar>
-      <q-icon name="monetization_on" color="yellow-10"></q-icon>
+      <q-icon name="svguse:/assets/imgs/meshicons.svg#settle" color="yellow-10"></q-icon>
     </q-item-section>
     <q-item-section>
       <q-item-label>{{tags.home.balance}}</q-item-label>
