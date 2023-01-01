@@ -17,6 +17,9 @@ props: {
     tags:{type:Object,default:{ok:"注册",cancel:"取消",seperator:' ',creditCode:"统一信用码",
      companyName:"公司名称", pwd:"密码", creditCodePls:"请输入18位正确的统一信用码!",address:"地址"}}
 },
+created() {
+    this.creditCode=Server.creditCode();
+},
 methods:{
 show(callback) {
     this.registerDlg=true;

@@ -44,7 +44,18 @@
            <q-item-section>{{cid}}</q-item-section>
          </q-item>
          <q-item>
-           <q-item-section><q-icon v-show="cid" name="security" color="green"></q-icon></q-item-section>
+           <q-item-section>{{tags.dnsAccessCode}}</q-item-section>
+           <q-item-section>
+		    <div>
+			  {{dnsAccessCode}}
+			  <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessCode"></q-icon>
+			</div>
+		   </q-item-section>
+         </q-item>
+         <q-item>
+           <q-item-section>
+		    <q-icon name="svguse:/assets/imgs/meshicons.svg#qrcode" @click="dispQrCode=true" size="2.5em" color="primary"></q-icon>
+		   </q-item-section>
            <q-item-section>
             <q-btn icon="beenhere" :label="cid?tags.reRegister:tags.register" @click="register" color="primary"></q-btn>
            </q-item-section>
@@ -79,11 +90,10 @@
           <q-item>
            <q-item-section>{{tags.token}}</q-item-section>
            <q-item-section>
-            <q-input v-model="token" filled bg-color="white">
-             <template v-slot:append>
-              <q-icon name="refresh" @click="refreshToken" color="primary"></q-icon>
-             </template>
-            </q-input>
+		    <div>
+			  {{token}}
+			  <q-icon name="refresh" class="q-ml-md" color="primary" @click="refreshToken"></q-icon>
+			</div>
            </q-item-section>
           </q-item>
           <q-item>
@@ -98,12 +108,18 @@
  </q-page>
 </q-page-container>
 </q-layout>
+<q-dialog v-model="dispQrCode" @show="showQrCode">
+  <q-card style="min-width:60vw" bordered><q-card-section>
+   <div ref="qrCodeArea" style="width:60vw; height:60vw;"></div>
+  </q-card-section></q-card>
+</q-dialog>
 <register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
 </div>
 </body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
+<script src="/assets/v3/qrcode.js"></script>
 <script type="module">
 import Language from "./language.js"
 import RegisterDlg from "./register.js"
@@ -121,7 +137,9 @@ data(){return{
     companyName:"",
     location:"",
     cid:"",
+    dnsAccessCode:"",
     token:'',
+	dispQrCode:false,
     logLevel:'DEBUG',
     logLevels:['DEBUG','INFO','WARN','ERROR']
 }},
@@ -145,6 +163,7 @@ init() {
     this.cid=Server.companyId();
     this.location=Server.location();
     this.logLevel=Server.logLevel();
+    this.dnsAccessCode=Server.getDnsAccessCode();
 },
 backup() {
     Server.backup()
@@ -158,10 +177,24 @@ setLogLevel() {
 refreshToken() {
     this.token = Server.refreshConsoleToken();
 },
+resetAccessCode() {
+    this.dnsAccessCode = Server.resetDnsAccessCode();
+},
 register(){
     this.$refs.regDlg.show(()=>{
         this.init()
     });
+},
+showQrCode() {
+   var txt = JSON.stringify({act:'checkin',id:this.cid,code:this.dnsAccessCode,addr:Server.address()});
+   new QRCode(this.$refs.qrCodeArea, {
+		text: txt, 
+		width: document.documentElement.clientWidth * 0.6,
+		height: document.documentElement.clientWidth * 0.6,
+		colorDark: '#000000',
+		colorLight: '#ffffff',
+		correctLevel: QRCode.CorrectLevel.H
+	});
 }
 }
 });

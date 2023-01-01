@@ -22,6 +22,7 @@ cn:{
   creditCodePls:"请输入18位正确的统一信用码!",
   companyName:"工商注册名称",
   companyId:"公司ID",
+  dnsAccessCode:"接入码",
   pwd:"密码",
   updateAt:"更新于",
   author:"作者",
