@@ -114,9 +114,10 @@ function sendRequest(opts, service) {
     __traceid++;
     var hh = opts.headers;
     if(!hh) {
-        hh={trace_id:'browser'+__traceid};
+        hh={trace_id:'browser'+__traceid, cid:Http.cid()};
     } else {
         hh.trace_id='browser'+__traceid;
+        hh.cid=Http.cid();
     }
 
     return new Promise(function(resolve, reject){
@@ -324,6 +325,8 @@ const Server = {
 	},
 	unInstallService(s){},
     refreshConsoleToken(){return '1234567890123456'},
+    getDnsAccessCode(){return "123456"},
+    resetDnsAccessCode(){return "723456"},
     getServices(jsCbId){
         var data={code:RetCode.OK, data:{services:[
             {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
