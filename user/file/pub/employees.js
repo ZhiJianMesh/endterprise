@@ -55,7 +55,7 @@ proxy_req(req){
     return request({method:"POST",url:this.proxyUrl,data:dta}, this.service);
 },
 query_sub_eles(){//查询子群组及成员
-    var url=URL_LIST+"?fid="+this.gid;
+    var url=URL_LIST+"?gid="+this.gid;
     this.proxy_req({method:"GET",url:url}).then(function(resp){
         if(resp.code!=0) {
             return;
@@ -81,7 +81,7 @@ query_sub_eles(){//查询子群组及成员
     }.bind(this))  
 },
 add_member() {
-    var dta={fid:this.gid,account:this.newEmployee.account,
+    var dta={gid:this.gid,account:this.newEmployee.account,
         role:this.newEmployee.role, password:this.newEmployee.password};
     this.proxy_req({method:"POST",url:URL_ADDMBR,data:dta}).then(function(resp){
         if(resp.code!=0) {
@@ -117,14 +117,14 @@ rmv_grp(id) {
     }.bind(this));  
 },
 rmv_member(id) {
-    var dta={fid:this.gid,uid:id};
+    var dta={gid:this.gid,uid:id};
     this.proxy_req({method:"POST",url:URL_REMOVEMBR,data:dta}).then(function(resp){
         if(resp.code!=0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.query_sub_eles();
-    }.bind(this));  
+    }.bind(this));
 },
 open_grp(id,name){
     if(id==this.gid){

@@ -139,9 +139,9 @@ template: `
      <q-item-section avatar><q-avatar square><img :src="app.icon"></q-avatar></q-item-section>
      <q-item-section>
       <q-item-label class="text-primary">{{app.displayName}}/{{app.service}}</q-item-label>
-      <q-item-label caption>{{tags.author}} {{app.author}}</q-item-label>
-      <q-item-label caption>{{tags.version}} {{app.ver}}</q-item-label>
-      <q-item-label caption>{{tags.updateAt}} {{app.updateAt}}</q-item-label>
+      <q-item-label caption class="text-black">{{tags.author}} {{app.author}}</q-item-label>
+      <q-item-label caption class="text-black">{{tags.version}} {{app.ver}}</q-item-label>
+      <q-item-label caption class="text-black">{{tags.updateAt}} {{app.updateAt}}</q-item-label>
      </q-item-section>
     </q-item>
    </q-list>
@@ -156,7 +156,7 @@ template: `
    <q-page-container>
      <q-page class="q-pa-none">
 <div class="q-py-xs q-px-md" @click="giveStar">
- <q-chip outline color="yellow" text-color="white" icon="star">{{app.stars}}</q-chip>
+ <q-chip outline color="deep-orange" text-color="white" icon="star">{{app.stars}}</q-chip>
  <q-chip outline color="primary" text-color="white" icon="cloud_download">{{app.installs}}</q-chip>
 </div>
 <q-list class="q-pa-sm">
