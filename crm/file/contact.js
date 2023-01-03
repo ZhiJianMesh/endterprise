@@ -495,7 +495,7 @@ template:`
     <q-card-section class="q-pt-none">
     <q-list>
       <q-item><q-item-section>
-          <div class="q-gutter-sm">
+        <div class="q-gutter-sm">
          <q-radio dense v-model="newShare.power" val="S" :label="tags.share.S"></q-radio>
          <q-radio dense v-model="newShare.power" val="O" :label="tags.share.O" color="red" keep-color></q-radio>
         </div>

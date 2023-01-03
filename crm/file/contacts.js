@@ -174,7 +174,7 @@ template:`
  <q-item v-for="c in contacts" clickable>
   <q-item-section @click.stop="service.jumpTo('/customer?id='+c.cid)">{{c.cname}}</q-item-section>
   <q-item-section @click.stop="service.jumpTo('/contact?id='+c.id)" no-wrap>
-   <q-item-label>{{c.name}}<q-avatar size="1em"><img :src="tags.sexImg[c.sex]"></q-avatar></q-item-label>
+   <q-item-label>{{c.name}}<q-icon :name="tags.sexImg[c.sex]" :color="c.sex==0?'primary':'red'" size="1em"></q-icon></q-item-label>
    <q-item-label caption>{{c.creator}}@{{c.createAt}}</q-item-label>
   </q-item-section>
   <q-item-section @click="show_detail(c.id)">
@@ -201,7 +201,7 @@ template:`
     </div>
     <div class="col self-center no-wrap text-h6">  
       {{detail.name}}&nbsp;{{detail.post}}
-      <q-avatar size="1em"><img :src="tags.sexImg[detail.sex]"></q-avatar>
+      <q-icon :name="tags.sexImg[detail.sex]" :color="detail.sex==0?'primary':'red'" size="1.5em"></q-icon>
     </div>
     <div class="col self-center"> 
       <q-rating v-model="detail.level" disable max="5" size="sm" color="yellow" color-selected="orange"></q-rating>

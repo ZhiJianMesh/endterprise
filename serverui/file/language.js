@@ -37,7 +37,7 @@ cn:{
   company:"公司信息",
   aide:"调测",
 
-  locServices:"已安装服务",
+  locServices:"已安装应用",
   backupNow:"立即备份",
   configs:"配置",
   refresh:"刷新",

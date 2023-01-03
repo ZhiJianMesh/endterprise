@@ -1,7 +1,7 @@
-//引用组件
-import AddressInput from "/assets/v3/components/addr_input.js"
+//引用组件，address_input,address_select在安卓7上无法使用，所以使用address_dialog
+import AddressDialog from "/address/addr_dialog.js"
 export default {
-components: {AddressInput},
+components: {AddressDialog},
 data() {return {
     addr:{province:'',city:'',county:''},
     registerDlg:false,
@@ -41,7 +41,7 @@ confirm(){
         }
     });
     Server.register(this.creditCode,this.pwd,this.name,
-        '86',this.addr.province,this.addr.city,'',jsCbId);
+        '86',this.addr.province,this.addr.city,this.addr.county,'',jsCbId);
 },
 chkCredit(code) {
     return JStr.chkCreditCode(code);
@@ -61,7 +61,7 @@ template: `
         class="cursor-pointer" @click="pwdVisible = !pwdVisible"></q-icon>
     </template>
    </q-input>
-   <AddressInput :label="tags.address" v-model="addr"></AddressInput>
+   <AddressDialog :label="tags.address" v-model="addr"></AddressDialog>
   </q-card-section>
   <q-card-section class="q-pt-none" style="color:red">{{message}}</q-card-section>
   <q-card-actions align="right" class="q-pr-md">

@@ -130,8 +130,8 @@ template: `
   <q-toolbar-title>{{tags.market}}</q-toolbar-title>
  </q-toolbar>
  <q-tabs v-model="tab" dense indicator-color="yellow">
-  <q-tab name="market" :label="tags.market" icon="archive"></q-tab>
-  <q-tab name="local" :label="tags.locServices" icon="apps"></q-tab>
+  <q-tab name="market" :label="tags.market" icon="apps"></q-tab>
+  <q-tab name="local" :label="tags.locServices" icon="svguse:/assets/imgs/meshicons.svg#services"></q-tab>
  </q-tabs>
 </q-header>
 <q-page-container>

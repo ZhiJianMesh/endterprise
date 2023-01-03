@@ -352,7 +352,7 @@ const Server = {
     setLogLevel(level) {},
     logLevel() {return 'DEBUG'},
 	serviceStarted() {return true},
-    register(creditCode,pwd,name,country,province,city,info,jsCbId){
+    register(creditCode,pwd,name,country,province,city,county,info,jsCbId){
         __default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
     },
 	unRegister(creditCode,pwd,jsCbId){

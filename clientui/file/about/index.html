@@ -10,11 +10,11 @@
 </head>
 <body><div id="app" class="q-pa-md" v-cloak>
     <q-carousel swipeable animated padding navigation
-                v-model="cur_title" transition-prev="scale" transition-next="scale"
-                control-color="white" height="55vh" autoplay="3000"
-                class="bg-primary text-white shadow-1 rounded-borders">
+        v-model="cur_title" transition-prev="scale" transition-next="scale"
+        control-color="white" height="55vh" autoplay="3000"
+        class="bg-primary text-white shadow-1 rounded-borders">
         <q-carousel-slide name="pg1" class="column no-wrap flex-center">
-			<q-avatar square size="80px"><img src="./img/logo.png"></q-avatar>
+			<q-icon name="svguse:img/logos.svg#white" size="6em"></q-icon>
             <div class="q-pa-md text-h6">
                 <div>{{tags.welcome}}</div>
             </div>
@@ -59,7 +59,7 @@
         </q-carousel-slide>
     </q-carousel>
     <div style="height:40vh" class="text-center q-pt-lg">
-        <img src="img/appicon.png" style="width:20vh">
+        <q-icon name="svguse:img/logos.svg#darkRed" size="20vh"></q-icon>
         <div class="text-h5 q-pt-md">{{tags.company}}</div>
         <div class="text-caption">©2020-{{curYear}} {{tags.copyright}}</div>
     </div>
