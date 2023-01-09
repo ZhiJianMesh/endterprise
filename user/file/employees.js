@@ -57,7 +57,7 @@ proxy_req(req){
 query_sub_eles(){//查询子群组及成员
     var url=URL_LIST+"?gid="+this.gid;
     this.proxy_req({method:"GET",url:url}).then(function(resp){
-        if(resp.code!=0) {
+        if(resp.code!=RetCode.OK) {
             return;
         }
         var dt=new Date();

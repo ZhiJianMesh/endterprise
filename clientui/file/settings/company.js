@@ -35,7 +35,7 @@ save() {
         this.companyName=Http.companyName();
         this.saveAt=0;
         this.changed=false;
-        this.$refs.alertDlg.show(this.tags.companySaved);
+        this.$refs.alertDlg.show(this.tags.successToConnect);
     });
 
     Http.saveCid(this.cid, false, this.serverAddr, this.accessCode, jsCbId);
@@ -67,7 +67,7 @@ template: `
     </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-md">  
+    <q-page class="q-pa-md">
 <q-list>
   <q-item>
    <q-item-section side>{{tags.companyId}}</q-item-section>
@@ -94,10 +94,10 @@ template: `
     <q-input v-model="serverAddr" dense label-slot @update:model-value="changed=true"></q-input>
    </q-item-section>
   </q-item>
-  <q-item v-show="changed">
-     <q-item-section><q-btn :label="tags.save" @click="save" color="primary" :loading="saveAt>0" rounded></q-btn></q-item-section>
-  </q-item>  
 </q-list>
+<div align="center" v-show="changed">
+ <q-btn :label="tags.connect" @click="save" color="primary" :loading="saveAt>0" rounded></q-btn>
+</div>
     </q-page>
   </q-page-container>
 </q-layout>

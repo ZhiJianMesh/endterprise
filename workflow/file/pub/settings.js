@@ -177,8 +177,8 @@ template:`
  <q-item-section avatar><q-icon name="cancel" color="green" @click="remove_step(i)"><q-icon></q-item-section>
 </q-item>
 </q-list>
-<div align="center">
-   <q-btn color="primary" icon="add_circle" :label="tags.save" @click="save_flow" :disable="!changed"></q-btn>
+<div align="center" v-show="changed">
+   <q-btn color="primary" icon="save" :label="tags.save" @click="save_flow" :disable="!changed"></q-btn>
 </div>
     </q-page>
   </q-page-container>

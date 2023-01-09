@@ -17,8 +17,8 @@ fetch_apps() {
         return;
     }
     
-    var url="/list";
-    request({method:"GET", url:url}, "boot").then(resp=>{
+    var opts={method:"GET", url:"/list",headers:{access_token:Http.accessCode()},private:false};
+    request(opts, "boot").then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;

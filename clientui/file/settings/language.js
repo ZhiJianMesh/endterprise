@@ -13,7 +13,7 @@ cn:{
   ok:"确定",
   cancel:"取消",
   close:"关闭",
-  save:"保存",
+  connect:"连接",
   login:"登录",
   logout:"退出",
   email:"邮箱",
@@ -51,7 +51,7 @@ cn:{
   nickName:"昵称",
   failToCall:"调用失败",
   alert:"提示",
-  companySaved:"公司信息已保存，并且找到了合适的服务器",
+  successToConnect:"已成功连接服务器",
 
   logPath:"日志路径",
   
