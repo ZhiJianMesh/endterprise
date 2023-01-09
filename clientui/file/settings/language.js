@@ -21,6 +21,7 @@ cn:{
   invalidMobile:"请输入正确的手机号",
   companyId:"公司编号",
   companyName:"公司名称",
+  accessCode:"接入码",
   serverAddr:"服务端地址",
   inPubCloud:"公网访问",
   mobile:"手机号",

@@ -1,7 +1,10 @@
 const SERVICE_USER="user";
 const SERVICE_CONFIG="config";
-const COMPANY_ID="40";
+const COMPANY_ID="cid";
 const COMPANY_NAME="store_company_name";
+const COMPANY_SERVERADDR="serverAddr";
+const COMPANY_ACCESSCODE="accessCode";
+
 const RetCode={
 OK:0,
 DEPRECATED:1,
@@ -343,7 +346,7 @@ const Server = {
     backupKey(){return "test"},
     setBackupKey(k) {},
     companyName(){return storage_get(COMPANY_NAME,"至简网格")},
-    companyId(){return COMPANY_ID},
+    companyId(){return storage_get(COMPANY_ID,'0')},
 	companyInfo() {},
 	setCompanyInfo(name, country, province, city, info) {},
 	storeCompanyInfo() {},
@@ -361,12 +364,18 @@ const Server = {
 }
 
 const Http={
-    cid(){return COMPANY_ID},
+    cid(){return storage_get(COMPANY_ID,0)},
+    saveCid(cid, isPublic, addr, accessCode, jsCbId) {
+        storage_set(COMPANY_ID,cid);
+		storage_set(COMPANY_SERVERADDR,addr);
+		storage_set(COMPANY_ACCESSCODE,accessCode)
+    },
     serverAddr(){return location.host},
+    companyName(){return storage_get(COMPANY_NAME,'至简网格')},
+	accessCode(){return storage_get(COMPANY_ACCESSCODE,'')},
     authorized() {return storage_get(SERVICE_USER,'')!=''},
-    companyName(){return storage_get(COMPANY_NAME)},
     login(acc,pwd,jsCbId) {
-        var dta={account:acc,password:pwd,grant_type:'password',cid:COMPANY_ID};
+        var dta={account:acc,password:pwd,grant_type:'password',cid:this.cid()};
         sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, SERVICE_USER).then(function(resp) {
             if(resp.code==RetCode.OK) {
                 storage_set(SERVICE_USER, resp.data.access_token);
@@ -432,6 +441,14 @@ const App={
     isBuiltin(app) {return app=="market"||app=="settings"||app=="about"||app=="assets"},
 	getLogPath(){return "d:\\work\\code\\release"},
     build(){return {ver:"0.1.0",os:"android",brand:"njhx",language:"zh_CN",agent:"mc_android_0.1.0"}}
+}
+
+const OS={
+    scanCode(jsCbId) {
+        var info={act:"checkin",id:40,code:"ABCDFFGG",addr:"localhost:8523"};
+        var data={type:'QrCode',value:JSON.stringify(info)};
+        __default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:data})
+    }
 }
 
 const Logs = {

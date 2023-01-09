@@ -11,7 +11,6 @@ cn:{
   simple:"极简：一部旧手机即可安装我们的服务，一键升级、一键安装，一键启停，与使用普通手机应用一样管理你的服务。可多端访问，可远程办公。",
   aboutUs:"本组织专注于网络系统及相关产品开发与运用，提供软件产品开发与咨询服务。",
   address:"地址：江苏省南京市",
-  phone:"电话：18951740963",
   email:"EMail：huixiangtech@sina.com",
   company:"ZhiJian.net.cn",
   copyright:" All Rights Reserved"

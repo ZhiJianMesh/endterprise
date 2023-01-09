@@ -4,8 +4,8 @@ data(){return {
     cid:'',
     inPublicCloud:false,
     companyName:'',
+    accessCode:'',
     saveAt:0,
-    selfSet:false,
     changed:false,
     serverAddr:''
 }},
@@ -13,6 +13,7 @@ created() {
     this.cid=Http.cid();
     this.companyName=Http.companyName();
     this.serverAddr=Http.serverAddr();
+    this.accessCode=Http.accessCode();
     this.changed=!this.cid||!this.serverAddr;
 },
 methods:{
@@ -37,26 +38,22 @@ save() {
         this.$refs.alertDlg.show(this.tags.companySaved);
     });
 
-    if(this.inPublicCloud) {//在公网环境
-        Http.saveCid(this.cid, true, "", jsCbId);
-    } else if(this.selfSet) { //自定义
-        Http.saveCid(this.cid, false, this.serverAddr, jsCbId);
-    } else {
-        Http.saveCid(this.cid, false, "", jsCbId);
-    }
+    Http.saveCid(this.cid, false, this.serverAddr, this.accessCode, jsCbId);
 },
-enableSelfSet() {
-    if(!this.inPublicCloud) {
-        this.selfSet=!this.selfSet;
-    } else {
-        this.selfSet=false;
-    }
-},
-setPublic() {
-    if(this.inPublicCloud) {
-        this.selfSet=false;
-    }
-    this.changed=true;
+scan() {
+    var jsCbId=__regsiterCallback(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        var data = JSON.parse(resp.data.value);
+        this.serverAddr=data.addr;
+        this.accessCode=data.code;
+        this.cid=data.id;
+        this.inPublicCloud=false;
+        this.changed=true;
+    });
+    OS.scanCode(jsCbId);
 }
 },
 
@@ -66,34 +63,36 @@ template: `
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.home.company}}</q-toolbar-title>
+      <q-btn round dense flat icon="svguse:/assets/imgs/meshicons.svg#scan" @click="scan" color="primary"></q-btn>
     </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">  
-<q-list class="q-pa-md">
+<q-list>
   <q-item>
-   <q-item-section>{{tags.companyId}}</q-item-section>
+   <q-item-section side>{{tags.companyId}}</q-item-section>
    <q-item-section><q-input v-model="cid" dense @update:model-value="changed=true"></q-input></q-item-section>
   </q-item>
-  <q-item>
-   <q-item-section>{{tags.inPubCloud}}</q-item-section>
-   <q-item-section>
-    <q-checkbox v-model="inPublicCloud" @update:model-value="setPublic"></q-checkbox>
-   </q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.serverAddr}}</q-item-section>
-   <q-item-section>
-    <q-input v-model="serverAddr" dense :disable="!selfSet" label-slot @update:model-value="changed=true">
-     <template v-slot:after>
-      <q-btn round dense flat icon="mode_edit" @click="enableSelfSet" :color="selfSet?'primary':'grey'"></q-btn>
-     </template>
-    </q-input>
-   </q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.companyName}}</q-item-section>
+  <q-item v-show="cid>0">
+   <q-item-section side>{{tags.companyName}}</q-item-section>
    <q-item-section>{{companyName}}</q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section side>{{tags.accessCode}}</q-item-section>
+   <q-item-section><q-input v-model="accessCode" dense @update:model-value="changed=true"></q-input></q-item-section>
+  </q-item>
+  <q-separator spaced></q-separator>
+  <q-item>
+   <q-item-section side>{{tags.inPubCloud}}</q-item-section>
+   <q-item-section>
+    <q-checkbox v-model="inPublicCloud" @update:model-value="changed=true"></q-checkbox>
+   </q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section side>{{tags.serverAddr}}</q-item-section>
+   <q-item-section>
+    <q-input v-model="serverAddr" dense label-slot @update:model-value="changed=true"></q-input>
+   </q-item-section>
   </q-item>
   <q-item v-show="changed">
      <q-item-section><q-btn :label="tags.save" @click="save" color="primary" :loading="saveAt>0" rounded></q-btn></q-item-section>

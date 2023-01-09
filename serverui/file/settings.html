@@ -186,7 +186,12 @@ register(){
     });
 },
 showQrCode() {
-   var txt = JSON.stringify({act:'checkin',id:this.cid,code:this.dnsAccessCode,addr:Server.address()});
+   var txt = JSON.stringify({
+       act:'checkin',
+       id:this.cid,
+       code:this.dnsAccessCode,
+       addr:Server.address()
+   });
    new QRCode(this.$refs.qrCodeArea, {
 		text: txt, 
 		width: document.documentElement.clientWidth * 0.6,

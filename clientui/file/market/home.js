@@ -17,8 +17,8 @@ fetch_apps() {
         return;
     }
     
-    var url="/list?cid="+Http.cid();
-    request({method:"GET", url:url}, "httpdns").then(resp=>{
+    var url="/list";
+    request({method:"GET", url:url}, "boot").then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;

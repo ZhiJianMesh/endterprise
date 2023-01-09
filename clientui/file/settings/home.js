@@ -97,6 +97,15 @@ template: `
  <q-page-container>
     <q-page class="q-pa-md">
  <q-list class="q-pa-md">
+   <q-item clickable v-ripple @click="jump('company')">
+    <q-item-section avatar>
+      <q-icon color="primary" name="business"></q-icon>
+    </q-item-section>
+    <q-item-section>{{tags.home.company}}</q-item-section>
+    <q-item-section avatar>
+      <q-icon name="chevron_right" class="text-primary"></q-icon>
+    </q-item-section>
+  </q-item>
   <q-item clickable v-ripple @click="jump('personal')" v-show="authorized">
     <q-item-section avatar>
       <q-icon color="primary" name="person_pin_circle"></q-icon>
@@ -106,16 +115,6 @@ template: `
       <q-icon name="chevron_right" class="text-primary"></q-icon>
     </q-item-section>
   </q-item>
-  <q-item clickable v-ripple @click="jump('company')">
-    <q-item-section avatar>
-      <q-icon color="primary" name="business"></q-icon>
-    </q-item-section>
-    <q-item-section>{{tags.home.company}}</q-item-section>
-    <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
-    </q-item-section>
-  </q-item>
-
   <q-item clickable v-ripple @click="jump('faultreport')">
     <q-item-section avatar>
       <q-icon color="brown" name="sync_problem"></q-icon>
