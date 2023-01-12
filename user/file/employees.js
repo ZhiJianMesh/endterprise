@@ -56,7 +56,7 @@ proxy_req(req){
 },
 query_sub_eles(){//查询子群组及成员
     var url=URL_LIST+"?gid="+this.gid;
-    this.proxy_req({method:"GET",url:url}).then(function(resp){
+    this.proxy_req({method:"GET",url:url}).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -78,12 +78,12 @@ query_sub_eles(){//查询子群组及成员
         } else {
             this.grps=[];
         }
-    }.bind(this))  
+    })  
 },
 add_member() {
     var dta={gid:this.gid,account:this.newEmployee.account,
         role:this.newEmployee.role, password:this.newEmployee.password};
-    this.proxy_req({method:"POST",url:URL_ADDMBR,data:dta}).then(function(resp){
+    this.proxy_req({method:"POST",url:URL_ADDMBR,data:dta}).then(resp =>{
         if(resp.code!=0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -91,12 +91,12 @@ add_member() {
         this.query_sub_eles();
         this.visible.employee=false;
         this.newEmployee={account:'',role:'',password:''};
-    }.bind(this));
+    });
 },
 
 create_grp() {
     var dta={fid:this.gid,name:this.newGrp.name,descr:this.newGrp.descr};
-    this.proxy_req({method:"POST",url:URL_CREATEGRP,data:dta}).then(function(resp){
+    this.proxy_req({method:"POST",url:URL_CREATEGRP,data:dta}).then(resp => {
         if(resp.code!=0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -104,27 +104,27 @@ create_grp() {
         this.query_sub_eles();
         this.visible.grp=false;
         this.newGrp={name:'',descr:''};
-    }.bind(this));
+    });
 },
 rmv_grp(id) {
     var dta={id:id};
-    this.proxy_req({method:"POST",url:URL_REMOVEGRP,data:dta}).then(function(resp){
+    this.proxy_req({method:"POST",url:URL_REMOVEGRP,data:dta}).then(resp => {
         if(resp.code!=0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.query_sub_eles();
-    }.bind(this));  
+    });  
 },
 rmv_member(id) {
     var dta={gid:this.gid,uid:id};
-    this.proxy_req({method:"POST",url:URL_REMOVEMBR,data:dta}).then(function(resp){
+    this.proxy_req({method:"POST",url:URL_REMOVEMBR,data:dta}).then(resp => {
         if(resp.code!=0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.query_sub_eles();
-    }.bind(this));
+    });
 },
 open_grp(id,name){
     if(id==this.gid){

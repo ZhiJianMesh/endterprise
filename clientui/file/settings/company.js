@@ -27,13 +27,13 @@ save() {
     }
     this.saveAt=cur;
     var jsCbId=__regsiterCallback(resp => {
+        this.saveAt=0;
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
         this.serverAddr=Http.serverAddr();
         this.companyName=Http.companyName();
-        this.saveAt=0;
         this.changed=false;
         this.$refs.alertDlg.show(this.tags.successToConnect);
     });

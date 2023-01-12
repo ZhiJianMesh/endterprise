@@ -16,8 +16,12 @@ data() {return {
     imgWidth:'45vw',
     isNormal:true,
 	isInstalled:true,
-    action: ''
+    action: '',
+    install:{percent:0,info:"",dlg:false}
 }},
+mounted() {
+  window.installProgress = this.progress;//用于显示进度
+},
 created() {
     if(document.documentElement.clientWidth>document.documentElement.clientHeight) {
         this.imgWidth="30vw";
@@ -45,7 +49,7 @@ created() {
     }.bind(this));
 
     this.app = this.service.list[this.name];
-	this.refreshAction();
+	this.refreshUI();
 },
 methods: {
 scroll(event) {
@@ -60,7 +64,10 @@ scroll(event) {
     }
 },
 appAction() {
-    var jsCbId=__regsiterCallback(this.refreshAction)
+    this.install.dlg=true;
+    this.install.percent=0;
+    this.install.info="";
+    var jsCbId=__regsiterCallback(this.refreshUI)
     if(this.action==this.tags.install) {
 		App.install(this.name, jsCbId);
     } else {
@@ -72,17 +79,26 @@ unInstall() {
 	if(!this.isNormal) {
 		return;
 	}
-    var jsCbId=__regsiterCallback(this.refreshAction)
+    var jsCbId=__regsiterCallback(this.refreshUI)
 	App.unInstall(this.name, jsCbId);
 	this.action=this.tags.waitting;
 },
-refreshAction(r) {
+progress(inc,info){
+    if(this.install.percent+inc>100) {
+ 		this.install.percent=100;
+ 	} else {
+ 		this.install.percent+=inc;
+ 	}
+    this.install.info=info;
+},
+refreshUI(r) {
 	if(r && r.code != RetCode.OK) {
         this.$refs.errDlg.showErr(r.code, r.info);
     }
+    this.install={dlg:false,percent:0,info:""};
 	this.isInstalled=App.isInstalled(this.name);
 	if (this.isInstalled){
-		request({method:"GET",url:"/api/client_info"}, this.name).then(resp => {
+		request({method:"GET",url:"/api/client_info",private:false}, this.name).then(resp => {
 			if (resp.code!=RetCode.OK) {
 				Console.warn("Fail to get client info " + resp);
 				return;
@@ -149,6 +165,13 @@ template: `
     </q-page>
   </q-page-container>
 </q-layout>
+
+<q-dialog v-model="install.dlg" persistent>
+  <q-card style="min-width:62vw" class="q-pa-lg">
+     <q-linear-progress :value="install.percent/100" color="primary" size="xl"></q-linear-progress>
+     <div>{{install.info}}</div>
+  </q-card>
+</q-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 `
 }

@@ -69,7 +69,7 @@ rmv_member(i) {
             return;
         }
         this.employees.splice(i,1);
-    });  
+    });
 }
 },
 
