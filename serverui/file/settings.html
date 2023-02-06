@@ -8,203 +8,59 @@
   <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
   <title>ServerSettings</title>
 </head>
-<body>
-<div id="app">
-<q-layout view="lHh lpr lFf" container style="height:100vh" v-cloak>
-<q-header elevated>
-   <q-toolbar>
-      <q-avatar square><q-icon name="settings"></q-icon></q-avatar>
-      <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
-   </q-toolbar>
-   <q-tabs v-model="tab" dense indicator-color="yellow">
-      <q-tab name="company" :label="tags.company" icon="verified_user"></q-tab>
-      <q-tab name="backup" :label="tags.backup" icon="list"></q-tab>
-      <q-tab name="aide" :label="tags.aide" icon="bug_report"></q-tab>
-   </q-tabs>
-</q-header>
-<q-page-container>
- <q-page class="text-center">
-   <q-tab-panels v-model="tab" animated swipeable transition-prev="jump-up" transition-next="jump-up">
-     <q-tab-panel name="company" class="text-left">
-       <q-list>
-         <q-item>
-           <q-item-section>{{tags.creditCode}}</q-item-section>
-           <q-item-section>{{creditCode}}</q-item-section>
-         </q-item>
-         <q-item>
-           <q-item-section>{{tags.companyName}}</q-item-section>
-           <q-item-section>{{companyName}}</q-item-section>
-         </q-item>
-         <q-item>
-           <q-item-section>{{tags.address}}</q-item-section>
-           <q-item-section>{{location}}</q-item-section>
-         </q-item>
-         <q-item>
-           <q-item-section>{{tags.companyId}}</q-item-section>
-           <q-item-section>{{cid}}</q-item-section>
-         </q-item>
-         <q-item>
-           <q-item-section>{{tags.dnsAccessCode}}</q-item-section>
-           <q-item-section>
-		    <div>
-			  {{dnsAccessCode}}
-			  <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessCode"></q-icon>
-			</div>
-		   </q-item-section>
-         </q-item>
-         <q-item>
-           <q-item-section>
-		    <q-icon name="svguse:/assets/imgs/meshicons.svg#qrcode" @click="dispQrCode=true" size="2.5em" color="primary"></q-icon>
-		   </q-item-section>
-           <q-item-section>
-            <q-btn icon="beenhere" :label="cid?tags.reRegister:tags.register" @click="register" color="primary"></q-btn>
-           </q-item-section>
-         </q-item>
-       </q-list>
-     </q-tab-panel>
-     <q-tab-panel name="backup" class="text-left">
-       <q-list>
-         <q-item>
-          <q-item-section>{{tags.backupKey}}</q-item-section>
-          <q-item-section>
-            <q-input v-model="backupKey" filled bg-color="white">
-             <template v-slot:append>
-              <q-icon name="save" @click="setBackupKey" color="primary"></q-icon>
-             </template>
-            </q-input>
-          </q-item-section>
-         </q-item>
-         <q-item>
-          <q-item-section>{{tags.backupTime}}</q-item-section>
-          <q-item-section>{{backupTime}}</q-item-section>
-         </q-item>
-         <q-item>
-           <q-item-section><q-btn icon="backup" :label="tags.cloudBackup" @click="backup" color="primary"></q-btn></q-item-section>
-           <q-item-section><q-btn icon="cloud_download" :label="tags.cloudRestore" @click="backup" color="primary"></q-btn></q-item-section>
-           <q-item-section><q-btn icon="folder_special" :label="tags.localBackup" @click="backup" color="primary"></q-btn></q-item-section>
-         </q-item>
-       </q-list>
-      </q-tab-panel>
-      <q-tab-panel name="aide" class="text-left">
-        <q-list>
-          <q-item>
-           <q-item-section>{{tags.token}}</q-item-section>
-           <q-item-section>
-		    <div>
-			  {{token}}
-			  <q-icon name="refresh" class="q-ml-md" color="primary" @click="refreshToken"></q-icon>
-			</div>
-           </q-item-section>
-          </q-item>
-          <q-item>
-           <q-item-section>{{tags.logLevel}}</q-item-section>
-           <q-item-section>
-            <q-select v-model="logLevel" :options="logLevels" @update:model-value="setLogLevel"></q-select>
-           </q-item-section>
-          </q-item>
-        </q-list>
-      </q-tab-panel>
-   </q-tab-panels>
- </q-page>
-</q-page-container>
-</q-layout>
-<q-dialog v-model="dispQrCode" @show="showQrCode">
-  <q-card style="min-width:60vw" bordered><q-card-section>
-   <div ref="qrCodeArea" style="width:60vw; height:60vw;"></div>
-  </q-card-section></q-card>
-</q-dialog>
-<register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
-</div>
-</body>
+<body><div id="app"><router-view></router-view></div></body>
 <script src="/assets/v3/vue.js"></script>
+<script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
 <script src="/assets/v3/qrcode.js"></script>
 <script type="module">
 import Language from "./language.js"
-import RegisterDlg from "./register.js"
+import RegisterDlg from "./settings/register.js"
+import Home from "./settings/home.js"
+import Debug from "./settings/debug.js"
+import Advanced from "./settings/advanced.js"
+import AlertDialog from "/assets/v3/components/alert_dialog.js"
 
 const l=(typeof os)=='undefined' ? navigator.language : os.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //-------------------------------------------app主体定义
+const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
+routes:[
+ {path:'/home', component:Home}, //android 7中不支持在此import
+ {path:'/debug', component:Debug},
+ {path:'/advanced', component:Advanced}
+]});
+//-------------------------------------------service定义
+const service={
+ name:"settings",N_PAGE:10,N_SMPG:5,
+ go_back() { //返回，在页面中通过service.go_back调用
+    router.back();
+ }
+};
+//-------------------------------------------app主体定义
 const app = Vue.createApp({
-data(){return{
-    tags:tags,
-    tab:"company",
-    backupKey:"",
-    backupTime:"",
-    creditCode:"",
-    companyName:"",
-    location:"",
-    cid:"",
-    dnsAccessCode:"",
-    token:'',
-	dispQrCode:false,
-    logLevel:'DEBUG',
-    logLevels:['DEBUG','INFO','WARN','ERROR']
-}},
+provide:{tags:tags, service:service},
 created(){
-    this.init();
+    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
 },
-mounted() {
-    if(this.cid&&this.cid>0){
-        return;
+setup() {
+    //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用
+    window.sys_go_back = () => {
+        if(this.$router.currentRoute.path==="/home") {
+            return false;
+        }
+        this.$router.back();
+        return true;
     }
-    this.$refs.regDlg.show(resp => {
-        this.init();
-    });
-},
-methods:{
-init() {
-    this.backupTime=new Date(Server.backupTime()).toLocaleString();
-    this.backupKey=Server.backupKey();
-    this.creditCode=Server.creditCode();
-    this.companyName=Server.companyName();
-    this.cid=Server.companyId();
-    this.location=Server.location();
-    this.logLevel=Server.logLevel();
-    this.dnsAccessCode=Server.getDnsAccessCode();
-},
-backup() {
-    Server.backup()
-},
-setBackupKey() {
-    Server.setBackupKey(this.backupKey);
-},
-setLogLevel() {
-    Server.setLogLevel(this.logLevel);
-},
-refreshToken() {
-    this.token = Server.refreshConsoleToken();
-},
-resetAccessCode() {
-    this.dnsAccessCode = Server.resetDnsAccessCode();
-},
-register(){
-    this.$refs.regDlg.show(()=>{
-        this.init()
-    });
-},
-showQrCode() {
-   var txt = JSON.stringify({
-       act:'checkin',
-       id:this.cid,
-       code:this.dnsAccessCode,
-       addr:Server.address()
-   });
-   new QRCode(this.$refs.qrCodeArea, {
-		text: txt, 
-		width: document.documentElement.clientWidth * 0.6,
-		height: document.documentElement.clientWidth * 0.6,
-		colorDark: '#000000',
-		colorLight: '#ffffff',
-		correctLevel: QRCode.CorrectLevel.H
-	});
-}
 }
 });
 app.use(Quasar);
+app.use(router);
+//--------------------------注册全局组件
+app.component('component-alert-dialog', AlertDialog);
 app.component('register-dialog', RegisterDlg);
+
 app.mount('#app');
 </script>
 </html>

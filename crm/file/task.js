@@ -206,8 +206,8 @@ template:`
      <div v-if="o.result=='I' && o.step==base.step">
        <q-input v-model="opinion" :label="tags.flow.opinion" outlined dense maxlength=100></q-input>
        <div v-if="o.type!='S'">
-        <component-user-selecter :label="tags.signers" :multi="true"
-         v-model="nextSigners" v-if="s.step!=flow.maxStep"></component-user-selecter>
+        <component-user-selector :label="tags.signers" :multi="true"
+         v-model="nextSigners" v-if="s.step!=flow.maxStep"></component-user-selector>
         <div class="row justify-end q-mt-lg">
          <q-btn @click="confirm" color="primary" :disable="!allProced"
           :label="s.step!=flow.maxStep?tags.flow.nextStep:tags.flow.finish" dense></q-btn>

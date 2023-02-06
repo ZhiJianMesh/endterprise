@@ -1,5 +1,5 @@
 //引用组件，address_input,address_select在安卓7上无法使用，所以使用address_dialog
-import AddressDialog from "/address/addr_dialog.js"
+import AddressDialog from "/assets/v3/components/addr_dialog.js"
 export default {
 components: {AddressDialog},
 data() {return {

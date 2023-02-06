@@ -103,7 +103,7 @@ query_shares() {
         var t1,t2;
         var shares=resp.data.list.map(function(s) { //account,update_time,endT
             dt.setTime(s.endT*60000);
-            t1=dt.getFullYear()-year>100?'永久':dt.toLocaleDateString();
+            t1=dt.getFullYear()-year>100?this.tags.forever:dt.toLocaleDateString();
             dt.setTime(s.update_time);
             t2=dt.toLocaleDateString();
             return {account:s.account,endT:t1,createAt:t2,power:this.tags.share[s.power]};
@@ -504,7 +504,7 @@ template:`
        <component-date-input :label="tags.share.endT" v-model="newShare.endT" :min="curDate"></component-date-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selecter :label="tags.share.to" v-model="newShare.to"></component-user-selecter>
+        <component-user-selector :label="tags.share.to" v-model="newShare.to"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>

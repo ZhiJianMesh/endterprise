@@ -105,6 +105,7 @@ cn:{
   noSkuDef:"无商品定义，不可以创建订单",
   unHandled:"未处理",
   onlyMine:"只看我的",
+  forever:"永久",
 
   segTypes:{'s':'文字','n':"数值",'d':'日期','b':'是否'},
   segName:"显示名称",

@@ -57,7 +57,7 @@
         "type" : "call",
         "service": "user",
         "method":"POST",
-        "url":"/userid",
+        "url":"/user/userid",
         "tokenSign":"OAUTH",
         "parameters":"{\"accounts\":#ACCLIST#}"
     }

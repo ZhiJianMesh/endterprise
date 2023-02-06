@@ -4,7 +4,7 @@ data() {return {
     employees:[],
     roles:{},
     roleOpts:[],
-    newEmployee:{account:'',role:'',password:'',gid:0},
+    newEmployee:{account:'',role:'',password:''},
     newEmployeeDlg:false
 }},
 created(){
@@ -22,7 +22,8 @@ created(){
         this.roleOpts=opts;
     });
     
-    this.proxy_req({method:"GET",url:"/grp/listAll?gid=0"}).then(resp => {
+    var opts2={method:"GET",url:"/api/employee/list"};
+    request(opts2, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             if(resp.code != RetCode.NOT_EXISTS) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -33,15 +34,6 @@ created(){
     })  
 },
 methods:{
-proxy_req(req){
-    var dta={'_service':SERVICE_USER,'_method':req.method,'_url':req.url};
-    if(req.method=='POST'&&req.data){
-        for(var k in req.data){
-            dta[k]=req.data[k];
-        }
-    }
-    return request({method:"POST",url:"/api/proxy/employee",data:dta}, this.service.name);
-},
 add_member() {
     for(var e in this.employees) {
         if(this.employees[e].account==this.newEmployee.account){
@@ -50,9 +42,9 @@ add_member() {
         }
     }
     
-    var opts={method:"POST",url:"/grp/createMember",data:this.newEmployee};
-    this.proxy_req(opts).then(resp =>{
-        if(resp.code != RetCode.OK) {
+    var opts={method:"POST",url:"/api/employee/add",data:this.newEmployee};
+    request(opts, this.service.name).then(resp =>{
+        if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
@@ -62,14 +54,14 @@ add_member() {
     });
 },
 rmv_member(i) {
-    var opts={method:"POST",url:"/grp/removeMember",data:{gid:0,uid:this.employees[i].uid}};
-    this.proxy_req(opts).then(resp=>{
-        if(resp.code != RetCode.OK) {
+    var opts={method:"POST",url:"/api/employee/remove",data:{uid:this.employees[i].uid}};
+    request(opts, this.service.name).then(resp=>{
+        if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.employees.splice(i,1);
-    });
+    });  
 }
 },
 
@@ -98,7 +90,7 @@ template:`
 </q-list>
 <div align="center">
   <q-btn color="primary" icon="person_add" :label="tags.add"
-   @click="newEmployee={account:'',role:'',password:'',gid:0};newEmployeeDlg=true"></q-btn>
+   @click="newEmployee={account:'',role:'',password:''};newEmployeeDlg=true"></q-btn>
 </div> 
     </q-page>
   </q-page-container>

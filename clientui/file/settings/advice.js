@@ -12,8 +12,8 @@ created() {
     this.id=new Date().toLocaleDateString();
     var list = JSON.parse(App.list());
     var services=[];
-    for(var i in list) {
-        services.push({label:list[i].displayName,value:list[i].name});
+    for(var l of list) {
+        services.push({label:l.displayName,value:l.name});
     }
     this.report_service=list[0].name;
     this.services=services;
@@ -35,7 +35,8 @@ template: `
  <q-list class="q-pa-md">
   <q-item>
    <q-item-section>
-    <q-select outlined v-model="report_service" :options="services" :label="tags.service"></q-select>
+    <q-select outlined v-model="report_service" :options="services"
+     :label="tags.service" emit-value map-options></q-select>
    </q-item-section>
   </q-item>
   <q-item>

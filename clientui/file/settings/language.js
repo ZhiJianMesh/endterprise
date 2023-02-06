@@ -14,6 +14,7 @@ cn:{
   cancel:"取消",
   close:"关闭",
   connect:"连接",
+  save:"保存",
   login:"登录",
   logout:"退出",
   email:"邮箱",
@@ -22,15 +23,14 @@ cn:{
   companyId:"公司编号",
   companyName:"公司名称",
   accessCode:"接入码",
-  serverAddr:"服务端地址",
-  inPubCloud:"公网访问",
+  serverAddr:"服务地址",
+  inPubCloud:"外网访问",
   mobile:"手机号",
   mobilePls:"请输入11位手机号码",
   emailPls:"请输入正确的邮箱",
   home:{
       personal:"账号信息",
       company:"公司信息",
-      faultreport:"故障上报",
       advice:"意见反馈",
       about:"关于"
   },
@@ -52,8 +52,9 @@ cn:{
   failToCall:"调用失败",
   alert:"提示",
   successToConnect:"已成功连接服务器",
-
-  logPath:"日志路径",
+  utCompany:"公司账号",
+  utPersonal:"个人账号",
+  register:"注册",
   
   errMsgs:{
     'unknown':"未知错误",

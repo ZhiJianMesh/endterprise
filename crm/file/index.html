@@ -17,7 +17,7 @@
 <script type="module">
 import Language from "./language.js"
 import DateInput from "/assets/v3/components/date_input.js"
-import UserSelector from "/user/user_selector.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 
@@ -45,7 +45,6 @@ routes:[
 {path:'/brief', component:()=>import('./brief.js')},
 {path:'/balance', component:()=>import('./balance.js')},
 {path:'/settings', component:()=>import('./settings.js')},
-{path:'/employees', component:()=>import('./employees.js')},
 {path:'/flowdef', component:()=>import('/workflow/pub/settings.js')}
 ]});
 
@@ -190,7 +189,7 @@ setup() {
 app.use(Quasar);
 app.use(router);
 //注册全局组件
-app.component('component-user-selecter', UserSelector);
+app.component('component-user-selector', UserSelector);
 app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
 app.component('component-date-input', DateInput);

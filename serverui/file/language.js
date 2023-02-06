@@ -12,8 +12,6 @@ cn:{
   home:"服务控制",
   settings:"设置",
   market:"应用市场",
-  backupKey:"备份密钥",
-  backupTime:"最近备份时间",
   failToCall:"调用失败",
   cidCantBe0:"公司ID不能为0，请在“设置-公司信息”中设置",
   
@@ -33,15 +31,36 @@ cn:{
   update:"更新",
   waitting:"...",
   
-  backup:"数据备份",
-  company:"公司信息",
-  aide:"调测",
+  advanced:"高级服务",
 
-  locServices:"已安装应用",
+  backup:"数据备份",
+  remoteAccess:"外网接入",
+  debug:"调测助手",
+  uploadLogs:"上传日志",
+  faultreport:"故障上报",
+  backupNow:"立即备份",  
+  accessToken:"访问令牌",
+  neverBackup:"尚无备份",
   backupNow:"立即备份",
+  restore:"恢复数据",
+  startup:"启动",
+  shutdown:'停止',
+  state:"状态",
+  backupKey:"备份密钥",
+  backupTime:"最近备份时间",
+  backupAt:"每日备份时间点",
+  notStart:"未启动",
+  running:"运行中",
+  remoteType:"类型",
+  remoteProxy:"代理",
+  remoteMyGw:"自有公网IP",
+  gwIp:"公网IP",
+  
+  locServices:"已安装应用",
+
   configs:"配置",
   refresh:"刷新",
-  token:"访问令牌",
+
   name:"名称",
   save:"保存",
   register:"注册",
@@ -53,6 +72,11 @@ cn:{
   hour:"时",
   minute:"分",
   logDownloadable:"日志可下载",
-  logLevel:"日志级别"
+  logLevel:"日志级别",
+  failToCall:"调用失败",
+  alert:"提示",
+  errMsgs:{
+    'unknown':"未知错误"
+  }
 }
 };

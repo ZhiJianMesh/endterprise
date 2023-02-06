@@ -1,0 +1,12 @@
+{
+"roles": {
+    "admin":{
+        "name":"超级管理员",
+        "rights":{
+            "user":"*",
+            "grp":"*",
+            "power":"*"
+        }
+    }
+}
+}

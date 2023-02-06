@@ -10,7 +10,7 @@ data(){return {
     oldPwd:'',
     newPwd:'',
     cfmPwd:'',
-    editBase:false,
+    changed:false,
     hidePwd:{o:true,n:true,c:true}
 }},
 created() {
@@ -19,7 +19,7 @@ created() {
 },
 methods:{
 get_userbase() {
-    request({method:"GET",url:"/api/getBaseInfo"}, SERVICE_USER).then(function(resp) {
+    request({method:"GET",url:"/api/getBaseInfo"}, SERVICE_USER).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -28,7 +28,7 @@ get_userbase() {
         this.nickName=resp.data.nickName;
         this.email=resp.data.email;
         this.mobile=resp.data.mobile;
-    }.bind(this));
+    });
 },
 changePwd() {
     if(this.oldPwd==''||this.newPwd==''||this.newPwd!=this.cfmPwd){
@@ -36,26 +36,23 @@ changePwd() {
         return;
     }
     var req={oldPassword:this.oldPwd,newPassword:this.newPwd,confirmPassword:this.cfmPwd};
-    request({method:"POST",url:"/api/changePassword",data:req}, SERVICE_USER).then(function(resp) {
+    request({method:"POST",url:"/api/changePassword",data:req}, SERVICE_USER).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
         this.chgPwdDlg=false
-    }.bind(this));
+    });
 },
-editBtnClk(){
-    if(!this.editBase) {
-        this.editBase=true;
-        return;
-    }
+saveChanges(){
     var req={nickName:this.nickName,mobile:this.mobile,email:this.email};
-    request({method:"POST",url:"/api/setBaseInfo",data:req}, SERVICE_USER).then(function(resp) {
+    request({method:"POST",url:"/api/setBaseInfo",data:req}, SERVICE_USER).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
+			return;
         }
-        this.editBase=false;
-    }.bind(this));
+        this.changed=false;
+    });
 }
 },
 
@@ -65,36 +62,39 @@ template: `
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.home.personal}} - {{account}}</q-toolbar-title>
-      <q-btn flat round :icon="editBase?'check_circle':'edit'" dense @click="editBtnClk"></q-btn>
     </q-toolbar>
  </q-header>
   <q-page-container>
    <q-page class="q-pa-md">
-<q-list class="q-pa-md">
- <q-item>
-  <q-item-section>{{tags.nickName}}</q-item-section>
-  <q-item-section v-show="!editBase">{{nickName}}</q-item-section>
-  <q-item-section v-show="editBase"><q-input v-model="nickName"></q-input></q-item-section>
- </q-item>
- <q-item>
-  <q-item-section>{{tags.email}}</q-item-section>
-  <q-item-section v-show="!editBase">{{email}}</q-item-section>
-  <q-item-section v-show="editBase"><q-input v-model="email"
-  :rules="[v=>/.+@.+/.test(v) || tags.invalidEmail]"></q-input></q-item-section>
- </q-item>
- <q-item>
-  <q-item-section>{{tags.mobile}}</q-item-section>
-  <q-item-section v-show="!editBase">{{mobile}}</q-item-section>
-  <q-item-section v-show="editBase"><q-input v-model="mobile" maxlength=11
-  :rules="[v=>/1[0-9]{10}/.test(v) || tags.invalidMobile]"></q-input></q-item-section>
- </q-item>
- <q-item clickable v-ripple @click="chgPwdDlg=true">
-  <q-item-section>{{tags.chgPwd}}</q-item-section>
-  <q-item-section avatar>
-    <q-icon name="chevron_right" class="text-primary"></q-icon>
-  </q-item-section>
- </q-item>
-</q-list>
+<q-markup-table bordered="false" flat>
+ <tr>
+  <td>{{tags.nickName}}</td>
+  <td>
+   <q-input v-model="nickName" dense @update:model-value="changed=true"></q-input>
+  </td>
+ </tr>
+ <tr>
+  <td>{{tags.email}}</td>
+  <td>
+    <q-input v-model="email" :rules="[v=>/.+@.+/.test(v) || tags.invalidEmail]" dense
+    @update:model-value="changed=true"></q-input>
+  </td>
+ </tr>
+ <tr>
+  <td>{{tags.mobile}}</td>
+  <td>
+    <q-input v-model="mobile" maxlength=11 :rules="[v=>/1[0-9]{10}/.test(v) || tags.invalidMobile]" dense
+    @update:model-value="changed=true"></q-input>
+  </td>
+ </tr>
+ <tr clickable v-ripple @click="chgPwdDlg=true">
+  <td>{{tags.chgPwd}}</td>
+  <td><q-icon name="chevron_right" class="text-primary"></q-icon></td>
+ </tr>
+</q-markup-table>
+<div align="center" v-show="changed">
+  <q-btn icon="save" rounded @click="saveChanges" color="primary" :label="tags.save"></q-btn>
+</div>
     </q-page>
   </q-page-container>
 </q-layout>

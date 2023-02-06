@@ -38,7 +38,7 @@ refresh() {
         this.myList.s.weekInc=resp.data.service;
     }.bind(this));
 
-    var url3="/grp/getrole?service="+this.service.name;
+    var url3="/power/getrole?service="+this.service.name;
     request({method:"GET",url:url3}, SERVICE_USER).then(function(resp){
         if(resp.code!=RetCode.OK) {
             Console.warn("request "+url3+" failed:" + resp.code + ",info:" + resp.info);
@@ -64,10 +64,6 @@ template:`
         <q-item clickable @click.stop="service.jumpTo('/settings')">
           <q-item-section avatar><q-icon name="settings"></q-icon></q-item-section>
           <q-item-section>{{tags.home.settings}}</q-item-section>
-        </q-item>
-        <q-item clickable @click="service.jumpTo('/employees?service=crm&proxy=%2Fapi%2Fproxy%2Femployee')">
-          <q-item-section avatar><q-icon name="people"></q-icon></q-item-section>
-          <q-item-section>{{tags.home.employee}}</q-item-section>
         </q-item>
         <q-item clickable @click="flowDef">
           <q-item-section avatar><q-icon name="playlist_add_check"></q-icon></q-item-section>

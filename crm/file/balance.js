@@ -26,7 +26,7 @@ created(){
 mounted(){ //mounted在created之后
     this.skuCharts=Vue.markRaw(echarts.init(document.getElementById('skuCharts')));
     this.monthCharts=Vue.markRaw(echarts.init(document.getElementById('monthCharts')));
-    this.service.skuList().then(function(skus){
+    this.service.skuList().then(skus=>{
         var skuList=[];
         skus.forEach(function(s){
             var sku={label:s.name+"("+s.price+")",value:s.id};
@@ -37,7 +37,7 @@ mounted(){ //mounted在created之后
             this.skuId=skuList[0].value;
         }
         this.query_sku();
-    }.bind(this))
+    });
     this.query_month();
 },
 methods:{

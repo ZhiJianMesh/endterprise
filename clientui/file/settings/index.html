@@ -17,6 +17,7 @@
 import Language from "./language.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+import LoginDialog from "/assets/v3/components/login_dialog.js"
 
 const l=(typeof os)=='undefined' ? navigator.language : os.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
@@ -26,13 +27,12 @@ routes:[
 {path:'/home', component:()=>import('./home.js')},
 {path:'/advice', component:()=>import('./advice.js')},
 {path:'/personal', component:()=>import('./personal.js')},
-{path:'/faultreport', component:()=>import('./faultreport.js')},
 {path:'/company', component:()=>import('./company.js')}
 ]});
 //-------------------------------------------service定义
 const service={
 name:"settings",N_PAGE:10,N_SMPG:5,
-user:{account:'',nickName:''},
+user:{company:{account:'',nickName:''},personal:{account:'',nickName:''}},
 go_back() { //返回，在页面中通过service.go_back调用
     router.back();
 }
@@ -60,7 +60,8 @@ app.use(router);
 //--------------------------注册全局组件
 app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
-//-------------------------------------------启动APP
+app.component('component-login-dialog', LoginDialog);
+//--------------------------启动APP
 app.mount('#app');
 </script>
 </html>

@@ -54,9 +54,8 @@ query_services(pg) {
         }
         var services=[];
         var dt=new Date();
-        var s,icon;
-        for(var i in resp.data.services) { //id,createAt,creator,budget,status
-            s=resp.data.services[i];
+        var icon;
+        for(var s of resp.data.services) { //id,createAt,creator,budget,status
             dt.setTime(s.createAt);
             icon=this.tags.sta2icon(s.status);
             services.push({id:s.id,creator:s.creator,createAt:dt.toLocaleString(),budget:s.budget,status:icon});
@@ -291,7 +290,7 @@ template:`
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selecter :label="tags.signers" v-model="newService.nextSigners"></component-user-selecter>
+        <component-user-selector :label="tags.signers" v-model="newService.nextSigners"></component-user-selector>
       </q-item-section></q-item>      
     </q-list>
     </q-card-section>
@@ -327,7 +326,7 @@ template:`
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selecter :label="tags.signers" v-model="newPayment.nextSigners"></component-user-selecter>
+        <component-user-selector :label="tags.signers" v-model="newPayment.nextSigners"></component-user-selector>
       </q-item-section></q-item>      
     </q-list>
     </q-card-section>

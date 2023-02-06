@@ -1,5 +1,8 @@
 const SERVICE_USER="user";
+const SERVICE_UNIUSER="uniuser";
 const SERVICE_CONFIG="config";
+const SERVICE_ADDR="address";
+
 const RetCode={
 OK:0,
 DEPRECATED:1,
@@ -44,7 +47,7 @@ function download(opts, service) {
     return new Promise(function(resolve,reject){
 		var s = JSON.stringify(opts);
         var cbId = __regsiterCallback(resp => {
-            resolve(resp); //{code:xx,info:'',data:{size:yy,path:'zzzz'}}
+            resolve(resp); //{code:xx,info:'',data:{size:yy,path:'path of local saved file'}}
         });
         Http.download(s, service, cbId);
     });
@@ -130,11 +133,13 @@ function cloneObj(obj) {
 function storage_set(k, v) {
     localStorage.setItem(k,v);
 }
-
 function storage_get(k, def) {
     var v=localStorage.getItem(k);
     if(!v) return def;
     return v;
+}
+function storage_rmv(k) {
+    localStorage.removeItem(k);
 }
 function storage_clr() {
     localStorage.clear();

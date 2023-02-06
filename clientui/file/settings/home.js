@@ -1,32 +1,32 @@
+const CFG_USERTYPE="user_type";
 export default {
 inject:['service', 'tags'],
 data(){return{
     authorized:false,
     account:'',
     nickName:'',
-    loginDlg:false,
-    hidePwd:true,
-    loginAcc:'',
-    loginPwd:''
+    userType:'company'
 }},
 created() {
+    this.userType=storage_get(CFG_USERTYPE, "company");
     this.init();
 },
 methods:{
 init() {
-    this.authorized=Http.authorized();
+    var userInfo = this.service.user[this.userType];
+    this.authorized=Http.authorized(this.userType);
     if(this.authorized) {
-        if(this.service.user.nickName==''||this.service.user.account=='') {
+        if(userInfo.nickName==''||userInfo.account=='') {
             this.get_userbase();
         } else {
-            this.nickName=this.service.user.nickName;
-            this.account=this.service.user.account;
+            this.nickName=userInfo.nickName;
+            this.account=userInfo.account;
         }
     } else {
         this.account=this.tags.account;
         this.nickName=this.tags.nickName;
-        this.service.user.nickName='';
-        this.service.user.account='';
+        userInfo.nickName='';
+        userInfo.account='';
     }
 },
 about() {
@@ -36,7 +36,8 @@ jump(pg) {
     this.$router.push('/' + pg)
 },
 get_userbase() {
-    request({method:"GET",url:"/api/getBaseInfo"}, SERVICE_USER).then(function(resp) {
+    var service=this.userType=='personal'?SERVICE_UNIUSER : SERVICE_USER;
+    request({method:"GET",url:"/api/getBaseInfo"}, service).then(resp => {
         if(resp.code != 0) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -45,40 +46,26 @@ get_userbase() {
         this.nickName=resp.data.nickName;
         this.service.user.nickName=this.nickName; //免得每次都请求
         this.service.user.account=this.account;
-    }.bind(this));
-},
-login() {
-    var jsCbId=__regsiterCallback(function(resp){
-        if(resp.code!=0) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.loginAcc='';
-        this.loginPwd='';
-        this.loginDlg=false;
-        this.init();
-    }.bind(this));
-    Http.login(this.loginAcc, this.loginPwd, jsCbId);
-},
-logout() {
-    var jsCbId=__regsiterCallback(function(resp){
-        this.init();
-    }.bind(this));
-    Http.logout(jsCbId);
+    });
 },
 btn_click() {
     if(Http.authorized()) {
-        this.logout();
+        var jsCbId=__regsiterCallback(resp => {this.init()});
+        Http.logout(this.userType, jsCbId);
     } else {
-        this.loginDlg=true;
+        this.$refs.loginDlg.show(resp => {this.init()});
     }
+},
+switchUser() {
+    storage_set(CFG_USERTYPE, this.userType)
+    this.init();
 }
 },
 
 template: `
 <q-layout view="lHh lpr lFf" container style="height:100vh">
  <q-header class="bg-grey-1">
-  <q-list class="q-pa-md">
+  <q-list class="q-pa-sm">
    <q-item>
     <q-item-section top thumbnail class="q-ml-none">
       <q-icon :color="authorized?'primary':'grey'" name="person" style="font-size:4em;" @click="person"></q-icon>
@@ -89,15 +76,22 @@ template: `
     </q-item-section>
     <q-item-section side top>
       <q-btn flat color="primary" :label="authorized?tags.logout:tags.login" @click="btn_click"
-       :icon-right="authorized?'highlight_off':'exit_to_app'"></q-btn>
+       :icon-right="authorized?'logout':'login'"></q-btn>
     </q-item-section>
    </q-item>
   </q-list>
  </q-header>
+ <q-footer class="bg-grey-1">
+  <q-tabs v-model="userType" class="text-grey"  active-color="primary"
+   switch-indicator inline-label @update:model-value="switchUser">
+    <q-tab name="company" :label="tags.utCompany" icon="svguse:/assets/imgs/meshicons.svg#company"></q-tab>
+    <q-tab name="personal" :label="tags.utPersonal" icon="person_pin_circle"></q-tab>
+  </q-tabs>
+ </q-footer>
  <q-page-container>
     <q-page class="q-pa-md">
- <q-list class="q-pa-md">
-   <q-item clickable v-ripple @click="jump('company')">
+<q-list class="q-pa-md">
+  <q-item clickable v-ripple @click="jump('company')" v-show="userType=='company'">
     <q-item-section avatar>
       <q-icon color="primary" name="business"></q-icon>
     </q-item-section>
@@ -111,16 +105,6 @@ template: `
       <q-icon color="primary" name="person_pin_circle"></q-icon>
     </q-item-section>
     <q-item-section>{{tags.home.personal}}</q-item-section>
-    <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
-    </q-item-section>
-  </q-item>
-  <q-item clickable v-ripple @click="jump('faultreport')">
-    <q-item-section avatar>
-      <q-icon color="brown" name="sync_problem"></q-icon>
-    </q-item-section>
-
-    <q-item-section>{{tags.home.faultreport}}</q-item-section>
     <q-item-section avatar>
       <q-icon name="chevron_right" class="text-primary"></q-icon>
     </q-item-section>
@@ -147,33 +131,16 @@ template: `
       <q-icon name="open_in_new" class="text-primary"></q-icon>
     </q-item-section>
   </q-item>
- </q-list>
+</q-list>
     </q-page>
   </q-page-container>
 </q-layout>
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="errDlg"></component-alert-dialog>
-<!-- login dialog -->
-<q-dialog v-model="loginDlg">
-  <q-card style="min-width:62vw;max-width:80vw">
-    <q-card-section>
-      <div class="text-h6">{{tags.login}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-      <q-input dense v-model="loginAcc" autofocus :label="tags.account"></q-input>
-      <q-input dense v-model="loginPwd" autofocus :type="hidePwd?'password':'text'"  :label="tags.pwd">
-         <template v-slot:append>
-          <q-icon :name="hidePwd ? 'visibility_off':'visibility'"
-            class="cursor-pointer" @click="hidePwd=!hidePwd"></q-icon>
-        </template>
-      </q-input>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.login" @click="login"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup></q-btn>
-    </q-card-actions>
-  </q-card>
-</q-dialog>
+<component-login-dialog ref="loginDlg" :title="tags.login" :login="tags.login" 
+ :cancel="tags.cancel" :close="tags.close" :failToCall="tags.failToCall"
+ :account="tags.account" :pwd="tags.pwd" :userType="userType">
+ </component-login-dialog>
 `
 }

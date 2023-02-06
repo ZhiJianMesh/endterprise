@@ -19,9 +19,8 @@ methods:{
 fmt_contact_lines(cols, lines) {
     var contacts=[];
     var dt=new Date();
-    var o,ln;
-    for(var i in lines) { //id,name,post,createAt,creator,cname,cid
-        ln=lines[i];
+    var o;
+    for(var ln of lines) { //id,name,post,createAt,creator,cname,cid
         o={};
         for(var j in cols) {
             o[cols[j]]=ln[j];
@@ -40,8 +39,7 @@ query_contacts(pg) {
     request({method:"GET",url:url}, this.service.name).then(function(resp){
         if(resp.code!=RetCode.OK||resp.data.total==0) {
             this.contacts=[];
-            this.page.max=0;
-            this.page.cur=1;
+            this.page={max:0,cur:1};
             return;
         }
         this.fmt_contact_lines(resp.data.cols, resp.data.contacts);
@@ -72,9 +70,7 @@ query_touchlogs(id) {
         }
         var logs=[];
         var dt=new Date();
-        var l;
-        for(var i in resp.data.touchlogs) {
-            l=resp.data.touchlogs[i];
+        for(var l of resp.data.touchlogs) {
             dt.setTime(l.createAt);
             logs.push({creator:l.creator,comment:l.comment,createAt:this.tags.date2str(dt)});
         }

@@ -19,11 +19,10 @@ created(){
 methods:{
 fmt_customer_lines(data) {
     var dt=new Date();
-    var row,rows;
+    var rows;
     var touchlogs={};
     rows=data.touchlogs;
-    for(var i in rows) {
-        row=rows[i];
+    for(var row of rows) {
         touchlogs[row[0]]=row; //customer,cmt...
     }
     
@@ -31,11 +30,10 @@ fmt_customer_lines(data) {
     var cu,tl;
     var cols=data.cols;
     rows=data.customers;
-    for(var i in rows) { //id,name,address,createAt,status,creator
-        row=rows[i];
+    for(var row of rows) { //id,name,address,createAt,status,creator
         cu={};
-        for(var c in cols) {
-            cu[cols[c]]=row[c];
+        for(var i in cols) {
+            cu[cols[i]]=row[i];
         }
         dt.setTime(cu.createAt);
         cu.createAt=this.tags.date2str(dt);
@@ -55,7 +53,7 @@ query_custs(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = this.onlyMine ? "/api/customer/my" : "/api/customer/readable";
     url += "?offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             this.customers=[];
             this.page.max=0;
@@ -64,7 +62,7 @@ query_custs(pg) {
         }
         this.fmt_customer_lines(resp.data);
         this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
-    }.bind(this))
+    })
 },
 search_custs() {
     if(this.search=='') {
@@ -72,13 +70,13 @@ search_custs() {
         return;
     }
     var url="/api/customer/search?s="+this.search+"&limit="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             return;
         }
         this.fmt_customer_lines(resp.data);
         this.page.max=1;
-    }.bind(this))
+    })
 },
 onlyMineClk() {
     storage_set('customer_onlyMine', this.onlyMine);
@@ -89,7 +87,7 @@ create_cust() {
     var dta=copyObj(this.newCust,['name','taxid','address','business','nextSigners']);
     dta['comment']=this.service.encodeExt(this.newCust.ext);
     var url="/api/customer/create";
-    request({method:"POST",url:url,data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -97,7 +95,7 @@ create_cust() {
         this.newCustDlg=false;
         this.newCust={name:'',taxid:'',address:'',business:'',nextSigners:[],ext:{}};
         this.query_custs(1);
-    }.bind(this))
+    })
 },
 chkCredit(code) {//不能在rules中直接引用JStr，原因未知
     return JStr.chkCreditCode(code);
@@ -198,7 +196,7 @@ template:`
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <component-user-selecter :label="tags.signers" v-model="newCust.nextSigners"></component-user-selecter>
+       <component-user-selector :label="tags.signers" v-model="newCust.nextSigners"></component-user-selector>
       </q-item-section></q-item>
      </q-list>
     </q-card-section>

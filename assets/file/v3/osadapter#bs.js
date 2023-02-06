@@ -1,5 +1,8 @@
 const SERVICE_USER="user";
+const SERVICE_UNIUSER="uniuser";
 const SERVICE_CONFIG="config";
+const SERVICE_ADDR="address";
+
 const COMPANY_ID="cid";
 const COMPANY_NAME="store_company_name";
 const COMPANY_SERVERADDR="serverAddr";
@@ -58,16 +61,22 @@ function __default_jscb(id, resp) {
 function storage_set(k, v) {
     localStorage.setItem(k,v);
 }
-
 function storage_get(k, def) {
     var v=localStorage.getItem(k);
     if(!v) return def;
     return v;
 }
+function storage_rmv(k) {
+    localStorage.removeItem(k);
+}
 function storage_clr() {
     localStorage.clear();
 }
 
+var __services={
+    codebook:{type:'PERSONAL'},
+    enstu:{type:'PERSONAL'}
+};
 var __request_cache={};
 var __traceid=0;
 function request(opts, service){
@@ -85,13 +94,19 @@ function request(opts, service){
         return sendRequest(opts, service);
     }
 
-    var at=storage_get(SERVICE_USER,'');
+    var serviceUser;
+    if(__services[service] && __services[service].type=='PERSONAL') {
+        serviceUser=SERVICE_UNIUSER;
+    } else {
+        serviceUser=SERVICE_USER;
+    }
+    var at=storage_get(serviceUser,'');
     if(at != ''){//以用户token换服务token
         var tokenOpts={method:'GET',
             url:'/api/serviceToken?service='+service,
             headers:{access_token:at}
         };
-        return sendRequest(tokenOpts, SERVICE_USER).then(function(resp) {
+        return sendRequest(tokenOpts, serviceUser).then(function(resp) {
             if(resp.code != RetCode.OK) {
                 return new Promise(function(resolve, reject){resolve(resp)});
             }
@@ -129,7 +144,7 @@ function sendRequest(opts, service) {
             req.data = opts.data;
             opts.cache=false;//post请求不容许缓存
         } else if(opts.cache) {
-            var cache=__request_cache[req.url]; //要加超时时间
+            var cache=__request_cache[req.url]; //需要加超时时间控制
             if(cache!==undefined) {
                 resolve(__request_cache[req.url]);
                 return;
@@ -274,7 +289,33 @@ const JStr={
         if (logicCheckCode === 31) logicCheckCode = 0;
         logicCheckCode = this.creditCodeOrigin[logicCheckCode];
         return logicCheckCode===code.slice(17);
-    }    
+    },
+    base64CharCode(c) {
+        if (c >= 'A' && c <= 'Z') {
+            return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+        } else if (c >= 'a' && c <= 'z') {
+            return c.charCodeAt(0) - 'a'.charCodeAt(0) + 36;
+        } else if (c >= '0' && c <= '9') {
+            return c.charCodeAt(0) - '0'.charCodeAt(0);
+        } else if (c == '-') {
+            return 62;
+        } else {
+            return 63;
+        }
+    },
+    base64Char(v) {
+        if (v >= 0 && v <= 9) {
+            return String.fromCharCode('0'.charCodeAt(0) + v);
+        } else if (v >= 10 && v <= 35) {
+            return String.fromCharCode('a'.charCodeAt(0) + v);
+        } else if (v >= 36 && v <= 52) {
+            return String.fromCharCode('A'.charCodeAt(0) + v);
+        } else  if (c == 62) {
+            return '-';
+        } else {
+            return '_';
+        }
+    }
 }
 
 const Console = {
@@ -330,7 +371,7 @@ const Server = {
     refreshConsoleToken(){return '1234567890123456'},
     getDnsAccessCode(){return "123456"},
     resetDnsAccessCode(){return "723456"},
-    getServices(jsCbId){
+    getServices(jsCbId){ //只是用于测试
         var data={code:RetCode.OK, data:{services:[
             {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
             {name:"member",displayName:"会员",author:"Lgy",level:4, favicon:"/member/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
@@ -341,10 +382,21 @@ const Server = {
         ]}};
         __default_jscb(jsCbId,data);
     },
-    backup(){},
-    backupTime(){return 1657157855534},
-    backupKey(){return "test"},
-    setBackupKey(k) {},
+    backupInfo(jsCbId) {
+        __default_jscb(jsCbId,{
+            code:RetCode.OK,info:'Success',
+            data:{at:'00:00',recent:0,key:'123456',state:0}
+        });
+    },
+    remoteAccInfo(jsCbId) {
+        __default_jscb(jsCbId,{
+            code:RetCode.OK,info:'Success',
+            data:{type:0,addr:'192.168.0.102:8523',state:0}
+        });
+    },
+    saveAdvanceCfg(jsCbId, req) {
+        __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
+    },
     companyName(){return storage_get(COMPANY_NAME,"至简网格")},
     companyId(){return storage_get(COMPANY_ID,'0')},
 	companyInfo() {},
@@ -360,7 +412,8 @@ const Server = {
     },
 	unRegister(creditCode,pwd,jsCbId){
 		__default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
-	}
+	},
+	logPath(){return "d:\\work\\code\\release"}
 }
 
 const Http={
@@ -373,21 +426,28 @@ const Http={
     serverAddr(){return location.host},
     companyName(){return storage_get(COMPANY_NAME,'至简网格')},
 	accessCode(){return storage_get(COMPANY_ACCESSCODE,'')},
-    authorized() {return storage_get(SERVICE_USER,'')!=''},
-    login(acc,pwd,jsCbId) {
+    authorized(userType) {
+        if(userType=='personal') {
+            return storage_get(SERVICE_UNIUSER,'')!='';
+        }
+        return storage_get(SERVICE_USER,'')!=''
+    },
+    login(acc,pwd,userType,jsCbId) {//模拟环境不区分userType
         var dta={account:acc,password:pwd,grant_type:'password',cid:this.cid()};
-        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, SERVICE_USER).then(function(resp) {
+        var service=userType=='personal' ? SERVICE_UNIUSER : SERVICE_USER;
+        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, service).then(function(resp) {
             if(resp.code==RetCode.OK) {
-                storage_set(SERVICE_USER, resp.data.access_token);
+                storage_set(service, resp.data.access_token);
             }
             __default_jscb(jsCbId,resp)
         })
     },
-    logout(jsCbId) {
-        var at=storage_get(SERVICE_USER);
+    logout(userType,jsCbId) {
+        var service=userType=='personal' ? SERVICE_UNIUSER : SERVICE_USER;
+        var at=storage_get(service);
         var opts={method:'GET',url:'/api/logout',headers:{access_token:at},private:false};
-        sendRequest(opts, SERVICE_USER).then(function(resp) {
-            storage_clr();
+        sendRequest(opts, service).then(function(resp) {
+            storage_rmv(service);
             __default_jscb(jsCbId,resp)
         })
     },
@@ -437,9 +497,9 @@ const App={
         {name:"bios",displayName:"注册发现服务",version:"1000"},
         {name:"oauth2",displayName:"鉴权服务",version:"1000"}
     ])},
+    logPath(){return "d:\\work\\code\\release"},
     isInstalled(){return true},
     isBuiltin(app) {return app=="market"||app=="settings"||app=="about"||app=="assets"},
-	getLogPath(){return "d:\\work\\code\\release"},
     build(){return {ver:"0.1.0",os:"android",brand:"njhx",language:"zh_CN",agent:"mc_android_0.1.0"}}
 }
 

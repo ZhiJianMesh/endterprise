@@ -17,7 +17,7 @@ created() {
     this.changed=!this.cid||!this.serverAddr;
 },
 methods:{
-save() {
+connect() {
     var cur = new Date().getTime();
     if(this.saveAt>0) {
         if(cur-this.saveAt<10000) {
@@ -68,35 +68,32 @@ template: `
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
-<q-list>
-  <q-item>
-   <q-item-section side>{{tags.companyId}}</q-item-section>
-   <q-item-section><q-input v-model="cid" dense @update:model-value="changed=true"></q-input></q-item-section>
-  </q-item>
-  <q-item v-show="cid>0">
-   <q-item-section side>{{tags.companyName}}</q-item-section>
-   <q-item-section>{{companyName}}</q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section side>{{tags.accessCode}}</q-item-section>
-   <q-item-section><q-input v-model="accessCode" dense @update:model-value="changed=true"></q-input></q-item-section>
-  </q-item>
-  <q-separator spaced></q-separator>
-  <q-item>
-   <q-item-section side>{{tags.inPubCloud}}</q-item-section>
-   <q-item-section>
+<q-markup-table bordered="false" flat>
+  <tr>
+   <td>{{tags.companyId}}</td>
+   <td><q-input v-model="cid" dense @update:model-value="changed=true"></q-input></td>
+  </tr>
+  <tr v-show="cid>0">
+   <td>{{tags.companyName}}</td>
+   <td>{{companyName}}</td>
+  </tr>
+  <tr>
+   <td>{{tags.accessCode}}</td>
+   <td><q-input v-model="accessCode" dense @update:model-value="changed=true"></q-input></td>
+  </tr>
+  <tr>
+   <td>{{tags.serverAddr}}</td>
+   <td><q-input v-model="serverAddr" dense label-slot @update:model-value="changed=true"></q-input></td>
+  </tr>
+  <tr>
+   <td>{{tags.inPubCloud}}</td>
+   <td>
     <q-checkbox v-model="inPublicCloud" @update:model-value="changed=true"></q-checkbox>
-   </q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section side>{{tags.serverAddr}}</q-item-section>
-   <q-item-section>
-    <q-input v-model="serverAddr" dense label-slot @update:model-value="changed=true"></q-input>
-   </q-item-section>
-  </q-item>
-</q-list>
+   </td>
+  </tr>
+</q-markup-table>
 <div align="center" v-show="changed">
- <q-btn :label="tags.connect" @click="save" color="primary" :loading="saveAt>0" rounded></q-btn>
+ <q-btn :label="tags.connect" @click="connect" color="primary" :loading="saveAt>0" rounded></q-btn>
 </div>
     </q-page>
   </q-page-container>

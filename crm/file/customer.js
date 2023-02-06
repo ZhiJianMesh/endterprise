@@ -26,7 +26,7 @@ data() {return {
     visible:{editBase:false, order:false, contact:false, touchlog:false,
         newOrd:false, newContact:false, newTl:false,
         share:false, newShare:false, deliver:false, relation:false},
-    visSegs:["name","taxid","address","business","creator","ordNum","createAt"]
+    visSegs:["name","taxid","address","business","creator","ordNum","createAt"] //控制哪些字段需要显示
 }},
 created(){
     this.curDate=this.tags.date2str(new Date());
@@ -59,9 +59,8 @@ query_orders(pg) {
         }
         var orders=[];
         var dt=new Date();
-        var o,icon;
-        for(var i in resp.data.orders){
-            o=resp.data.orders[i];
+        var icon;
+        for(var o of resp.data.orders){
             dt.setTime(o.createAt);
             icon=this.tags.sta2icon(o.status);
             orders.push({id:o.id,price:o.price,skuName:o.skuName,creator:o.creator,
@@ -80,8 +79,7 @@ query_contacts(pg) {
         }
         var contacts=[];
         var dt=new Date();
-        for(var i in resp.data.contacts) {
-            var c=resp.data.contacts[i];
+        for(var c of resp.data.contacts) {
             dt.setTime(c.createAt);
             contacts.push({id:c.id,name:c.name,post:c.post,
              createAt:this.tags.date2str(dt),creator:c.creator});
@@ -101,8 +99,7 @@ query_touchlogs(pg) {
         }
         var logs=[];
         var dt=new Date();
-        for(var i in resp.data.touchlogs) {
-            var l=resp.data.touchlogs[i];
+        for(var l of resp.data.touchlogs) {
             dt.setTime(l.createAt);
             logs.push({name:l.name,comment:l.comment,createAt:dt.toLocaleString(),
             t:l.createAt/*用于删除修改*/,cid:l.contact,creator:l.creator});
@@ -231,9 +228,9 @@ open_new_contact() {
     }.bind(this));
 },
 sku_changed(val) {
-    for(var i in this.skus) {
-        if(this.skus[i].value==val) {
-            this.newOrder.price=this.skus[i].price;
+    for(var sku of this.skus) {
+        if(sku.value==val) {
+            this.newOrder.price=sku.price;
             return;
         }
     }
@@ -376,7 +373,7 @@ template:`
   </q-header>
 
   <q-page-container>
-    <q-page class="q-px-md q-pb-lg" ref="mainPg">
+    <q-page class="q-px-md q-pb-lg">
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.baseInfo}}
   <template v-slot:action>
@@ -582,7 +579,7 @@ template:`
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selecter :label="tags.signers" v-model="newOrder.nextSigners"></component-user-selecter>
+        <component-user-selector :label="tags.signers" v-model="newOrder.nextSigners"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
@@ -672,7 +669,7 @@ template:`
        <component-date-input :label="tags.share.endT" v-model="newShare.endT" :min="curDate"></component-date-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selecter :label="tags.share.to" v-model="newShare.to"></component-user-selecter>
+        <component-user-selector :label="tags.share.to" v-model="newShare.to"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
@@ -692,7 +689,7 @@ template:`
     <q-card-section class="q-pt-none">
     <q-list>
       <q-item><q-item-section>
-        <component-user-selecter :label="tags.share.to" v-model="newShare.to"></component-user-selecter>
+        <component-user-selector :label="tags.share.to" v-model="newShare.to"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
