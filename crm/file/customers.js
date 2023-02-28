@@ -97,7 +97,7 @@ create_cust() {
         this.query_custs(1);
     })
 },
-chkCredit(code) {//不能在rules中直接引用JStr，原因未知
+chkCredit(code) {//不能在rules中直接调用原生对象的函数，原因未知
     return JStr.chkCreditCode(code);
 }
 },

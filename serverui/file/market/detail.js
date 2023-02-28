@@ -16,7 +16,7 @@ created() {
         this.imgWidth="30vw";
     }
     this.app=this.emptyDtl();
-    request({method:"GET",url:"/api/service/detail?service="+this.name, private:false},"devops").then(resp=>{
+    request({method:"GET",url:"/api/service/detail?service="+this.name, private:false},"service").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -103,7 +103,7 @@ refreshUI(resp) {
     }
 },
 giveStar() {
-    request({method:"GET",url:"/api/service/star?service="+this.name},"devops").then(resp=>{
+    request({method:"GET",url:"/api/service/star?service="+this.name},"service").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;

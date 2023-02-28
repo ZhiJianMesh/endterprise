@@ -34,7 +34,7 @@ cn:{
   advanced:"高级服务",
 
   backup:"数据备份",
-  remoteAccess:"外网接入",
+  wanAccess:"外网接入",
   debug:"调测助手",
   uploadLogs:"上传日志",
   faultreport:"故障上报",
@@ -43,17 +43,20 @@ cn:{
   neverBackup:"尚无备份",
   backupNow:"立即备份",
   restore:"恢复数据",
-  startup:"启动",
-  shutdown:'停止',
+  startup:"启用",
+  shutdown:'停用',
   state:"状态",
   backupKey:"备份密钥",
   backupTime:"最近备份时间",
   backupAt:"每日备份时间点",
-  notStart:"未启动",
-  running:"运行中",
-  remoteType:"类型",
-  remoteProxy:"代理",
-  remoteMyGw:"自有公网IP",
+  buckets:"备份点",
+  notStart:"未启用",
+  running:"已启用",
+  wanType:"类型",
+  wanTypeOpts:[
+    {label:"自有外网IP",value:"1"},
+    {label:"代理",value:"2"}
+  ],
   gwIp:"公网IP",
   
   locServices:"已安装应用",
@@ -77,6 +80,8 @@ cn:{
   alert:"提示",
   errMsgs:{
     'unknown':"未知错误"
-  }
+  },
+  needBuckets:"至少需要选择一个备份点",
+  needWanIp:"需要填写一个公网IP"
 }
 };

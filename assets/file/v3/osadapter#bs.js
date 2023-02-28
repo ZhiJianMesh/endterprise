@@ -24,6 +24,7 @@ NOT_SUPPORTED_FUNCTION:109, //API存在，但是所需的功能不支持
 API_NOT_FOUND:110, //API不存在
 NO_RIGHT:111,
 NO_NODE:112,
+THIRD_PARTY_ERR:113,
 UNKNOWN_ERROR:150,
 EXISTS:2000,
 NOT_EXISTS:2001,
@@ -385,13 +386,13 @@ const Server = {
     backupInfo(jsCbId) {
         __default_jscb(jsCbId,{
             code:RetCode.OK,info:'Success',
-            data:{at:'00:00',recent:0,key:'123456',state:0}
+            data:{at:-1,recent:0,key:'123456'}
         });
     },
-    remoteAccInfo(jsCbId) {
+    wanGwInfo(jsCbId) {
         __default_jscb(jsCbId,{
             code:RetCode.OK,info:'Success',
-            data:{type:0,addr:'192.168.0.102:8523',state:0}
+            data:{addr:'192.168.0.102:8523',state:0}
         });
     },
     saveAdvanceCfg(jsCbId, req) {

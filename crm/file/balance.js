@@ -33,7 +33,7 @@ mounted(){ //mounted在created之后
             skuList.push(sku);
         });
         this.skuList=skuList;
-        if(this.skuId==0) { //默认选中第一个商品
+        if(this.skuId==0&&skuList.length>0) { //默认选中第一个商品
             this.skuId=skuList[0].value;
         }
         this.query_sku();
