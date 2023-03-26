@@ -81,46 +81,50 @@ var __services={
 var __request_cache={};
 var __traceid=0;
 function request(opts, service){
-    if(opts.private!==undefined && !opts.private) { //默认私有
-        return sendRequest(opts, service);
-    }
-
     if(!opts.headers) {
         opts.headers={};
     }
-
-    var st=storage_get(service,'');
-    if(st!='') {
-        opts.headers.access_token=st;
+    if(opts.private!==undefined && !opts.private) { //公有，未传则默认私有
         return sendRequest(opts, service);
     }
 
-    var serviceUser;
+    opts.headers['access_token']='';
+    return getToken(service).then(resp => {
+        if(resp.code != RetCode.OK) {
+            return resp;
+        }
+		storage_set(service, resp.data.access_token);
+        opts.headers.access_token=resp.data.access_token;
+        return sendRequest(opts, service);
+    });
+}
+
+function getToken(service) {
+    var st=storage_get(service,'');
+    if(st!='') {
+        return new Promise((resolve, reject)=>{
+            resolve({code:RetCode.OK, data:{access_token:st}});
+        });
+    }
+    
+    var userService;
     if(__services[service] && __services[service].type=='PERSONAL') {
-        serviceUser=SERVICE_UNIUSER;
+        userService=SERVICE_UNIUSER;
     } else {
-        serviceUser=SERVICE_USER;
+        userService=SERVICE_USER;
     }
-    var at=storage_get(serviceUser,'');
-    if(at != ''){//以用户token换服务token
-        var tokenOpts={method:'GET',
-            url:'/api/serviceToken?service='+service,
-            headers:{access_token:at}
-        };
-        return sendRequest(tokenOpts, serviceUser).then(function(resp) {
-            if(resp.code != RetCode.OK) {
-                return new Promise(function(resolve, reject){resolve(resp)});
-            }
-            var st=resp.data.access_token;
-            storage_set(service, st);
-            opts.headers.access_token=st;
-            return sendRequest(opts, service);
-        });
-    } else {
-        return new Promise(function(resolve, reject){
-            resolve({code:111, info:"no right"});
+    
+    var at=storage_get(userService,'');
+    if(!at){//以用户token换服务token
+        return new Promise((resolve, reject)=>{
+            resolve({code:RetCode.NO_RIGHT, info:"no right"});
         });
     }
+    var opts={method:'GET',
+        url:'/api/serviceToken?service='+service,
+        headers:{access_token:at}
+    };
+    return sendRequest(opts, userService);
 }
 
 function sendRequest(opts, service) {
@@ -171,17 +175,33 @@ function sendRequest(opts, service) {
 }
 
 function download(opts, service) {
+    if(!opts.headers) {
+        opts.headers={};
+    }
+    if(opts.private!==undefined && !opts.private) { //默认私有
+        return innerDownload(opts, service);
+    }
+
+    opts.headers['access_token']='';
+    return getToken(service).then(resp => {
+        if(resp.code != RetCode.OK) {
+            return resp;
+        }
+		storage_set(service, resp.data.access_token);
+        opts.headers.access_token=resp.data.access_token;
+        return innerDownload(opts, service);
+    });
+}
+
+function innerDownload(opts, service) {
     var url=location.protocol+"//"+location.host+"/"+service + opts.url;
     __traceid++;
-    var hh = opts.headers;
-    if(!hh) {
-        hh={trace_id:'browser'+__traceid};
-    } else {
-        hh.trace_id='browser'+__traceid;
-    }
-    return new Promise(function(resolve, reject){
-        var req = {method:"GET", url:url,responseType:"blob", headers:hh};
-        axios(req).then(
+
+    opts.headers.trace_id='browser'+__traceid;
+    opts.headers.cid=Http.cid();
+
+    return new Promise((resolve, reject)=>{
+        axios({method:"GET",url:url,responseType:"blob", headers:opts.headers}).then(
         res => {
             if(res.status != 200) {
                 Console.debug("fail to download " + url);
@@ -195,11 +215,12 @@ function download(opts, service) {
             var fileName;
             var disposition=res.headers['content-disposition'];
             if(disposition) {
-                var k='filename="';
+                var k='filename=';
                 var pos=disposition.indexOf(k);
                 if(pos>0) {
-                    fileName=disposition.substring(pos+k.length,disposition.length-1)
+                    fileName=disposition.substring(pos+k.length,disposition.length)
                             .trim().replace('/', '_');
+                    fileName=decodeURIComponent(fileName);
                 }
             }
             if(!fileName){
@@ -399,7 +420,7 @@ const Server = {
         __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
     },
     companyName(){return storage_get(COMPANY_NAME,"至简网格")},
-    companyId(){return storage_get(COMPANY_ID,'0')},
+    companyId(){return 40}, //storage_get(COMPANY_ID,'0')
 	companyInfo() {},
 	setCompanyInfo(name, country, province, city, info) {},
 	storeCompanyInfo() {},
@@ -414,7 +435,7 @@ const Server = {
 	unRegister(creditCode,pwd,jsCbId){
 		__default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
 	},
-	logPath(){return "d:\\work\\code\\release"}
+	logPath(){return "d:\\work\\code\\release\\xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
 }
 
 const Http={

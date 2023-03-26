@@ -35,7 +35,7 @@ INVALID_STATE:5001
 const __callback_funs={};
 var __call_id=0;
 function request(opts, service){
-    return new Promise(function(resolve,reject){
+    return new Promise((resolve,reject)=>{
         var s = JSON.stringify(opts);
         var cbId = __regsiterCallback(resp => {
             resolve(resp);
@@ -45,7 +45,7 @@ function request(opts, service){
 }
 
 function download(opts, service) {
-    return new Promise(function(resolve,reject){
+    return new Promise((resolve,reject)=>{
 		var s = JSON.stringify(opts);
         var cbId = __regsiterCallback(resp => {
             resolve(resp); //{code:xx,info:'',data:{size:yy,path:'path of local saved file'}}
@@ -55,7 +55,7 @@ function download(opts, service) {
 }
 
 function readText(txt){
-    return new Promise(function(resolve,reject){
+    return new Promise((resolve,reject)=>{
         var cbId = __regsiterCallback(function(resp){
             resolve(resp);
         });

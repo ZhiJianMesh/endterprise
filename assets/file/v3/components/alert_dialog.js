@@ -56,7 +56,15 @@ fmtErr(code,info){
             err=this.errors['unknown'];
         }
     }
-    return err + ":" + code + "->" + info;
+    var msg = "";
+    if(info instanceof Array) {
+        for(var i of info) {
+            msg += i + '<br>';
+        }
+    } else {
+        msg = info;
+    }
+    return err + ":" + code + "->" + msg;
 },
 showErr(code,info) {
     this.show(this.fmtErr(code, info));
@@ -66,7 +74,7 @@ template: `
 <q-dialog v-model="alertDlg">
   <q-card>
     <q-card-section><div class="text-h6">{{title}}</div></q-card-section>
-    <q-card-section class="q-pt-none">{{message}}</q-card-section>
+    <q-card-section class="q-pt-none" v-html="message"></q-card-section>
     <q-card-actions align="right" class="q-pr-md">
      <q-btn flat :label="close" color="primary" v-close-popup></q-btn>
     </q-card-actions>

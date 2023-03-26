@@ -1,6 +1,9 @@
 //一边输入帐号，一边过滤用户的组件
 export default {
-data() {return {accOptions:[]}},//选择项，调用search获得
+data() {return {
+    accOptions:[],//选择项，调用search获得
+    chkList:[]
+}},
 props: {
     accounts:{type:Array,required:true}, //复杂对象，可以直接在组件中修改
     label:{type:String,required:true},
@@ -42,13 +45,23 @@ input_user(val, done) {
   if (val.length > 0) {
      done(val, 'add-unique')
   }
+},
+changed() {
+    //因为用emit-value会导致selected-item无法显示，因为无label
+    //所以接受改变的事件，将选中项的value存入accounts属性
+    //因为accounts必须是数组，所以此属性可以更改，尽管不优雅，但是管用，不必$emit
+    this.accounts.splice(0, this.accounts.length)
+    for(var c of this.chkList) {
+        this.accounts.push(c.value);
+    }
 }
 },
 template: `
-<q-select v-model="accounts" :label="label" :options="accOptions"
-  use-input :multiple="multi" use-chips emit-value="!useid"
+<q-select v-model="chkList" :label="label" :options="accOptions"
+  use-input use-chips :multiple="multi"
   hide-dropdown-icon input-debounce=200 dense
-  @new-value="input_user" @filter="search_users">
+  @new-value="input_user" @filter="search_users"
+  @update:model-value="changed">
  <template v-slot:selected-item="scope">
   <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"
     :tabindex="scope.tabindex" class="q-ma-none">
