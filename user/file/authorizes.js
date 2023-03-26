@@ -7,7 +7,7 @@ data() {return {
     users:[],
     roles:[],
     roleNames:{},
-    newUser:{uid:null,service:'',role:'',power:[false],dlg:false}
+    newUser:{uids:[],service:'',role:'',power:[false],dlg:false}
 }},
 created(){
     this.service.get_services().then(resp => {
@@ -79,14 +79,14 @@ search_users() {
 add_user() {
     var n=this.newUser;
     var p=JStr.base64Char(0) + JStr.base64Char(n.power[0]?1:0);
-    var dta={uid:n.uid.value,service:this.curService,role:n.role,power:p};
+    var dta={uids:n.uids,service:this.curService,role:n.role,power:p};
     var opts={method:"POST",url:"/api/power/set",data:dta};
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.newUser={dlg:false,uid:null,service:'',role:'',power:[false]};
+        this.newUser={dlg:false,uids:[],service:'',role:'',power:[false]};
         this.list_users(1);
     })
 },
@@ -159,7 +159,7 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
     <q-item><q-item-section>
-     <component-user-selector :label="tags.user.account" v-model="newUser.uid" multi="false" useid="true"></component-user-selector>
+     <component-user-selector :label="tags.user.account" :accounts="newUser.uids" useid="true"></component-user-selector>
     </q-item-section></q-item>
     <q-item><q-item-section>
      <q-select :label="tags.power.role" v-model="newUser.role" :options="roles" emit-value map-options></q-select>

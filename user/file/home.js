@@ -6,7 +6,7 @@ data() {return {
     members:[],
     grps:[],
     errMsgs:{},
-    newMbr:{dlg:false,account:null,title:''},
+    newMbr:{dlg:false,account:[],title:''},
     newGrp:{dlg:false,name:'',descr:'',admin:''},
     edtGrp:{dlg:false,id:0,fname:{value:null,label:''},name:'',descr:''},
     paths:[],
@@ -92,7 +92,7 @@ on_edit_grp(g) {
     };
 },
 add_member() {
-    var dta={gid:this.gid,uid:this.newMbr.account.value,title:this.newMbr.title};
+    var dta={gid:this.gid,uid:this.newMbr.account[0],title:this.newMbr.title};
     var opts={method:"POST",url:"/api/member/add",data:dta};
     request(opts, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
@@ -100,7 +100,7 @@ add_member() {
             return;
         }
         this.query_subs();
-        this.newMbr={dlg:false,account:null,title:''};
+        this.newMbr={dlg:false,account:[],title:''};
     });
 },
 rmv_member(id,i) {
@@ -224,7 +224,7 @@ template:`
   <q-card-section class="q-pt-none">
     <q-item><q-item-section>
      <component-user-selector :label="tags.user.account"
-      v-model="newMbr.account" multi="false" useid="true"></component-user-selector>
+      :accounts="newMbr.account" multi="false" useid="true"></component-user-selector>
     </q-item-section></q-item>
     <q-item><q-item-section>
      <q-input :label="tags.grp.title" v-model="newMbr.title" dense></q-input>
