@@ -19,13 +19,15 @@ created(){
     }
     
     var url1="/api/template/get?unuseCache=1";
-    request({method:"GET",url:url1}, this.service.name).then(function(resp){
+    request({method:"GET",url:url1}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             Console.debug("Url:" + url1 + ",code:" + resp.code + ",info:" + resp.info);
             return;
         }
-        this.template=resp.data.v;
-    }.bind(this));
+        if(resp.data.v) {
+            this.template=resp.data.v;
+        }
+    });
     
     var url2="/api/package/list?unuseCache=1";
     request({method:"GET",url:url2}, this.service.name).then(function(resp){

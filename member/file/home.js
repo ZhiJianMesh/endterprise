@@ -18,7 +18,7 @@ data() {return {
     resetFun:null //让滑动菜单归位的函数
 }},
 created(){
-    var url="/grp/getrole?service="+this.service.name;
+    var url="/power/get?service="+this.service.name;
     request({method:"GET",url:url}, SERVICE_USER).then(function(resp){
         if(resp.code!=0) {
             Console.warn("request "+url+" failed:" + resp.code + ",info:" + resp.info);
@@ -32,7 +32,7 @@ methods:{
 query_vips(offset) {
     this.search="";
     var url="/api/vip/list?offset="+offset+"&num="+this.service.NUM_PER_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.vips=[];
             this.maxVipPgs=0;
@@ -40,7 +40,7 @@ query_vips(offset) {
             this.vips=resp.data.vips;
             this.maxVipPgs=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
         }
-    }.bind(this))
+    })
 },
 search_vips() {
     if(this.search=='') {
@@ -144,10 +144,7 @@ template:`
         <q-item clickable v-close-popup @click="jumpTo('/settings')">
           <q-item-section>{{tags.settings}}</q-item-section>
         </q-item>
-        <q-item clickable v-close-popup @click="jumpTo('/employees?service=member&proxy=%2Fapi%2Fproxy%2Femployee')">
-          <q-item-section>{{tags.employees}}</q-item-section>
-        </q-item>
-        <q-separator />
+        <q-separator></q-separator>
         <q-item clickable v-close-popup @click="jumpTo('/reports')">
           <q-item-section>{{tags.reports}}</q-item-section>
         </q-item>

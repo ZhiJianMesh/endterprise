@@ -8,7 +8,6 @@ data() {return {
     orders:[], //id,createAt,pkgName,balance
     vip:{name:'',createAt:'',mobile:'',ext:{},creator:0},
     ext:{},
-    creatorName:'',
     newOrder:{pkgId:'',pwd:'',price:0,vip:0},
     newOrderDlg:false,
     chkOrderDlg:false,
@@ -22,29 +21,31 @@ data() {return {
 }},
 created(){
     this.query_orders(0);
-    this.service.getTemplate().then(function(tpl) {
+    this.service.getTemplate().then(tpl=>{
         this.tmpl=tpl;
-        this.query_info(); //放在template之后，是为了防止无template情况下，解析ext
-    }.bind(this)).catch(function(err) {
+        this.query_info(); //放在template之后，是为了防止无template情况下，不能解析ext
+    }).catch(err=>{
         Console.info(err);
     });
 },
 methods:{
 query_info() {
     var url="/api/vip/get?id="+this.id;
-    request({method:"GET", url:url},this.service.name).then(function(resp){
+    request({method:"GET", url:url},this.service.name).then(resp=>{
         if(resp.code != 0) {
-            Console.info("Url:" + url + ",code:" + resp.code + ",info:" + resp.info);
+            this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.vip=resp.data;//creator,createAt,name,mobile,ext
-        this.get_creator(this.vip.creator);
         this.ext=resp.data.ext;
-    }.bind(this));
+        if(!this.ext) {
+            this.ext={};
+        }
+    });
 },
 query_orders(offset) {
     var url="/api/order/list?vip="+this.id+"&offset="+offset+"&num="+this.service.NUM_PER_SMPG;
-    request({method:"GET", url:url}, this.service.name).then(function(resp){
+    request({method:"GET", url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             Console.info("Url:" + url + ",code:" + resp.code + ",info:" + resp.info);
             return;
@@ -52,51 +53,45 @@ query_orders(offset) {
         this.orders=resp.data.orders;
         this.orderNum=resp.data.total;
         this.maxPages=Math.ceil(resp.data.total/this.service.NUM_PER_SMPG);
-    }.bind(this));
-},
-get_creator(uid) {
-    var opts={method:"GET",url:"/api/getNickName?uid="+uid};
-    request(opts, SERVICE_USER).then(function(resp){
-        if(resp.code != 0) {
-            Console.info("Url:" + url + ",code:" + resp.code + ",info:" + resp.info);
-            return;
-        }
-        this.creatorName=resp.data.nickName;
-    }.bind(this));
+    });
 },
 change_page(page) {
     this.query_orders((parseInt(page)-1)*this.service.NUM_PER_SMPG);
 },
 save_base(v, v0){
     var opts={method:"POST", url:"/api/vip/setBase",data:{id:this.id,name:v.name,mobile:v.mobile}};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.vip.name=v.name;
         this.vip.mobile=v.mobile;
-    }.bind(this));
+    });
 },
 create_order() {
     var url="/api/order/create";
-    request({method:"POST",url:url,data:this.newOrder}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:this.newOrder}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.newOrderDlg=false;
         this.query_orders(0);
-    }.bind(this))
+    })
 },
 open_crt_order(){
-    this.service.getPackages().then(function(data){
-        this.packages=data.pkgs;
-        this.packageOpts=data.opts;
+    this.service.getPackages().then(resp=>{
+        if(resp.code != 0) {
+            this.$refs.errMsg.showErr(resp.code, [resp.info,this.tags.noPackages]);
+            return;
+        }
+        this.packages=resp.pkgs;
+        this.packageOpts=resp.opts;
         this.newOrderDlg=true;
         var pkg=this.packages[0];
         this.newOrder={pkgId:pkg.id,pwd:'',vip:this.id,price:pkg.price};
-    }.bind(this)).catch(function(err) {
+    }).catch(err=>{
         Console.info(err);
     });
 },
@@ -111,13 +106,13 @@ pkg_changed(pkgId) {
 save_ext() {
     var url="/api/vip/setExt";
     var req={id:this.id,ext:this.ext};
-    request({method:"POST",url:url,data:req}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:req}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.extChanged=false;
-    }.bind(this))
+    })
 },
 open_check_order(o){
     this.chkOrder={id:o.id,pwd:'',createAt:o.createAt,balance:o.balance};
@@ -127,13 +122,13 @@ open_check_order(o){
 check_order(){
     var url="/api/order/check";
     var req={id:this.chkOrder.id,pwd:this.chkOrder.pwd};
-    request({method:"POST",url:url,data:req}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:req}, this.service.name).then(resp=>{
         if(resp&&resp.code==0){
             this.chkOrderResult=0;
         }else {
             this.chkOrderResult=1;
         }
-    }.bind(this))
+    })
 }
 },
 
@@ -169,7 +164,7 @@ template:`
 <q-chip><q-avatar icon="date_range" color="primary" text-color="white"></q-avatar>{{vip.createAt}}</q-chip>
 </div>
 <div class="q-gutter-md">
-<q-chip><q-avatar icon="person_add" color="primary" text-color="white"></q-avatar>{{creatorName}}</q-chip>
+<q-chip><q-avatar icon="person_add" color="primary" text-color="white"></q-avatar>{{vip.creator}}</q-chip>
 </div>
 
 <q-banner dense inline-actions class="q-my-md text-dark bg-blue-grey-1">

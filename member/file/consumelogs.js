@@ -35,19 +35,9 @@ query_logs(offset,done) {
         done(resp.data.logs.length<this.service.NUM_PER_PAGE);
     }.bind(this))
 },
-get_creator(uid) {
-    request({method:"GET",url:"/api/getNickName?uid="+uid},SERVICE_USER).then(function(resp){
-        if(resp.code != 0) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.creatorName=resp.data.nickName;
-    }.bind(this));
-},
 detail(i){
     this.detailDlg=true;
     this.logDetail=this.logs[i];
-    this.get_creator(this.logDetail.creator);
 },
 set_comment(){
     var url="/api/consume/setComment";
@@ -62,6 +52,12 @@ set_comment(){
 },
 on_load_logs(offset,done){
     this.query_logs(offset,done);
+},
+dldocx(){
+    var dlUrl='/api/consume/todocx?order=' + this.orderId;
+    download({url:dlUrl}, this.service.name).then(resp => {
+        Console.debug(JSON.stringify(resp));
+    });
 }
 },
 
@@ -82,6 +78,7 @@ template:`
    <q-item v-for="(l,i) in logs">
     <q-item-section>{{l.createAt}}</q-item-section>
     <q-item-section>{{l.val}}</q-item-section>
+    <q-item-section>{{l.balance}}</q-item-section>
     <q-item-section>{{l.comment}}</q-item-section>
     <q-item-section><q-icon name="edit" @click="detail(i)" color="primary"></q-icon></q-item-section>
    </q-item>
@@ -93,6 +90,10 @@ template:`
   </template>
  </q-infinite-scroll>
 </div><!-- end of #logs_scroll_area -->
+<q-page-sticky position="bottom-right" :offset="[18,18]">
+  <q-btn round color="accent" @click="dldocx"
+   icon="svguse:/assets/imgs/meshicons.svg#word"></q-btn>
+</q-page-sticky>
         </q-page>
       </q-page-container>
     </q-layout>

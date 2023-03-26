@@ -29,7 +29,6 @@ routes:[
   {path: '/vip', component: () => import('./vip.js')},
   {path: '/consumelogs', component: () => import('./consumelogs.js')},
   {path: '/reports', component: () => import('./reports.js')},
-  {path: '/employees', component: () => import('./employees.js')},
   {path: '/settings', component: () => import('./settings.js')}
 ]});
 
@@ -38,39 +37,40 @@ const service = {name:"member",NUM_PER_PAGE:10,NUM_PER_SMPG:5,
 template:{}, //模板定义
 packages:[], //套餐定义，启动时获取
 packageOpts:[], //套餐选择项
-getPackages() {return new Promise(function(resolve,reject){
+getPackages() {return new Promise((resolve,reject)=>{
     if(this.packages.length>0) {
-        resolve({pkgs:this.packages, opts:this.packageOpts});
+        resolve({code:RetCode.OK, pkgs:this.packages, opts:this.packageOpts});
         return;
     }
     var url="/api/package/list";
-    request({method:"GET",url:url}, this.name).then(function(resp){
+    request({method:"GET",url:url}, this.name).then(resp=>{
         if(resp.code != RetCode.OK) {
-            this.$refs.errMsg.show(tags.noPackages);
-            reject("Url:" + url + ",code:" + resp.code + ",info:" + resp.info)
+            resolve(resp);
         } else if(resp.data.packages.length>0) {
             this.packages=resp.data.packages;
             this.packageOpts=this.assemb_pkgs(this.packages);
-            resolve({pkgs:this.packages, opts:this.packageOpts});
+            resolve({code:RetCode.OK, pkgs:this.packages, opts:this.packageOpts});
         }
-    }.bind(this));
-}.bind(this));
+    });
+});
 },
-getTemplate() {return new Promise(function(resolve,reject){
+getTemplate() {return new Promise((resolve,reject)=>{
     if(Object.keys(this.template).length > 0) {
         resolve(this.template);
         return;
     }
     var url="/api/template/get";
-    request({method:"GET", url:url},this.name).then(function(resp){
+    request({method:"GET", url:url},this.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             resolve({});
         } else {
-            this.template=resp.data.v; //{'name1':val1,...}
+            if(resp.data.v) {
+                this.template=resp.data.v; //{'name1':val1,...}
+            }
             resolve(this.template);
         }
-    }.bind(this));
-}.bind(this));
+    });
+});
 },
 assemb_pkgs(pkgs) {//拼装套餐信息，便于q-select列表显示
     var pkgOpts=[];
