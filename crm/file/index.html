@@ -5,6 +5,7 @@
 <meta name="content-type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="icon" href="data:image/ico;base64,aWNv">
+<link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <title>CRM</title>
 </head>
@@ -99,7 +100,9 @@ template(n,refresh){return new Promise(function(resolve,reject){
             resolve({'cmt':{n:tags.comment,t:'s'}});//只有一个备注字段
             return;
         }
-        this.tmpl[n]=resp.data.v;
+        if(resp.data.v) {
+            this.tmpl[n]=resp.data.v;
+        }
         resolve(this.tmpl[n]);
     }.bind(this));
 }.bind(this))

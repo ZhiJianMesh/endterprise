@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="content-type" content="text/html;charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="data:image/ico;base64,aWNv">
-  <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
-  <title>ServerSettings</title>
+<meta charset="utf-8" />
+<meta name="content-type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:image/ico;base64,aWNv">
+<link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
+<link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
+<title>ServerSettings</title>
 </head>
 <body><div id="app"><router-view></router-view></div></body>
 <script src="/assets/v3/vue.js"></script>
@@ -21,6 +22,7 @@ import Home from "./settings/home.js"
 import Debug from "./settings/debug.js"
 import Advanced from "./settings/advanced.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 
 const l=(typeof os)=='undefined' ? navigator.language : os.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
@@ -33,10 +35,29 @@ routes:[
 ]});
 //-------------------------------------------service定义
 const service={
- name:"settings",N_PAGE:10,N_SMPG:5,
+ name:"settings",N_PAGE:10,N_SMPG:5,bucketOpts:[],
  go_back() { //返回，在页面中通过service.go_back调用
     router.back();
- }
+ },
+ get_buckets() {return new Promise((resolve,reject) =>{
+    if(this.bucketOpts.length>0) {
+        resolve(this.bucketOpts);
+        return;
+    }
+
+    request({method:"GET",url:"/api/oss/allbuckets"}, 'company').then(resp => {
+        if(resp.code != RetCode.OK) {
+            resolve([]);
+            return;
+        }
+        var opts=[];
+        for(var b of resp.data.buckets) {
+            opts.push({label:b.city,value:''+b.id});
+        }
+        this.bucketOpts=opts;
+        resolve(opts);
+    })
+ })}
 };
 //-------------------------------------------app主体定义
 const app = Vue.createApp({
@@ -60,6 +81,7 @@ app.use(router);
 //--------------------------注册全局组件
 app.component('component-alert-dialog', AlertDialog);
 app.component('register-dialog', RegisterDlg);
+app.component('component-confirm-dialog', ConfirmDialog);
 
 app.mount('#app');
 </script>

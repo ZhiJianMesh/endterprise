@@ -38,11 +38,10 @@ cn:{
   debug:"调测助手",
   uploadLogs:"上传日志",
   faultreport:"故障上报",
-  backupNow:"立即备份",  
-  accessToken:"访问令牌",
-  neverBackup:"尚无备份",
   backupNow:"立即备份",
   restore:"恢复数据",
+  accessToken:"访问令牌",
+  neverBackup:"尚无备份",
   startup:"启用",
   shutdown:'停用',
   state:"状态",
@@ -82,6 +81,10 @@ cn:{
     'unknown':"未知错误"
   },
   needBuckets:"至少需要选择一个备份点",
-  needWanIp:"需要填写一个公网IP"
+  needWanIp:"需要填写一个公网IP",
+  backupAlert:"<div>每次数据备份将占用一次备份机会。</div><p>请确认是否继续？</p>",
+  backupSuccess:"数据已成功备份。",
+  restoreSuccess:"已成功恢复数据，请重新启动服务使数据生效。",
+  restoreAlert:"<div>恢复数据会首先停止服务器，并使用备份数据覆盖本地数据库，自上个备份时间点到当前时间产生的数据会丢失。</div><p>请确认是否继续？</p>"
 }
 };
