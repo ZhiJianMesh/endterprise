@@ -112,18 +112,17 @@ query_shares() {
     }.bind(this));
 },
 opr_touchlog(opr){
-    var dta, reqUrl;
+    var opts;
     if(opr==1){
-        dta={contact:this.id,comment:this.newTlDta.comment};
-        reqUrl="/api/touchlog/add";
+        var dta={contact:this.id,comment:this.newTlDta.comment};
+        opts={method:"POST",url:"/api/touchlog/add",data:dta}
     } else if(opr==2){
-        dta={contact:this.id,createAt:this.newTlDta.t,comment:this.newTlDta.comment};
-        reqUrl="/api/touchlog/modify";
+        var dta={contact:this.id,createAt:this.newTlDta.t,comment:this.newTlDta.comment};
+        opts={method:"PUT",url:"/api/touchlog/modify",data:dta}
     } else {
-        dta={contact:this.id,createAt:this.newTlDta.t};
-        reqUrl="/api/touchlog/remove";
+        opts={method:"DELETE",url:"/api/touchlog/remove?contact="+this.id+"&createAt="+this.newTlDta.t}
     }
-    request({method:"POST",url:reqUrl,data:dta}, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
@@ -131,7 +130,7 @@ opr_touchlog(opr){
             this.newTlDta={t:0,tp:0,comment:''};
             this.query_touchlogs(1);
         }
-    }.bind(this))
+    })
 },
 open_relation_dlg() {
     this.newRlDta={comment:'',target:null};
@@ -178,8 +177,7 @@ add_relation(){
     }.bind(this))
 },
 remove_relation(target){
-    var dta={customer:this.dtl.customer,contact:this.id,target:target};
-    var opts={method:"POST",url:"/api/relation/remove",data:dta};
+    var opts={method:"DELETE",url:"/api/relation/remove?contact="+this.id+"&customer="+this.dtl.customer+"&target="+target};
     request(opts, this.service.name).then(function(resp){
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -247,7 +245,7 @@ share_remove(acc){
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.contact.title+' "'+this.dtl.name+'"';
     this.$refs.confirmDlg.show(msg, function(){
-        var opts={method:"POST",url:"/api/contact/remove",data:{id:this.id}};
+        var opts={method:"DELETE",url:"/api/contact/remove?id="+this.id};
         request(opts, this.service.name).then(function(resp){
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -504,7 +502,7 @@ template:`
        <component-date-input :label="tags.share.endT" v-model="newShare.endT" :min="curDate"></component-date-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selector :label="tags.share.to" v-model="newShare.to"></component-user-selector>
+        <component-user-selector :label="tags.share.to" :accounts="newShare.to"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>

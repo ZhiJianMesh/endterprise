@@ -60,7 +60,7 @@ create_grp() {
 },
 rmv_grp(id,i) {
     this.hide_slider();
-    var opts={method:"POST",url:"/grp/remove",data:{id:id}};
+    var opts={method:"DELETE",url:"/grp/remove?id="+id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -105,7 +105,7 @@ add_member() {
 },
 rmv_member(id,i) {
     this.hide_slider();
-    var opts={method:"POST",url:"/api/member/remove",data:{gid:this.gid,uid:id}};
+    var opts={method:"DELETE",url:"/api/member/remove?gid="+this.gid+"&uid="+id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);

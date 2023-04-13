@@ -46,15 +46,16 @@ payment_flow(){
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.payment.title+' "'+this.dtl.cname+'-'+this.dtl.skuName+'"';
-    this.$refs.confirmDlg.show(msg, function(){
-        request({method:"POST",url:"/api/payment/remove",data:{id:this.id}},this.service.name).then(function(resp){
+    this.$refs.confirmDlg.show(msg, ()=>{
+        var opts={method:"DELETE",url:"/api/payment/remove?id="+this.id};
+        request(opts, this.service.name).then(resp=>{
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
                 this.service.go_back();
             }
-        }.bind(this))
-    }.bind(this));
+        })
+    });
 }
 },
 template:`

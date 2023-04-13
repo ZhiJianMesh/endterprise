@@ -162,20 +162,18 @@ create_contact() {
     }.bind(this))
 },
 opr_touchlog(opr){
-    var dta;
-    var reqUrl;
+    var opts;
     if(opr==1) { //增加
-        dta={contact:this.newTl.cid,comment:this.newTl.cmt};
-        reqUrl="/api/touchlog/add";
+        var dta={contact:this.newTl.cid,comment:this.newTl.cmt};
+        opts={method:"POST",url:"/api/touchlog/add",data:dta};
     } else if(opr==2){ //修改
-        dta={contact:this.newTl.cid,createAt:this.newTl.t,comment:this.newTl.cmt};
-        reqUrl="/api/touchlog/modify";
+        var dta={contact:this.newTl.cid,createAt:this.newTl.t,comment:this.newTl.cmt};
+        opts={method:"PUT",url:"/api/touchlog/modify",data:dta}
     } else { //删除
-        dta={contact:this.newTl.cid,createAt:this.newTl.t};
-        reqUrl="/api/touchlog/remove";
+        opts={method:"DELETE",url:"/api/touchlog/remove?contact="+this.newTl.cid+"&createAt="+this.newTl.t};
     }
 
-    request({method:"POST",url:reqUrl,data:dta}, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
@@ -183,7 +181,7 @@ opr_touchlog(opr){
             this.newTl={t:0,tp:0,cid:0,cmt:''};
             this.query_touchlogs(1);
         }
-    }.bind(this))
+    })
 },
 customer_flow(){
     var url='/task?flow='+this.dtl.flowid+"&did="+this.id+"&flName=customer&step="+this.dtl.status;
@@ -296,7 +294,7 @@ customer_deliver(){
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.customer.title+' "'+this.dtl.name+'"';
     this.$refs.confirmDlg.show(msg, function(){
-        var opts={method:"POST",url:"/api/customer/remove",data:{id:this.id}};
+        var opts={method:"DELETE",url:"/api/customer/remove?id="+this.id};
         request(opts, this.service.name).then(function(resp){
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -579,7 +577,7 @@ template:`
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selector :label="tags.signers" v-model="newOrder.nextSigners"></component-user-selector>
+        <component-user-selector :label="tags.signers" :accounts="newOrder.nextSigners"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
@@ -669,7 +667,7 @@ template:`
        <component-date-input :label="tags.share.endT" v-model="newShare.endT" :min="curDate"></component-date-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <component-user-selector :label="tags.share.to" v-model="newShare.to"></component-user-selector>
+        <component-user-selector :label="tags.share.to" :accounts="newShare.to"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
@@ -689,7 +687,7 @@ template:`
     <q-card-section class="q-pt-none">
     <q-list>
       <q-item><q-item-section>
-        <component-user-selector :label="tags.share.to" v-model="newShare.to"></component-user-selector>
+        <component-user-selector :label="tags.share.to" :accounts="newShare.to"></component-user-selector>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>

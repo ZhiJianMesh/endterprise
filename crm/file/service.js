@@ -49,7 +49,7 @@ service_flow(){
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.service.title+' "'+this.dtl.cname+'-'+this.dtl.skuName+'"';
     this.$refs.confirmDlg.show(msg, function(){
-        var opts={method:"POST",url:"/api/service/remove",data:{id:this.id}};
+        var opts={method:"DELETE",url:"/api/service/remove?id="+this.id};
         request(opts, this.service.name).then(function(resp){
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);

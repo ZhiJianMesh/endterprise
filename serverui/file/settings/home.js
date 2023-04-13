@@ -93,11 +93,12 @@ template: `
  </tr>
  <tr v-show="cid>0">
    <td>{{tags.advanced}}</td>
-   <td @click="jump('advanced')">{{tags.remoteAccess}}/{{tags.backup}}
+   <td @click="jump('advanced')">{{tags.wanAccess}}/{{tags.backup}}
       <q-icon name="miscellaneous_services" color="primary"
        size="2em" class="q-ml-md"></q-icon>
    </td>
  </tr>
+ <tr><td></td><td></td></tr>
  <tr>
    <td>
     <q-icon name="qr_code_2" @click="qrCodeDlg=true" size="2.5em" color="primary"></q-icon>

@@ -67,9 +67,7 @@ fmt_services(rows) {
         if(icon!="") {//已安装则显示本地icon
             s['icon']=icon;
         } else {
-            ss=JSON.parse(s.baseUrls);
-            n=Math.floor(Math.random()*ss.length);//随机选择一个
-            s['icon']=ss[n] + "/file/favicon.png";
+            s['icon']="/versions/" + s.service + "/favicon.png";
         }
         dt.setTime(s.recentUpd);
         s.updateAt=dt.toLocaleDateString();

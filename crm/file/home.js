@@ -17,17 +17,17 @@ created(){
 methods:{
 refresh() {
     var url1="/api/tasknum";
-    request({method:"GET",url:url1}, this.service.WF).then(function(resp){
+    request({method:"GET",url:url1}, this.service.WF).then(resp =>{
         if(resp.code!=0) {
             Console.warn("request "+url1+" failed:" + resp.code + ",info:" + resp.info);
             return;
         }
         this.taskNum=resp.data.num;
-    }.bind(this)); 
+    }); 
 
     var url2="/api/report/bulletin?days=7";
     request({method:"GET",url:url2}, this.service.name).then(function(resp){
-        if(resp.code!=0) {
+        if(resp.code!=RetCode.OK) {
             Console.warn("request "+url2+" failed:" + resp.code + ",info:" + resp.info);
             return;
         }

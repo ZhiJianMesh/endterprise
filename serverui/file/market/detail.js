@@ -2,7 +2,7 @@ export default {
 inject: ['service', 'tags'],
 data() {return {
     name: this.$route.query.service,
-    app: {}, //service,displayName,author,type,level,ver,stars,installs,cmt,recentUpd,baseUrls
+    app: {}, //service,displayName,author,type,level,ver,stars,installs,cmt,recentUpd
     subTitle:'',
     preImgNo:0,
     intro:{descrs:[],images:[]},
@@ -22,17 +22,13 @@ created() {
             return;
         }
         this.app = resp.data;
-        var ss=JSON.parse(resp.data.baseUrls); //随机挑选一个
         var n=Math.floor(Math.random()*ss.length);
-        var s=ss[n];
-        if(s.substring(s.length-1,s.length)=='/') {
-            s=s.substring(0,s.length-1);//去掉结尾的分隔符
-        }
-        this.app['icon']=s+"/file/favicon.png";
+        var s="/versions/" + this.app.service;
+        this.app['icon']=s+"/favicon.png";
         var v = parseInt(resp.data.ver);
         this.app['intVer']=v;
         this.app.ver=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
-        this.baseUrl=s+"/release/" +this.app.ver;
+        this.baseUrl=s+"/" +this.app.ver;
 
         var dt=new Date(resp.data.recentUpd);
         this.app['updateAt']=dt.toLocaleDateString();
@@ -121,10 +117,10 @@ unInstall() {
 },
 progress(inc,info){
     if(this.install.percent+inc>100) {
-		this.install.percent=100;
-	} else {
-		this.install.percent+=inc;
-	}
+        this.install.percent=100;
+    } else {
+        this.install.percent+=inc;
+    }
     this.install.info=info;
 }
 },

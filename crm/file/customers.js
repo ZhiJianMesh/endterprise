@@ -196,7 +196,7 @@ template:`
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <component-user-selector :label="tags.signers" v-model="newCust.nextSigners"></component-user-selector>
+       <component-user-selector :label="tags.signers" :accounts="newCust.nextSigners"></component-user-selector>
       </q-item-section></q-item>
      </q-list>
     </q-card-section>

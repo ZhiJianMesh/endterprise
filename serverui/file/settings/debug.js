@@ -31,7 +31,6 @@ showLogs() {
     this.reportLog=!this.reportLog;
 },
 report_tocloud(utc){
-    
 }
 },
 template: `
@@ -57,13 +56,15 @@ template: `
   <tr>
    <td>{{tags.logLevel}}</td>
    <td>
-    <q-select v-model="logLevel" :options="logLevels" @update:model-value="setLogLevel" dense></q-select>
+    <q-select v-model="logLevel" :options="logLevels"
+     @update:model-value="setLogLevel" dense></q-select>
    </td>
   </tr>
   <tr>
    <td>{{tags.uploadLogs}}</td>
-   <td @click="showLogs">{{logPath}}
+   <td @click="showLogs" style="word-break:break-all;word-wrap:break-word;white-space:pre-wrap;">
     <q-icon name="svguse:/assets/imgs/meshicons.svg#log" size="1.5em" color="primary"></q-icon>
+    {{logPath}}
    </td>
   </tr>
 </q-markup-table>

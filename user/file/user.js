@@ -80,7 +80,7 @@ save_baseinfo() {
     });
 },
 remove_member(gid,i) {
-    var opts={method:"POST",url:"/api/member/remove",data:{uid:this.id,gid:gid}};
+    var opts={method:"DELETE",url:"/api/member/remove?uid="+ this.id +"&gid="+ gid};
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -90,7 +90,7 @@ remove_member(gid,i) {
     });
 },
 remove_power(service,i) {
-    var opts={method:"POST",url:"/power/remove",data:{uid:this.id,service:service}};
+    var opts={method:"DELETE",url:"/power/remove?uid="+this.id+"&service=" + service};
     request(opts, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);

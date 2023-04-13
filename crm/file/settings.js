@@ -68,14 +68,14 @@ show_sku_detail(id) {
 },
 rmv_sku(id){
     var url="/api/sku/remove?id="+id;
-    request({method:"POST",url:url}, this.service.name).then(function(resp){
+    request({method:"DELETE",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.skuDlg={show:false,state:0};
         this.query_sku(this.skuPage.cur);
-    }.bind(this));
+    });
 },
 open_add_sku(){
     this.newSku={id:0,cost:0,price:'',lowest:0,highest:0,no:'',name:'',comment:''};

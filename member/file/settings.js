@@ -67,24 +67,24 @@ save_tpl(){
 },
 rmv_package(id,n){
     var url="/api/package/remove?id="+id;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"DELETE",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.packages.splice(n,1);
-    }.bind(this));
+    });
 },
 add_package(){
-    var url="/api/package/set";
-    request({method:"POST",url:url, data:this.newPackage}, this.service.name).then(function(resp){
-        if(resp.code != 0) {
+    var opts={method:"POST",url:"/api/package/set", data:this.newPackage}
+    request(opts, this.service.name).then(resp=>{
+        if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.packages.push(this.newPackage);
         this.newPackage={name:'',cls:'0',price:'',val:'',ext:{}};
-    }.bind(this));
+    });
 }
 },
 template:`

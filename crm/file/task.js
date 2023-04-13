@@ -160,8 +160,7 @@ removeWf() { //工作流数据错乱的情况下，删除工作流记录
             reutrn;
         }
         this.$refs.confirmDlg.show(this.tags.wrongFlowState, function(){
-            var dta={flowid:this.flowid, did:this.did};
-            var opts={method:"POST",url:"/api/proxy/removeBrokenWf",data:dta};
+            var opts={method:"DELETE",url:"/api/proxy/removeBrokenWf?flowid="+this.flowid+"&did="+this.did};
             request(opts, this.service.WF).then(function(resp){
                 if(resp.code!=RetCode.OK) {
                     this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -207,7 +206,7 @@ template:`
        <q-input v-model="opinion" :label="tags.flow.opinion" outlined dense maxlength=100></q-input>
        <div v-if="o.type!='S'">
         <component-user-selector :label="tags.signers" :multi="true"
-         v-model="nextSigners" v-if="s.step!=flow.maxStep"></component-user-selector>
+         :accounts="nextSigners" v-if="s.step!=flow.maxStep"></component-user-selector>
         <div class="row justify-end q-mt-lg">
          <q-btn @click="confirm" color="primary" :disable="!allProced"
           :label="s.step!=flow.maxStep?tags.flow.nextStep:tags.flow.finish" dense></q-btn>
