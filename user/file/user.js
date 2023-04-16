@@ -30,7 +30,7 @@ detail() {
         this.dtl=resp.data;//account,nickName,mobile,email,loginTime,powers[],groups[]
         var dt = new Date(this.dtl.loginTime);
         this.dtl['loginAt']=dt.toLocaleString();
-        this.dtl['status']=this.dtl.ustatus==0?'person':'person_off';
+        this.dtl['status']=this.dtl.ustatus=='N'?'person':'person_off';
         this.dtl.powers=resp.data.powers.map(p => {
             var pn='';
             if(p.power && p.power.length>=2) {
@@ -46,15 +46,15 @@ detail() {
     });
 },
 switch_active(){
-    var url=this.dtl.ustatus==0 ? "/api/user/deactive" : "/api/user/active";
+    var url=this.dtl.ustatus=='N' ? "/api/user/deactive" : "/api/user/active";
     var opts={method:"POST",url:url,data:{uid:this.id}};
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.dtl.ustatus=this.dtl.ustatus==0?1:0;
-        this.dtl.status=this.dtl.ustatus==0?'person':'person_off';
+        this.dtl.ustatus=this.dtl.ustatus=='N'?'L':'N';
+        this.dtl.status=this.dtl.ustatus=='N'?'person':'person_off';
     });
 },
 reset_pwd() {
