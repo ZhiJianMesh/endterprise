@@ -9,6 +9,7 @@ data() {return {
     baseUrl:'',
     action: this.tags.waitting,
     imgWidth:'45vw',
+    cdns:[],
     install:{percent:0,info:"",dlg:false,hasNew:false,normal:false}
 }},
 created() {
@@ -16,15 +17,24 @@ created() {
         this.imgWidth="30vw";
     }
     this.app=this.emptyDtl();
+    this.service.cdnList().then(cdns=>{
+        this.cdns=cdns;
+        this.getDetail();
+    });
+},
+mounted() {
+  window.installProgress = this.progress;//用于显示进度
+},
+methods: {
+getDetail() {
     request({method:"GET",url:"/api/service/detail?service="+this.name, private:false},"service").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
         this.app = resp.data;
-        var n=Math.floor(Math.random()*ss.length);
-        var s="/versions/" + this.app.service;
-        this.app['icon']=s+"/favicon.png";
+        var s=this.cdns[0] + '/' + this.app.service;
+        this.app['icon'] = s + "/favicon.png";
         var v = parseInt(resp.data.ver);
         this.app['intVer']=v;
         this.app.ver=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
@@ -55,10 +65,6 @@ created() {
         this.intro=intro;
     });
 },
-mounted() {
-  window.installProgress = this.progress;//用于显示进度
-},
-methods: {
 scroll(event) {
     if(!this.intro||!this.intro.images) {
         return;

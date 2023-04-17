@@ -6,11 +6,15 @@ data() {return {
     search:'',
     tab:'market',
     page:{cur:1, max:0},
+    cdns:[],
     install:{percent:0,info:"",dlg:false}
 }},
 created(){
+    this.service.cdnList().then(cdns=>{
+        this.cdns=cdns;
+        this.queryService(1);
+    })
     this.getLocServices();
-    this.queryService(1);
 },
 mounted() {
   window.installProgress = this.progress;
@@ -65,9 +69,9 @@ fmt_services(rows) {
         }
         icon=Server.serviceIcon(s.service);
         if(icon!="") {//已安装则显示本地icon
-            s['icon']=icon;
+            s['icon'] = icon;
         } else {
-            s['icon']="/versions/" + s.service + "/favicon.png";
+            s['icon'] = this.cdns[0] + '/' + s.service + "/favicon.png";
         }
         dt.setTime(s.recentUpd);
         s.updateAt=dt.toLocaleDateString();

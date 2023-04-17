@@ -32,6 +32,7 @@ routes:[
 //-------------------------------------------service定义
 const service={
 introductions:{},
+cdns:[],
 name:"market",N_PAGE:10,N_SMPG:5,
 go_back() { //返回，在页面中通过service.go_back调用
     router.back();
@@ -48,6 +49,23 @@ getExternal(opts){ //加载外部资源
             resolve(resp);
         });
         Http.getExternal(s, jsCbId);
+    });
+},
+cdnList(){ //加载外部资源
+    return new Promise((resolve,reject)=>{
+        if(this.cdns.length>0){
+            resolve(this.cdns);
+            return;
+        }
+        request({method:"GET",url:"/api/service/cdns"},"service").then(resp=>{
+            if(resp.code!=RetCode.OK) {
+                Console.error("get cdns result:" + resp);
+                resolve([])
+                return;
+            }
+            this.cdns=resp.data.cdns;
+            resolve(this.cdns)
+        });
     });
 }
 };

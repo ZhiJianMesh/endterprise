@@ -62,6 +62,7 @@ cn:{
 
   configs:"配置",
   refresh:"刷新",
+  logo:"公司图标",
 
   name:"名称",
   save:"保存",
@@ -80,6 +81,7 @@ cn:{
   errMsgs:{
     'unknown':"未知错误"
   },
+  invalidImg:"请选择有效的图片文件",
   needBuckets:"至少需要选择一个备份点",
   needWanIp:"需要填写一个公网IP",
   backupAlert:"<div>每次数据备份将占用一次备份机会。</div><p>请确认是否继续？</p>",
