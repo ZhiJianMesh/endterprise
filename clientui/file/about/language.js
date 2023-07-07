@@ -1,7 +1,7 @@
 export default {
 en:{
   welcome:"Welcome to use softwares of ZhiJian.net.cn",
-  aboutUs:"We are in YuHuaTai of NanJing"
+  aboutUs:"We are in NanJing"
 },
 cn:{
   welcome:"欢迎使用至简网格服务！我们致力于为小微企业提供免费、安全、可靠的极简办公软件。",

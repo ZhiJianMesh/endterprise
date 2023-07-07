@@ -39,7 +39,6 @@
   </q-page>
 </q-page-container>
 </q-layout>
-<component-alert-dialog :title="tags.failToCall" :close="tags.close" ref="errDlg"></component-alert-dialog>
 <register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
 </div>
 </body>
@@ -48,14 +47,13 @@
 <script src="/assets/v3/osadapter.js"></script>
 <script type="module">
 import Language from "./language.js"
-import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import RegisterDialog from "./settings/register.js"
 
 const SRV_ALTERING=2;
 const SRV_RUNNING=3;
 const SRV_CLOSED=4;
 
-const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //-------------------------------------------app主体定义
 const app = Vue.createApp({
@@ -77,7 +75,7 @@ created(){
 },
 methods:{
 alter(){
-    if(parseInt(this.cid)==0) {
+    if(parseInt(this.cid)<=0) {
         this.$refs.regDlg.show(()=>{
             this.init()
         });
@@ -105,7 +103,9 @@ chgStateDisp(){
     }
 },
 displayState(resp) {
-    this.state=resp.data.state;
+    if(resp && resp.data) {
+        this.state=resp.data.state;
+    }
     this.chgStateDisp();
     var t=Server.runTime();
     var day=parseInt(t/1440);
@@ -132,7 +132,7 @@ init() {
     this.runtime='0'+this.tags.day+'0'+this.tags.hour+'0'+this.tags.minute;
     this.startupAt=new Date(Server.startupAt()).toLocaleString();
     this.address=Server.address();
-    this.cid=Server.companyId();
+    this.cid=Company.companyId();
     this.refresh();
     if(this.timer != null) {
         clearInterval(this.timer)
@@ -142,7 +142,6 @@ init() {
 }//end of methods
 });
 app.use(Quasar);
-app.component('component-alert-dialog', AlertDialog);
 app.component('register-dialog', RegisterDialog);
 app.mount('#app');
 </script>

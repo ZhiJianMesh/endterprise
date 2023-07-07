@@ -2,7 +2,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import Language from "./language.js"
 
-const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 
 const URL_CREATE="/flow/create";

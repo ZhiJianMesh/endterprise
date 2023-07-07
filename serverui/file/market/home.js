@@ -22,9 +22,9 @@ mounted() {
 methods:{
 queryService(pg) {
     this.search='';
-    var offset=(parseInt(pg)-1)*this.service.N_PAGE;    
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url="/service/list?offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET", url:url, private:false}, "service").then(resp=>{
+    request({method:"GET", url:url, private:false}, "appstore").then(resp=>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
             this.mktServices=[];
@@ -42,7 +42,7 @@ searchService() {
         return;
     }
     var url="/service/search?s="+this.search+"&limit="+this.service.N_PAGE;
-    request({method:"GET",url:url, private:false}, "service").then(resp=>{
+    request({method:"GET",url:url, private:false}, "appstore").then(resp=>{
         if(resp.code != RetCode.OK) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
             this.mktServices=[];
@@ -70,8 +70,10 @@ fmt_services(rows) {
         icon=Server.serviceIcon(s.service);
         if(icon!="") {//已安装则显示本地icon
             s['icon'] = icon;
+        } else if(this.cdns[0].endsWith('/')){
+            s['icon'] =  this.cdns[0] + s.service + "/favicon.png";
         } else {
-            s['icon'] = this.cdns[0] + '/' + s.service + "/favicon.png";
+            s['icon'] =  this.cdns[0] + '/' + s.service + "/favicon.png";
         }
         dt.setTime(s.recentUpd);
         s.updateAt=dt.toLocaleDateString();
@@ -162,11 +164,9 @@ template: `
         <q-item-label caption>{{tags.updateAt}} {{s.updateAt}}</q-item-label>
       </q-item-section>
       <q-item-section side>
-        <q-item-label><q-icon name="star" size="xs" color="yellow"></q-icon></q-item-label>
         <q-item-label><q-icon name="cloud_download" size="xs" color="primary"></q-icon></q-item-label>
       </q-item-section>
       <q-item-section side>
-        <q-item-label caption>{{s.stars}}</q-item-label>
         <q-item-label caption>{{s.installs}}</q-item-label>
       </q-item-section>
     </q-item>

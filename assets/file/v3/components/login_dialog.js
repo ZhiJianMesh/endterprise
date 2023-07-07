@@ -9,10 +9,10 @@ data() {return {
     callback:null
 }},
 props: {
+    accType:{type:String,required:true, default:"N"},
     label:{type:String,required:true, default:"登录"},
-    account:{type:String,required:true, default:"账号"},
+    account:{type:String,required:true, default:"帐号"},
     pwd:{type:String,required:true, default:"密码"},
-    userType:{type:String,required:true,default:"company"},
     login:{type:String,default:"登录"},
     close:{type:String,default:"关闭"},
     failToCall:{type:String,default:"调用失败"},
@@ -24,19 +24,19 @@ components:{
 methods:{
 actLogin() {
     var jsCbId=__regsiterCallback(resp => {
-        if(resp.code!=0) {
+        if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.loginAcc='';
         this.loginPwd='';
         this.loginDlg=false;
-        if(this.callback&&typeof(this.callback)=='function'){
+        if(this.callback && typeof(this.callback)=='function'){
             this.callback(resp);
         }
         this.loginDlg=false;
     });
-    Http.login(this.loginAcc, this.loginPwd, this.userType, jsCbId);
+    Companies.login(this.loginAcc, this.loginPwd, this.accType, jsCbId);
 },
 show(cb) {
     this.loginDlg=true;
@@ -52,7 +52,7 @@ template: `
     <q-card-section class="q-pt-none">
       <q-input dense v-model="loginAcc" autofocus :label="account"></q-input>
       <q-input dense v-model="loginPwd" autofocus :type="hidePwd?'password':'text'" :label="pwd">
-         <template v-slot:append>
+        <template v-slot:append>
           <q-icon :name="hidePwd ? 'visibility_off':'visibility'"
             class="cursor-pointer" @click="hidePwd=!hidePwd"></q-icon>
         </template>

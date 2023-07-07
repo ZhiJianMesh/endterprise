@@ -23,6 +23,8 @@ cn:{
   releaseAt:"更新时间",
   aboutApp:"关于此应用",
   failToCall:"调用失败",
+  personal:"个人服务",
+  enterprise:"公司服务",
   errMsgs:{
     'unknown':"未知错误"
   }

@@ -2,7 +2,7 @@ export default {
 inject: ['service', 'tags'],
 data() {return {
     name: this.$route.query.service,
-    app: {}, //service,displayName,author,type,level,ver,stars,installs,cmt,recentUpd
+    app: {}, //service,displayName,author,type,level,ver,installs,cmt,recentUpd
     subTitle:'',
     preImgNo:0,
     intro:{descrs:[],images:[]},
@@ -27,37 +27,44 @@ mounted() {
 },
 methods: {
 getDetail() {
-    request({method:"GET",url:"/api/service/detail?service="+this.name, private:false},"service").then(resp=>{
+    var reqOpts={private:false, method:"GET",
+        url:"/api/service/detail?service="+this.name};
+    request(reqOpts, "appstore").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
         this.app = resp.data;
-        var s=this.cdns[0] + '/' + this.app.service;
+        var s=this.cdns[0];
+        if(s.endsWith('/')) {
+            s += this.app.service;
+        } else {
+            s += '/' + this.app.service;
+        }
         this.app['icon'] = s + "/favicon.png";
         var v = parseInt(resp.data.ver);
-        this.app['intVer']=v;
-        this.app.ver=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
-        this.baseUrl=s+"/" +this.app.ver;
+        this.app['intVer'] = v;
+        this.app.ver= Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
+        this.baseUrl= s + "/" + this.app.ver;
 
         var dt=new Date(resp.data.recentUpd);
         this.app['updateAt']=dt.toLocaleDateString();
 		this.refreshUI();
-        return this.service.getExternal({url:this.baseUrl + "/introduction.json"});
+        return this.service.getExternalRes({url:this.baseUrl + "/introduction.json"});
     }).then((s)=> {
         if(!s) {return}
         var o=JSON.parse(s);
         if(!o || !o.introduce) {
             return;
         }
-        var intro=o.introduce;
-        if(intro.images && intro.images.length>0) {
+        var intro = o.introduce;
+        if(intro.images && intro.images.length > 0) {
             for(var i in intro.images) {
-                var src=intro.images[i].src;
-                if(src.substring(0,1)=="/") {
-                    intro.images[i].src=this.baseUrl+src;
+                var src = intro.images[i].src;
+                if(src.substring(0,1) == "/") {
+                    intro.images[i].src = this.baseUrl+src;
                 } else {
-                    intro.images[i].src=this.baseUrl+'/'+src;
+                    intro.images[i].src = this.baseUrl + '/' + src;
                 }
             }
             this.subTitle = intro.images[0].info;
@@ -104,18 +111,9 @@ refreshUI(resp) {
         Console.info("App " + this.app.service + " is not installed");
     }
 },
-giveStar() {
-    request({method:"GET",url:"/api/service/star?service="+this.name},"service").then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.app.stars=resp.data.stars;
-    });
-},
 emptyDtl() {
     return {service:'', displayName:'', author:'', type:'', ver:'',intVer:0,
-     stars:0, installs:0, cmt:'', recentUpd:'', baseUrl:''}
+     installs:0, cmt:'', recentUpd:'', baseUrl:''}
 },
 unInstall() {
     var jsCbId=__regsiterCallback(this.refreshUI);
@@ -157,8 +155,7 @@ template: `
 
    <q-page-container>
      <q-page class="q-pa-none">
-<div class="q-py-xs q-px-md" @click="giveStar">
- <q-chip outline color="deep-orange" text-color="white" icon="star">{{app.stars}}</q-chip>
+<div class="q-py-xs q-px-md">
  <q-chip outline color="primary" text-color="white" icon="cloud_download">{{app.installs}}</q-chip>
 </div>
 <q-list class="q-pa-sm">

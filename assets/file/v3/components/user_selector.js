@@ -2,7 +2,7 @@
 export default {
 data() {return {
     accOptions:[],//选择项，调用search获得
-    chkList:[]
+    values:null //选中项，不能赋值[]，会显示一个空选项
 }},
 props: {
     accounts:{type:Array,required:true}, //复杂对象，可以直接在组件中修改
@@ -51,13 +51,17 @@ changed() {
     //所以接受改变的事件，将选中项的value存入accounts属性
     //因为accounts必须是数组，所以此属性可以更改，尽管不优雅，但是管用，不必$emit
     this.accounts.splice(0, this.accounts.length)
-    for(var c of this.chkList) {
-        this.accounts.push(c.value);
+    if(this.multi) {
+        for(var c of this.values) {
+            this.accounts.push(c.value);
+        }
+    } else if(this.values){ //单选时，values不是数组
+        this.accounts.push(this.values.value);
     }
 }
 },
 template: `
-<q-select v-model="chkList" :label="label" :options="accOptions"
+<q-select v-model="values" :label="label" :options="accOptions"
   use-input use-chips :multiple="multi"
   hide-dropdown-icon input-debounce=200 dense
   @new-value="input_user" @filter="search_users"

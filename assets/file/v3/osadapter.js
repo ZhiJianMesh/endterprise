@@ -8,19 +8,19 @@ OK:0,
 DEPRECATED:1,
 INTERNAL_ERROR:100,
 HTTP_ERROR:101,
-INVALID_TOKEN:102,
+INVALID_TOKEN:102, //token无效
 EMPTY_BODY:103,
 DB_ERROR:104,
-INVALID_SESSION:105,
+INVALID_SESSION:105, //会话错误
 SERVICE_NOT_FOUND:106, //服务不存在
 TOO_BUSY:107,
 SYSTEM_TIMEOUT:108,
 NOT_SUPPORTED_FUNCTION:109, //API存在，但是所需的功能不支持
 API_NOT_FOUND:110, //API不存在
-NO_RIGHT:111,
-NO_NODE:112,
-INVALID_NODE:113,
-THIRD_PARTY_ERR:114,
+NO_RIGHT:111, //无权限
+NO_NODE:112, //没有合适的节点
+INVALID_NODE:113, //不合适的节点
+THIRD_PARTY_ERR:114, //第三方服务错误
 UNKNOWN_ERROR:150,
 EXISTS:2000,
 NOT_EXISTS:2001,
@@ -30,7 +30,8 @@ INVALID_VERSION:3002,
 DATA_WRONG:3003,
 WRONG_PARAMETER:4000,
 SERVICE_ERROR:5000,
-INVALID_STATE:5001
+INVALID_STATE:5001,
+CLIENT_ERROR:100000
 };
 
 const __callback_funs={};
@@ -43,6 +44,14 @@ function request(opts, service){
         });
         Http.request(s, service, cbId);
     });  
+}
+
+function getExternal(opts) {
+    return new Promise((resolve,reject)=>{
+        Http.getExternal(JSON.stringify(opts), __regsiterCallback(resp => {
+            resolve(resp);
+        }));
+    });
 }
 
 function download(opts, service) {

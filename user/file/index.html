@@ -21,13 +21,13 @@ import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import GrpSelector from "/assets/v3/components/grp_selector.js"
 
-const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
- {path:'/home', component:()=>import('./home.js')},
+ {path:'/grps', component:()=>import('./grps.js')},
  {path:'/users', component:()=>import('./users.js')},
  {path:'/user', component:()=>import('./user.js')},
  {path:'/authorizes', component:()=>import('./authorizes.js')},
@@ -98,7 +98,7 @@ jumpTo(url) {
 const app = Vue.createApp({
 provide:{tags:tags, service:service},
 created(){
-    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+    this.$router.push('/users').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
 },
 setup() {
     //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用

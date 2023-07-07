@@ -22,7 +22,7 @@ import UserSelector from "/assets/v3/components/user_selector.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 
-const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 
 //router定义

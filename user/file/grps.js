@@ -160,9 +160,8 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
-    <q-btn icon="manage_accounts" flat round @click="service.jumpTo('/users')"></q-btn>
-    <q-btn icon="fact_check" flat round @click="service.jumpTo('/authorizes')"></q-btn>    
+     <q-btn flat round icon="arrow_back" dense @click="service.go_back()"></q-btn>
+     <q-toolbar-title>{{tags.grps}}</q-toolbar-title>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -224,7 +223,7 @@ template:`
   <q-card-section class="q-pt-none">
     <q-item><q-item-section>
      <component-user-selector :label="tags.user.account"
-      :accounts="newMbr.account" multi="false" useid="true"></component-user-selector>
+      :accounts="newMbr.account" :multi="false" useid="true"></component-user-selector>
     </q-item-section></q-item>
     <q-item><q-item-section>
      <q-input :label="tags.grp.title" v-model="newMbr.title" dense></q-input>

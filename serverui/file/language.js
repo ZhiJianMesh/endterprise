@@ -22,6 +22,9 @@ cn:{
   companyId:"公司ID",
   dnsAccessCode:"接入码",
   pwd:"密码",
+  cfmPwd:"确认密码",
+  verifyCode:"验证码",
+  invalidCfmPwd:"确认密码必须与密码相同",
   updateAt:"更新于",
   author:"作者",
   version:"版本",
@@ -45,16 +48,15 @@ cn:{
   startup:"启用",
   shutdown:'停用',
   state:"状态",
-  backupKey:"备份密钥",
   backupTime:"最近备份时间",
   backupAt:"每日备份时间点",
-  buckets:"备份点",
+  buckets:"备份站点",
   notStart:"未启用",
   running:"已启用",
   wanType:"类型",
   wanTypeOpts:[
     {label:"自有外网IP",value:"1"},
-    {label:"代理",value:"2"}
+    {label:"网桥代理",value:"2"}
   ],
   gwIp:"公网IP",
   
@@ -67,7 +69,8 @@ cn:{
   name:"名称",
   save:"保存",
   register:"注册",
-  reRegister:"重注册",
+  login:"登录",
+  reRegister:"重注册/登录",
   displayName:"中文名",
   author:"作者",
   search:"搜索",

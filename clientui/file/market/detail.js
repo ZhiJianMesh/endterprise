@@ -27,7 +27,7 @@ created() {
         this.imgWidth="30vw";
     }
     this.isNormal=!App.isBuiltin(this.name);
-    request({method:"GET",url:"/api/introduce"},this.name).then(function(resp) {
+    request({method:"GET",url:"/api/introduce",private:false},this.name).then(function(resp) {
         if (resp.code!=RetCode.OK) {
             this.intro = {descrs: [this.app.displayName], images:[]};
             return;
@@ -79,8 +79,7 @@ unInstall() {
 	if(!this.isNormal) {
 		return;
 	}
-    var jsCbId=__regsiterCallback(this.refreshUI)
-	App.unInstall(this.name, jsCbId);
+	App.unInstall(this.name, __regsiterCallback(this.refreshUI));
 	this.action=this.tags.waitting;
 },
 progress(inc,info){

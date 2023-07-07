@@ -112,18 +112,18 @@ add_tpl_seg(){
 },
 save_tpl(){
     var opts={url:"/put",method:"POST",data:{k:this.curTpl,v:this.tmpl}};
-    this.tmpl_req(opts, this.service.name, function(resp){
+    this.tmpl_req(opts, this.service.name, (resp)=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-    }.bind(this));
+    });
 },
 tmpl_changed(v){
     this.curTpl=v;
-    this.service.template(this.curTpl).then(function(tpl){
+    this.service.template(this.curTpl).then(tpl=>{
         this.tmpl=tpl;
-    }.bind(this))    
+    })    
 }
 },
 template:`

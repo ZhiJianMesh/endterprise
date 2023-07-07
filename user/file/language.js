@@ -1,6 +1,6 @@
 export default {
 en:{
-app_name:"employees management",
+app_name:"groups management",
 failToCall:"Failed",
 close:"Close",
 ok:"OK",
@@ -15,8 +15,8 @@ crtGrp:"Create group",
 owner:"Owner"
 },
 cn:{
-app_name:"员工管理",
-employees:"员工列表",
+app_name:"帐号管理",
+grps:"组织管理",
 authorize:"服务授权",
 failToCall:"调用失败",
 close:"关闭",

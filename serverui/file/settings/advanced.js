@@ -8,7 +8,6 @@ data() {return {
         balance:0
     },
     backup:{
-        key:'',
         at:-1,
         recent:'',
         balance:0,
@@ -34,51 +33,43 @@ init() {
        this.bucketOpts = opts;
     });
     
-    var jsCbId1 = __regsiterCallback(resp=>{
+    Server.backupInfo(__regsiterCallback(resp=>{
         var info=resp.data;
         if(info.recent<=0) {
             this.backup.recent=this.tags.neverBackup;
         } else {
             this.backup.recent=new Date(info.recent).toLocaleString();
         }
-        this.backup.key=info.key;
         this.backup.at=info.at;
-		if(info.at >= 0) {
-		    var h=parseInt(info.at/60);
-		    var m=parseInt(info.at % 60);
-			this.backupAt= (h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
-		} else {
-			this.backupAt='';
-		}
+        if(info.at >= 0) {
+            var h=parseInt(info.at/60);
+            var m=parseInt(info.at % 60);
+            this.backupAt= (h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
+        } else {
+            this.backupAt='';
+        }
         request({method:"GET",url:"/api/service/getinfo?service=backup"}, 'company').then(resp => {
-            if(resp.code != RetCode.OK) {
-                //this.backup.at=-1;
-                return;
-            }
+            if(resp.code != RetCode.OK) return;
             this.backup.balance=resp.data.balance;
             this.backup.buckets=resp.data.ext.split(',');
         })
-    });
-    Server.backupInfo(jsCbId1);
+    }));
 
-    var jsCbId2 = __regsiterCallback(resp=>{
-        this.wan.addr=resp.data.addr;
-        this.wan.state=''+resp.data.state;
+    Server.outsideGwInfo(__regsiterCallback(r=>{
+        this.wan = {addr:r.data.addr, state:''+r.data.state, balance:0};
         request({method:"GET",url:"/api/service/getinfo?service=bridge"}, 'company').then(resp => {
             if(resp.code != RetCode.OK) {
                 this.wan.state=0;
             } else {
                 this.wan.balance=resp.data.balance;
             }
-        })
-    });
-
-    Server.wanGwInfo(jsCbId2);
+         })
+    }));
 },
 switchWan() {
 	if(this.wan.state!=0) {
 		this.wan.state=0;
-		if(this.balance.bridge<=0) {
+		if(this.wan.bridge<=0) {
 		    this.turnOff('bridge');
 		}
 	} else {
@@ -142,13 +133,13 @@ save(){
             this.$refs.alertDlg.show(this.tags.needWanIp);
             return;
         }
-        var reqData={type:'C', addr:this.wan.addr};
-        request({method:"POST",url:"/api/company/register", data:reqData}, 'httpdns').then(resp => {
+        Server.setOutsideAddr(this.wan.addr, __regsiterCallback(resp=>{
             if(resp.code != RetCode.OK) {
                 this.$refs.alertDlg.showErr(resp.code, resp.info);
             }
-        });
+        }));
     }
+
 
     if(this.backup.at>=0) {
         if(this.backup.buckets.length==0) {
@@ -167,21 +158,13 @@ save(){
             }
         });
     }
-    var jsCbId = __regsiterCallback(resp=>{
-        this.changed=false;
-    });
-    var req={backup:this.backup, wan:this.wan};
-    Server.saveAdvancedCfg(jsCbId, JSON.stringify(req));
+    Server.saveAdvancedCfg(JSON.stringify({backup:this.backup, wan:this.wan}),
+        __regsiterCallback(resp=>{
+            this.changed=false;
+        })
+    );
 },
 backupNow() {
-    var jsCbId = __regsiterCallback(resp=>{
-        this.progress.state=2;
-        if(resp.code != RetCode.OK) {
-            this.progress.info=this.$refs.alertDlg.fmtErr(resp.code, resp.info);
-        } else {
-            this.progress.info=this.tags.backupSuccess;
-        }
-    });
     this.progress.dlg=true;
     this.progress.state=0;
     this.progress.icon='backup';
@@ -189,7 +172,14 @@ backupNow() {
     this.progress.info=this.tags.backupAlert;
     this.progress.act=()=>{
         this.progress.state=1;
-        Server.backup(jsCbId);
+        Server.backup(__regsiterCallback(resp=>{
+            this.progress.state=2;
+            if(resp.code != RetCode.OK) {
+                this.progress.info=this.$refs.alertDlg.fmtErr(resp.code, resp.info);
+            } else {
+                this.progress.info=this.tags.backupSuccess;
+           }
+        }));
     }
 },
 restore() {
@@ -242,9 +232,9 @@ template: `
  </tr>
  <tr v-show="wan.state==1">
   <td>{{tags.gwIp}}</td>
-  <td><q-input v-model="wan.addr" dense @update:model-value="changed=true"></q-input></td>
+  <td><q-input v-model="wan.addr" dense @update:model-value="changed=true"
+     :rules="[v=>isValidWanIp(v)||tags.needWanIp]"></q-input></td>
  </tr>
-
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.backup}}</td><td></td></tr>
  <tr>
   <td>{{tags.state}}</td>
@@ -266,10 +256,6 @@ template: `
    <q-btn outline icon="backup" :label="tags.backupNow"
     @click="backupNow" color="primary" dense></q-btn>
   </td>
- </tr>
- <tr v-show="backup.at>=0">
-  <td>{{tags.backupKey}}</td>
-  <td><q-input v-model="backup.key" dense @update:model-value="changed=true"></q-input></td>
  </tr>
  <tr v-show="backup.at>=0">
   <td>{{tags.backupAt}}</td>

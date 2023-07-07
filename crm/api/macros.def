@@ -8,8 +8,8 @@
             "comment":"确认对数据有owner权限",
             "multi":false,
             "merge":true,
-            "withMeta":"each",
-            "sql":"select power from power where account='@{#tokenExt}'
+            "metas":"each",
+            "sql":"select power from power where account='@{#tokenAcc}'
                    and type='#TYPE#' and did=#DID# and endT>@{NOW|unit60000} and power='O'"
         }]
     },
@@ -23,8 +23,8 @@
             "comment":"确认对数据有任意权限，包括主权限、工作流参与权限、分享权限",
             "multi":false,
             "merge":true,
-            "withMeta":"each",
-            "sql":"select power from power where account='@{#tokenExt}'
+            "metas":"each",
+            "sql":"select power from power where account='@{#tokenAcc}'
                   and type='#TYPE#' and did=#DID# and endT>@{NOW|unit60000}"
         }]
     },
@@ -38,13 +38,13 @@
             "comment":"确认对联系人是否有owner权限，如果是客户的owner，对联系人也是owner",
             "multi":false,
             "merge":true,
-            "withMeta":"each",
-            "sql":"select power from power where account='@{#tokenExt}'
+            "metas":"each",
+            "sql":"select power from power where account='@{#tokenAcc}'
                    and type='CT' and did=#DID# 
                    and endT>@{NOW|unit60000} and power='O'
                   union
                   select p.power from contacts c,power p
-                   where c.id=#DID# and p.account='@{#tokenExt}'
+                   where c.id=#DID# and p.account='@{#tokenAcc}'
                      and p.type='CU' and p.did=c.customer
                      and p.endT>@{NOW|unit60000} and p.power='O'
             "

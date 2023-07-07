@@ -15,18 +15,19 @@
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
 <script type="module">
-import Language from "./language.js"
+import Language from "./market/language.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 
-const l=(typeof os)=='undefined' ? navigator.language : os.language();
+const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //-------------------------------------------router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
-{path:'/home', component:()=>import('./home.js')},
-{path:'/detail', component:()=>import('./detail.js')}
-]});
+ {path:'/home', component:()=>import('./market/home.js')},
+ {path:'/detail', component:()=>import('./market/detail.js')}
+]
+});
 //-------------------------------------------service定义
 const service={
 name:"market",N_PAGE:10,N_SMPG:5,
@@ -39,7 +40,7 @@ go_back() { //返回，在页面中通过service.go_back调用
 const app = Vue.createApp({
 provide:{tags:tags, service:service},
 created(){
-    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+    this.$router.push('/home').catch(err => {err})
 },
 setup() {
     //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用

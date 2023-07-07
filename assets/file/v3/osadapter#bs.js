@@ -1,3 +1,4 @@
+//only for test in explorer
 const SERVICE_USER="user";
 const SERVICE_UNIUSER="uniuser";
 const SERVICE_CONFIG="config";
@@ -24,7 +25,8 @@ NOT_SUPPORTED_FUNCTION:109, //API存在，但是所需的功能不支持
 API_NOT_FOUND:110, //API不存在
 NO_RIGHT:111,
 NO_NODE:112,
-THIRD_PARTY_ERR:113,
+INVALID_NODE:113,
+THIRD_PARTY_ERR:114,
 UNKNOWN_ERROR:150,
 EXISTS:2000,
 NOT_EXISTS:2001,
@@ -34,7 +36,8 @@ INVALID_VERSION:3002,
 DATA_WRONG:3003,
 WRONG_PARAMETER:4000,
 SERVICE_ERROR:5000,
-INVALID_STATE:5001
+INVALID_STATE:5001,
+CLIENT_ERROR:100000
 };
 
 const __callback_funs={};
@@ -74,16 +77,38 @@ function storage_clr() {
     localStorage.clear();
 }
 
-var __services={
-    codebook:{type:'PERSONAL'},
-    enstu:{type:'PERSONAL'}
-};
+var __companies=[];
+var __curCompany=0;
+function loadContext() {
+    var s=storage_get("companies");
+    if(s) {
+        __companies=JSON.parse(s);
+    } else {
+        __companies=[{id:0,name:"zhijian.net.cn",accessCode:"ABCDEFGHIJ",tokens:{}}]
+    }
+    __curCompany=storage_get("curCompany", 0);
+    if(__curCompany < 0 || __curCompany >= __companies.length) {
+        __curCompany = 0;
+    }
+}
+loadContext();
+
+function saveCompanies() {
+    var s=JSON.stringify(__companies);
+    storage_set("companies", s);
+    storage_set("curCompany", __curCompany);
+}
+function currentCompany() {
+    return __companies[__curCompany];
+}
+
 var __request_cache={};
 var __traceid=0;
 function request(opts, service){
     if(!opts.headers) {
         opts.headers={};
     }
+
     if(opts.private!==undefined && !opts.private) { //公有，未传则默认私有
         return sendRequest(opts, service);
     }
@@ -93,28 +118,22 @@ function request(opts, service){
         if(resp.code != RetCode.OK) {
             return resp;
         }
-		storage_set(service, resp.data.access_token);
         opts.headers.access_token=resp.data.access_token;
         return sendRequest(opts, service);
     });
 }
 
 function getToken(service) {
-    var st=storage_get(service,'');
-    if(st!='') {
+    var company=currentCompany();
+    var st=company.tokens[service];
+    if(st) {
         return new Promise((resolve, reject)=>{
             resolve({code:RetCode.OK, data:{access_token:st}});
         });
     }
     
-    var userService;
-    if(__services[service] && __services[service].type=='PERSONAL') {
-        userService=SERVICE_UNIUSER;
-    } else {
-        userService=SERVICE_USER;
-    }
-    
-    var at=storage_get(userService,'');
+    var userService=company.id==0?SERVICE_UNIUSER:SERVICE_USER;
+    var at=company.tokens[userService];
     if(!at){//以用户token换服务token
         return new Promise((resolve, reject)=>{
             resolve({code:RetCode.NO_RIGHT, info:"no right"});
@@ -124,7 +143,13 @@ function getToken(service) {
         url:'/api/serviceToken?service='+service,
         headers:{access_token:at}
     };
-    return sendRequest(opts, userService);
+    return sendRequest(opts, userService).then(resp => {
+	    if(resp.code == RetCode.OK) {
+	        company.tokens[service]=resp.data.access_token;
+	        saveCompanies();
+        }
+        return resp;
+	});
 }
 
 function sendRequest(opts, service) {
@@ -145,7 +170,8 @@ function sendRequest(opts, service) {
 
     return new Promise(function(resolve, reject){
         var req = {method:opts.method, url:url, headers:hh};
-        if(opts.method.toUpperCase() == "POST") {
+        var method=opts.method.toUpperCase();
+        if(method == "POST" || method == "PUT") {
             req.data = opts.data;
             opts.cache=false;//post请求不容许缓存
         } else if(opts.cache) {
@@ -174,6 +200,47 @@ function sendRequest(opts, service) {
     });
 }
 
+//GET外部网站的内容
+function getExternal(opts) {
+    return new Promise((resolve, reject)=>{
+    var req = {method:"GET", url:opts.url, headers:opts.headers};
+    axios(req).then(
+        res => {
+            if(res.status == 200) {
+                console.info("getExternal " + opts.url + ":" +res.data);
+                resolve(res.data);
+            } else {
+                resolve("");
+            }
+        },
+        err => {
+            resolve(`{"introduce": {
+            "descrs": [
+               "满足小微企业客户关系管理所需，实现客户、联系人、订单、服务、回款管理，支持按工作流方式推动销售、服务、回款等工作。",
+               "可自定义工作流步骤，每个步骤可以单个负责人签字，也可以多个参与人共同决策，方便企业实现工作流程规范化。",
+               "实时数据统计，并呈现在主界面中，普通成员可以查看一月内的报表，企业主与财务可以查看年度与月度报表。",
+               "精准的数据授权，只将数据授权给参与工作流的成员，其他成员通过数据分享查看数据，数据分享可设置期限。"
+               ],
+               "images": [
+                   {
+                       "src": "_imgs/1.png",
+                       "info": "具备客户、联系人、订单管理功能"
+                   },
+                   {
+                       "src": "_imgs/2.png",
+                       "info": "同时支持回款、服务工作流操作"
+                   },
+                   {
+                       "src": "_imgs/3.png",
+                       "info": "实时报表呈现，及时掌握团队状态"
+                   }
+               ]
+           }}`
+        )}
+    );
+    })
+}
+
 function download(opts, service) {
     if(!opts.headers) {
         opts.headers={};
@@ -181,13 +248,11 @@ function download(opts, service) {
     if(opts.private!==undefined && !opts.private) { //默认私有
         return innerDownload(opts, service);
     }
-
     opts.headers['access_token']='';
     return getToken(service).then(resp => {
         if(resp.code != RetCode.OK) {
             return resp;
         }
-		storage_set(service, resp.data.access_token);
         opts.headers.access_token=resp.data.access_token;
         return innerDownload(opts, service);
     });
@@ -312,6 +377,23 @@ const JStr={
         logicCheckCode = this.creditCodeOrigin[logicCheckCode];
         return logicCheckCode===code.slice(17);
     },
+    idNoReg:/^(\d{6})(\d{4})(\d{2})(\d{2})(\d{3})([0-9]|X|x)$/,
+    idNoWeight:[7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2],
+    idNoBasecode:['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'],
+    chkIdNo(no) {
+        if(!idNoReg.test(no)){
+            return false;
+        }
+        //检验18位身份证的校验码是否正确。
+        //校验位按照ISO 7064:1983.MOD 11-2的规定生成，X可以认为是数字10。
+        var verifyCode;
+        var v = 0;
+        for(var i = 0; i < 17; i++) {
+            v += no.charCodeAt(i) * idNoWeight[i];
+        }
+        verifyCode = idNoBasecode[v % idNoBasecode.length];
+        return (verifyCode == no.substr(17, 1).toUpperCase());
+    },
     base64CharCode(c) {
         if (c >= 'A' && c <= 'Z') {
             return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
@@ -340,12 +422,178 @@ const JStr={
     }
 }
 
+const Secure = {
+    sha256(s) { //https://blog.csdn.net/yuanyuan95/article/details/127811272
+        const chrsz = 8
+        const __base64Chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+    
+        function safe_add(x, y) {
+            const lsw = (x & 0xFFFF) + (y & 0xFFFF)
+            const msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+            return (msw << 16) | (lsw & 0xFFFF)
+        }
+    
+        function S(X, n) {
+            return (X >>> n) | (X << (32 - n))
+        }
+    
+        function R(X, n) {
+            return (X >>> n)
+        }
+    
+        function Ch(x, y, z) {
+            return ((x & y) ^ ((~x) & z))
+        }
+    
+        function Maj(x, y, z) {
+            return ((x & y) ^ (x & z) ^ (y & z))
+        }
+    
+        function Sigma0256(x) {
+            return (S(x, 2) ^ S(x, 13) ^ S(x, 22))
+        }
+    
+        function Sigma1256(x) {
+            return (S(x, 6) ^ S(x, 11) ^ S(x, 25))
+        }
+    
+        function Gamma0256(x) {
+            return (S(x, 7) ^ S(x, 18) ^ R(x, 3))
+        }
+    
+        function Gamma1256(x) {
+            return (S(x, 17) ^ S(x, 19) ^ R(x, 10))
+        }
+    
+        function coreSha256(m, l) {
+            const K = [
+                0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
+                0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
+                0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
+                0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
+                0xE49B69C1, 0xEFBE4786, 0xFC19DC6, 0x240CA1CC,
+                0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
+                0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7,
+                0xC6E00BF3, 0xD5A79147, 0x6CA6351, 0x14292967,
+                0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13,
+                0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
+                0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3,
+                0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
+                0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5,
+                0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
+                0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
+                0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2]
+            const HASH = [
+                0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A,
+                0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19]
+            const W = new Array(64)
+            var a, b, c, d, e, f, g, h, i, j
+            var T1, T2
+            m[l >> 5] |= 0x80 << (24 - l % 32)
+            m[((l + 64 >> 9) << 4) + 15] = l
+            for (i = 0; i < m.length; i += 16) {
+                a = HASH[0]
+                b = HASH[1]
+                c = HASH[2]
+                d = HASH[3]
+                e = HASH[4]
+                f = HASH[5]
+                g = HASH[6]
+                h = HASH[7]
+                for (j = 0; j < 64; j++) {
+                    if (j < 16) {
+                        W[j] = m[j + i]
+                    } else {
+                        W[j] = safe_add(safe_add(safe_add(Gamma1256(W[j - 2]), W[j - 7]), Gamma0256(W[j - 15])), W[j - 16])
+                    }
+                    T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), W[j])
+                    T2 = safe_add(Sigma0256(a), Maj(a, b, c))
+                    h = g
+                    g = f
+                    f = e
+                    e = safe_add(d, T1)
+                    d = c
+                    c = b
+                    b = a
+                    a = safe_add(T1, T2)
+                }
+                HASH[0] = safe_add(a, HASH[0])
+                HASH[1] = safe_add(b, HASH[1])
+                HASH[2] = safe_add(c, HASH[2])
+                HASH[3] = safe_add(d, HASH[3])
+                HASH[4] = safe_add(e, HASH[4])
+                HASH[5] = safe_add(f, HASH[5])
+                HASH[6] = safe_add(g, HASH[6])
+                HASH[7] = safe_add(h, HASH[7])
+            }
+            return HASH
+        }
+    
+        function str2bin(str) {
+            const bin = []
+            const mask = (1 << chrsz) - 1
+            for (var i = 0; i < str.length * chrsz; i += chrsz) {
+                bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32)
+            }
+            return bin
+        }
+    
+        function utf8Encode(s) {
+            s = s.replace(/\r\n/g, '\n')
+            var utfText = ''
+            for (var n = 0; n < s.length; n++) {
+                const c = s.charCodeAt(n)
+                if (c < 128) {
+                    utfText += String.fromCharCode(c)
+                } else if ((c > 127) && (c < 2048)) {
+                    utfText += String.fromCharCode((c >> 6) | 192)
+                    utfText += String.fromCharCode((c & 63) | 128)
+                } else {
+                    utfText += String.fromCharCode((c >> 12) | 224)
+                    utfText += String.fromCharCode(((c >> 6) & 63) | 128)
+                    utfText += String.fromCharCode((c & 63) | 128)
+                }
+            }
+            return utfText
+        }
+        
+        function bin2base64(bytes) {
+            var str = '';
+            var left = 0;
+            var len = bytes.length;
+            var v = 0;
+            var j = 24;
+        
+            for (var i = 0; i < len; i++) {
+                for(j = 24; j>=0; j-=8) {
+                    v |= (((bytes[i] >> j) & 0xff) << left);
+                    left += 8;
+                    while (left >= 6) {
+                        str += __base64Chars.charAt(v & 0x3f);
+                        v >>>= 6;
+                        left -= 6;
+                    }
+                }
+            }
+            if (left > 0) {
+                str += __base64Chars.charAt(v & 0x3f);
+            }
+            return str;
+        }
+        
+        var s = utf8Encode(s);
+        var b = coreSha256(str2bin(s), s.length * chrsz);
+        return bin2base64(b);
+    }
+}
+
 const Console = {
     debug(s) {console.debug(s)},
     info(s) {console.info(s)},
     warn(s) {console.warn(s)},
     error(s) {console.error(s)}
 }
+
 const View = {
     width() {return document.documentElement.clientWidth},
     height() {return document.documentElement.clientHeight},
@@ -374,7 +622,7 @@ const Server = {
             })
         }
     },
-    address() {return "192.168.1.1"},
+    address() {return "192.168.1.1:8523"},
     runTime() {return 100000},
     startupAt() {return 1657157855534},
     getServiceVer(s){return 1000},
@@ -393,6 +641,7 @@ const Server = {
     refreshConsoleToken(){return '1234567890123456'},
     getDnsAccessCode(){return "123456"},
     resetDnsAccessCode(){return "723456"},
+    getExternalAccessCode(){return "823456"},
     getServices(jsCbId){ //只是用于测试
         var data={code:RetCode.OK, data:{services:[
             {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
@@ -410,7 +659,7 @@ const Server = {
             data:{at:-1,recent:0,key:'123456'}
         });
     },
-    wanGwInfo(jsCbId) {
+    outsideGwInfo(jsCbId) {
         __default_jscb(jsCbId,{
             code:RetCode.OK,info:'Success',
             data:{addr:'192.168.0.102:8523',state:0}
@@ -419,89 +668,172 @@ const Server = {
     saveAdvanceCfg(jsCbId, req) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
     },
-    companyName(){return storage_get(COMPANY_NAME,"至简网格")},
-    companyId(){return 40}, //storage_get(COMPANY_ID,'0')
-	companyInfo() {},
-	setCompanyInfo(name, country, province, city, info) {},
-	storeCompanyInfo() {},
-    creditCode(){return "914403001922038216"},
-    location(){return "江苏省 南京市"},
     setLogLevel(level) {},
     logLevel() {return 'DEBUG'},
 	serviceStarted() {return true},
-    register(creditCode,pwd,name,country,province,city,county,info,jsCbId){
-        __default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
+	logPath(){return "d:\\work\\code\\release\\xxxxxxxxx"}
+}
+
+const Company={
+    companyName(){return storage_get(COMPANY_NAME,"至简网格")},
+    companyId(){return 40}, //storage_get(COMPANY_ID,'0')
+    companyInfo() {},
+    creditCode(){return "914403001922038216"},
+    location(){return "江苏省 南京市"},
+    register(creditCode,pwd,cfmPwd,name,country,province,city,county,info,verifyCode,session,jsCbId){
+        var data={creditCode:creditCode,
+            pwd:Secure.sha256(pwd),
+            cfmPwd:Secure.sha256(cfmPwd),
+            verifyCode:verifyCode,session:session,
+            pubKey:'',name:name,
+            partition:250000,info:info,
+            country:country,province:province,city:city,county:county
+        };
+        var opts={url:"/company/register", method:"POST", data:data, private:false}
+        request(opts, "company").then(resp=>{
+            __default_jscb(jsCbId, resp)
+        })
     },
-	unRegister(creditCode,pwd,jsCbId){
-		__default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
-	},
-	logPath(){return "d:\\work\\code\\release\\xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+    login(id,pwd,jsCbId){
+        var data={id:id,pwd:Secure.sha256(pwd),pubKey:''};
+        var opts={url:"/company/login", method:"POST", data:data, private:false}
+        request(opts, "company").then(resp=>{
+            __default_jscb(jsCbId, resp)
+        });
+    },
+    unRegister(creditCode,pwd,jsCbId){
+        __default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
+    }
 }
 
 const Http={
-    cid(){return storage_get(COMPANY_ID,0)},
-    saveCid(cid, isPublic, addr, accessCode, jsCbId) {
-        storage_set(COMPANY_ID,cid);
-		storage_set(COMPANY_SERVERADDR,addr);
-		storage_set(COMPANY_ACCESSCODE,accessCode)
-    },
-    serverAddr(){return location.host},
-    companyName(){return storage_get(COMPANY_NAME,'至简网格')},
-	accessCode(){return storage_get(COMPANY_ACCESSCODE,'')},
-    authorized(userType) {
-        if(userType=='personal') {
-            return storage_get(SERVICE_UNIUSER,'')!='';
+    cloudFileUrl(uri, service) {
+        var url=location.protocol+"//"+location.host+"/"+service;
+        if(!uri.startsWith("/")) {
+            url += '/';
         }
-        return storage_get(SERVICE_USER,'')!=''
+        return url + uri;
+    }
+};
+
+const Companies={
+    cid(){return currentCompany().id},
+    insideAddr() {
+        return currentCompany().insideAddr;
     },
-    login(acc,pwd,userType,jsCbId) {//模拟环境不区分userType
-        var dta={account:acc,password:pwd,grant_type:'password',cid:this.cid()};
-        var service=userType=='personal' ? SERVICE_UNIUSER : SERVICE_USER;
-        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, service).then(function(resp) {
+    outsideAddr() {
+        return currentCompany().outsideAddr;
+    },
+    name(){return currentCompany().name},
+	accessCode(){return currentCompany().accessCode},
+	userService(){return currentCompany().id==0?SERVICE_UNIUSER:SERVICE_USER},
+	isPersonal(){return currentCompany().id==0},
+    authorized(){return (this.userService() in currentCompany().tokens)},
+    login(acc,pwd,tp,jsCbId) {
+        var company=currentCompany();
+        var dta={account:acc,password:pwd,grant_type:'password',
+            cid:company.id,accType:tp/*uniuser中才会需要*/};
+        var userService=this.userService();
+        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, userService).then(resp=> {
             if(resp.code==RetCode.OK) {
-                storage_set(service, resp.data.access_token);
+                company.tokens[userService]=resp.data.access_token;
+                saveCompanies();
             }
             __default_jscb(jsCbId,resp)
         })
     },
-    logout(userType,jsCbId) {
-        var service=userType=='personal' ? SERVICE_UNIUSER : SERVICE_USER;
-        var at=storage_get(service);
-        var opts={method:'GET',url:'/api/logout',headers:{access_token:at},private:false};
-        sendRequest(opts, service).then(function(resp) {
-            storage_rmv(service);
+    logout(jsCbId) {
+        var company=currentCompany();
+        var userService=this.userService();
+        var at=company.tokens[userService];
+        var opts={method:'GET',url:'/api/logout',headers:{access_token:at}};
+        sendRequest(opts, userService).then(resp => {
+            company.tokens={};
+            saveCompanies();
             __default_jscb(jsCbId,resp)
         })
     },
-    getExternal(opts,jsCbId) {
-        __default_jscb(jsCbId,`{
-       "introduce": {
-        "descrs": [
-           "满足小微企业客户关系管理所需，实现客户、联系人、订单、服务、回款管理，支持按工作流方式推动销售、服务、回款等工作。",
-           "可自定义工作流步骤，每个步骤可以单个负责人签字，也可以多个参与人共同决策，方便企业实现工作流程规范化。",
-           "实时数据统计，并呈现在主界面中，普通成员可以查看一月内的报表，企业主与财务可以查看年度与月度报表。",
-           "精准的数据授权，只将数据授权给参与工作流的成员，其他成员通过数据分享查看数据，数据分享可设置期限。"
-           ],
-           "images": [
-               {
-                   "src": "_imgs/1.png",
-                   "info": "具备客户、联系人、订单管理功能"
-               },
-               {
-                   "src": "_imgs/2.png",
-                   "info": "同时支持回款、服务工作流操作"
-               },
-               {
-                   "src": "_imgs/3.png",
-                   "info": "实时报表呈现，及时掌握团队状态"
-               }
-           ]
-       }}`)
+    add(cid,accessCode,insideAddr,jsCbId) {
+        var token=Secure.sha256(accessCode);
+        var opts={method:'GET',url:'/api/company/entrance?id='+cid,headers:{access_token:token},private:false};
+        sendRequest(opts, "httpdns").then(resp => {
+            if(resp.code!=RetCode.OK) {
+                __default_jscb(jsCbId, resp);
+                return;
+            }
+            var c=null;
+            for(var company of __companies) {
+                if(company.id==cid) {
+                    c = company;
+                    break;
+                }
+            }
+            if(c) {
+                c.accessCode=accessCode;
+                c.insideAddr=resp.data.insideAddr;
+                c.outsideAddr=resp.data.outsideAddr;
+                c.name=resp.data.name;
+            } else {
+                __companies.push({id:cid,
+                    accessCode:accessCode,
+                    insideAddr:resp.data.insideAddr,
+                    outsideAddr:resp.data.outsideAddr,
+                    name:resp.data.name,
+                    tokens:{}
+                });
+                __curCompany=__companies.length-1;
+            }
+            saveCompanies();
+            __default_jscb(jsCbId, resp);
+        })
+    },
+    remove(cid) {
+        if(cid==0) {//个人不可删除
+            return false;
+        }
+        var idx = -1;
+        for(var c of __companies) {
+            idx++;
+            if(c.id==cid) {
+                break;
+            }
+        }
+        if(idx<0) {
+            return false;
+        }
+        __companies.splice(idx, 1);
+        if(idx==__curCompany) {
+            __curCompany=0;
+        }
+        saveCompanies();
+        return true;
+    },
+    setCur(cid){
+        if(__companies[__curCompany].id==cid) return;
+
+        var idx = -1;
+        for(var c of __companies) {
+            idx++;
+            if(c.id==cid) {
+                __curCompany=idx;
+                storage_set("curCompany", __curCompany);
+                break;
+            }
+        }
+    },
+    list(jsCbId) {
+        __default_jscb(jsCbId,{code:RetCode.OK,info:"success",data:{list:__companies}});
+    },
+    getLogo(cid, jsCbId) {
+        var logoUrl=Http.cloudFileUrl("/logo?cid="+cid, "company");
+        getExternal({url:logoUrl}).then(png => {
+            __default_jscb(jsCbId,png);
+        });
     }
 }
 
 const App={
-    openApp(app) {location.href='/' + app + '/index.html'},
+    openApp(app) {location.href='/'+app+'/index.html'},
     install(app, jsCbId) {
          Console.info("install app " + app);
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success"});
@@ -525,11 +857,22 @@ const App={
     build(){return {ver:"0.1.0",os:"android",brand:"njhx",language:"zh_CN",agent:"mc_android_0.1.0"}}
 }
 
-const OS={
+const Platform={
     scanCode(jsCbId) {
         var info={act:"checkin",id:40,code:"ABCDFFGG",addr:"localhost:8523"};
         var data={type:'QrCode',value:JSON.stringify(info)};
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:data})
+    },
+    isSupported(name) {
+        if(name=="barcode") {
+            return true;
+        } else if(name=="orientation") {
+            return false;
+        }
+        return false;
+    },
+    language() {
+        return navigator.language;
     }
 }
 
@@ -537,4 +880,4 @@ const Logs = {
     listLogs(jsCbId) {__default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:{list:["a","b"]}}) },
     download(f,jsCbId) {__default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:{saveAs:"test",size:100}})}
 }
-document.write("<script src='/assets/axios_0.21.1.js'><\/script>");
+document.write("<script src='/assets/axios_0.21.1.js'></script>");

@@ -6,7 +6,6 @@ data() {return {
  location:"",
  cid:"",
  dnsAccessCode:"",
- qrCodeDlg:false,
  logoDlg:false,
  logo:"./imgs/logo_example.png",
  width:'60vw',
@@ -48,21 +47,21 @@ created(){
 },
 methods:{
 init() {
-    this.creditCode=Server.creditCode();
-    this.companyName=Server.companyName();
-    this.cid=Server.companyId();
-    this.location=Server.location();
+    this.creditCode=Company.creditCode();
+    this.companyName=Company.companyName();
+    this.cid=Company.companyId();
+    this.location=Company.location();
     this.dnsAccessCode=Server.getDnsAccessCode();
-    var logoUrl=Http.fileUrl("/logo?cid="+this.cid, "company");
-    var jsCbId = __regsiterCallback(png => {
+    var logoUrl=Http.cloudFileUrl("/logo?cid="+this.cid, "company");
+    getExternal({url:logoUrl}).then(png=> {
         if(!png) {
             Console.debug("url:" + logoUrl + ",png:" + png);
             this.logo="./imgs/logo_example.png"
         } else {
             this.logo=png;
+            Server.saveFile("company", "logo.txt", png);
         }
     });
-    Http.getExternal(JSON.stringify({url:logoUrl}), jsCbId);
 },
 register(){
     this.$refs.regDlg.show(()=>{
@@ -71,22 +70,6 @@ register(){
 },
 resetAccessCode() {
     this.dnsAccessCode = Server.resetDnsAccessCode();
-},
-showQrCode() {
-    var txt = JSON.stringify({
-       act:'checkin',
-       id:this.cid,
-       code:this.dnsAccessCode,
-       addr:Server.address()
-    });
-    new QRCode(this.$refs.qrCodeArea, {
-        text: txt, 
-        width: this.width,
-        height: this.width,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-    });
 },
 selectImg() {
   this.$refs.logoImg.dispatchEvent(new MouseEvent('click'))
@@ -192,23 +175,15 @@ template: `
    </td>
  </tr>
  <tr><td></td><td></td></tr>
- <tr>
+ <tr><td></td>
    <td>
-    <q-icon name="qr_code_2" @click="qrCodeDlg=true" size="2.5em" color="primary"></q-icon>
-   </td>
-   <td>
-    <q-btn icon="beenhere" :label="cid?tags.reRegister:tags.register" @click="register" color="primary"></q-btn>
+    <q-btn icon="beenhere" :label="cid?tags.reRegister:(tags.login+'/'+tags.register)" @click="register" color="primary"></q-btn>
    </td>
  </tr>
 </q-markup-table>
  </q-page>
 </q-page-container>
 </q-layout>
-<q-dialog v-model="qrCodeDlg" @show="showQrCode">
-  <q-card :style="{'min-width':width+'px'}" bordered><q-card-section>
-   <div ref="qrCodeArea" :style="{width:width+'px',height:width+'px'}"></div>
-  </q-card-section></q-card>
-</q-dialog>
 <q-dialog v-model="logoDlg">
  <q-card bordered>
    <q-card-section>
@@ -237,6 +212,6 @@ template: `
    accept="image/png, image/jpeg, image/gif, image/jpg"
    @change="startCropLogo($event)">
 </q-dialog>
-<register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
+<register-dialog :tags="tags" ref="regDlg"></register-dialog>
 <component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
 `}

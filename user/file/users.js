@@ -65,8 +65,9 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back()"></q-btn>
-      <q-toolbar-title>{{tags.employees}}</q-toolbar-title>
+      <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+      <q-btn icon="fact_check" flat round @click="service.jumpTo('/authorizes')"></q-btn>
+      <q-btn icon="groups" flat round @click="service.jumpTo('/grps')"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-px-md q-pt-md">

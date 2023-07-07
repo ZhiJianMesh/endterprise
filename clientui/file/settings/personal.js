@@ -1,42 +1,31 @@
 export default {
 inject:['service', 'tags'],
 data(){return {
-    companyName:'',
-    account:'',
-    nickName:'',
-    email:'',
-    mobile:'',
     chgPwdDlg:false,
     oldPwd:'',
     newPwd:'',
     cfmPwd:'',
     changed:false,
-    hidePwd:{o:true,n:true,c:true}
+    hidePwd:{o:true,n:true,c:true},
+    userInfo:{}
 }},
 created() {
-    this.companyName=Http.companyName();
     this.get_userbase();
 },
 methods:{
 get_userbase() {
-    request({method:"GET",url:"/api/getBaseInfo"}, SERVICE_USER).then(resp => {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.account=resp.data.account;
-        this.nickName=resp.data.nickName;
-        this.email=resp.data.email;
-        this.mobile=resp.data.mobile;
+    this.service.getUserInfo().then(userInfo=>{
+        this.userInfo=userInfo;
     });
 },
 changePwd() {
     if(this.oldPwd==''||this.newPwd==''||this.newPwd!=this.cfmPwd){
-        this.$refs.errDlg.show(this.tags.invalidPwd);
+        this.$refs.errDlg.show(this.tags.invalidNewPwd);
         return;
     }
+    var usrService=Companies.userService();
     var req={oldPassword:this.oldPwd,newPassword:this.newPwd,confirmPassword:this.cfmPwd};
-    request({method:"POST",url:"/api/changePassword",data:req}, SERVICE_USER).then(resp => {
+    request({method:"POST",url:"/api/changePassword",data:req}, usrService).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -45,8 +34,11 @@ changePwd() {
     });
 },
 saveChanges(){
-    var req={nickName:this.nickName,mobile:this.mobile,email:this.email};
-    request({method:"POST",url:"/api/setBaseInfo",data:req}, SERVICE_USER).then(resp => {
+    var usrService=Companies.userService();
+    var req={nickName:this.userInfo.nickName,
+             mobile:this.userInfo.mobile,
+             email:this.userInfo.email};
+    request({method:"POST",url:"/api/setBaseInfo",data:req}, usrService).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
 			return;
@@ -70,20 +62,20 @@ template: `
  <tr>
   <td>{{tags.nickName}}</td>
   <td>
-   <q-input v-model="nickName" dense @update:model-value="changed=true"></q-input>
+   <q-input v-model="userInfo.nickName" dense @update:model-value="changed=true"></q-input>
   </td>
  </tr>
  <tr>
   <td>{{tags.email}}</td>
   <td>
-    <q-input v-model="email" :rules="[v=>/.+@.+/.test(v) || tags.invalidEmail]" dense
+    <q-input v-model="userInfo.email" :rules="[v=>/.+@.+/.test(v) || tags.invalidEmail]" dense
     @update:model-value="changed=true"></q-input>
   </td>
  </tr>
  <tr>
   <td>{{tags.mobile}}</td>
   <td>
-    <q-input v-model="mobile" maxlength=11 :rules="[v=>/1[0-9]{10}/.test(v) || tags.invalidMobile]" dense
+    <q-input v-model="userInfo.mobile" maxlength=11 :rules="[v=>/1[0-9]{10}/.test(v) || tags.invalidMobile]" dense
     @update:model-value="changed=true"></q-input>
   </td>
  </tr>
