@@ -4,11 +4,11 @@ data(){return{
     authorized:false,
     account:'',
     nickName:'',
+	companyName:'',
     companies:[],
     curCompanyId:-1,
-    companyDlg:false,
     newComDta:{id:'',accessCode:'',insideAddr:'',needInside:false},
-    newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'', hidePwd:true,vc:''},
+    newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',hidePwd:true,vc:''},
     dlg:{register:false,company:false}
 }},
 created() {
@@ -16,6 +16,7 @@ created() {
 },
 methods:{
 init() {
+    var company=this.service.curCompany();
     this.dlg.company=false;
     this.newComData={id:'',accessCode:'',insideAddr:'',needInside:false};
     Companies.list(__regsiterCallback(resp=>{
@@ -25,33 +26,35 @@ init() {
         for(let c of this.companies) {
             Companies.getLogo(c.id, __regsiterCallback(png=>{
                 c['logo']="img:"+png;
-				Console.info(JSON.stringify(c))
             }));
             if(c.id==0) {
                 c.name=this.tags.personalAcc;
             }
         }
-        this.curCompanyId=Companies.cid();
+        this.curCompanyId=company.id;
     }));
-    this.authorized=Companies.authorized();
-    if(this.authorized) {
+
+	this.account=this.tags.account;
+	this.nickName=this.tags.nickName;
+    if(company.authorized) {
+		this.authorized=true;
         this.service.getUserInfo().then(userInfo=>{
             this.account=userInfo.account;
             this.nickName=userInfo.nickName;
         });
     } else {
-        this.account=this.tags.account;
-        this.nickName=this.tags.nickName;
+		this.authorized=false;
     }
+    this.companyName=company.name;
 },
 about() {
     App.openApp("clientui");
 },
 jump(pg) {
-    this.$router.push('/' + pg)
+    this.$router.push(pg)
 },
 btn_click() {
-    if(Companies.authorized()) {
+    if(this.service.curCompany().authorized) {
         Companies.logout(__regsiterCallback(resp => {
             this.init()
             this.service.clrUserInfo();
@@ -148,7 +151,7 @@ template: `
     </q-item-section>
     <q-item-section>
       <q-item-label caption>{{account}}</q-item-label>
-      <q-item-label caption>{{nickName}}</q-item-label>
+      <q-item-label caption>{{companyName}}/{{nickName}}</q-item-label>
     </q-item-section>
     <q-item-section side top>
       <div class="row no-wrap">
@@ -164,7 +167,7 @@ template: `
  <q-page-container>
     <q-page class="q-pa-md">
 <q-list class="q-pa-md">
-  <q-item clickable v-ripple @click="jump('company')" v-show="curCompanyId!=0">
+  <q-item clickable v-ripple @click="jump('/company')" v-show="curCompanyId!=0">
     <q-item-section avatar>
       <q-icon color="primary" name="business"></q-icon>
     </q-item-section>
@@ -174,7 +177,7 @@ template: `
     </q-item-section>
   </q-item>
 
-  <q-item clickable v-ripple @click="jump('personal')" v-show="authorized">
+  <q-item clickable v-ripple @click="jump('/personal')" v-show="authorized">
     <q-item-section avatar>
       <q-icon color="primary" name="person_pin_circle"></q-icon>
     </q-item-section>
@@ -184,7 +187,7 @@ template: `
     </q-item-section>
   </q-item>
 
-  <q-item clickable v-ripple @click="jump('advice')">
+  <q-item clickable v-ripple @click="jump('/advice')">
     <q-item-section avatar>
       <q-icon color="brown" name="mail_outline"></q-icon>
     </q-item-section>

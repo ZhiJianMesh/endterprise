@@ -23,7 +23,7 @@ changePwd() {
         this.$refs.errDlg.show(this.tags.invalidNewPwd);
         return;
     }
-    var usrService=Companies.userService();
+    var usrService=this.service.curCompany().userService;
     var req={oldPassword:this.oldPwd,newPassword:this.newPwd,confirmPassword:this.cfmPwd};
     request({method:"POST",url:"/api/changePassword",data:req}, usrService).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -34,7 +34,7 @@ changePwd() {
     });
 },
 saveChanges(){
-    var usrService=Companies.userService();
+    var usrService=this.service.curCompany().userService;
     var req={nickName:this.userInfo.nickName,
              mobile:this.userInfo.mobile,
              email:this.userInfo.email};

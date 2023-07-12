@@ -90,7 +90,7 @@ template:`
   <q-item-section thumbnail></q-item-section>
  </q-item>
  <q-item v-for="l in list" @click="show_detail(l.id)" clickable>
-  <q-item-section @click.stop="customer_detail(l.cid)">{{l.cname}}</q-item-section>
+  <q-item-section @click.stop="customer_detail(l.customer)">{{l.cname}}</q-item-section>
   <q-item-section>{{l.skuName}}</q-item-section>
   <q-item-section>{{l.amount}}</q-item-section>
   <q-item-section>

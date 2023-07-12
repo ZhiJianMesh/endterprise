@@ -162,10 +162,10 @@ function sendRequest(opts, service) {
     __traceid++;
     var hh = opts.headers;
     if(!hh) {
-        hh={trace_id:'browser'+__traceid, cid:Http.cid()};
+        hh={trace_id:'browser'+__traceid, cid:Companies.cid()};
     } else {
         hh.trace_id='browser'+__traceid;
-        hh.cid=Http.cid();
+        hh.cid=Companies.cid();
     }
 
     return new Promise(function(resolve, reject){
@@ -263,7 +263,7 @@ function innerDownload(opts, service) {
     __traceid++;
 
     opts.headers.trace_id='browser'+__traceid;
-    opts.headers.cid=Http.cid();
+    opts.headers.cid=Companies.cid();
 
     return new Promise((resolve, reject)=>{
         axios({method:"GET",url:url,responseType:"blob", headers:opts.headers}).then(

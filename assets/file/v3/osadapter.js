@@ -34,42 +34,45 @@ INVALID_STATE:5001,
 CLIENT_ERROR:100000
 };
 
-const __callback_funs={};
+const MAX_TASK_NUM=256;//最多MAX_TASK_NUM个并发任务
+const __callback_funs=new Array(MAX_TASK_NUM);
 var __call_id=0;
-function request(opts, service){
-    return new Promise((resolve,reject)=>{
-        var s = JSON.stringify(opts);
-        var cbId = __regsiterCallback(resp => {
-            resolve(resp);
-        });
-        Http.request(s, service, cbId);
-    });  
+function request(opts,service) {
+	var jsonOpts = JSON.stringify(opts);
+    return new Promise(resolve=>{
+		var jsCbId = __regsiterCallback(resp => {
+			resolve(resp);
+		});
+        Http.request(jsonOpts, service, jsCbId);
+    });
 }
 
 function getExternal(opts) {
-    return new Promise((resolve,reject)=>{
-        Http.getExternal(JSON.stringify(opts), __regsiterCallback(resp => {
-            resolve(resp);
-        }));
+	var jsonOpts = JSON.stringify(opts);
+    return new Promise(resolve=>{
+		var jsCbId = __regsiterCallback(resp => {
+			resolve(resp);
+		});
+        Http.getExternal(jsonOpts, jsCbId);
     });
 }
 
 function download(opts, service) {
-    return new Promise((resolve,reject)=>{
-		var s = JSON.stringify(opts);
-        var cbId = __regsiterCallback(resp => {
+	var jsonOpts = JSON.stringify(opts);
+    return new Promise(resolve=>{
+        var jsCbId = __regsiterCallback(resp => {
             resolve(resp); //{code:xx,info:'',data:{size:yy,path:'path of local saved file'}}
         });
-        Http.download(s, service, cbId);
+        Http.download(jsonOpts, service, jsCbId);
     });
 }
 
 function readText(txt){
-    return new Promise((resolve,reject)=>{
-        var cbId = __regsiterCallback(function(resp){
+    return new Promise(resolve=>{
+        var jsCbId = __regsiterCallback(resp => {
             resolve(resp);
         });
-        TTS.read(txt, cbId);
+        TTS.read(txt, jsCbId);
     });
 }
 
@@ -88,11 +91,11 @@ function __tts_jscb(id, resp) {
 }
 
 //通用的回调，在java程序中触发，传的resp就是HandleResult
-function __default_jscb(id, resp) {
-    var f=__callback_funs[id];
-    if(typeof(f)=='function') {
+function __default_jscb(jsCbId, resp) {
+    var f=__callback_funs[jsCbId];
+    if(f) {
         f(resp);
-        __unRegsiterCallback(id)
+        __unRegsiterCallback(jsCbId)
     } else {
         Console.error("__default_jscb `" + id + "` not exists");
     }
@@ -100,12 +103,12 @@ function __default_jscb(id, resp) {
 
 function __regsiterCallback(cb) {
     __call_id++;
-    __callback_funs[__call_id]=cb;
+    __callback_funs[__call_id % MAX_TASK_NUM]=cb;
     return __call_id;
 }
 
 function __unRegsiterCallback(cbId) {
-    delete __callback_funs[cbId];
+    __callback_funs[cbId % MAX_TASK_NUM] = undefined;
 }
 
 function copyObj(src,segs){

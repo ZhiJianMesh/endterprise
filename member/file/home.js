@@ -93,29 +93,29 @@ hide_slider() {
 },
 query_orders(offset,done) {
     var url="/api/order/validOrders?vip="+this.curVip+"&offset="+offset+"&num="+this.service.NUM_PER_SMPG;
-    request({method:"GET", url:url}, this.service.name).then(function(resp){
+    request({method:"GET", url:url}, this.service.name).then(resp=>{
         if(resp.code==RetCode.OK) {
             this.maxOrderPgs=Math.ceil(resp.data.total/this.service.NUM_PER_SMPG);
             this.orders=resp.data.orders;
         }
         done(true);
-    }.bind(this));
+    });
 },
 change_order_page(page) {
-    this.query_orders((parseInt(page)-1)*this.service.NUM_PER_SMPG,function(){});
+    this.query_orders((parseInt(page)-1)*this.service.NUM_PER_SMPG,()=>{});
 },
 open_create_consume(vip){
     this.curVip=vip;
     this.newConsume={order:-1,val:'',pwd:'',vip:vip};
     this.orders=[];
-    this.query_orders(0,function(){
+    this.query_orders(0,()=>{
         if(this.orders.length<=0) {
             this.$refs.errMsg.show(this.tags.noOrders);
             return;
         }
         this.newConsume.order=this.orders[0].id;
         this.newConsumeDlg=true;
-    }.bind(this))
+    })
 },
 create_consume(){
     var url="/api/consume/create";

@@ -8,7 +8,8 @@ data() {return {
         version: "",
         author: "",
         level: 100,
-        icon: ""
+        icon: "",
+		cloud:false
     },
     intro: {},
     subTitle: '',
@@ -69,7 +70,7 @@ appAction() {
     this.install.info="";
     var jsCbId=__regsiterCallback(this.refreshUI)
     if(this.action==this.tags.install) {
-		App.install(this.name, jsCbId);
+		App.install(this.name, this.app.cloud, jsCbId);
     } else {
         App.update(this.name, jsCbId);
     }

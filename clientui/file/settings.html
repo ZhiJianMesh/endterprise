@@ -34,15 +34,17 @@ routes:[
 //-------------------------------------------service定义
 const service={
 name:"settings",N_PAGE:10,N_SMPG:5,
+curCompany() {return JSON.parse(Companies.curCompany());},
 users:{},
 getUserInfo() {return new Promise((resolve, reject)=>{
-    var cid=Companies.cid();
+    var company=this.curCompany();
+    var cid=company.id;
     if(this.users[cid]) {
         resolve(this.users[cid]);
         return;
     }
-    var userService=Companies.userService();
-    request({method:"GET",url:"/api/getBaseInfo"}, userService).then(resp => {
+    var userService=company.userService;
+    request({method:"GET",url:"/api/getBaseInfo", cloud:company.cloud}, userService).then(resp => {
         if(resp.code != RetCode.OK) {
             Console.warn("Fail to getBaseInfo " + JSON.stringify(resp));
             return;
@@ -52,7 +54,7 @@ getUserInfo() {return new Promise((resolve, reject)=>{
     });
 })},
 clrUserInfo() {
-    var cid=Companies.cid();
+    var cid=this.curCompany().id;
     if(this.users[cid]) {
         this.users[cid] = undefined
     }

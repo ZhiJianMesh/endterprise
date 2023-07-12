@@ -28,7 +28,7 @@ subs(fid,cb) {
         cb(this.cache[fid]);
         return;
     }
-    var opts={method:"GET",url:"/api/sub?fid="+fid+"&offset=0&num=1000",private:false};
+    var opts={method:"GET",url:"/api/sub?fid="+fid+"&offset=0&num=1000",private:false,cloud:true};
     request(opts, SERVICE_ADDR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             cb([]);
@@ -36,7 +36,7 @@ subs(fid,cb) {
             this.cache[fid]=resp.data.addrs;
             cb(resp.data.addrs);
         }
-    })    
+    })
 },
 setProvince(p) {
     this.addr.province=p;

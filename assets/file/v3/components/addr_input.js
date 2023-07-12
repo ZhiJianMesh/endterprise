@@ -18,7 +18,7 @@ search_addrs(val,update) {
     return;
   }
   update(() => {
-    var opts={method:"GET",url:"/api/search?limit=10&s="+val,private:false};
+    var opts={method:"GET",url:"/api/search?limit=10&s="+val,private:false,cloud:true};
     request(opts, SERVICE_ADDR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.addrOpts=[]

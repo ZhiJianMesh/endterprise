@@ -6,7 +6,7 @@ data() {return {
     tab:'enterprise'
 }},
 created(){
-    this.enterprise_apps();
+    this.queryApps(1);
 },
 methods:{
 enterprise_apps(pg) {
@@ -25,16 +25,17 @@ enterprise_apps(pg) {
         if(resp.code != RetCode.OK) {
             this.page.max=0;
             this.page.cur=1;
+            this.apps=[];
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.format_apps(resp.data.total, resp.data.services);
+        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, false);
     })
 },
 personal_apps(pg) {
     var offset=(parseInt(pg)-1) * this.service.N_PAGE;
     var opts={
-        method:"GET", private:false,
+        method:"GET", private:false, cloud:true,
         url:"/service/personal?offset=" + offset + "&num=" + this.service.N_PAGE
     };
     request(opts, "appstore").then(resp=>{
@@ -44,27 +45,37 @@ personal_apps(pg) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.format_apps(resp.data.total, resp.data.services);
+        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, true);
     })
 },
 detail(service) {
     this.$router.push('/detail?service='+service+"&cid="+Companies.cid())
 },
-format_apps(total, data) {
+format_apps(total, cols, data, cloud) {
     this.page.max=Math.ceil(total/this.service.N_PAGE);
-    this.apps=data;
-    for(var i in this.apps) {
-        var o=this.apps[i];
+    var apps=[];
+    for(var d of data) {
+        var o={};
+        for(var i in cols) {
+            o[cols[i]]=d[i];
+        }
         var icon=App.serviceIcon(o.service);
         if(icon!="") {
             o['icon']=icon;
         } else {
-            o['icon']="/" + o.service + "/favicon.png";
+			var iconUrl="/" + o.service + "/favicon.png";
+			if(cloud) {
+				iconUrl += "?cloud=true";
+			}
+            o['icon'] = iconUrl;
         }
+		o['cloud']=cloud;
         var v = parseInt(o.ver);
         o.version=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
         this.service.list[o.service]=o;
+        apps.push(o);
     }
+    this.apps = apps;
 },
 queryApps(pg) {
     if(this.tab=="enterprise") {

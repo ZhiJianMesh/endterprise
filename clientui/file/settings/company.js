@@ -10,11 +10,12 @@ data(){return {
 	outsideAddr:''
 }},
 created() {
-    this.cid=Companies.cid();
-    this.companyName=Companies.name();
-    this.insideAddr=Companies.insideAddr();
-    this.outsideAddr=Companies.outsideAddr();
-    this.accessCode=Companies.accessCode();
+    var c=this.service.curCompany();
+    this.cid=c.id;
+    this.companyName=c.name;
+    this.insideAddr=c.insideAddr;
+    this.outsideAddr=c.outsideAddr;
+    this.accessCode=c.accessCode;
 },
 methods:{
 refresh() {
@@ -33,9 +34,11 @@ refresh() {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.insideAddr=Companies.insideAddr();
-        this.outsideAddr=Companies.outsideAddr();
-        this.companyName=Companies.name();
+        var c=this.service.curCompany();
+        this.companyName=c.name;
+        this.insideAddr=c.insideAddr;
+        this.outsideAddr=c.outsideAddr;
+        this.accessCode=c.accessCode;
         this.changed=false;
         this.$refs.alertDlg.show(this.tags.successToConnect);
     }));
