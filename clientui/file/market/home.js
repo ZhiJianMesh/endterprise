@@ -3,7 +3,7 @@ inject:['service', 'tags'],
 data() {return {
     apps:[],
     page:{cur:1, max:0},
-    tab:'enterprise'
+    tab:'personal'
 }},
 created(){
     this.queryApps(1);
@@ -95,8 +95,8 @@ template: `
  </q-header>
  <q-footer class="bg-grey-1 text-primary">
   <q-tabs v-model="tab" class="text-teal" @update:model-value="queryApps(1)" active-bg-color="green-1">
-   <q-tab name="enterprise" icon="svguse:/assets/imgs/meshicons.svg#company" :label="tags.enterprise"></q-tab>
    <q-tab name="personal" icon="person" :label="tags.personal"></q-tab>
+   <q-tab name="enterprise" icon="svguse:/assets/imgs/meshicons.svg#company" :label="tags.enterprise"></q-tab>
   </q-tabs>
  </q-footer>
  <q-page-container><q-page class="q-pa-md">

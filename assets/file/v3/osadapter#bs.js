@@ -594,13 +594,6 @@ const Console = {
     error(s) {console.error(s)}
 }
 
-const View = {
-    width() {return document.documentElement.clientWidth},
-    height() {return document.documentElement.clientHeight},
-    portrait() {},
-    landscape() {},
-    undefineOrientation() {}
-}
 const Server = {
     state:0,
     getState(jsCbId) {
@@ -873,7 +866,12 @@ const Platform={
     },
     language() {
         return navigator.language;
-    }
+    },
+    width() {return document.documentElement.clientWidth},
+    height() {return document.documentElement.clientHeight},
+    portrait() {},
+    landscape() {},
+    undefineOrientation() {}
 }
 
 const Logs = {
