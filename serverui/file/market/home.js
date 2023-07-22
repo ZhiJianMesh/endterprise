@@ -71,9 +71,9 @@ fmt_services(rows) {
         if(icon!="") {//已安装则显示本地icon
             s['icon'] = icon;
         } else if(this.cdns[0].endsWith('/')){
-            s['icon'] =  this.cdns[0] + s.service + "/favicon.png";
+            s['icon'] = this.cdns[0] + s.service + "/favicon.png";
         } else {
-            s['icon'] =  this.cdns[0] + '/' + s.service + "/favicon.png";
+            s['icon'] = this.cdns[0] + '/' + s.service + "/favicon.png";
         }
         dt.setTime(s.recentUpd);
         s.updateAt=dt.toLocaleDateString();
