@@ -37,7 +37,8 @@ DATA_WRONG:3003,
 WRONG_PARAMETER:4000,
 SERVICE_ERROR:5000,
 INVALID_STATE:5001,
-CLIENT_ERROR:100000
+CLIENT_ERROR:100000,
+CLIENT_DBERROR:100001
 };
 
 const __callback_funs={};
@@ -293,11 +294,11 @@ function innerDownload(opts, service) {
             }
 
             var size=res.data.size;
-            var blob = new Blob([res.data], {type: contentType})
-            var link = document.createElement('a')
-            link.href = window.URL.createObjectURL(blob)
-            link.download = fileName
-            link.click()
+            var blob = new Blob([res.data], {type: contentType});
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
             window.URL.revokeObjectURL(link.href)//释放内存
             resolve({code:RetCode.OK, info:"Success", data:{size:size, saveAs:fileName}});
         },
@@ -877,5 +878,53 @@ const Platform={
 const Logs = {
     listLogs(jsCbId) {__default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:{list:["a","b"]}}) },
     download(f,jsCbId) {__default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:{saveAs:"test",size:100}})}
+}
+
+const Database = {
+    open(name, ver, descr) {
+        return openDatabase('words', '1.0', 'words', 10 * 1024 * 1024);
+    },
+    execute(db, sql, params) {
+        return new Promise(resolve=>{
+            db.transaction(tx=>{
+                tx.executeSql(sql, params,
+                    (tx, res) => {
+                        resolve({code:RetCode.OK, data:res});
+                    },
+                    (tx, err) => {
+                        resolve({code:RetCode.CLIENT_DBERROR, info:err.message});
+                    });
+                }
+            )
+        })
+    },
+    /*private*/txExecSql(tx, sqls, i) {
+        console.info("execute:" + sqls[i]);
+        return new Promise(resolve=>{
+            tx.executeSql(sqls[i], [],
+                (tx, res) => {
+                    if(i<sqls.length-1) {
+                        this.txExecSql(tx, sqls, i+1).then(r => {
+                            resolve(r);
+                        });
+                    } else {//执行完成了
+                        resolve({code:RetCode.OK, data:res});
+                    }
+                },
+                (tx, err) => {
+                    resolve({code:6000, info:err.message});
+                }
+            );
+        })
+    },
+    executes(db, sqls) { //只能执行增删改
+        return new Promise(resolve=>{
+            db.transaction(tx=>{
+                this.txExecSql(tx, sqls, 0).then(res => {
+                    return resolve(res);
+                });
+            })
+        });
+    }
 }
 document.write("<script src='/assets/axios_0.21.1.js'></script>");
