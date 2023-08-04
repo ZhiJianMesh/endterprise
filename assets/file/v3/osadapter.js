@@ -98,7 +98,7 @@ function __default_jscb(jsCbId, resp) {
         f(resp);
         __unRegsiterCallback(jsCbId)
     } else {
-        Console.error("__default_jscb `" + id + "` not exists");
+        Console.error("__default_jscb `" + jsCbId + "` not exists");
     }
 }
 
