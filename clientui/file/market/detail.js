@@ -5,7 +5,8 @@ data() {return {
     cid: this.$route.query.cid,
     app: {
         displayName: "",
-        version: "",
+        version: 0,
+        sVer: '0.0.0',
         author: "",
         level: 100,
         icon: "",
@@ -103,7 +104,7 @@ refreshUI(r) {
 				Console.warn("Fail to get client info " + resp);
 				return;
 			}
-			if(App.verToInt(this.app.version)<App.verToInt(resp.data.version)) {
+			if(this.app.version<resp.data.version) {
 				this.action=this.tags.update;
 			} else {
 				this.action="";
@@ -128,7 +129,7 @@ template: `
      <q-item-section>
       <q-item-label class="text-primary">{{app.displayName}}/{{app.service}}</q-item-label>
       <q-item-label caption>{{tags.author}} {{app.author}}</q-item-label>
-      <q-item-label caption>{{tags.version}} {{app.version}}</q-item-label>
+      <q-item-label caption>{{tags.version}} {{app.sVer}}</q-item-label>
      </q-item-section>
     </q-item>
    </q-list>

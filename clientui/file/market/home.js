@@ -70,8 +70,8 @@ format_apps(total, cols, data, cloud) {
             o['icon'] = iconUrl;
         }
 		o['cloud']=cloud;
-        var v = parseInt(o.ver);
-        o.version=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
+        var v = parseInt(o.version);
+        o.sVer=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
         this.service.list[o.service]=o;
         apps.push(o);
     }

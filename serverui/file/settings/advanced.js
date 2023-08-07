@@ -44,7 +44,7 @@ init() {
         if(info.at >= 0) {
             var h=parseInt(info.at/60);
             var m=parseInt(info.at % 60);
-            this.backupAt= (h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
+            this.backupAt=(h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
         } else {
             this.backupAt='';
         }
@@ -63,7 +63,7 @@ init() {
             } else {
                 this.wan.balance=resp.data.balance;
             }
-         })
+        })
     }));
 },
 switchWan() {
@@ -90,7 +90,7 @@ switchBackup() {
 		    this.turnOff('backup');
 		}
 	}
-	this.changed=true;
+    this.changed=true;
 },
 turnOn(service) {
 	//只是在服务侧登记服务，并没有充值
@@ -139,7 +139,6 @@ save(){
             }
         }));
     }
-
 
     if(this.backup.at>=0) {
         if(this.backup.buckets.length==0) {
@@ -267,7 +266,7 @@ template: `
     </q-btn>
   </td>
  </tr>
- <tr>
+ <tr v-show="backup.at>=0">
   <td>{{tags.buckets}}</td>
   <td>
    <q-option-group type="checkbox" :options="bucketOpts" v-model="backup.buckets"
