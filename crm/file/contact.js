@@ -24,10 +24,10 @@ data() {return {
 }},
 created(){
     this.curDate=this.tags.date2str(new Date());
-    this.service.template('contact').then(function(tpl){
+    this.service.template('contact').then(tpl=>{
         this.tmpl=tpl;
         this.detail();
-    }.bind(this));
+    });
 },
 methods:{
 detail() {

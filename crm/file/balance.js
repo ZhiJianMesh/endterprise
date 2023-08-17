@@ -239,20 +239,19 @@ template:`
      <q-icon name="navigate_before"></q-icon>
     </q-item-section>
     <q-item-section>
-     <q-input v-model="dateStr">
+    <q-input v-model="dateStr">
       <template v-slot:prepend>
-       <q-icon name="event" class="cursor-pointer">
-        <q-popup-proxy transition-show="scale" transition-hide="scale">
-         <q-date v-model="date" range @range-end="date_range_end" minimal
-         :locale="{daysShort:tags.weekDays,months:tags.months,monthsShort:tags.months}">
-          <div class="row items-center justify-end">
-           <q-btn v-close-popup :label="tags.calClose" color="primary" flat></q-btn>
-          </div>
-         </q-date>
-         </q-popup-proxy>
-       </q-icon>
+        <q-icon name="event" class="cursor-pointer">
+          <q-popup-proxy transition-show="scale" transition-hide="scale">
+            <q-date v-model="date" range @range-end="date_range_end" minimal>
+              <div class="row items-center justify-end">
+                <q-btn v-close-popup :label="tags.close" color="primary" flat></q-btn>
+              </div>
+            </q-date>
+          </q-popup-proxy>
+        </q-icon>
       </template>
-     </q-input>
+    </q-input>
     </q-item-section>
     <q-item-section side @click="move_month(1)">
      <q-icon name="navigate_next"></q-icon>
