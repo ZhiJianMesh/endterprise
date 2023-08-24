@@ -1,0 +1,30 @@
+{
+"roles": {
+    "admin":{
+        "name":"企业主",
+        "rights":{
+            "admin":"*",
+            "product":"*",
+            "msgtpl":"*",
+            "report":"*",
+            "customer":"*",
+            "device":"*"
+        }
+    },
+    
+    "employee":{
+        "name":"员工",
+        "rights":{
+            "admin":"*",
+            "product":"*",
+            "msgtpl":"*"
+        }
+    },
+    
+    "customer":{
+        "name":"普通用户",
+        "rights":{
+        }
+    }
+}
+}

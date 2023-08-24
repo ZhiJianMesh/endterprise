@@ -1,0 +1,99 @@
+export default {
+en:{
+  app_name:"Message Center",
+  ok:"OK",
+  cancel:"Cancel",
+  modify:"Modify",
+  remove:"Delete",
+  add:"Add",
+  reset:"Reset",
+  save:"Save",
+  search:"Search"
+},
+cn:{
+  app_name:"消息中心",
+  ok:"确定",
+  cancel:"取消",
+  close:"关闭",
+  modify:"修改",
+  remove:"删除",
+  add:"增加",
+  save:"保存",
+  search:"搜索",
+  addCust:"添加客户",
+  editCust:"修改客户",
+  addTmpl:"添加消息模板",
+  editTmpl:"修改消息模板",
+  addProduct:"添加产品",
+  editProduct:"修改产品",
+  addDevice:"添加设备",
+  shipDevice:"销售设备",
+  sendMsg:"发消息",
+  message:"消息",
+  deviceNum:"设备数量",
+  deviceMng:"设备管理",
+  createAt:"生产日期",
+  noProducts:"无任何产品定义，无法显示设备信息！",
+  invalidCode:"存在以下无效编码：",
+  notSell:"未出售",
+  exceedsDayNum:"报表查询时间超过366天",
+  homeMenus:{
+      prt:{name:"产品", url:"/products",icon:"settings_remote"},
+      tpl:{name:"消息模板", url:"/tmpls", icon:"speaker_notes"}
+  },
+  reports:{name:"报表",url:"/reports",icon:"svguse:/assets/imgs/meshicons.svg#barChart",
+    sendMsg:"发送消息",
+    sentMsg:"接受消息",
+    addDevice:"新增设备",
+    sellDevice:"卖出设备",
+    msgUnit:"消息数",
+    devUnit:"设备数"
+  },
+  cust:{
+    name:"客户",
+    address:"地址",
+    contact:"联系方式",
+    cmt:"描述",
+    admin:"管理员",
+    createAt:'创建日期',
+    deviceNum:"设备数量",
+    base:"基本信息",
+    admin:"管理员",
+    devices:"设备"
+  },
+  tmpl:{
+    name:"名称",
+    tpl:"模板内容",
+    cmt:"模板说明"
+  },
+  prod:{
+    name:"名称",
+    codeLen:"编码长度",
+    prefix:"前缀",
+    cmt:"说明"
+  },
+  device:{
+    code:"编码",
+    product:"产品类型",
+    createAt:"生产日期",
+    sellAt:"销售日期",
+    ukPrt:"未知产品"
+  },
+  failToCall:"调用失败",
+  errMsgs:{},
+  date2str:(dt)=>{
+    var s=dt.getFullYear()+'/';
+    var v=dt.getMonth()+1;
+    if(v<10) {
+        s+='0';
+    }
+    s+=v+'/';
+    v=dt.getDate();
+    if(v<10) {
+        s+='0';
+    }
+    s+=v;
+    return s;
+  }
+}
+};
