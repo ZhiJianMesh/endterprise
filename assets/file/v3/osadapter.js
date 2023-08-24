@@ -114,21 +114,24 @@ function __unRegsiterCallback(cbId) {
 
 function copyObj(src,segs){
     var dst={};
-    var seg;
-    for(var i in segs) {
-        seg=segs[i]
-        dst[seg]=src[seg]?src[seg]:'';
+    for(var i of segs) {
+        dst[i]=src[i]?src[i]:'';
     }
     return dst;
 }
+function copyObjTo(src,dst,segs){
+    for(var i of segs) {
+        dst[i]=src[i]?src[i]:'';
+    }
+}
 
 function cloneObj(obj) {
-    if(obj == null) {return obj;}
+    if(obj == null || obj == undefined) {return obj;}
     // Handle Array
     if (obj instanceof Array) {
         var copy = [];
-        for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i]=cloneObj(obj[i]);
+        for (var o of obj) {
+            copy.push(cloneObj(o));
         }
         return copy;
     }
@@ -142,22 +145,22 @@ function cloneObj(obj) {
         return copy;
     }
 
-    throw new Error("Unable to clone obj! Its type isn't supported.");
+    return obj;
 }
 
 function storage_set(k, v) {
-    localStorage.setItem(k,v);
+    var key=App.currentApp()+'_'+k;
+    localStorage.setItem(key,v);
 }
 function storage_get(k, def) {
-    var v=localStorage.getItem(k);
+    var key=App.currentApp()+'_'+k;
+    var v=localStorage.getItem(key);
     if(!v) return def;
     return v;
 }
 function storage_rmv(k) {
-    localStorage.removeItem(k);
-}
-function storage_clr() {
-    localStorage.clear();
+    var key=App.currentApp()+'_'+k;
+    localStorage.removeItem(key);
 }
 
 const Database = { //防止以后使用原生实现

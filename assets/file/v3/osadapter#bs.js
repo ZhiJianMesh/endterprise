@@ -63,42 +63,12 @@ function __default_jscb(id, resp) {
     }
 }
 
-function storage_set(k, v) {
-    localStorage.setItem(k,v);
-}
-function storage_get(k, def) {
-    var v=localStorage.getItem(k);
-    if(!v) return def;
-    return v;
-}
-function storage_rmv(k) {
-    localStorage.removeItem(k);
-}
-function storage_clr() {
-    localStorage.clear();
-}
-
-var __companies=[];
-var __curCompany=0;
-function loadContext() {
-    var s=storage_get("companies");
-    if(s) {
-        __companies=JSON.parse(s);
-    } else {
-        __companies=[{id:0,name:"zhijian.net.cn",accessCode:"ABCDEFGHIJ",tokens:{}}]
-    }
-    __curCompany=storage_get("curCompany", 0);
-    if(__curCompany < 0 || __curCompany >= __companies.length) {
-        __curCompany = 0;
-    }
-}
-loadContext();
-
 function saveCompanies() {
     var s=JSON.stringify(__companies);
-    storage_set("companies", s);
-    storage_set("curCompany", __curCompany);
+    localStorage.setItem("companies", s);
+    localStorage.setItem("curCompany", __curCompany);
 }
+
 function currentCompany() {
     return __companies[__curCompany];
 }
@@ -311,21 +281,24 @@ function innerDownload(opts, service) {
 
 function copyObj(src,segs){
     var dst={};
-    var seg;
-    for(var i in segs) {
-        seg=segs[i]
-        dst[seg]=src[seg]?src[seg]:'';
+    for(var i of segs) {
+        dst[i]=src[i]?src[i]:'';
     }
     return dst;
 }
 
+function copyObjTo(src,dst,segs){
+    for(var i of segs) {
+        dst[i]=src[i]?src[i]:'';
+    }
+}
 function cloneObj(obj) {
-    if(obj == null) {return obj;}
+    if(obj == null || obj == undefined) {return obj;}
     // Handle Array
     if (obj instanceof Array) {
         var copy = [];
-        for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i]=cloneObj(obj[i]);
+        for (var o of obj) {
+            copy.push(cloneObj(o));
         }
         return copy;
     }
@@ -339,7 +312,7 @@ function cloneObj(obj) {
         return copy;
     }
 
-    throw new Error("Unable to clone obj! Its type isn't supported.");
+    return obj;
 }
 
 function sleep(time) {
@@ -668,7 +641,7 @@ const Server = {
 	logPath(){return "d:\\work\\code\\release\\xxxxxxxxx"}
 }
 
-const Company={
+const Company={//used in server
     companyName(){return storage_get(COMPANY_NAME,"至简网格")},
     companyId(){return 40}, //storage_get(COMPANY_ID,'0')
     companyInfo() {},
@@ -710,6 +683,8 @@ const Http={
     }
 };
 
+var __companies=[];
+var __curCompany=0;
 const Companies={
     cid(){return currentCompany().id},
     insideAddr() {
@@ -727,10 +702,11 @@ const Companies={
         var company=currentCompany();
         var dta={account:acc,password:pwd,grant_type:'password',
             cid:company.id,accType:tp/*uniuser中才会需要*/};
-        var userService=this.userService();
-        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, userService).then(resp=> {
+        company.userService=this.userService();
+        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, company.userService).then(resp=> {
             if(resp.code==RetCode.OK) {
-                company.tokens[userService]=resp.data.access_token;
+                company.tokens[company.userService]=resp.data.access_token;
+                company.authorized=true;
                 saveCompanies();
             }
             __default_jscb(jsCbId,resp)
@@ -743,6 +719,7 @@ const Companies={
         var opts={method:'GET',url:'/api/logout',headers:{access_token:at}};
         sendRequest(opts, userService).then(resp => {
             company.tokens={};
+            company.authorized=false;
             saveCompanies();
             __default_jscb(jsCbId,resp)
         })
@@ -810,10 +787,13 @@ const Companies={
             idx++;
             if(c.id==cid) {
                 __curCompany=idx;
-                storage_set("curCompany", __curCompany);
+                localStorage.setItem("curCompany", __curCompany);
                 break;
             }
         }
+    },
+    curCompany(){
+        return JSON.stringify(__companies[__curCompany]);
     },
     list(jsCbId) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success",data:{list:__companies}});
@@ -828,6 +808,12 @@ const Companies={
 
 const App={
     openApp(app) {location.href='/'+app+'/index.html'},
+    currentApp() {
+        var s=location.href;
+        var pos=s.indexOf("//")
+        var ss=s.substring(pos+2).split("/"); //跳过https://或http://xx
+        return ss[1];//http://a.b.c.d/service/index.html
+    },
     install(app, jsCbId) {
          Console.info("install app " + app);
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success"});
@@ -927,4 +913,33 @@ const Database = {
         });
     }
 }
+
+function storage_set(k, v) {
+    var key=App.currentApp()+'_'+k;
+    localStorage.setItem(key,v);
+}
+function storage_get(k, def) {
+    var key=App.currentApp()+'_'+k;
+    var v=localStorage.getItem(key);
+    if(!v) return def;
+    return v;
+}
+function storage_rmv(k) {
+    var key=App.currentApp()+'_'+k;
+    localStorage.removeItem(key);
+}
+
+(() => {
+    var s=localStorage.getItem("companies");
+    if(s) {
+        __companies=JSON.parse(s);
+    } else {
+        __companies=[{id:0,name:"zhijian.net.cn",accessCode:"ABCDEFGHIJ",tokens:{}}]
+    }
+    __curCompany=localStorage.getItem("curCompany");
+    if(!__curCompany || __curCompany >= __companies.length) {
+        __curCompany = 0;
+    }
+})();
+
 document.write("<script src='/assets/axios_0.21.1.js'></script>");
