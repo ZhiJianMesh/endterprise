@@ -99,13 +99,13 @@ date_range_end(range) {
 
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
-  <q-header elevated>
+<q-header elevated>
    <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.home.bulletin}}</q-toolbar-title>
-   </q-toolbar>
-  </q-header>
-  <q-footer class="bg-white text-primary q-pa-md">
+</q-toolbar>
+</q-header>
+<q-footer class="bg-white text-primary q-pa-md">
     <q-input v-model="dateStr">
       <template v-slot:prepend>
         <q-icon name="event" class="cursor-pointer">
@@ -119,13 +119,13 @@ template:`
         </q-icon>
       </template>
     </q-input>
-  </q-footer>
+</q-footer>
 
-  <q-page-container>
-    <q-page class="q-pa-sm">
+<q-page-container>
+ <q-page class="q-pa-sm">
 <div id="mainCharts" :style="{width:'100vw', height:'70vh'}"></div>
-    </q-page>
-  </q-page-container>
+ </q-page>
+</q-page-container>
 </q-layout>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
 `

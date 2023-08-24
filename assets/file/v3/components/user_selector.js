@@ -7,8 +7,10 @@ data() {return {
 props: {
     accounts:{type:Array,required:true}, //复杂对象，可以直接在组件中修改
     label:{type:String,required:true},
-    multi:{type:Boolean,required:false,default:true},
-    useid:{type:Boolean,required:false,default:false}
+    multi:{type:Boolean,required:false,default:true}, //:multi="false"
+    service:{type:String,required:false,default:''}, //不为空时，只查服务授权过的用户
+    roles:{type:Array,required:false,default:[]}, //不为空时，只返回指定角色，需service配合
+    useid:{type:Boolean,required:false,default:false} //是否返回用户ID,:useid="true"
 },
 methods:{
 search_users(val,update) {
@@ -19,8 +21,13 @@ search_users(val,update) {
     return;
   }
   update(() => {
-    var opts={method:"GET",url:"/api/user/search?limit=10&s="+val};
-    request(opts, SERVICE_USER).then(resp => {
+    var url;
+    if(this.service=='') {
+      url="/api/user/search?limit=10&s="+val;
+    } else {
+      url="/api/power/search?limit=10&service="+this.service+"&s="+val;
+    }
+    request({method:"GET",url:url}, SERVICE_USER).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.accOptions=[]
             return;
@@ -33,6 +40,11 @@ search_users(val,update) {
             user={};
             for(var i in cols) {
                 user[cols[i]]=u[i];
+            }
+            if(user.role) {
+                if(this.roles.length>0&&!this.roles.includes(user.role)) {
+                    continue;//未包括此角色
+                }
             }
             val=this.useid ? user.id : user.account;
             opts.push({value:val, label:user.account+' '+user.nickName});
