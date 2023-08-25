@@ -154,7 +154,7 @@ template:`
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense>
+    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search_vips">
     <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="query_vips(0)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="search_vips"></q-icon>

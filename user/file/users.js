@@ -71,7 +71,7 @@ template:`
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense>
+    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search_users">
      <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="list_users(1)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="search_users"></q-icon>
