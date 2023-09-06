@@ -17,7 +17,6 @@ created() {
 methods:{
 init() {
     var company=this.service.curCompany();
-    this.dlg.company=false;
     this.newComData={id:'',accessCode:'',insideAddr:'',needInside:false};
     Companies.list(__regsiterCallback(resp=>{
 		this.companies=resp.data.list;
@@ -56,7 +55,9 @@ jump(pg) {
 btn_click() {
     if(this.service.curCompany().authorized) {
         Companies.logout(__regsiterCallback(resp => {
-            this.init()
+            this.account=this.tags.account;
+            this.nickName=this.tags.nickName;
+            this.authorized=false;
             this.service.clrUserInfo();
         }));
     } else {
@@ -70,6 +71,7 @@ addCompany(){
     Companies.add(dta.id, dta.accessCode, dta.insideAddr,
     __regsiterCallback(resp=>{
         if(resp.code==RetCode.OK) {
+			this.dlg.company=false;
             this.init();
             return;
         }

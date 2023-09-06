@@ -23,9 +23,9 @@ changePwd() {
         this.$refs.errDlg.show(this.tags.invalidNewPwd);
         return;
     }
-    var usrService=this.service.curCompany().userService;
+    var company=this.service.curCompany();
     var req={oldPassword:this.oldPwd,newPassword:this.newPwd,confirmPassword:this.cfmPwd};
-    request({method:"POST",url:"/api/changePassword",data:req}, usrService).then(resp => {
+    request({method:"POST", url:"/api/changePassword", data:req, cloud:company.cloud}, company.userService).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
@@ -34,11 +34,11 @@ changePwd() {
     });
 },
 saveChanges(){
-    var usrService=this.service.curCompany().userService;
+    var company=this.service.curCompany();
     var req={nickName:this.userInfo.nickName,
              mobile:this.userInfo.mobile,
              email:this.userInfo.email};
-    request({method:"POST",url:"/api/setBaseInfo",data:req}, usrService).then(resp => {
+    request({method:"POST", url:"/api/setBaseInfo", data:req, cloud:company.cloud}, company.userService).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
 			return;

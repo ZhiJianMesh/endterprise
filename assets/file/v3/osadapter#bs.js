@@ -393,6 +393,17 @@ const JStr={
         } else {
             return '_';
         }
+    },
+    isLanIP(ip) {
+        if(ip.startsWith("192.168.") || ip.startsWith("10.")) {
+            return true;
+        }
+        if(ip.startsWith("172.")) {
+            var pos = ip.indexOf('.', 4);
+            var second = Integer.parseInt(ip.substring(4, pos));
+            return second >= 16 && second <= 31;
+        }
+        return false;
     }
 }
 

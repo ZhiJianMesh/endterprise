@@ -7,35 +7,51 @@ data() {return {
     tmpls:[],
     tmpl:'',
     percent:{val:0,each:0},
-    type:"1" //1：按客户，2：按设备
+    type:"1", //1：按客户，2：按设备
+    errMsg:'',
+    adminCust:0,
 }},
 props: {
     title:{type:String,required:true},
-    custId:{type:Number, required:true},
+    custId:{type:Number, required:true}, //客户ID
     custName:{type:String, required:true},
     service:{type:String, required:true},
     batchNum:{type:Number, required:false, default:150},
     tags:{type:Object, required:false, default:{
-      code:'编码',message:'消息',confirm:'确定',close:'关闭',
-      byCust:"客户的全部设备",byCode:"指定设备号"
+      code:'编码',
+	  message:'消息',
+	  confirm:'确定',
+	  close:'关闭',
+      byCust:"客户的全部设备",
+	  byCode:"指定设备号",
+	  failed:"发生错误，错误码:"
     }}
 },
 created() {
     this.getTmpls();
+    request({method:"GET",url:"/admin/customer"}, this.service).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
+            return;
+        }
+        this.adminCust=resp.data.customer;
+    });
 },
 methods:{
 show() {
     this.dlg=true;
+    this.errMsg='';
 },
 sendMessage() {
     if(this.type==1) {
-        var url="/msg/pro_send_by_customer";
+        var url=this.adminCust>0?"/msg/send_by_customer":"/msg/pro_send_by_customer";
         var dta={customer:this.custId,msg:this.msg,maxTimes:1};
         request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
             if(resp.code!=RetCode.OK) {
-                this.$refs.errDlg.showErr(resp.code, resp.info);
+                this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
                 return;
             }
+            this.errMsg='';
             this.dlg=false;
         });
         return;
@@ -56,8 +72,8 @@ send_by_code_batch(codes,msg,start) {
     for(var n=0,i=start,l=codes.length; i<l&&n<this.batchNum; i++,n++) {
         dta.codes.push(codes[i]);
     }
-    
-    request({method:"POST",url:"/msg/pro_send_by_code",data:dta}, this.service).then(resp =>{
+    var url=this.adminCust>0?"/msg/send_by_code":"/msg/pro_send_by_code";
+    request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             this.percent.val=0;
@@ -121,6 +137,9 @@ template: `
         dense maxlength=100000 type="textarea" rows="12"></q-input>
       </q-item-section></q-item>
      </q-list>
+    </q-card-section>
+    <q-card-section>
+     <div class="text-red" v-if="errMsg!=''">{{errMsg}}</div>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.confirm" color="primary" @click.stop="sendMessage"></q-btn>

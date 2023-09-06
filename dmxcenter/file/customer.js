@@ -141,7 +141,7 @@ template:`
   <template v-slot:action>
     <q-icon name="edit" @click.stop="custInfo.dlg=true" color="primary" size='1.8em'></q-icon>
     <q-icon name="cancel" @click="rmvCustomer"
-     v-if="id>0&&service.role=='admin'"
+     v-if="id>0&&service.role=='admin'&&devices.length==0"
      color="red" size='1.8em' class="q-pl-lg"></q-icon>
   </template>
 </q-banner>
@@ -201,7 +201,7 @@ template:`
 <tbody>
 <tr v-for="d in devices">
  <td>{{d.code}}</td>
- <th>{{d.product}}</th>
+ <td>{{d.product}}</td>
  <td>{{d.createAt}}</td>
  <td>{{d.sellAt}}</td>
 </tr>
