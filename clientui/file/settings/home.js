@@ -9,7 +9,8 @@ data(){return{
     curCompanyId:-1,
     newComDta:{id:'',accessCode:'',insideAddr:'',needInside:false},
     newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',hidePwd:true,vc:''},
-    dlg:{register:false,company:false}
+    dlg:{register:false,company:false},
+    adding:false //是否正在添加公司
 }},
 created() {
     this.init();
@@ -68,8 +69,10 @@ btn_click() {
 },
 addCompany(){
     var dta=this.newComDta;
+    this.adding=true;
     Companies.add(dta.id, dta.accessCode, dta.insideAddr,
     __regsiterCallback(resp=>{
+        this.adding=false;
         if(resp.code==RetCode.OK) {
 			this.dlg.company=false;
             this.init();
@@ -234,9 +237,11 @@ template: `
       <q-input dense v-model="newComDta.insideAddr" :label="tags.insideAddr" v-show="newComDta.needInside"></q-input>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="addCompany"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup></q-btn>
+      <q-btn color="primary" :label="tags.ok" @click="addCompany" :disable="adding"></q-btn>
+      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="adding"></q-btn>
     </q-card-actions>
+    <q-linear-progress indeterminate rounded color="pink"
+    class="q-mt-sm" v-show="adding"></q-linear-progress>
   </q-card>
 </q-dialog>
 

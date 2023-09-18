@@ -3,9 +3,8 @@ inject:['service', 'tags'],
 data() {return {
     changed:false,
     wan:{
-        state:0, //0:未开启，1：自有外网IP，2：网桥代理，
-        addr:'', //自有外网地址，state为2时由公有云分配，1时需要填写
-        balance:0
+        state:0, //0:未开启，1：开启，addr可以为公有云服务器IP，也可以是内网映射的IP
+        addr:''
     },
     backup:{
         at:-1,
@@ -13,6 +12,7 @@ data() {return {
         balance:0,
         buckets:[] //id list
     },
+    addrList:[],
 	bucketOpts:[],//[{label:'xxx',value:123}...]
     backupAt:"", //备份时间点，用于控件显示
     progress:{
@@ -52,29 +52,36 @@ init() {
             if(resp.code != RetCode.OK) return;
             this.backup.balance=resp.data.balance;
             this.backup.buckets=resp.data.ext.split(',');
-        })
+        });
     }));
 
     Server.outsideGwInfo(__regsiterCallback(r=>{
-        this.wan = {addr:r.data.addr, state:''+r.data.state, balance:0};
-        request({method:"GET",url:"/api/service/getinfo?service=bridge"}, 'company').then(resp => {
-            if(resp.code != RetCode.OK) {
-                this.wan.state=0;
-            } else {
-                this.wan.balance=resp.data.balance;
+        this.wan = {addr:r.data.addr, state: r.data.state};
+        var ips = Http.localIPs();
+        if(!ips || ips == "") {
+            return;
+        }
+        var ipList=ips.split(',');
+        var opts=[];
+        for(var ip of ipList) {
+            if(Http.isLanIP(ip)) {
+                continue;
             }
-        })
+            var addr=Http.isIPv6(ip)?("[" + ip + ']:8523'):(ip + ':8523');
+            opts.push({label:addr, value:addr})
+            if(this.wan.addr=='') {
+                this.wan.addr=addr;
+            }
+        }
+
+        this.addrList=opts;
     }));
 },
 switchWan() {
 	if(this.wan.state!=0) {
 		this.wan.state=0;
-		if(this.wan.bridge<=0) {
-		    this.turnOff('bridge');
-		}
 	} else {
 		this.wan.state='1';
-		this.turnOn('bridge');
 	}
 	this.changed=true;
 },
@@ -118,27 +125,14 @@ bucketChanged() {
     }
     this.changed=true;
 },
-isValidWanIp(addr) {
-    var pos=addr.indexOf(':');
-    if(pos<=0) {
-        return false;
-    }
-    var ip=addr.substring(0, pos);
-    return !Http.isLanIp(ip);
-},
-save(){
+save() {
     //自有公网IP的情况，需要填写外网地址
-    if(this.wan.state==1) {
-        if(!this.isValidWanIp(this.wan.addr)) {
-            this.$refs.alertDlg.show(this.tags.needWanIp);
-            return;
+    var outsideAddr = this.wan.state==1 ? this.wan.addr : "";
+    Server.setOutsideAddr(outsideAddr, __regsiterCallback(resp=>{
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
         }
-        Server.setOutsideAddr(this.wan.addr, __regsiterCallback(resp=>{
-            if(resp.code != RetCode.OK) {
-                this.$refs.alertDlg.showErr(resp.code, resp.info);
-            }
-        }));
-    }
+    }));
 
     if(this.backup.at>=0) {
         if(this.backup.buckets.length==0) {
@@ -222,17 +216,12 @@ template: `
    color="primary" dense class="q-ml-md" @click="switchWan"></q-btn>
   </td>
  </tr>
- <tr v-show="wan.state!=0">
-  <td>{{tags.wanType}}</td>
-  <td>
-   <q-option-group v-model="wan.state" :options="tags.wanTypeOpts"
-     inline @update:model-value="changed=true"></q-option-group>
-  </td>
- </tr>
  <tr v-show="wan.state==1">
   <td>{{tags.gwIp}}</td>
-  <td><q-input v-model="wan.addr" dense @update:model-value="changed=true"
-     :rules="[v=>isValidWanIp(v)||tags.needWanIp]"></q-input></td>
+  <td>
+   <q-option-group :options="addrList" type="radio" v-model="wan.addr"
+    style="word-break:break-all;" @update:model-value="changed=true"></q-option-group>
+  </td>
  </tr>
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.backup}}</td><td></td></tr>
  <tr>

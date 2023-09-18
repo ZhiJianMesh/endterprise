@@ -59,7 +59,9 @@ cn:{
     deviceNum:"设备数量",
     base:"基本信息",
     admin:"管理员",
-    devices:"设备"
+    devices:"设备",
+    upmsg:"上传消息",
+    downmsg:"下发消息"
   },
   tmpl:{
     name:"名称",

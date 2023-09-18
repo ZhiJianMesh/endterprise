@@ -10,7 +10,8 @@ data() {return {
     regDta:{creditCode:'',name:'',pwd:'',cfmPwd:'',verifyCode:'',session:'',vcImg:''},
     lgnDta:{id:''/*公司id或统一信用码*/,pwd:''},
     cb:null,
-    tab:'login'
+    tab:'login',
+    doing:false
 }},
 props: {
     tags:{type:Object,
@@ -25,6 +26,7 @@ props: {
     }
 },
 created() {
+    this.doing=false;
     this.id=Company.creditCode();
 },
 methods:{
@@ -40,14 +42,16 @@ confirm(){
     }
 },
 login() {
+    this.doing=true;
     var jsCbId = __regsiterCallback(resp=>{
+        this.doing=false;
         if(resp.code!=RetCode.OK) {
             this.message="Code:" + resp.code + ",Info:" + resp.info;
-        } else {
-            this.registerDlg=false;
-            if(this.cb&&typeof(this.cb)=='function'){
-                this.cb();
-            }
+            return;
+        }
+        this.registerDlg=false;
+        if(this.cb&&typeof(this.cb)=='function'){
+            this.cb();
         }
     });
     var d=this.lgnDta;
@@ -58,14 +62,16 @@ register() {
         this.message=this.tags.creditCodePls;
         return;
     }*/
+    this.doing=true;
     var jsCbId=__regsiterCallback(resp=>{
+        this.doing=false;
         if(resp.code!=RetCode.OK) {
             this.message="Code:" + resp.code + ",Info:" + resp.info;
-        } else {
-            this.registerDlg=false;
-            if(this.cb&&typeof(this.cb)=='function'){
-                this.cb();
-            }
+            return;
+        }
+        this.registerDlg=false;
+        if(this.cb&&typeof(this.cb)=='function'){
+            this.cb();
         }
     });
     var d=this.regDta;
@@ -146,9 +152,11 @@ template: `
   </q-card-section>
   <q-card-section class="q-pt-none" style="color:red">{{message}}</q-card-section>
   <q-card-actions align="right" class="q-pr-md">
-   <q-btn :label="tags.ok" color="primary" @click="confirm"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="confirm" :disable="doing"></q-btn>
+   <q-btn flat :label="tags.close" color="primary" v-close-popup :disable="doing"></q-btn>
   </q-card-actions>
+  <q-linear-progress indeterminate rounded color="pink"
+    class="q-mt-sm" v-show="doing"></q-linear-progress>
  </q-card>
 </q-dialog>
 `}

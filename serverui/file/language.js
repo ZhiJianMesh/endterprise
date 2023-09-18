@@ -53,12 +53,10 @@ cn:{
   buckets:"备份站点",
   notStart:"未启用",
   running:"已启用",
-  wanType:"类型",
-  wanTypeOpts:[
-    {label:"自有外网IP",value:"1"},
-    {label:"网桥代理",value:"2"}
-  ],
+  ownWan:"自有外网IP",
+  bridgeWan:"网桥代理",
   gwIp:"公网IP",
+  failToOpenPort:"启动外网映射失败！",
   
   locServices:"已安装应用",
 

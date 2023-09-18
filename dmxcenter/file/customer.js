@@ -8,6 +8,7 @@ data() {return {
     admins:[],
     page:{cur:1, max:0},
     adminInfo:{dlg:false,newAcc:[]},
+    msg:{dlg:false, code:'', downmsg:'', upmsgs:[], downtime:'',setAt:''},
     custInfo:{dlg:false,id:0,name:'',address:'',createAt:'',cmt:'',contact:'',deviceNum:0}
 }},
 created(){
@@ -36,6 +37,35 @@ getCust() {
         var dt=new Date();
         dt.setTime(resp.data.createAt*60000);
         this.custInfo.createAt=this.tags.date2str(dt);
+    })
+},
+showMsg(code) {
+    var url="/device/getmessage?code="+code;
+    request({method:"GET",url:url}, this.service.name).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        var dt=new Date();
+        if(resp.data.downmsg) {
+            this.msg.downmsg=resp.data.downmsg;
+            dt.setTime(resp.data.downtime);
+            this.msg.downtime=dt.toLocaleString();
+            dt.setTime(resp.data.setAt);
+            this.msg.setAt=dt.toLocaleString();
+        } else {
+            this.msg.downmsg='';
+            this.msg.downtime='';
+            this.msg.setAt='';
+        }
+        var upmsgs=[];
+        for(var m of resp.data.upmsgs) {
+            dt.setTime(m.at);
+            upmsgs.push({msg:m.msg,at:dt.toLocaleString()});
+        }
+        this.msg.upmsgs=upmsgs;
+        this.msg.code=code;
+        this.msg.dlg=true;
     })
 },
 query_devices(pg) {
@@ -199,7 +229,7 @@ template:`
  <th>{{tags.device.sellAt}}</th>
 </tr></thead>
 <tbody>
-<tr v-for="d in devices">
+<tr v-for="d in devices" @click="showMsg(d.code)">
  <td>{{d.code}}</td>
  <td>{{d.product}}</td>
  <td>{{d.createAt}}</td>
@@ -243,6 +273,40 @@ template:`
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.ok" color="primary" @click="setCustomer"></q-btn>
+      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
+<!-- 显示消息 -->
+<q-dialog v-model="msg.dlg">
+  <q-card style="min-width:75vw">
+    <q-card-section>
+      <div class="text-h6">{{msg.code}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+     <q-list>
+      <q-item>
+        <q-item-section>
+          <q-item-label>{{tags.cust.downmsg}}</q-item-label>
+          <q-item-label caption>{{msg.downmsg}}</q-item-label>
+          <q-item-label caption>{{msg.downtime}} / {{msg.setAt}}</q-item-label>
+        </q-item-section>
+      </q-item>
+      <q-item>
+        <q-item-section>
+          <q-item-label>{{tags.cust.upmsg}}</q-item-label>
+        </q-item-section>
+      </q-item>
+      <q-item v-for="m in msg.upmsgs">
+        <q-item-section>
+          <q-item-label caption>{{m.msg}}</q-item-label>
+          <q-item-label caption>{{m.at}}</q-item-label>
+        </q-item-section>
+      </q-item>
+     </q-list>
+    </q-card-section>
+    <q-card-actions align="right">
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>
