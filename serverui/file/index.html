@@ -40,6 +40,7 @@
 </q-page-container>
 </q-layout>
 <register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
+<component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
 </div>
 </body>
 <script src="/assets/v3/vue.js"></script>
@@ -48,6 +49,7 @@
 <script type="module">
 import Language from "./language.js"
 import RegisterDialog from "./settings/register.js"
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 
 const SRV_ALTERING=2;
 const SRV_RUNNING=3;
@@ -103,8 +105,13 @@ chgStateDisp(){
     }
 },
 displayState(resp) {
-    if(resp && resp.data) {
-        this.state=resp.data.state;
+    if(resp) {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
+        if(resp.data) {
+            this.state=resp.data.state;
+        }
     }
     this.chgStateDisp();
     var t=Server.runTime();
@@ -143,6 +150,7 @@ init() {
 });
 app.use(Quasar);
 app.component('register-dialog', RegisterDialog);
+app.component('component-confirm-dialog', ConfirmDialog);
 app.mount('#app');
 </script>
 </html>

@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/ico;base64,aWNv">
 <link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
-<title>MsgCenter</title>
+<title>DeviceMsgXCenter</title>
 </head>
 <body style="overflow:hidden"><div id="app" v-cloak><router-view></router-view></div></body>
 <script src="/assets/v3/vue.js"></script>
@@ -87,6 +87,7 @@ getProducts(refresh){
                 for(var p of resp.data.products) {
                     dt.setTime(p.createAt*60000);
                     p.createAt=tags.date2str(dt);
+                    p.totalLen=p.prefix.length+p.codeLen;
                     prts.push(p);
                 }
                 this.products=prts;

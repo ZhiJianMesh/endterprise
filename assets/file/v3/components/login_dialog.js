@@ -6,7 +6,8 @@ data() {return {
     hidePwd:true,
     loginAcc:'',
     loginPwd:'',
-    callback:null
+    callback:null,
+    logining:false
 }},
 props: {
     accType:{type:String,required:true, default:"N"},
@@ -23,7 +24,9 @@ components:{
 },
 methods:{
 actLogin() {
+    this.logining = true;
     var jsCbId=__regsiterCallback(resp => {
+        this.logining = false;
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -59,9 +62,11 @@ template: `
       </q-input>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="primary" :label="label" @click="actLogin"></q-btn>
-      <q-btn color="primary" flat :label="cancel" v-close-popup></q-btn>
+      <q-btn color="primary" :label="label" @click="actLogin" :disable="logining"></q-btn>
+      <q-btn color="primary" flat :label="cancel" v-close-popup :disable="logining"></q-btn>
     </q-card-actions>
+    <q-linear-progress indeterminate rounded color="pink"
+    class="q-mt-sm" v-show="logining"></q-linear-progress>
   </q-card>
 </q-dialog>
 <alert-dialog :title="failToCall" :close="close" ref="errMsg"></alert-dialog>

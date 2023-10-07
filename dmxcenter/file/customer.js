@@ -6,6 +6,7 @@ data() {return {
     products:{},
     devices:[],
     admins:[],
+    search:'',
     page:{cur:1, max:0},
     adminInfo:{dlg:false,newAcc:[]},
     msg:{dlg:false, code:'', downmsg:'', upmsgs:[], downtime:'',setAt:''},
@@ -49,10 +50,14 @@ showMsg(code) {
         var dt=new Date();
         if(resp.data.downmsg) {
             this.msg.downmsg=resp.data.downmsg;
-            dt.setTime(resp.data.downtime);
-            this.msg.downtime=dt.toLocaleString();
             dt.setTime(resp.data.setAt);
             this.msg.setAt=dt.toLocaleString();
+            if(resp.data.downtime>resp.data.setAt) {
+                dt.setTime(resp.data.downtime);
+                this.msg.downtime=dt.toLocaleString();
+            } else {
+                this.msg.downtime=this.tags.notTaken;
+            }
         } else {
             this.msg.downmsg='';
             this.msg.downtime='';
@@ -68,12 +73,25 @@ showMsg(code) {
         this.msg.dlg=true;
     })
 },
-query_devices(pg) {
+query_devices(pg){
+    this.search='';
+    this.get_devices(pg);
+},
+get_devices(pg) {
     var offset=(parseInt(pg)-1)*+this.service.N_PAGE;
-    var url='/device/listOfCust?offset='+offset+'&num='+this.service.N_PAGE+"&customer="+this.id;
+    var url;
+    if(!this.search) {
+        url='/device/listOfCust?offset='+offset
+            +'&num='+this.service.N_PAGE+"&customer="+this.id;
+    } else {
+        url='/device/searchOfCust?offset='+offset
+            +'&num='+this.service.N_PAGE+"&customer="+this.id
+            +'&head=' + this.search;
+    }
     request({method:"GET",url:url}, this.service.name).then(resp => {
         if(resp.code != 0) {
             console.debug("code:" + resp.code + ",info:" + resp.info);
+            this.devices=[];
             return;
         }
         var list=[];
@@ -87,8 +105,12 @@ query_devices(pg) {
         for(var d of resp.data.devices) {
             dt.setTime(d[iCreate]*60000);
             createAt=dt.toLocaleDateString();
-            dt.setTime(d[iSell]*60000);
-            sellAt=dt.toLocaleDateString();
+            if(d[iSell]>0) {
+                dt.setTime(d[iSell]*60000);
+                sellAt=dt.toLocaleDateString();
+            } else {
+                sellAt=this.tags.notSell;
+            }
             prtDef=this.products[d[iPrt]];
             prt=prtDef?prtDef.name:this.tags.device.ukPrt;
             list.push({code:d[iCode],createAt:createAt,sellAt:sellAt,product:prt})
@@ -212,14 +234,22 @@ template:`
 <!-- devices -->
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.cust.devices}}
-  <template v-slot:action>
-    <q-icon name="message" @click.stop="showMsgSender"
-     color="primary" size='1.8em'></q-icon>
+ <template v-slot:action>
+   <q-input v-model="search" dense @keyup.enter="search_custs">
+     <template v-slot:append>
+      <q-icon v-show="search" name="close" @click="query_devices(1)" class="cursor-pointer"></q-icon>
+      <q-icon name="search" @click="get_devices(1)"></q-icon>
+     </template>
+     <template v-slot:after>
+      <q-icon name="message" @click.stop="showMsgSender"
+      class="q-ml-md" color="primary"></q-icon>
+     </template>
+    </q-input>
   </template>
 </q-banner>
 <div class="q-pa-sm flex flex-center" v-if="page.max>1">
  <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"
-  boundary-numbers="false" @update:model-value="query_devices"></q-pagination>
+  boundary-numbers="false" @update:model-value="get_devices"></q-pagination>
 </div>
 <q-markup-table flat dense>
 <thead><tr>
@@ -246,7 +276,7 @@ template:`
   :errMsgs="tags.errMsgs" :close="tags.close">
 </component-alert-dialog>
 <component-msg-sender :title="tags.sendMsg" ref="msgSender"
- :custId="id" :custName="custInfo.name" :service="service.name">
+ :custId="id" :tags="tags.sender" :custName="custInfo.name" :service="service.name">
 </component-msg-sender>
 
 <!-- 修改客户 -->
@@ -290,7 +320,7 @@ template:`
         <q-item-section>
           <q-item-label>{{tags.cust.downmsg}}</q-item-label>
           <q-item-label caption>{{msg.downmsg}}</q-item-label>
-          <q-item-label caption>{{msg.downtime}} / {{msg.setAt}}</q-item-label>
+          <q-item-label caption>{{msg.setAt}} / {{msg.downtime}}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>

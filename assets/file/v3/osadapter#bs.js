@@ -395,6 +395,12 @@ const JStr={
         }
     },
     isLanIP(ip) {
+		if(ip.indexOf(':') > 0) {
+			if(ip.startsWith("fe8")||ip.startsWith("fec")) {
+				return true;
+			}
+			return false;
+		}
         if(ip.startsWith("192.168.") || ip.startsWith("10.")) {
             return true;
         }
@@ -659,7 +665,14 @@ const Server = {
     setLogLevel(level) {},
     logLevel() {return 'DEBUG'},
 	serviceStarted() {return true},
-	logPath(){return "d:\\work\\code\\release\\xxxxxxxxx"}
+	logPath(){return "d:\\work\\code\\release\\xxxxxxxxx"},
+	setOutsideAddr(addr,jsCbId) {
+        __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
+    },
+	saveAdvancedCfg(data,jsCbId){
+        __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
+    },
+    saveFile(service, file, content) {}
 }
 
 const Company={//used in server
@@ -673,7 +686,8 @@ const Company={//used in server
             pwd:Secure.sha256(pwd),
             cfmPwd:Secure.sha256(cfmPwd),
             verifyCode:verifyCode,session:session,
-            pubKey:'',name:name,
+            pubKey:'IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
+            name:name,
             partition:250000,info:info,
             country:country,province:province,city:city,county:county
         };
@@ -683,7 +697,7 @@ const Company={//used in server
         })
     },
     login(id,pwd,jsCbId){
-        var data={id:id,pwd:Secure.sha256(pwd),pubKey:''};
+        var data={id:id,pwd:Secure.sha256(pwd),pubKey:'IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps='};
         var opts={url:"/company/login", method:"POST", data:data, private:false}
         request(opts, "company").then(resp=>{
             __default_jscb(jsCbId, resp)
@@ -701,7 +715,19 @@ const Http={
             url += '/';
         }
         return url + uri;
-    }
+    },
+	isLanIP(ip) { //用在serverui中，仅用于测试
+		return JStr.isLanIP(ip);
+    },
+    isIPv4(ip) {
+        return JStr.isIPv4(ip);
+    },
+    isIPv6(ip) {
+		return JStr.isIPv6(ip);
+    },
+	localIPs() {
+		return "192.168.1.25,240e:3af:c40:c280:545b:3fea:e8e0:7794,fe80::3943:28bb:6a80:d0ac%3";
+	}
 };
 
 var __companies=[];

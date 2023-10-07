@@ -1,4 +1,4 @@
-//日期选择组件component-date-input
+//发送消息组件
 export default{
 data() {return {
     dlg:false,
@@ -17,15 +17,7 @@ props: {
     custName:{type:String, required:true},
     service:{type:String, required:true},
     batchNum:{type:Number, required:false, default:150},
-    tags:{type:Object, required:false, default:{
-      code:'编码',
-	  message:'消息',
-	  confirm:'确定',
-	  close:'关闭',
-      byCust:"客户的全部设备",
-	  byCode:"指定设备号",
-	  failed:"发生错误，错误码:"
-    }}
+    tags:{type:Object, required:true}
 },
 created() {
     this.getTmpls();

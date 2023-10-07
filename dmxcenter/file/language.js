@@ -19,7 +19,7 @@ cn:{
   remove:"删除",
   add:"增加",
   save:"保存",
-  search:"搜索",
+  search:"搜索客户",
   addCust:"添加客户",
   editCust:"修改客户",
   addTmpl:"添加消息模板",
@@ -36,6 +36,7 @@ cn:{
   noProducts:"无任何产品定义，无法显示设备信息！",
   invalidCode:"存在以下无效编码：",
   notSell:"未出售",
+  notTaken:"未取走",
   exceedsDayNum:"报表查询时间超过366天",
   homeMenus:{
       prt:{name:"产品", url:"/products",icon:"settings_remote"},
@@ -80,6 +81,15 @@ cn:{
     createAt:"生产日期",
     sellAt:"销售日期",
     ukPrt:"未知产品"
+  },
+  sender:{
+    code:'编码',
+    message:'消息',
+    confirm:'确定',
+    close:'关闭',
+    byCust:"客户的全部设备",
+    byCode:"指定设备号",
+    failed:"发生错误，错误码:"
   },
   failToCall:"调用失败",
   errMsgs:{},

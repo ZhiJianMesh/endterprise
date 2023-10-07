@@ -10,7 +10,7 @@ data(){return{
     newComDta:{id:'',accessCode:'',insideAddr:'',needInside:false},
     newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',hidePwd:true,vc:''},
     dlg:{register:false,company:false},
-    adding:false //是否正在添加公司
+    adding:false //是否正在添加公司，用于显示进度条
 }},
 created() {
     this.init();
@@ -98,7 +98,7 @@ showRegister() {
     this.dlg.register=true;
     this.refreshVc();
 },
-register() {
+register() { //注册个人账号
     if(this.newUsrDta.pwd=='' || this.newUsrDta.pwd!=this.newUsrDta.confirmPwd) {
         this.$refs.errDlg.show(this.tags.invalidPwd);
         return;        

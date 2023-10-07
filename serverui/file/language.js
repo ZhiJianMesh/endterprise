@@ -14,7 +14,8 @@ cn:{
   market:"应用市场",
   failToCall:"调用失败",
   cidCantBe0:"公司ID不能为0，请在“设置-公司信息”中设置",
-  
+  seperator:' ',
+       
   address:"地址",
   creditCode:"统一信用码",
   creditCodePls:"请输入18位正确的统一信用码!",

@@ -153,7 +153,7 @@ template:`
 <div class="text-right">
  <q-chip clickable color="primary" text-color="white" icon="save" v-show="baseChged"  @click="save_baseinfo">{{tags.save}}</q-chip>
  <q-chip clickable color="orange" text-color="white" :icon-right="dtl.status" @click="switch_active">{{tags.user.status}}</q-chip>
- <q-chip clickable color="orange" text-color="white" icon-right="lock_reset" @click="reset_pwd">{{tags.user.resetPwd}}</q-chip>
+ <q-chip clickable color="orange" text-color="white" icon-right="lock_reset" v-if="id!=1" @click="reset_pwd">{{tags.user.resetPwd}}</q-chip>
 </div>
 <q-banner dense class="q-mb-sm text-dark bg-blue-grey-1">
 {{tags.user.groups}}

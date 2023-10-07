@@ -29,7 +29,7 @@ subs(fid,cb) {
         return;
     }
     var opts={method:"GET",url:"/api/sub?fid="+fid+"&offset=0&num=1000",private:false,cloud:true};
-    request(opts, SERVICE_ADDR).then(resp=>{
+    request(opts, "address").then(resp=>{
         if(resp.code!=RetCode.OK) {
             cb([]);
         } else {

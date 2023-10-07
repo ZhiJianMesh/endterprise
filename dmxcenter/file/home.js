@@ -151,7 +151,7 @@ template:`
   <q-footer class="bg-white q-px-md q-pt-md" v-if="customer.id==0">
     <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search_custs">
      <template v-slot:append>
-      <q-icon v-if="search!==''" name="close" @click="query_custs(1)" class="cursor-pointer"></q-icon>
+      <q-icon v-show="search" name="close" @click="query_custs(1)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="search_custs"></q-icon>
      </template>
      <template v-slot:after>

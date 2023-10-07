@@ -153,7 +153,7 @@ template: `
   <q-card-section class="q-pt-none" style="color:red">{{message}}</q-card-section>
   <q-card-actions align="right" class="q-pr-md">
    <q-btn :label="tags.ok" color="primary" @click="confirm" :disable="doing"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup :disable="doing"></q-btn>
+   <q-btn flat :label="tags.cancel" color="primary" v-close-popup :disable="doing"></q-btn>
   </q-card-actions>
   <q-linear-progress indeterminate rounded color="pink"
     class="q-mt-sm" v-show="doing"></q-linear-progress>

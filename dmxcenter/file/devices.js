@@ -11,7 +11,7 @@ data() {return {
     page:{cur:1, max:0},
     percent:{val:0, each:0},
     devInfo:{dlg:false,codes:[],createAt:''},
-    invalid:[]
+    errList:''
 }},
 created() {
     this.service.getProducts(true).then(products => {
@@ -87,27 +87,31 @@ addDevice(){
 add_batch(codes, prt, createAt, start) {
     var dta={product:prt.id,createAt:createAt,codes:[]};
     var c;
+    var invalid=[];
     for(var n=0,i=start,l=codes.length; i<l&&n<BATCH_NUM; i++,n++) {
         c=codes[i];
         if(c.length>prt.codeLen) {
-            if(c.startsWith(prt.prefix)) { 
-                dta.codes.push(c.substring(c.length-prt.codeLen));
+            if(c.startsWith(prt.prefix) && c.length==prt.totalLen) { 
+                dta.codes.push(c.substring(prt.prefix.length));
             } else {
-                this.invalid.push(c);
+                invalid.push(c);
             }
         } else if(c.length==prt.codeLen) {
             dta.codes.push(c);
         } else if(c.length>0){
-            this.invalid.push(c);
+            invalid.push(c);
         }
     }
     
-    if(dta.codes.length==0) {
-        if(start+BATCH_NUM < codes.length) {
-            this.add_batch(codes, prt, createAt, start+BATCH_NUM);
-        } else {
-            this.show_invalid();
+    if(invalid.length > 0) {
+        var s=[this.tags.invalidCode, "\n"];
+        var n=0;
+        for(var c of invalid) {
+            if(n>0)s.push(',');
+            s.push(c);
+            n++;
         }
+        this.errList=s.join('');
         return;
     }
     
@@ -124,24 +128,9 @@ add_batch(codes, prt, createAt, start) {
             return;
         }
         this.query_devices(1);
-        this.show_invalid();
+        this.percent.val=0;
+        this.devInfo.dlg=false;
     });    
-},
-show_invalid() {
-    this.percent.val=0;
-    this.devInfo.dlg=false;
-    if(this.invalid.length==0) {
-        return;
-    }
-    var s=[this.tags.invalidCode, "\n"];
-    var n=0;
-    for(var c of this.invalid) {
-        if(n>0)s.push(',');
-        s.push(c);
-        n++;
-    }
-    this.$refs.errDlg.show(s.join(''));
-    this.invaild=[];
 }
 },
 template:`
@@ -210,6 +199,9 @@ template:`
         dense maxlength=100000 type="textarea" rows="12"></q-input>
       </q-item-section></q-item>
     </q-list>
+    </q-card-section>
+    <q-card-section v-show="errList!=''">
+     <div class="text-red" style="word-wrap:break-word;white-space:pre-wrap;">{{errList}}</div>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.ok" color="primary" @click.stop="addDevice"></q-btn>
