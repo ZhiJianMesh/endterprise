@@ -10,17 +10,25 @@ data() {return {
 }},//选择项，调用search获得
 props: {
     modelValue:{type:Object},
-    label:{type:String,required:true},
+    country:{type:String,required:false,default:'156'},//156为中国
+    label:{type:String,required:false,default:''},
     ok:{type:String,default:"确定"},
     close:{type:String,default:"关闭"}
 },
 emits: ['update:modelValue'],
 created(){
-    this.subs(156,list=>{
+    this.subs(this.country,list=>{ 
         this.provinces=list;
-        this.addr.province=list[0];
-        this.setProvince(list[0]);
+        if(!this.modelValue.province) {
+            this.addr.province=list[0];
+            this.setProvince(list[0]);
+        }
     });
+    if(this.modelValue.province) {
+        this.addr.province.name=this.modelValue.province;
+        this.addr.city.name=this.modelValue.city;
+        this.addr.county.name=this.modelValue.county;   
+    }    
 },
 methods:{
 subs(fid,cb) {
@@ -99,7 +107,7 @@ value: {
 },
 template: `
 <div class="row justify-start items-center q-gutter-lg" @click="addrDlg=true">
- <div>{{label}}</div>
+ <div v-if="label">{{label}}</div>
  <div>{{value}}</div>
 </div>
 

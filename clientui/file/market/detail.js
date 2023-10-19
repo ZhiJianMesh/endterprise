@@ -15,7 +15,7 @@ data() {return {
     intro: {},
     subTitle: '',
     preImgNo:0,
-    imgWidth:'45vw',
+    imgWidth:'90vw',
     isNormal:true,
 	isInstalled:true,
     action: '',

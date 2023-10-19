@@ -124,6 +124,13 @@ function getToken(service) {
 }
 
 function sendRequest(opts, service) {
+    /*var url=location.protocol+"//";
+    if(opts.cloud) {
+        url+="api.zhijian.net.cn:8523";
+    } else {
+        url+=location.host;
+    }
+    url+="/"+service;*/
     var url=location.protocol+"//"+location.host+"/"+service;
     if(opts.url.startsWith("/api/")) {
         url += opts.url;
@@ -139,7 +146,7 @@ function sendRequest(opts, service) {
         hh.cid=Companies.cid();
     }
 
-    return new Promise(function(resolve, reject){
+    return new Promise((resolve, reject) => {
         var req = {method:opts.method, url:url, headers:hh};
         var method=opts.method.toUpperCase();
         if(method == "POST" || method == "PUT") {
@@ -635,7 +642,6 @@ const Server = {
     refreshConsoleToken(){return '1234567890123456'},
     getDnsAccessCode(){return "123456"},
     resetDnsAccessCode(){return "723456"},
-    getExternalAccessCode(){return "823456"},
     getServices(jsCbId){ //只是用于测试
         var data={code:RetCode.OK, data:{services:[
             {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
@@ -727,7 +733,11 @@ const Http={
     },
 	localIPs() {
 		return "192.168.1.25,240e:3af:c40:c280:545b:3fea:e8e0:7794,fe80::3943:28bb:6a80:d0ac%3";
-	}
+	},
+	setCompanyToken(service, token) {
+        __companies[0].tokens[service]=token;//一定是cloud company
+        saveCompanies();
+    }
 };
 
 var __companies=[];
@@ -754,6 +764,7 @@ const Companies={
             if(resp.code==RetCode.OK) {
                 company.tokens[company.userService]=resp.data.access_token;
                 company.authorized=true;
+                company.uid=resp.data.id;
                 saveCompanies();
             }
             __default_jscb(jsCbId,resp)
@@ -850,7 +861,8 @@ const Companies={
         getExternal({url:logoUrl}).then(png => {
             __default_jscb(jsCbId,png);
         });
-    }
+    },
+    saveLogo(cid, logo) {}
 }
 
 const App={

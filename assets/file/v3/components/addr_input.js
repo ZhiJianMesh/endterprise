@@ -6,7 +6,7 @@ data() {return {
 }},//选择项，调用search获得
 props: {
     modelValue:{type:Object},
-    label:{type:String,required:true}
+    label:{type:String,required:false,default:''}
 },
 emits: ['update:modelValue'],
 methods:{
@@ -21,7 +21,7 @@ search_addrs(val,update) {
     var opts={method:"GET",url:"/api/search?limit=10&s="+val,private:false,cloud:true};
     request(opts, SERVICE_ADDR).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            this.addrOpts=[]
+            this.addrOpts=[];
             return;
         }
         var opts=[];
