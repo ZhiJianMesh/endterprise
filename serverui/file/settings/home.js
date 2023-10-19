@@ -7,8 +7,8 @@ data() {return {
  cid:"",
  dnsAccessCode:"",
  logoDlg:false,
- logo:"./imgs/logo_example.png",
- width:'60vw',
+ logo:"/assets/imgs/logo_example.png",
+ width:0,
 
  loading:false,
  logoOpts:{
@@ -184,6 +184,7 @@ template: `
  </q-page>
 </q-page-container>
 </q-layout>
+
 <q-dialog v-model="logoDlg">
  <q-card bordered>
    <q-card-section>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>ServerSettings</title>
 <meta charset="utf-8" />
 <meta name="content-type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,18 +9,16 @@
 <link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/vue-cropper.css" rel="stylesheet" type="text/css">
-<title>ServerSettings</title>
 </head>
 <body><div id="app"><router-view></router-view></div></body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
-<script src="/assets/v3/qrcode.js"></script>
 <script src="/assets/v3/vue-cropper.js"></script>
 <script type="module">
 import Language from "./language.js"
-import RegisterDlg from "./settings/register.js"
+import RegisterDlg from "./register.js"
 import Home from "./settings/home.js"
 import Debug from "./settings/debug.js"
 import Advanced from "./settings/advanced.js"
@@ -38,16 +37,13 @@ routes:[
 //-------------------------------------------service定义
 const service={
  name:"settings",N_PAGE:10,N_SMPG:5,bucketOpts:[],
- go_back() { //返回，在页面中通过service.go_back调用
-    router.back();
- },
  get_buckets() {return new Promise((resolve,reject) =>{
     if(this.bucketOpts.length>0) {
         resolve(this.bucketOpts);
         return;
     }
 
-    request({method:"GET",url:"/api/oss/allbuckets"}, 'company').then(resp => {
+    request({method:"GET",url:"/api/oss/allbuckets",cloud:true}, 'company').then(resp => {
         if(resp.code != RetCode.OK) {
             resolve([]);
             return;
@@ -58,14 +54,18 @@ const service={
         }
         this.bucketOpts=opts;
         resolve(opts);
-    })
- })}
+      })
+   })
+ },
+ go_back() { //返回，在页面中通过service.go_back调用
+    router.back();
+ }
 };
 //-------------------------------------------app主体定义
 const app = Vue.createApp({
 provide:{tags:tags, service:service},
 created(){
-    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+    this.$router.push('/home').catch(err => {err})
 },
 setup() {
     //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用
@@ -78,6 +78,7 @@ setup() {
     }
 }
 });
+
 app.use(Quasar);
 app.use(router);
 app.component('vue-cropper', window['vue-cropper'].VueCropper)
@@ -85,7 +86,7 @@ app.component('vue-cropper', window['vue-cropper'].VueCropper)
 app.component('component-alert-dialog', AlertDialog);
 app.component('register-dialog', RegisterDlg);
 app.component('component-confirm-dialog', ConfirmDialog);
-
+//--------------------------启动APP
 app.mount('#app');
 </script>
 </html>

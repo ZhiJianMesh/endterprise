@@ -8,7 +8,7 @@ data() {return {
     intro:{descrs:[],images:[]},
     baseUrl:'',
     action: this.tags.waitting,
-    imgWidth:'45vw',
+    imgWidth:'90vw',
     cdns:[],
     install:{percent:0,info:"",dlg:false,hasNew:false,normal:false}
 }},
@@ -28,7 +28,7 @@ mounted() {
 methods: {
 getDetail() {
     var reqOpts={private:false, method:"GET",
-        url:"/api/service/detail?service="+this.name};
+        url:"/api/service/detail?service="+this.name,cloud:true};
     request(reqOpts, "appstore").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
