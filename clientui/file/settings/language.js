@@ -22,9 +22,7 @@ cn:{
   email:"邮箱",
   invalidEmail:"请输入正确的邮箱",
   invalidMobile:"请输入正确的手机号",
-  companyId:"公司ID",
-  companyName:"公司名称",
-  accessCode:"接入码",
+  invalidExtIP:"不是正确的公网地址",
   insideAddr:"内网地址",
   outsideAddr:"外网地址",
   inPubCloud:"外网访问",
@@ -39,6 +37,33 @@ cn:{
       exitCompany:"退出当前公司",
       about:"关于"
   },
+  company:{
+      id:"公司ID",
+      name:"公司名称",
+      pwd:"密码",
+      auth:"鉴权",
+      settings:"管理",
+      address:"地址",
+      creditCode:"统一信用码",
+      accessCode:"接入码",
+      accessToken:'控制台令牌',
+      logo:"公司图标",
+      backupAt:"每日备份时间点",
+      logLevel:"日志级别",
+      backup:"数据备份",
+      wanAccess:"外网接入",
+      baseSettings:"基本设置",
+      security:"安全设置",
+      title:"公司设置",
+      state:"状态",
+      pubGwIp:"公网地址",
+      setGwIp:"自定义地址",
+      recentBackup:"最近备份时间",
+      buckets:"备份站点",
+      restore:"恢复数据",
+      backupNow:"立即备份"
+  },
+  neverBackup:"尚无备份",
   advice:'意见',
   service:"服务",
   send:"发送",
@@ -62,11 +87,23 @@ cn:{
   utCompany:"公司帐号",
   utPersonal:"个人帐号",
   register:"注册",
+  checkin:"接入",
+  running:"运行中",
+  notStart:"未启动",
+  startup:"启用",
+  shutdown:"停用",
+  dontSet:"不设置",
   
   errMsgs:{
     'unknown':"未知错误",
     '5101':"请在‘公司信息’中设置公司编号之后再尝试",
     '5102':"没有合适的服务器可以使用"
-  }
+  },
+  backupSuccess:"数据已成功备份。",
+  backupAlert:"<div>每次数据备份将占用一次备份机会。</div><p>请确认是否继续？</p>",
+  restoreSuccess:"已成功恢复数据，请重新启动服务使数据生效。",
+  restoreAlert:"<div>恢复数据会首先停止服务器，并使用备份数据覆盖本地数据库，自上个备份时间点到当前时间产生的数据会丢失。</div><p>请确认是否继续？</p>",
+  needBuckets:"至少需要选择一个备份点"
+
 }
 };

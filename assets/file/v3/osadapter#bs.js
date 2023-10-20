@@ -422,11 +422,10 @@ const JStr={
         return /^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip);
     },
     isIPv6(ip) {
-        if(/^(?:(?:[a-fA-F0-9]{1,4}:){6}|::(?:[a-fA-F0-9]{1,4}:){5}|(?:[a-fA-F0-9]{1,4})?::(?:[a-fA-F0-9]{1,4}:){4}|(?:(?:[a-fA-F0-9]{1,4}:){0,1}[a-fA-F0-9]{1,4})?::(?:[a-fA-F0-9]{1,4}:){3}|(?:(?:[a-fA-F0-9]{1,4}:){0,2}[a-fA-F0-9]{1,4})?::(?:[a-fA-F0-9]{1,4}:){2}|(?:(?:[a-fA-F0-9]{1,4}:){0,3}[a-fA-F0-9]{1,4})?::[a-fA-F0-9]{1,4}:(?:[a-fA-F0-9]{1,4}:){1}|(?:(?:[a-fA-F0-9]{1,4}:){0,4}[a-fA-F0-9]{1,4})?::[a-fA-F0-9]{1,4}|(?:(?:[a-fA-F0-9]{1,4}:){0,5}[a-fA-F0-9]{1,4})?::[a-fA-F0-9]{1,4}|(?:(?:[a-fA-F0-9]{1,4}:){0,6}[a-fA-F0-9]{1,4})?::)$/.test(ip)) {
-            return true; //full
+        if(ip.indexOf('::')<0) {//压缩格式，最多包含一个::
+            return /^([A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}$/.test(ip);
         }
-        //abbreviatory
-        return /^(?:(?:[a-fA-F0-9]{1,4}:){1,6}[a-fA-F0-9]{1,4}|::(?:[a-fA-F0-9]{1,4}:){0,5}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4})?::(?:[a-fA-F0-9]{1,4}:){0,4}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4})?::(?:[a-fA-F0-9]{1,4}:){0,3}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){0,2}(?::[a-fA-F0-9]{1,4}){0,2}::(?:[a-fA-F0-9]{1,4}:){0,2}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){0,3}(?::[a-fA-F0-9]{1,4}){0,2}::(?:[a-fA-F0-9]{1,4}:)[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){0,4}(?::[a-fA-F0-9]{1,4}){0,2}::[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){0,5}(?::[a-fA-F0-9]{1,4}){0,2}::)$/.test(ip);
+        return /^([A-Fa-f0-9]{1,4}:){1,6}:([A-Fa-f0-9]{1,4})?$/.test(ip);
     }
 }
 
@@ -744,12 +743,8 @@ var __companies=[];
 var __curCompany=0;
 const Companies={
     cid(){return currentCompany().id},
-    insideAddr() {
-        return currentCompany().insideAddr;
-    },
-    outsideAddr() {
-        return currentCompany().outsideAddr;
-    },
+    insideAddr() {return currentCompany().insideAddr;},
+    outsideAddr() {return currentCompany().outsideAddr;},
     name(){return currentCompany().name},
 	accessCode(){return currentCompany().accessCode},
 	userService(){return currentCompany().id==0?SERVICE_UNIUSER:SERVICE_USER},
