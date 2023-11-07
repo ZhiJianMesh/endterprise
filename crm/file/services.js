@@ -6,7 +6,7 @@ data() {return {
     onlyMine:true
 }},
 created(){
-    this.onlyMine=storage_get('service_onlyMine') == 'true';
+    this.onlyMine=storageGet('service_onlyMine') == 'true';
     this.query_list(1);
 },
 methods:{
@@ -46,7 +46,7 @@ show_detail(id) {
     this.$router.push('/service?id='+id);
 },
 onlyMineClk() {
-    storage_set('service_onlyMine', this.onlyMine);
+    storageSet('service_onlyMine', this.onlyMine);
     this.page.cur=1;
     this.query_list(1);
 },

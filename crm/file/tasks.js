@@ -46,7 +46,7 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.home.tasks}}</q-toolbar-title>
-    <q-avatar :icon="icons['task']" color="primary" size="2em"></q-avatar>
+    <q-avatar :icon="icons['task']" color="primary"></q-avatar>
    </q-toolbar>
   </q-header>
   <q-page-container>

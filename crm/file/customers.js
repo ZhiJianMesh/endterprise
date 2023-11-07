@@ -10,7 +10,7 @@ data() {return {
     newCust:{name:'',taxid:'',address:'',business:'',nextSigners:[],ext:{}}
 }},
 created(){
-    this.onlyMine=storage_get('customer_onlyMine') == 'true';
+    this.onlyMine=storageGet('customer_onlyMine') == 'true';
     this.query_custs(1);
     this.service.template('customer').then(function(tmpl) {
         this.tmpl=tmpl;
@@ -79,7 +79,7 @@ search_custs() {
     })
 },
 onlyMineClk() {
-    storage_set('customer_onlyMine', this.onlyMine);
+    storageSet('customer_onlyMine', this.onlyMine);
     this.page.cur=1;
     this.query_custs(1);
 },

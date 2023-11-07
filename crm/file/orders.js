@@ -6,7 +6,7 @@ data() {return {
     onlyMine:true
 }},
 created(){
-    this.onlyMine=storage_get('order_onlyMine') == 'true';
+    this.onlyMine=storageGet('order_onlyMine') == 'true';
     this.query_orders(1);
 },
 methods:{
@@ -43,7 +43,7 @@ query_orders(pg) {
     }.bind(this))
 },
 onlyMineClk() {
-    storage_set('order_onlyMine', this.onlyMine);
+    storageSet('order_onlyMine', this.onlyMine);
     this.page.cur=1;
     this.query_orders(1);
 },

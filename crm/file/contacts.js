@@ -12,7 +12,7 @@ data() {return {
     onlyMine:true
 }},
 created(){
-    this.onlyMine=storage_get('contact_onlyMine') == 'true';
+    this.onlyMine=storageGet('contact_onlyMine') == 'true';
     this.query_contacts(1);
 },
 methods:{
@@ -117,7 +117,7 @@ add_touchlog(){
     }.bind(this))
 },
 onlyMineClk() {
-    storage_set('contact_onlyMine', this.onlyMine);
+    storageSet('contact_onlyMine', this.onlyMine);
     this.page.cur=1;
     this.query_contacts(1);
 }
