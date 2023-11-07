@@ -1,0 +1,59 @@
+const __err_infos={
+'1':"不建议使用",
+'100':"系统内部错误",
+'101':"网络请求失败",
+'102':"请求令牌失效",
+'103':"请求为空",
+'104':"数据库异常",
+'105':"会话异常或未登录",
+'106':"服务不存在",
+'107':"系统繁忙",
+'108':"请求超时",
+'109':"不支持所需的功能",
+'110':"请求的功能不存在",
+'111':"没有相应的权限或未登录",
+'112':"找不到可以使用的服务节点",
+'113':"请求了不合适的节点",
+'114':"第三方服务错误",
+'150':"未知错误",
+'2000':"数据已存在",
+'2001':"数据不存在",
+'3000':"接口错误",
+'3001':"请求消息体错误",
+'3002':"版本不匹配",
+'3003':"数据状态不正确",
+'4000':"请求参数错误",
+'5000':"服务异常",
+'5001':"服务状态异常",
+'100000':"客户端处理失败",
+'unknown':"未知错误"
+};
+
+function formatErr(code,info,errInfos){
+    var err=__err_infos[''+code];
+    if(!err&&errInfos) {
+        err = errInfos[''+code];
+    }
+    if(!err){
+        if(code>=4000&&code<5000) {
+            err=__err_infos['4000'];
+        } else if(code>=5000){
+            err=__err_infos['5000']
+        } else {
+            err=__err_infos['unknown'];
+        }
+    }
+    var msg = "";
+    if(info instanceof Array) {
+        for(var i of info) {
+            msg += i + '<br>';
+        }
+    } else {
+        msg = info;
+    }
+    return err + "["+code+"]:" + msg;
+}
+
+function addErrInfo(code,info) {
+    __err_infos[''+code]=info;
+}

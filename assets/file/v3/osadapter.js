@@ -148,17 +148,17 @@ function cloneObj(obj) {
     return obj;
 }
 
-function storage_set(k, v) {
+function storageSet(k, v) {
     var key=App.currentApp()+'_'+k;
     localStorage.setItem(key,v);
 }
-function storage_get(k, def) {
+function storageGet(k, def) {
     var key=App.currentApp()+'_'+k;
     var v=localStorage.getItem(key);
     if(!v) return def;
     return v;
 }
-function storage_rmv(k) {
+function storageRmv(k) {
     var key=App.currentApp()+'_'+k;
     localStorage.removeItem(key);
 }
@@ -210,3 +210,4 @@ const Database = { //防止以后使用原生实现
         });
     }
 }
+document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");

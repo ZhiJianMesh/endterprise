@@ -638,9 +638,10 @@ const Server = {
 		})
 	},
 	unInstallService(s){},
-    refreshConsoleToken(){return '1234567890123456'},
-    getDnsAccessCode(){return "123456"},
-    resetDnsAccessCode(){return "723456"},
+    resetAccessToken(){return '1234567890123456'},
+    resetAccessCode(jsCbId){
+        __default_jscb(jsCbId,{code:RetCode.OK, data:{code:"723456"}});
+    },
     getServices(jsCbId){ //只是用于测试
         var data={code:RetCode.OK, data:{services:[
             {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
@@ -652,46 +653,70 @@ const Server = {
         ]}};
         __default_jscb(jsCbId,data);
     },
-    backupInfo(jsCbId) {
-        __default_jscb(jsCbId,{
-            code:RetCode.OK,info:'Success',
-            data:{at:-1,recent:0,key:'123456'}
-        });
-    },
-    outsideGwInfo(jsCbId) {
-        __default_jscb(jsCbId,{
-            code:RetCode.OK,info:'Success',
-            data:{addr:'192.168.0.102:8523',state:0}
-        });
-    },
-    saveAdvanceCfg(jsCbId, req) {
-        __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
-    },
-    setLogLevel(level) {},
-    logLevel() {return 'DEBUG'},
 	serviceStarted() {return true},
-	logPath(){return "d:\\work\\code\\release\\xxxxxxxxx"},
-	setOutsideAddr(addr,jsCbId) {
+    setLogLevel(level) {},
+	setOutsideAddr(addr, jsCbId) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
     },
-	saveAdvancedCfg(data,jsCbId){
+    setBackupAt(at, jsCbId) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
     },
-    saveFile(service, file, content) {}
+    saveFile(service, file, content) {},
+    query(items, jsCbId) {
+        var ii=items.split(",");
+        var item;
+        var data={};
+        for(var i of ii) {
+            item = i.trim().toLowerCase();
+            if(item == "loglevel") {
+                data[i] = "DEBUG";
+            } else if(item == "logpath") {
+                data[i] = "e:\\work\\code\\cloudserver";
+            } else if(item == "accesscode") {
+                data[i] = "12345678";
+            } else if(item == "backupat") {
+                data["recent"] = (new Date()).getTime(); //最近备份时间
+                data[i] = 65;
+            } else if(item == "companyid") {
+                data[i] = 40;
+            } else if(item == "creditcode") {
+                data[i] = "1111111111";
+            } else if(item == "companyname") {
+                data[i] = "南京汇想";
+            } else if(item == "country") {
+                data[i] = "86";
+            } else if(item == "county") {
+                data[i] = "江宁区";
+            } else if(item == "province") {
+                data[i] = "江苏省";
+            } else if(item == "city") {
+                data[i] = "南京市";
+            } else if(item == "info") {
+                data[i] = "";
+            } else if(item == "outsideaddr") {
+                data[i] = "240e:3af:c40:9110:de5f:9919:bf8f:79f9";
+            } else if(item == "insideaddr") {
+                data[i] = "192.168.0.102";
+            } else if(item == "externaddrs") {
+                data[i]=["240e:3af:c40:9110:de5f:9919:bf8f:79f9",
+                "240e:3af:c40:9110:b5c5:2d97:f998:2df4",
+                "240e:3af:c40:9110::1000"]
+            } else {
+                Console.warn("Invalid query item " + i);
+            }
+        }
+        __default_jscb(jsCbId,{code:RetCode.OK,info:"Success", data:data});
+    }
 }
 
 const Company={//used in server
-    companyName(){return storage_get(COMPANY_NAME,"至简网格")},
-    companyId(){return 40}, //storage_get(COMPANY_ID,'0')
-    companyInfo() {},
-    creditCode(){return "914403001922038216"},
-    location(){return "江苏省 南京市"},
+    id(){return 40}, //storageGet(COMPANY_ID,'0')
     register(creditCode,pwd,cfmPwd,name,country,province,city,county,info,verifyCode,session,jsCbId){
         var data={creditCode:creditCode,
             pwd:Secure.sha256(pwd),
             cfmPwd:Secure.sha256(cfmPwd),
             verifyCode:verifyCode,session:session,
-            pubKey:'IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
+            pubKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
             name:name,
             partition:250000,info:info,
             country:country,province:province,city:city,county:county
@@ -702,7 +727,7 @@ const Company={//used in server
         })
     },
     login(id,pwd,jsCbId){
-        var data={id:id,pwd:Secure.sha256(pwd),pubKey:'IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps='};
+        var data={id:id,pwd:Secure.sha256(pwd),pubKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps='};
         var opts={url:"/company/login", method:"POST", data:data, private:false}
         request(opts, "company").then(resp=>{
             __default_jscb(jsCbId, resp)
@@ -710,7 +735,12 @@ const Company={//used in server
     },
     unRegister(creditCode,pwd,jsCbId){
         __default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
-    }
+    },
+    getLogo(){
+        var logoUrl=Http.cloudFileUrl("/logo?cid="+this.cid, "company");
+        return getExternal({url:logoUrl});
+    },
+    saveLogo(){}
 }
 
 const Http={
@@ -732,11 +762,7 @@ const Http={
     },
 	localIPs() {
 		return "192.168.1.25,240e:3af:c40:c280:545b:3fea:e8e0:7794,fe80::3943:28bb:6a80:d0ac%3";
-	},
-	setCompanyToken(service, token) {
-        __companies[0].tokens[service]=token;//一定是cloud company
-        saveCompanies();
-    }
+	}
 };
 
 var __companies=[];
@@ -906,7 +932,7 @@ const Platform={
         return false;
     },
     language() {
-        return navigator.language;
+        return navigator.language.substring(0,2).toLowerCase();
     },
     width() {return document.documentElement.clientWidth},
     height() {return document.documentElement.clientHeight},
@@ -968,17 +994,17 @@ const Database = {
     }
 }
 
-function storage_set(k, v) {
+function storageSet(k, v) {
     var key=App.currentApp()+'_'+k;
     localStorage.setItem(key,v);
 }
-function storage_get(k, def) {
+function storageGet(k, def) {
     var key=App.currentApp()+'_'+k;
     var v=localStorage.getItem(key);
     if(!v) return def;
     return v;
 }
-function storage_rmv(k) {
+function storageRmv(k) {
     var key=App.currentApp()+'_'+k;
     localStorage.removeItem(key);
 }
@@ -996,4 +1022,5 @@ function storage_rmv(k) {
     }
 })();
 
+document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");
 document.write("<script src='/assets/axios_0.21.1.js'></script>");
