@@ -28,32 +28,3 @@ const __err_infos={
 '100000':"客户端处理失败",
 'unknown':"未知错误"
 };
-
-function formatErr(code,info,errInfos){
-    var err=__err_infos[''+code];
-    if(!err&&errInfos) {
-        err = errInfos[''+code];
-    }
-    if(!err){
-        if(code>=4000&&code<5000) {
-            err=__err_infos['4000'];
-        } else if(code>=5000){
-            err=__err_infos['5000']
-        } else {
-            err=__err_infos['unknown'];
-        }
-    }
-    var msg = "";
-    if(info instanceof Array) {
-        for(var i of info) {
-            msg += i + '<br>';
-        }
-    } else {
-        msg = info;
-    }
-    return err + "["+code+"]:" + msg;
-}
-
-function addErrInfo(code,info) {
-    __err_infos[''+code]=info;
-}

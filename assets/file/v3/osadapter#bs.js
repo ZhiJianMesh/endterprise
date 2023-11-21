@@ -946,6 +946,17 @@ const Logs = {
     download(f,jsCbId) {__default_jscb(jsCbId,{code:RetCode.OK,info:"success", data:{saveAs:"test",size:100}})}
 }
 
+function findInArray(arr, s) {
+    var no=0;
+    for(var a in arr) {
+        if(a==s) {
+            return no;
+        }
+        no++;
+    }
+    return -1;
+}
+
 const Database = {
     open(name, ver, descr) {
         return openDatabase('words', '1.0', 'words', 10 * 1024 * 1024);
@@ -1022,5 +1033,33 @@ function storageRmv(k) {
     }
 })();
 
+function formatErr(code,info,errInfos){
+    var err=__err_infos[''+code];
+    if(!err) {
+        err = errInfos[''+code];
+    }
+    if(!err){
+        if(code>=4000&&code<5000) {
+            err=__err_infos['4000'];
+        } else if(code>=5000){
+            err=__err_infos['5000']
+        } else {
+            err=__err_infos['unknown'];
+        }
+    }
+    var msg = "";
+    if(info instanceof Array) {
+        for(var i of info) {
+            msg += i + '<br>';
+        }
+    } else {
+        msg = info;
+    }
+    return err + "["+code+"]:" + msg;
+}
+
+function addErrInfo(code,info) {
+    __err_infos[''+code]=info;
+}
 document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");
 document.write("<script src='/assets/axios_0.21.1.js'></script>");

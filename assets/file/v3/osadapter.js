@@ -119,6 +119,7 @@ function copyObj(src,segs){
     }
     return dst;
 }
+
 function copyObjTo(src,dst,segs){
     for(var i of segs) {
         dst[i]=src[i]?src[i]:'';
@@ -152,15 +153,28 @@ function storageSet(k, v) {
     var key=App.currentApp()+'_'+k;
     localStorage.setItem(key,v);
 }
+
 function storageGet(k, def) {
     var key=App.currentApp()+'_'+k;
     var v=localStorage.getItem(key);
     if(!v) return def;
     return v;
 }
+
 function storageRmv(k) {
     var key=App.currentApp()+'_'+k;
     localStorage.removeItem(key);
+}
+
+function findInArray(arr, s) {
+    var no=0;
+    for(var a in arr) {
+        if(a==s) {
+            return no;
+        }
+        no++;
+    }
+    return -1;
 }
 
 const Database = { //防止以后使用原生实现
@@ -209,5 +223,34 @@ const Database = { //防止以后使用原生实现
             })
         });
     }
+}
+
+function formatErr(code,info,errInfos){
+    var err=__err_infos[''+code];
+    if(!err) {
+        err = errInfos[''+code];
+    }
+    if(!err){
+        if(code>=4000&&code<5000) {
+            err=__err_infos['4000'];
+        } else if(code>=5000){
+            err=__err_infos['5000']
+        } else {
+            err=__err_infos['unknown'];
+        }
+    }
+    var msg = "";
+    if(info instanceof Array) {
+        for(var i of info) {
+            msg += i + '<br>';
+        }
+    } else {
+        msg = info;
+    }
+    return err + "["+code+"]:" + msg;
+}
+
+function addErrInfo(code,info) {
+    __err_infos[''+code]=info;
 }
 document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");

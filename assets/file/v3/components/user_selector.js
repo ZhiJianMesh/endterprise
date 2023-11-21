@@ -59,9 +59,9 @@ input_user(val, done) {
   }
 },
 changed() {
-    //因为用emit-value会导致selected-item无法显示，因为无label
+    //因为无label，用emit-value会导致selected-item无法显示
     //所以接受改变的事件，将选中项的value存入accounts属性
-    //因为accounts必须是数组，所以此属性可以更改，尽管不优雅，但是管用，不必$emit
+    //因为accounts是数组，所以此属性可以更改，尽管不优雅，但是管用，不必$emit
     this.accounts.splice(0, this.accounts.length)
     if(this.multi) {
         for(var c of this.values) {

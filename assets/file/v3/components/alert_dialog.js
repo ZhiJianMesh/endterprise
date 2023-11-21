@@ -5,21 +5,18 @@ data() {return {
     message:''
 }},
 props: {
+    errMsgs:{type:Object,default:{}},
     title:{type:String,default:"警告"},
     close:{type:String,default:"关闭"}
 },
-created(){
-    for(var c in this.errMsgs){
-        this.errors[c]=this.errMsgs[c];
-    }
-},
+created(){},
 methods:{
 show(msg) {
     this.message=msg;
     this.dlg=true;
 },
 showErr(code,info) {
-    this.message=formatErr(code,info); //必须import errors.xx.js
+    this.message=formatErr(code,info,this.errMsgs); //必须提前加载errors.xx.js
     this.dlg=true;
 }
 },
