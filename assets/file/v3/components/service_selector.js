@@ -61,7 +61,7 @@ changed() {
 template: `
 <q-select v-model="values" :label="label" :options="serviceOpts"
   use-input use-chips @update:model-value="changed"
-  hide-dropdown-icon input-debounce=200 dense
+  hide-dropdown-icon input-debounce=200 dense :multiple="multi"
   @new-value="input_service" @filter="search_services">
  <template v-slot:selected-item="scope">
   <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"

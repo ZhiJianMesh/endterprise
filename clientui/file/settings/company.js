@@ -1,3 +1,4 @@
+const OM_PAGES=["/cfg", "/om", "mkt"];
 export default {
 inject:['service', 'tags'],
 data(){return {
@@ -9,7 +10,7 @@ data(){return {
     saveAt:0,
     insideAddr:'',
 	outsideAddr:'',
-	auth:{dlg:false,pwd:'',visible:false}
+	auth:{dlg:false,pwd:'',visible:false,pg:0},
 }},
 created() {
     var c=this.service.curCompany();
@@ -48,19 +49,27 @@ refresh() {
         this.$refs.alertDlg.show(this.tags.successToConnect);
     }));
 },
+showPage(pg) {
+    this.auth.pg=pg;
+    if(this.service.getToken("company",this.cid)) {
+        this.service.go_to(OM_PAGES[pg]+'?id='+this.cid);
+    } else {
+        this.auth.dlg=true;
+    }
+},
 onAuth() {
     var shaPwd=Secure.sha256(this.auth.pwd);
-    var dta={pwd:shaPwd, services:['httpdns','company']};
+    var dta={pwd:shaPwd, services:["company","httpdns","serverui"]};
     request({method:"POST",url:"/company/token", data:dta, private:false},"company").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
         for(var i in resp.data) {
-            Http.setCompanyToken(i, resp.data[i]);
+            this.service.setToken(i,resp.data[i]);
         }
         this.auth.dlg=false;
-        this.service.go_to('/advanced');
+        this.service.go_to(OM_PAGES[this.auth.pg]+'?id='+this.cid);
     });
 }
 },
@@ -70,22 +79,39 @@ template: `
     <q-toolbar>
       <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.home.company}}</q-toolbar-title>
-      <q-btn flat icon="settings" dense @click="auth.dlg=true" v-if="authorized"></q-btn>
+      <q-btn flat dense color="primary" :label="tags.advanced" icon="menu" v-if="authorized">
+       <q-menu>
+         <q-list style="min-width: 100px">
+          <q-item clickable v-close-popup @click="showPage(0)">
+            <q-item-section side><q-icon color="primary" name="settings"></q-icon></q-item-section>
+            <q-item-section no-wrap>{{tags.cfg.title}}</q-item-section>
+          </q-item>
+          <q-item clickable v-close-popup @click="showPage(1)">
+            <q-item-section side><q-icon color="primary" name="menu_open"></q-icon></q-item-section>
+            <q-item-section no-wrap>{{tags.om.title}}</q-item-section>
+          </q-item>
+          <q-item clickable v-close-popup @click="showPage(2)">
+            <q-item-section side><q-icon color="primary" name="shop_two"></q-icon></q-item-section>
+            <q-item-section no-wrap>{{tags.mkt.title}}</q-item-section>
+          </q-item>
+         </q-list>
+       </q-menu>
+      </q-btn>
     </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
 <q-markup-table bordered="false" flat class="q-pa-md">
   <tr>
-   <td>{{tags.company.id}}</td>
+   <td>{{tags.cfg.id}}</td>
    <td>{{cid}}</td>
   </tr>
   <tr v-show="cid>0">
-   <td>{{tags.company.name}}</td>
+   <td>{{tags.cfg.name}}</td>
    <td>{{companyName}}</td>
   </tr>
   <tr>
-   <td>{{tags.company.accessCode}}</td>
+   <td>{{tags.cfg.accessCode}}</td>
    <td><q-input v-model="accessCode" dense @update:model-value="changed=true"></q-input></td>
   </tr>
   <tr>
@@ -107,10 +133,10 @@ template: `
 <q-dialog v-model="auth.dlg"> <!-- admin登录公司获得公司级token -->
   <q-card style="min-width:62vw;max-width:80vw">
     <q-card-section>
-      <div class="text-h6">{{tags.company.auth}}</div>
+      <div class="text-h6">{{tags.cfg.auth}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-      <q-input dense v-model="auth.pwd" autofocus :type="auth.visible?'text':'password'" :label="tags.company.pwd">
+      <q-input dense v-model="auth.pwd" autofocus :type="auth.visible?'text':'password'" :label="tags.cfg.pwd">
         <template v-slot:append>
           <q-icon :name="auth.visible ? 'visibility_off':'visibility'"
             class="cursor-pointer" @click="auth.visible=!auth.visible"></q-icon>

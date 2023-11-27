@@ -12,14 +12,14 @@ methods:{
 enterprise_apps(pg) {
     if(Companies.cid() <= 0) {
         this.apps=[];
+        this.$refs.errDlg.show(this.tags.notLogin);
         return;
     }
     var offset=(parseInt(pg)-1) * this.service.N_PAGE;
     var opts={
         method:"GET",
         private:false,
-        url:"/service/list?cid=" + Companies.cid() + "&offset=" + offset + "&num=" + this.service.N_PAGE,
-        headers:{access_token:Companies.accessCode()}
+        url:"/service/list?cid=" + Companies.cid() + "&offset=" + offset + "&num=" + this.service.N_PAGE
     };
     request(opts, "company").then(resp=>{
         if(resp.code != RetCode.OK) {
@@ -88,17 +88,15 @@ queryApps(pg) {
 
 template: `
 <q-layout view="lHh lpr lFf" container style="height:100vh;">
- <q-header class="bg-grey-1 text-primary">
-   <q-toolbar>
-     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
-   </q-toolbar>
- </q-header>
- <q-footer class="bg-grey-1 text-primary">
-  <q-tabs v-model="tab" class="text-teal" @update:model-value="queryApps(1)" active-bg-color="green-1">
+ <q-header>
+  <q-toolbar class="bg-grey-1 text-primary">
+   <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+  </q-toolbar>
+  <q-tabs v-model="tab" class="bg-grey-2 text-primary" @update:model-value="queryApps(1)" active-bg-color="green-1" dense>
    <q-tab name="personal" icon="person" :label="tags.personal"></q-tab>
    <q-tab name="enterprise" icon="svguse:/assets/imgs/meshicons.svg#company" :label="tags.enterprise"></q-tab>
   </q-tabs>
- </q-footer>
+ </q-header>
  <q-page-container><q-page class="q-pa-md">
   <div class="q-pa-sm flex flex-center" v-if="page.max>1">
     <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"

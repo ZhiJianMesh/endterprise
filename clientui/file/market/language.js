@@ -25,6 +25,7 @@ cn:{
   failToCall:"调用失败",
   personal:"个人服务",
   enterprise:"公司服务",
+  notLogin:"尚未接入任何公司，无法查询公司应用！",
   errMsgs:{
     'unknown':"未知错误"
   }

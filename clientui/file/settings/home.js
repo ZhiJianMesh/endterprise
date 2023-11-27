@@ -191,13 +191,13 @@ template: `
           <q-item-section avatar>
             <q-avatar square :icon="c.logo" :color="c.id==curCompanyId?'primary':'green-1'" text-color="white"></q-avatar>
           </q-item-section>
-          <q-item-section>{{c.name}}</q-item-section>
+          <q-item-section no-wrap>{{c.name}}</q-item-section>
         </q-item>
         <q-item clickable v-close-popup @click="newComDta.dlg=true">
           <q-item-section avatar>
             <q-avatar icon="add" color="teal-3" text-color="white"></q-avatar>
           </q-item-section>
-          <q-item-section>{{tags.addCompany}}</q-item-section>
+          <q-item-section no-wrap>{{tags.addCompany}}</q-item-section>
         </q-item>
       </q-list>
      </q-btn-dropdown>
@@ -289,14 +289,14 @@ template: `
   <q-separator></q-separator>
   <q-tab-panels v-model="newComDta.tab" animated>
    <q-tab-panel name="checkin">
-    <q-input dense v-model="newComDta.id" autofocus :label="tags.company.id"></q-input>
-    <q-input dense v-model="newComDta.accessCode" :label="tags.company.accessCode"></q-input>
+    <q-input dense v-model="newComDta.id" autofocus :label="tags.cfg.id"></q-input>
+    <q-input dense v-model="newComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
     <q-input dense v-model="newComDta.insideAddr" :label="tags.insideAddr" v-show="newComDta.needInside"></q-input>
    </q-tab-panel>
    <q-tab-panel name="register">
-    <q-input autofocus v-model="regComDta.creditCode" :label="tags.company.creditCode" dense maxlength=18
+    <q-input autofocus v-model="regComDta.creditCode" :label="tags.cfg.creditCode" dense maxlength=18
     :rules="[v=>chkCredit(v)||tags.creditCodePls]"></q-input>
-    <q-input v-model="regComDta.name" :label="tags.company.name" maxlength=50 dense></q-input>
+    <q-input v-model="regComDta.name" :label="tags.cfg.name" maxlength=50 dense></q-input>
     <q-input v-model="regComDta.pwd" :label="tags.pwd" dense maxlength=20 :type="regComDta.pwdVis ? 'text':'password'">
      <template v-slot:append>
       <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
@@ -313,7 +313,7 @@ template: `
     <q-input v-model="regComDta.verifyCode" :label="tags.verifyCode">
       <template v-slot:append><img :src="regComDta.vcImg" @click="refreshRegVc"></template>
     </q-input>
-    <address-dialog :label="tags.company.address" v-model="regComDta.addr"></address-dialog>
+    <address-dialog :label="tags.cfg.address" v-model="regComDta.addr"></address-dialog>
    </q-tab-panel>
   </q-tab-panels>
     </q-card-section>
