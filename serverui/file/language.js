@@ -19,9 +19,9 @@ cn:{
   address:"地址",
   creditCode:"统一信用码",
   creditCodePls:"请输入18位正确的统一信用码!",
-  companyName:"工商注册名称",
+  companyName:"公司名称",
   companyId:"公司ID",
-  dnsAccessCode:"接入码",
+  accessCode:"接入码",
   pwd:"密码",
   cfmPwd:"确认密码",
   verifyCode:"验证码",
@@ -38,7 +38,9 @@ cn:{
   advanced:"高级服务",
 
   backup:"数据备份",
-  wanAccess:"外网接入",
+  remoteTest:"调测设置",
+  baseSettings:"基本设置",
+  nwSettings:"网络接入",
   debug:"调测助手",
   uploadLogs:"上传日志",
   faultreport:"故障上报",
@@ -56,7 +58,7 @@ cn:{
   running:"已启用",
   ownWan:"自有外网IP",
   bridgeWan:"网桥代理",
-  gwIp:"公网IP",
+  pubGwIp:"公网IP",
   failToOpenPort:"启动外网映射失败！",
   
   locServices:"已安装应用",
@@ -86,9 +88,14 @@ cn:{
   invalidImg:"请选择有效的图片文件",
   needBuckets:"至少需要选择一个备份点",
   needWanIp:"需要填写一个公网IP",
+  invalidExtIP:"不是正确的公网地址",
+  dontSet:"不设置",
   backupAlert:"<div>每次数据备份将占用一次备份机会。</div><p>请确认是否继续？</p>",
   backupSuccess:"数据已成功备份。",
   restoreSuccess:"已成功恢复数据，请重新启动服务使数据生效。",
-  restoreAlert:"<div>恢复数据会首先停止服务器，并使用备份数据覆盖本地数据库，自上个备份时间点到当前时间产生的数据会丢失。</div><p>请确认是否继续？</p>"
+  restoreAlert:"<div>恢复数据会首先停止服务器，并使用备份数据覆盖本地数据库，自上个备份时间点到当前时间产生的数据会丢失。</div><p>请确认是否继续？</p>",
+  succeedToConnect:"可以从外网访问",
+  failToConnect:"不可以从外网访问",
+  serverNotStart:"本服务器尚未启动，无法执行此操作"
 }
 };

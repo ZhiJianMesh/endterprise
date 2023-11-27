@@ -24,7 +24,7 @@ queryService(pg) {
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url="/service/list?offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET", url:url, private:false}, "appstore").then(resp=>{
+    request({method:"GET", url:url, private:false, cloud:true}, "appstore").then(resp=>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
             this.mktServices=[];
@@ -41,8 +41,8 @@ searchService() {
         this.queryService(1);
         return;
     }
-    var url="/service/search?s="+this.search+"&limit="+this.service.N_PAGE;
-    request({method:"GET",url:url, private:false}, "appstore").then(resp=>{
+    var url="/service/search?type=enterprise&s="+this.search+"&limit="+this.service.N_PAGE;
+    request({method:"GET",url:url, private:false, cloud:true}, "appstore").then(resp=>{
         if(resp.code != RetCode.OK) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
             this.mktServices=[];

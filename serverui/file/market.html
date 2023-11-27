@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>ServerMarket</title>
+<title>ServerUIMarket</title>
 <meta charset="utf-8">
 <meta name="content-type" content="text/html;charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,31 +31,29 @@ routes:[
 ]});
 //-------------------------------------------service定义
 const service={
-introductions:{},
-cdns:[],
-name:"market",N_PAGE:10,N_SMPG:5,
+name:"market", N_PAGE:10, N_SMPG:5,
+resources:{}, cdns:[],
 go_back() { //返回，在页面中通过service.go_back调用
     router.back();
 },
 getExternalRes(opts){ //加载外部资源
-    return new Promise((resolve,reject)=>{
-        if(this.introductions[opts.url]){
-            resolve(this.introductions[opts.url]);
-            return;
-        }
-        getExternal(opts).then(resp => {
-            this.introductions[opts.url]=resp;
-            resolve(resp);
+    if(this.resources[opts.url]){
+        return new Promise(resolve=>{
+            resolve(this.resources[opts.url]);
         });
+    }
+    return getExternal(opts).then(res => {
+        this.resources[opts.url]=res;
+        return res;
     });
 },
-cdnList(){ //外部资源站点
+cdnList() { //外部资源站点
     return new Promise((resolve,reject)=>{
         if(this.cdns.length>0){
             resolve(this.cdns);
             return;
         }
-        request({method:"GET",url:"/api/cdn/list",private:false},"appstore").then(resp=>{
+        request({method:"GET",url:"/cdn/list",private:false,cloud:true},"appstore").then(resp=>{
             if(resp.code!=RetCode.OK) {
                 Console.error("get cdns result:" + resp);
                 resolve([])

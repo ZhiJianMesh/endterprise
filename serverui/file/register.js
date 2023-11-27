@@ -26,8 +26,6 @@ props: {
     }
 },
 created() {
-    this.doing=false;
-    this.id=Company.creditCode();
 },
 methods:{
 show(callback) {

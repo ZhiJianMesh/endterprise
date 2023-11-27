@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/ico;base64,aWNv">
 <link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
-<title>ServerHome</title>
+<title>ServerUIHome</title>
 </head>
 <body>
 <div id="app" class="q-pa-none">
@@ -139,7 +139,7 @@ init() {
     this.runtime='0'+this.tags.day+'0'+this.tags.hour+'0'+this.tags.minute;
     this.startupAt=new Date(Server.startupAt()).toLocaleString();
     this.address=Server.address();
-    this.cid=Company.companyId();
+    this.cid=Company.id();
     this.refresh();
     if(this.timer != null) {
         clearInterval(this.timer)

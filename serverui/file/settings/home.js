@@ -3,14 +3,17 @@ inject:['service', 'tags'],
 data() {return {
  creditCode:"",
  companyName:"",
- location:"",
+ location:{province:'',city:'',county:''},
  cid:"",
- dnsAccessCode:"",
- logoDlg:false,
+ accessCode:"", //8位服务器接入码
+ accessToken:'', //10位调测令牌
+ outsideAddr:"",
  logo:"/assets/imgs/logo_example.png",
- width:0,
+ logLevel:'DEBUG',
+ logLevels:[{label:'Debug',value:"DEBUG"},{label:'Info',value:"INFO"},
+   {label:'Warn',value:"WARN"},{label:'Error',value:"ERROR"}],
+ addrList:[],
 
- loading:false,
  logoOpts:{
     img: "",
     size: 1,
@@ -32,50 +35,62 @@ data() {return {
     maxImgSize: 3000,
     limitMinSize: [50, 50],
     fixed: true,
-    fixedNumber: [1, 1] 
+    fixedNumber: [1, 1],
+
+    dlg:false,
+    width:0,
+    loading:false
  }
 }},
 created(){
     var w=document.documentElement.clientWidth;
     var h=document.documentElement.clientHeight;
     if(w>h) {
-        this.width=parseInt(h*0.6);
+        this.logoOpts.width=parseInt(h*0.6);
     }else{
-        this.width=parseInt(w*0.6);
+        this.logoOpts.width=parseInt(w*0.6);
     }
     this.init();
 },
 methods:{
 init() {
-    this.creditCode=Company.creditCode();
-    this.companyName=Company.companyName();
-    this.cid=Company.companyId();
-    this.location=Company.location();
-    this.dnsAccessCode=Server.getDnsAccessCode();
-    var logoUrl=Http.cloudFileUrl("/logo?cid="+this.cid, "company");
-    getExternal({url:logoUrl}).then(png=> {
-        if(!png) {
-            Console.debug("url:" + logoUrl + ",png:" + png);
-            this.logo="./imgs/logo_example.png"
-        } else {
+    this.cid=Company.id();
+    if(this.cid <=0) {
+        return;
+    }
+    Company.getLogo(this.cid, __regsiterCallback(png=> {
+        if(png) {
             this.logo=png;
-            Server.saveFile("company", "logo.txt", png);
         }
-    });
+    }));
+    var items = "accessCode,creditCode,companyName,province,city,county,logLevel,outsideAddr,externAddrs";
+    Server.query(items, __regsiterCallback(resp => {
+        var info=resp.data;
+        this.accessCode=info.accessCode;
+        this.companyName=info.companyName;
+        this.creditCode=info.creditCode;
+        this.location={province:info.province,city:info.city,county:info.county};
+        this.logLevel=info.logLevel;
+        this.outsideAddr=info.outsideAddr;
+
+        var l=[];
+        for(var addr of info.externAddrs) {
+            l.push({label:addr, value:addr})
+        }
+        l.push({label:this.tags.dontSet, value:""});
+        this.addrList=l;
+    }));
 },
 register(){
     this.$refs.regDlg.show(()=>{
         this.init()
     });
 },
-resetAccessCode() {
-    this.dnsAccessCode = Server.resetDnsAccessCode();
-},
 selectImg() {
   this.$refs.logoImg.dispatchEvent(new MouseEvent('click'))
 },
 startCropLogo(e) {
-  this.loading=true;
+  this.logoOpts.loading=true;
   this.$refs.cropper.startCrop();
   //选择图片
   var file = e.target.files[0];
@@ -93,7 +108,7 @@ startCropLogo(e) {
       data = e.target.result
     }
     this.logoOpts.img = data
-	this.loading=false;
+	this.logoOpts.loading=false;
   }
   // reader.readAsDataURL(file)// 转化为base64
   reader.readAsArrayBuffer(file)// 转化为blob
@@ -111,19 +126,96 @@ rotate(dir) {
 setLogo() {
   this.$refs.cropper.getCropData(data => {
     this.logo=data;
-    var opts={method:"PUT",url:"/api/company/setLogo",data:{logo:data}};
+    var opts={method:"PUT",url:"/api/company/setLogo",data:{logo:data},cloud:true};
     request(opts, "company").then(resp=>{
       if(resp.code!=RetCode.OK) {
         this.$refs.alertDlg.showErr(resp.code, resp.info);
         return;
       }
-      this.logoDlg=false;
+      Company.saveLogo(this.cid, data);
+      this.logoOpts.dlg=false;
       this.$refs.cropper.stopCrop()
     });
   })
 },
-jump(pg) {
-    this.$router.push('/' + pg)
+nameChged(){
+    this.service.command({cmd:"setInfo", name:this.companyName}).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
+    });
+},
+outsideAddrAdded(val, initVal) {
+    if(!Http.isIPv4(val) && !Http.isIPv6(val)) {
+        return;
+    }
+    //自有公网IP的情况，需要设置外网地址
+    if(Http.isLanIP(val)) {
+        this.$refs.alertDlg.show(val + this.tags.invalidExtIP);
+        return;
+    }
+    Server.setOutsideAddr(val, __regsiterCallback(resp=>{
+      if(resp.code!=RetCode.OK) {
+        this.$refs.alertDlg.showErr(resp.code, resp.info);
+      }else {
+        this.addrList.push({label:val,value:val});
+        this.outsideAddr=val;
+      }  
+    }));
+},
+outsideAddrChged() {
+    Server.setOutsideAddr(this.outsideAddr, __regsiterCallback(resp=>{
+      if(resp.code!=RetCode.OK) {
+        this.$refs.alertDlg.showErr(resp.code, resp.info);
+      }  
+    }));
+},
+resetAccessCode() {
+    if(Server.startupAt()<=0) { //服务没启动
+        this.$refs.alertDlg.show(this.tags.serverNotStart);
+        return;
+    }
+    Server.resetAccessCode(__regsiterCallback(resp => {
+        if(resp.code==RetCode.OK) {
+            this.accessCode=resp.data.code;
+        } else {
+			this.$refs.alertDlg.showErr(resp.code, resp.info);
+		}
+    }));
+},
+setLogLevel() {
+    Server.setLogLevel(this.logLevel);
+},
+resetAccessToken(){//用于重置公司调测服务的令牌
+    this.accessToken = Server.resetAccessToken();
+},
+addrChged() {
+    this.service.command({cmd:"setInfo",
+        province:this.location.province,
+        city:this.location.city,
+        county:this.location.county
+    });
+},
+connectionTest() {
+    if(Server.startupAt()<=0) { //服务没启动
+        this.$refs.alertDlg.show(this.tags.serverNotStart);
+        return;
+    }
+    var addr;
+    if(Http.isIPv6(this.outsideAddr)) {
+        addr='['+this.outsideAddr+']:8523';
+    } else {
+        addr=this.outsideAddr+':8523';
+    }
+    
+    var opts={method:"GET",url:"/api/test?addr="+addr,cloud:true};
+    request(opts, "httpdns").then(resp=>{
+      if(resp.code!=RetCode.OK) {
+        this.$refs.alertDlg.show(this.tags.failToConnect + addr);
+      } else {
+        this.$refs.alertDlg.show(this.tags.succeedToConnect + addr);
+      }
+    });
 }
 },
 template: `
@@ -132,66 +224,99 @@ template: `
    <q-toolbar>
       <q-avatar square><q-icon name="settings"></q-icon></q-avatar>
       <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
-      <q-btn round dense flat icon="bug_report" @click="jump('debug')"></q-btn>
+      <q-btn icon="beenhere" :label="cid?tags.reRegister:(tags.login+'/'+tags.register)" @click="register" flat></q-btn>
    </q-toolbar>
 </q-header>
 <q-page-container>
  <q-page>
-<q-markup-table bordered="false" flat class="q-pa-md">
+<q-markup-table bordered="false" flat>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.baseSettings}}</td><td></td></tr>
+ <tr>
+   <td>{{tags.companyId}}</td>
+   <td>{{cid}}</td>
+ </tr>
  <tr>
    <td>{{tags.creditCode}}</td>
    <td>{{creditCode}}</td>
  </tr>
  <tr>
    <td>{{tags.companyName}}</td>
-   <td>{{companyName}}</td>
- </tr>
- <tr>
-   <td>{{tags.companyId}}</td>
-   <td>{{cid}}</td>
+   <td class="cursor-pointer">{{companyName}}
+    <q-popup-edit v-model="companyName" v-slot="scope" @update:model-value="nameChged"
+     buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+      <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+    </q-popup-edit>
+   </td>
  </tr>
  <tr>
    <td>{{tags.address}}</td>
-   <td>{{location}}</td>
+   <td class="cursor-pointer">
+    <address-dialog v-model="location" @update:model-value="addrChged"></address-dialog>
+   </td>
  </tr>
  <tr>
   <td>{{tags.logo}}</td>
   <td>
-   <q-img :src="logo" style="width:5em;height:5em;" @click="logoDlg=true"></q-img>
+   <q-img :src="logo" style="width:5em;height:5em;" @click="logoOpts.dlg=true"></q-img>
+  </td>
+ </tr>
+ <tr v-show="cid>0">
+   <td>{{tags.backup}}</td>
+   <td @click="service.jump('/backup')">
+    <q-icon name="cloud_sync" color="primary" size="2em" class="q-ml-md"></q-icon>
+   </td>
+ </tr>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
+  <td>{{tags.nwSettings}}<q-btn round dense flat icon="leak_add" class="q-ml-sm"
+    @click="connectionTest" color="secondary"></q-btn></td>
+  <td align="right"><q-btn round dense flat icon="add_circle" class="q-mr-sm" color="primary">
+   <q-popup-edit v-slot="scope" @save="outsideAddrAdded"
+	buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+	<q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+   </q-popup-edit>
+  </q-btn></td>
+ </tr>
+ <tr>
+  <td>{{tags.pubGwIp}}</td>
+  <td>
+   <q-option-group dense color="primary" v-model="outsideAddr" :options="addrList"
+    @update:model-value="outsideAddrChged"></q-option-group>
   </td>
  </tr>
  <tr>
-   <td>{{tags.dnsAccessCode}}</td>
+   <td>{{tags.accessCode}}</td>
+   <td>{{accessCode}}
+    <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessCode" size="2em"></q-icon>
+   </td>
+ </tr>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.remoteTest}}</td><td></td></tr>
+ <tr>
+   <td>{{tags.accessToken}}</td>
    <td>
-      {{dnsAccessCode}}
-      <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessCode" size="1.5em"></q-icon>
+    <q-chip style="min-width:11em" dense>
+     <q-avatar color="orange" icon="key" @click="resetAccessToken" size="2em"></q-avatar>{{accessToken}}
+    </q-chip>
    </td>
  </tr>
- <tr v-show="cid>0">
-   <td>{{tags.advanced}}</td>
-   <td @click="jump('advanced')">{{tags.wanAccess}}/{{tags.backup}}
-      <q-icon name="miscellaneous_services" color="primary"
-       size="2em" class="q-ml-md"></q-icon>
-   </td>
- </tr>
- <tr><td></td><td></td></tr>
- <tr><td></td>
+ <tr>
+   <td>{{tags.logLevel}}</td>
    <td>
-    <q-btn icon="beenhere" :label="cid?tags.reRegister:(tags.login+'/'+tags.register)" @click="register" color="primary"></q-btn>
+    <q-option-group dense color="primary"
+     v-model="logLevel" :options="logLevels" @update:model-value="setLogLevel"></q-option-group>
    </td>
- </tr>
+  </tr>
 </q-markup-table>
  </q-page>
 </q-page-container>
 </q-layout>
 
-<q-dialog v-model="logoDlg">
+<q-dialog v-model="logoOpts.dlg">
  <q-card bordered>
    <q-card-section>
     <div class="row no-wrap">
      <div>
       <!-- logoOpts必须用v-bind不能用v-model -->
-      <vue-cropper ref="cropper" v-bind="logoOpts" :style="{width:width+'px',height:width+'px'}"></vue-cropper>
+      <vue-cropper ref="cropper" v-bind="logoOpts" :style="{width:logoOpts.width+'px',height:logoOpts.width+'px'}"></vue-cropper>
      </div>
      <div class="column items-start">
         <q-btn flat icon="burst_mode" color="primary" @click="selectImg" size="1.4em"></q-btn>
@@ -202,7 +327,7 @@ template: `
      </div>
     </div>
    </q-card-section>
-   <q-inner-loading :showing="loading"><q-spinner-gears size="4em" color="primary"></q-spinner-gears></q-inner-loading>
+   <q-inner-loading :showing="logoOpts.loading"><q-spinner-gears size="4em" color="primary"></q-spinner-gears></q-inner-loading>
    <q-card-actions align="right" class="text-primary">
     <q-btn flat :label="tags.ok" @click="setLogo"></q-btn>
     <q-btn flat :label="tags.cancel" v-close-popup></q-btn>
