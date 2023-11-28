@@ -33,8 +33,11 @@ getDetail() {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
+		var cdnNum=this.cdns.length;
+		var cdnNo=Math.floor(Math.random()*cdnNum);
         this.app = resp.data;
-        this.app['icon'] = this.cdns[0]+this.app.service+"/favicon.png";
+        var s = this.cdns[cdnNo]+this.app.service;
+        this.app['icon'] = s+"/favicon.png";
         var v = parseInt(resp.data.ver);
         this.app['intVer'] = v;
         this.app.ver= Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
@@ -57,7 +60,7 @@ getDetail() {
         if(intro.images && intro.images.length > 0) {
             for(var i in intro.images) {
                 var src = intro.images[i].src;
-                if(src.substring(0,1) == "/") {
+                if(src.startsWith("/")) {
                     intro.images[i].src = this.baseUrl+src;
                 } else {
                     intro.images[i].src = this.baseUrl + '/' + src;

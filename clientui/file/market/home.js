@@ -64,7 +64,7 @@ format_apps(total, cols, data, cloud) {
             o['icon']=icon;
         } else {
 			var iconUrl="/" + o.service + "/favicon.png";
-			if(cloud) {
+			if(cloud) {//个人应用从云上获得，此参数需要端侧浏览器处理
 				iconUrl += "?cloud=true";
 			}
             o['icon'] = iconUrl;

@@ -29,7 +29,7 @@ created() {
         this.imgWidth="30vw";
     }
     this.isNormal=!App.isBuiltin(this.name);
-    request({method:"GET",url:"/api/introduce",private:false},this.name).then(function(resp) {
+    request({method:"GET",url:"/api/introduce",private:false},this.name).then(resp=> {
         if (resp.code!=RetCode.OK) {
             this.intro = {descrs: [this.app.displayName], images:[]};
             return;
@@ -48,7 +48,7 @@ created() {
             this.subTitle = intro.images[0].info;
         }
         this.intro=intro;
-    }.bind(this));
+    });
 
     this.app = this.service.list[this.name];
 	this.refreshUI();

@@ -126,7 +126,12 @@ cn:{
     sql:"SQL",
     useTime:"耗时:",
     result:"结果:",
-    dlList:"下载列表"
+    dlList:"下载列表",
+    requests:"访问统计",
+    fails:"失败统计",
+    excs:"异常",
+    files:"静态文件",
+    unit:"次"
   },
   mkt:{
     title:"应用管理",
