@@ -60,7 +60,6 @@ showStats(){
 		for(var l of data) {
 			n=l.at-oldAt;
 			if(n>1) {
-				t += HOUR_MS;//跳过上一个小时
 				n--;
 				for(var i=0;i<n;i++,t+=HOUR_MS) {
 					dt.setTime(t);

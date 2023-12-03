@@ -60,16 +60,6 @@ template: `
       <q-icon name="chevron_right" class="text-primary"></q-icon>
     </q-item-section>
   </q-item>
-
-  <q-item clickable v-ripple @click="jumpTo('clientlogs')">
-    <q-item-section avatar>
-      <q-icon color="primary" name="text_snippet"></q-icon>
-    </q-item-section>
-    <q-item-section>{{tags.om.clientlogs}}</q-item-section>
-    <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
-    </q-item-section>
-  </q-item>
 </q-list>
     </q-page>
   </q-page-container>

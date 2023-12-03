@@ -3,7 +3,7 @@ inject:['service', 'tags'],
 data(){return {
     logs:[],
     dlList:[],
-    dlDlg:false
+    dlState:{dlg:false, progressing:true}	
 }},
 created() {
     this.listLogs();
@@ -25,13 +25,15 @@ dl(f){
     var token=this.service.getToken('serverui');
     var hh={access_token:token,cid:this.service.cid};
     var url='/downloadlog?n=' + encodeURIComponent(f);
-    download({private:false, file_name:fn, headers:hh, url:url}, 'serverui').then(resp => {
+	this.dlState.dlg=true;
+	this.dlState.progressing=true;
+    download({private:false, file:true, file_name:fn, headers:hh, url:url}, 'serverui').then(resp => {
         if(resp.code == RetCode.OK) {
             this.dlList.splice(0,0,{file:resp.data.saveAs,size:resp.data.size,bg:'#00000000'})
         } else {
             this.dlList.splice(0,0,{file:f,size:0,bg:'#884444'})
         }
-        this.dlDlg=true;
+        this.dlState.progressing=false;
     });
 }
 },
@@ -58,8 +60,10 @@ template: `
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="errDlg"></component-alert-dialog>
  
-<q-dialog v-model="dlDlg">
+<q-dialog v-model="dlState.dlg">
 <q-card style="min-width:60vw;max-width:90vw">
+<q-linear-progress indeterminate rounded color="pink"
+class="q-mt-sm" v-show="dlState.progressing"></q-linear-progress>
 <q-card-section class="row items-center q-pb-none">
   <div class="text-h6">{{tags.om.dlList}}</div>
   <q-space></q-space>

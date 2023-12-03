@@ -35,6 +35,7 @@ init() {
                 c.name=this.tags.personalAcc;
             }
         }
+        this.service.cid=company.id;
         this.curCompanyId=company.id;
     }));
 
@@ -57,7 +58,7 @@ about() {
 jump(pg) {
     this.$router.push(pg)
 },
-btn_click() {
+logInOrOut() {
     if(this.service.curCompany().authorized) {
         Companies.logout(__regsiterCallback(resp => {
             this.account=this.tags.account;
@@ -116,7 +117,8 @@ regCompany() {
         d.verifyCode,d.session,jsCbId);
 },
 setCurCompany(cid) {
-    Companies.setCur(cid)
+    Companies.setCur(cid);
+	this.service.cid=cid;
     this.init();
 },
 exitCompany(){
@@ -210,7 +212,7 @@ template: `
       <div class="row no-wrap">
        <q-btn flat color="indigo" :label="tags.home.register"
         @click="showRegister" v-show="curCompanyId==0&&!authorized"></q-btn>
-       <q-btn flat dense color="primary" :label="authorized?tags.logout:tags.login" @click="btn_click"
+       <q-btn flat dense color="primary" :label="authorized?tags.logout:tags.login" @click="logInOrOut"
         :icon-right="authorized?'logout':'login'"></q-btn>
       </div>
     </q-item-section>

@@ -40,7 +40,7 @@ getDetail() {
         this.app['icon'] = s+"/favicon.png";
         var v = parseInt(resp.data.ver);
         this.app['intVer'] = v;
-        this.app.ver= Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
+        this.app.ver=App.intToVer(v);
         this.baseUrl= s + "/" + this.app.ver;
         if(this.localVer<=0) {
             this.action=this.tags.mkt.install;
@@ -190,6 +190,7 @@ template: `
     </q-page>
   </q-page-container>
 </q-layout>
+<component-process-dialog ref="procDlg"></component-process-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 `
 }

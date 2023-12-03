@@ -66,7 +66,7 @@ init() {
         }
         var info=resp.data;
         if(this.service.cid != info.companyId) {
-            this.$refs.alertDlg.show(this.tags.invalidCid);
+            this.$refs.alertDlg.show(this.tags.cfg.invalidCid);
             return;
         }
         this.company.accessCode=info.accessCode;
