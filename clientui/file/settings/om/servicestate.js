@@ -109,8 +109,10 @@ showStats(){
 	});
 },
 statsDateChanged() {
-	this.stats.date=this.stats.proxyDate;
-	this.showStats();
+	if(this.stats.proxyDate) {
+		this.stats.date=this.stats.proxyDate;
+		this.showStats();
+	}
 }
 },
 
@@ -139,7 +141,7 @@ template: `
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 
-<!-- ÇëÇóÍ³¼Æµ¯´° -->
+<!-- è®¿é—®ç»Ÿè®¡ -->
 <q-dialog v-model="stats.dlg" no-backdrop-dismiss @show="showStats">
   <q-card style="min-width:80vw;">
     <q-card-section class="row items-center q-pb-none">

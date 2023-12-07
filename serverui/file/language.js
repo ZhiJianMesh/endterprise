@@ -26,15 +26,8 @@ cn:{
   cfmPwd:"确认密码",
   verifyCode:"验证码",
   invalidCfmPwd:"确认密码必须与密码相同",
-  updateAt:"更新于",
-  author:"作者",
-  version:"版本",
 
-  install:"安装",
-  unInstall:"卸载",
-  update:"更新",
-  waitting:"...",
-  
+
   advanced:"高级服务",
 
   backup:"数据备份",
@@ -72,8 +65,6 @@ cn:{
   register:"注册",
   login:"登录",
   reRegister:"重注册/登录",
-  displayName:"中文名",
-  author:"作者",
   search:"搜索",
   day:"天",
   hour:"时",
@@ -96,6 +87,23 @@ cn:{
   restoreAlert:"<div>恢复数据会首先停止服务器，并使用备份数据覆盖本地数据库，自上个备份时间点到当前时间产生的数据会丢失。</div><p>请确认是否继续？</p>",
   succeedToConnect:"可以从外网访问",
   failToConnect:"不可以从外网访问",
-  serverNotStart:"本服务器尚未启动，无法执行此操作"
+  serverNotStart:"本服务器尚未启动，无法执行此操作",
+  mkt:{
+    install:"安装",
+    waitting:"执行中...",
+    update:"更新",
+    unInstall:"卸载",
+    cfmUpdate:"更新服务",
+    cfmInstall:"安装服务",
+    cfmUninstall:"卸载服务",
+	successToInstall:"安装成功",
+	successToUpdate:"更新成功",
+	successToUnInstall:"卸载成功",
+    displayName:"中文名",
+    author:"作者",
+    updateAt:"更新于",
+    author:"作者",
+    version:"版本",
+  }
 }
 };

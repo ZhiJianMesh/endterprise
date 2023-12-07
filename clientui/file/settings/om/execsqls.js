@@ -1,15 +1,12 @@
 export default {
 inject:['service', 'tags'],
 data(){return {
-    cid:this.$route.query.id,
     serviceName:'',
     db:'',
     sql:'',
     cols:[],
     rows:[],
     hint:'',
-    result:0,
-    
     services:[]
 }},
 created() {
@@ -27,7 +24,7 @@ created() {
 },
 methods:{
 execute() {
-    var opts={method:"POST", url:"/api/sqlexec",
+    var opts={method:"POST", url:"/api/sqlexec",timeout:30000,
        data:{service:this.serviceName, db:this.db, sql:this.sql}};
     this.service.request_private(opts, "serverui").then(resp => {
         if(resp.code!=RetCode.OK) {

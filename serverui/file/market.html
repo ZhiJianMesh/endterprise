@@ -18,6 +18,7 @@
 import Language from "./language.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+import ProcessDialog from "/assets/v3/components/process_dialog.js"
 import Home from "./market/home.js"
 import Detail from "./market/detail.js"
 
@@ -59,7 +60,7 @@ cdnList() { //外部资源站点
                 resolve([])
                 return;
             }
-            this.cdns=resp.data.cdns;
+            this.cdns=resp.data.cdns.map(l => l.endsWith('/')?l:l+'/');
             resolve(this.cdns)
         });
     });
@@ -88,6 +89,7 @@ app.use(router);
 //--------------------------注册全局组件
 app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
+app.component('component-process-dialog', ProcessDialog);
 //-------------------------------------------启动APP
 app.mount('#app');
 </script>

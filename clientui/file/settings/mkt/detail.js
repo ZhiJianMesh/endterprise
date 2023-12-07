@@ -10,7 +10,7 @@ data() {return {
     baseUrl:'',
     action: '',
     imgWidth:'90vw',
-    locVer:0, //服务端安装的版本
+    localVer:0, //服务端安装的版本
     cdns:[]
 }},
 created() {
@@ -19,7 +19,7 @@ created() {
     }
     this.service.cdnList().then(cdns=>{
         this.cdns=cdns;
-        this.localVer().then(v=> {
+        this.getLocalVer().then(v=> {
             this.getDetail();
         })
     });
@@ -83,13 +83,9 @@ scroll(event) {
     }
 },
 appAction() {
-    if(this.app.intVer<=this.localVer) {
-        return;
-    }
-    
-    if (this.localVer>0) {
+    if (this.localVer>this.app.intVer) {
         this.update(this.app.service);
-    } else {
+    } else if(this.localVer<=0) {
         this.install(this.app.service);
     }
 },
@@ -97,14 +93,15 @@ update(service) {
   this.$refs.procDlg.show(this.tags.mkt.update,
     this.tags.mkt.cfmUpdate+service+'?', 'download',
     (dlg)=> {
-        dlg.setInfo('');
-        return this.service.command({cmd:"update", service:service});
+        dlg.setInfo(this.tags.mkt.waitting);
+        return this.service.command({cmd:"update", service:service},100000);
     },
     (dlg,resp)=> {
       if(resp.code!=RetCode.OK) {
         dlg.setInfo(formatErr(resp.code, resp.info));
       } else {
         this.localVer = this.app.ver;
+		dlg.setInfo(this.tags.mkt.successToInstall);
         this.action='';
       }
     }
@@ -114,8 +111,8 @@ install(service) {
   this.$refs.procDlg.show(this.tags.mkt.install,
     this.tags.mkt.cfmInstall+service+'?', 'download',
     (dlg)=> {
-        dlg.setInfo('');
-        return this.service.command({cmd:"install", service:service});
+        dlg.setInfo(this.tags.mkt.waitting);
+        return this.service.command({cmd:"install", service:service},100000);
     },
     (dlg,resp)=> {
       if(resp.code!=RetCode.OK) {
@@ -123,11 +120,12 @@ install(service) {
       } else {
         this.localVer = this.app.ver;
         this.action='';
+		dlg.setInfo(this.tags.mkt.successToInstall);
       }
     }
   )
 },
-localVer() {
+getLocalVer() {
     var dta = {cmd:"serviceVer", service:this.name};
     return this.service.command(dta).then(resp=>{
         if(resp.code!=RetCode.OK) {
@@ -157,7 +155,7 @@ template: `
     </q-item>
    </q-list>
   </q-header>
-  <q-footer bordered class="bg-grey-2" v-show="localVer<app.intVer">
+  <q-footer bordered class="bg-grey-2" v-show="action!=''">
     <q-toolbar class="row justify-center">
       <q-btn rounded color="primary" :label="action" @click="appAction"></q-btn>
     </q-toolbar>

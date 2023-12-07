@@ -5,11 +5,11 @@ data(){return {
     cid:'',
     companyName:'',
     accessCode:'',
+    insideAddr:'',
+	outsideAddr:'',
     authorized:false,
     changed:false,
     saveAt:0,
-    insideAddr:'',
-	outsideAddr:'',
 	auth:{dlg:false,pwd:'',visible:false,pg:0},
 }},
 created() {

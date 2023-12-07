@@ -42,25 +42,26 @@ CLIENT_ERROR:100000,
 CLIENT_DBERROR:100001
 };
 
-const __callback_funs={};
+const MAX_TASK_NUM=256;//最多MAX_TASK_NUM个并发任务
+const __callback_funs=new Array(MAX_TASK_NUM);
 var __call_id=0;
 function __regsiterCallback(cb) {
     __call_id++;
-    __callback_funs[__call_id]=cb;
+    __callback_funs[__call_id % MAX_TASK_NUM]=cb;
     return __call_id;
 }
 
-function __unRegsiterCallback(cbId) {
-    delete __callback_funs[cbId];
+function __unRegsiterCallback(jsCbId) {
+    __callback_funs[jsCbId % MAX_TASK_NUM] = undefined;
 }
 //通用的回调，在java程序中触发，传的resp就是HandleResult
-function __default_jscb(id, resp) {
-    var f=__callback_funs[id];
-    if(typeof(f)=='function') {
+function __default_jscb(jsCbId, resp) {
+    var f=__callback_funs[jsCbId % MAX_TASK_NUM];
+    if(f && typeof(f)=='function') {
         f(resp);
-        __unRegsiterCallback(id)
+        __unRegsiterCallback(jsCbId)
     } else {
-        Console.error("__default_jscb `" + id + "` not exists");
+        Console.error("__default_jscb `" + jsCbId + "` not exists");
     }
 }
 
@@ -610,20 +611,22 @@ const Server = {
     fileCalls() {return 29999},
     apiCalls() {return 1000},
     alter(jsCbId) {
-        this.state=2;
-        if(this.state!=3) {
-            sleep(3000).then(()=> {
-                this.state=3;
-                __default_jscb(jsCbId,{code:0,data:{state:3}});
+        if(this.state!=this.SRV_RUNNING()) {
+			this.state=this.SRV_ALTERING();
+            sleep(2000).then(()=> {
+                this.state=this.SRV_RUNNING();
+                __default_jscb(jsCbId,{code:0,data:{state:this.state}});
             })
         } else {
+			this.state=this.SRV_ALTERING();
             sleep(1000).then(()=> {
-                this.state=4;
-                __default_jscb(jsCbId,{code:0,data:{state:4}});
+                this.state=this.SRV_CLOSED();
+                __default_jscb(jsCbId,{code:0,data:{state:this.state}});
             })
         }
     },
     address() {return "192.168.1.1:8523"},
+    gw() {return "[240e:999:c40:9c82:5201:9999:fec2:9999]:8523"},
     runTime() {return 100000},
     startupAt() {return 1657157855534},
     getServiceVer(s){return 1000},
@@ -634,19 +637,28 @@ const Server = {
 				installProgress(1,"test"+i);
 			})
 		}
-		sleep(3000).then(()=>{
-			__default_jscb(jsCbId,{code:0});
+		sleep(2000).then(()=>{
+			__default_jscb(jsCbId,{code:RetCode.OK});
 		})
 	},
-	unInstallService(s){},
+	unInstallService(s,jsCbId){
+		sleep(2000).then(()=>{
+			__default_jscb(jsCbId,{code:RetCode.OK});
+		})
+	},
+	updateService(s,jsCbId){
+		sleep(2000).then(()=>{
+			__default_jscb(jsCbId,{code:RetCode.OK});
+		})
+	},
     resetAccessToken(){return '1234567890123456'},
     resetAccessCode(jsCbId){
         __default_jscb(jsCbId,{code:RetCode.OK, data:{code:"723456"}});
     },
     getServices(jsCbId){ //只是用于测试
         var data={code:RetCode.OK, data:{services:[
-            {name:"crm",displayName:"客户关系管理",author:"Lgy", level:4, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
-            {name:"member",displayName:"会员",author:"Lgy",level:4, favicon:"/member/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
+            {name:"crm",displayName:"客户关系管理",author:"Lgy", level:5, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
+            {name:"member",displayName:"会员",author:"Lgy",level:6, updatablefavicon:"/member/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
             {name:"user",displayName:"用户服务",author:"Lgy",level:3, favicon:"/user/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
             {name:"enstu",displayName:"英语教学",author:"Lgy",level:100, favicon:"/enstu/favicon.png", version:"0.1.0",updatable:true, srvVer:"0.2.0"},
             {name:"bios",displayName:"注册发现服务",author:"Lgy",level:0, favicon:"/bios/favicon.png", version:"0.1.0",updatable:false},
@@ -707,7 +719,11 @@ const Server = {
             }
         }
         __default_jscb(jsCbId,{code:RetCode.OK,info:"Success", data:data});
-    }
+    },
+	intToVer(v) {return	Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);},
+    SRV_RUNNING() { return 3;},
+    SRV_CLOSED() {return 4;},
+    SRV_ALTERING() {return 2;}
 }
 
 const Company={//used in server
@@ -779,8 +795,7 @@ const Companies={
     authorized(){return (this.userService() in currentCompany().tokens)},
     login(acc,pwd,tp,jsCbId) {
         var company=currentCompany();
-        var dta={account:acc,password:pwd,grant_type:'password',
-            cid:company.id,accType:tp/*uniuser中才会需要*/};
+        var dta={account:acc,password:pwd,grant_type:'password',accType:tp/*uniuser中才会需要*/};
         company.userService=this.userService();
         sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, company.userService).then(resp=> {
             if(resp.code==RetCode.OK) {
@@ -875,6 +890,9 @@ const Companies={
     curCompany(){
         return JSON.stringify(__companies[__curCompany]);
     },
+	curCompanyId() {
+		return __companies[__curCompany].id;
+	},
     list(jsCbId) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success",data:{list:__companies}});
     },

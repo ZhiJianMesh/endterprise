@@ -2,6 +2,7 @@ export default {
 inject:['service', 'tags'],
 data() {return {
 company:{
+    cid:'',
     creditCode:"",
     name:"",
     location:{province:'',city:'',county:''},
@@ -59,13 +60,14 @@ init() {
         "province", "city", "county",
         "logLevel", "outsideAddr", "externAddrs"
     ]};
+    this.cid=Companies.curCompanyId();
     this.service.command(dta).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
         var info=resp.data;
-        if(this.service.cid != info.companyId) {
+        if(this.cid != info.companyId) {
             this.$refs.alertDlg.show(this.tags.cfg.invalidCid);
             return;
         }
@@ -82,7 +84,7 @@ init() {
         }
         l.push({label:this.tags.dontSet, value:""});
         this.addrList=l;
-        Companies.getLogo(this.service.cid, __regsiterCallback(png=> {
+        Companies.getLogo(this.cid, __regsiterCallback(png=> {
             if(png) {
                 this.company.logo=png;
             }
@@ -148,7 +150,7 @@ setLogo() {
         this.$refs.alertDlg.showErr(resp.code, resp.info);
         return;
       }
-      Companies.saveLogo(this.service.cid, logo);
+      Companies.saveLogo(this.cid, logo);
       this.logoOpts.dlg=false;
       this.$refs.cropper.stopCrop()
     });
@@ -227,7 +229,7 @@ template: `
  </tr>
  <tr>
    <td>{{tags.cfg.id}}</td>
-   <td>{{service.cid}}</td>
+   <td>{{cid}}</td>
  </tr>
  <tr>
    <td>{{tags.cfg.creditCode}}</td>

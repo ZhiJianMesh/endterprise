@@ -23,6 +23,7 @@
     <div class="text-h4 q-pt-md">{{runtime}}</div>
     <div class="text-subtitle1 q-pt-sm">{{startupAt}}</div>
     <div class="text-subtitle1 q-pt-sm">{{address}}</div>
+    <div class="text-caption q-pt-sm">{{gw}}</div>
     <div>
      <q-chip><q-avatar color="primary" text-color="white" icon="folder_special"></q-avatar>{{cid}}</q-chip>
      <q-chip><q-avatar color="primary" text-color="white" icon="bookmark_border"></q-avatar>{{apiCalls}}</q-chip>
@@ -51,10 +52,6 @@ import Language from "./language.js"
 import RegisterDialog from "./register.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 
-const SRV_ALTERING=2;
-const SRV_RUNNING=3;
-const SRV_CLOSED=4;
-
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //-------------------------------------------app主体定义
@@ -64,6 +61,7 @@ data(){return{
     runtime:"",
     startupAt:"",
     address:"",
+    gw:"", //外部映射地址
     statusImg:"./imgs/static_gears.png",
     apiCalls:0,
     fileCalls:0,
@@ -84,18 +82,18 @@ alter(){
         return;
     }
     this.getState().then(resp=>{
-        if(resp.data.state==SRV_ALTERING) {
-            return; //正在启动中，不接受点击
+        if(resp.data.state==Server.SRV_ALTERING()) {
+            return; //正在启动或停止，不接受点击
         }
-        this.state=SRV_ALTERING;
+        this.state=Server.SRV_ALTERING();
         Server.alter(__regsiterCallback(r => {
-            //start、stop、state中都返回了全部的状态信息，且在jsserver中保存了
+            //start、stop、state命令中都返回了全部的状态信息，且在jsserver中保存了
             this.displayState(r);
         }));
     });
 },
 chgStateDisp(){
-    if(this.state==SRV_RUNNING) {
+    if(this.state==Server.SRV_RUNNING()) {
         this.progVal=100;
         this.statusImg="./imgs/running_gears.gif";
         this.startupAt=new Date(Server.startupAt()).toLocaleString();
@@ -123,12 +121,13 @@ displayState(resp) {
     this.apiCalls=Server.apiCalls();
     this.fileCalls=Server.fileCalls();
     this.address=Server.address();
+    this.gw=Server.gw();
 },
 refresh() {
     this.getState().then(resp=>{this.displayState(resp)})
 },
 getState() {
-    return new Promise((resolve, reject)=>{
+    return new Promise(resolve=>{
         Server.getState(__regsiterCallback(resp => {
             this.state=resp.data.state;
             resolve(resp);
@@ -139,6 +138,7 @@ init() {
     this.runtime='0'+this.tags.day+'0'+this.tags.hour+'0'+this.tags.minute;
     this.startupAt=new Date(Server.startupAt()).toLocaleString();
     this.address=Server.address();
+    this.gw=Server.gw();
     this.cid=Company.id();
     this.refresh();
     if(this.timer != null) {

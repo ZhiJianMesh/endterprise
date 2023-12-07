@@ -81,8 +81,8 @@ update(service) {
     this.$refs.procDlg.show(this.tags.mkt.update,
         this.tags.mkt.cfmUpdate+service+'?', 'download',
         (dlg)=> {
-          dlg.setInfo('');
-          return this.service.command({cmd:"update", service:service});
+          dlg.setInfo(this.tags.mkt.waitting);
+          return this.service.command({cmd:"update", service:service},100000);
         },
         (dlg,resp)=> {
           if(resp.code!=RetCode.OK) {
@@ -97,13 +97,14 @@ unInstall(service) {
     this.$refs.procDlg.show(this.tags.mkt.unInstall,
         this.tags.mkt.cfmUninstall+service+'?', 'clear',
         (dlg)=> {
-            dlg.setInfo('');
-            return this.service.command({cmd:"uninstall", service:service});
+            dlg.setInfo(this.tags.mkt.waitting);
+            return this.service.command({cmd:"uninstall", service:service},20000);
         },
         (dlg,resp)=> {
           if(resp.code!=RetCode.OK) {
             dlg.setInfo(formatErr(resp.code, resp.info));
           } else {
+			dlg.setInfo(this.tags.mkt.successToUnInstall);
             this.getLocServices();
           }
         }

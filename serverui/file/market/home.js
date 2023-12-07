@@ -6,8 +6,7 @@ data() {return {
     search:'',
     tab:'market',
     page:{cur:1, max:0},
-    cdns:[],
-    install:{percent:0,info:"",dlg:false}
+    cdns:[]
 }},
 created(){
     this.service.cdnList().then(cdns=>{
@@ -15,9 +14,6 @@ created(){
         this.queryService(1);
     })
     this.getLocServices();
-},
-mounted() {
-  window.installProgress = this.progress;
 },
 methods:{
 queryService(pg) {
@@ -70,10 +66,8 @@ fmt_services(rows) {
         icon=Server.serviceIcon(s.service);
         if(icon!="") {//已安装则显示本地icon
             s['icon'] = icon;
-        } else if(this.cdns[0].endsWith('/')){
-            s['icon'] = this.cdns[0] + s.service + "/favicon.png";
         } else {
-            s['icon'] = this.cdns[0] + '/' + s.service + "/favicon.png";
+            s['icon'] = this.cdns[0] + s.service + "/favicon.png";
         }
         dt.setTime(s.recentUpd);
         s.updateAt=dt.toLocaleDateString();
@@ -85,28 +79,48 @@ detail(service) {
     this.$router.push('/detail?service='+service)
 },
 update(service) {
-    this.install={dlg:true,percent:0,info:""};
-    var jsCbId=__regsiterCallback(resp=> {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
-        } else {
-            this.getLocServices();
-        }
-    });
-	Server.updateService(service, jsCbId);
+	this.$refs.procDlg.show(this.tags.mkt.update,
+        this.tags.mkt.cfmUpdate+service+'?', 'clear',
+        (dlg)=> {
+            dlg.setInfo(this.tags.mkt.waitting);
+			return new Promise(resolve=>{
+				Server.updateService(service, __regsiterCallback(resp=> {
+					resolve(resp)
+				}));
+			});
+        },
+        (dlg,resp)=> {
+		  if(resp.code!=RetCode.OK) {
+			dlg.setInfo(formatErr(resp.code, resp.info));
+		  } else {
+			dlg.setInfo(this.tags.mkt.successToUpdate);
+			this.getLocServices();
+		  }
+		}
+    )
 },
 unInstall(service) {
-    var jsCbId=__regsiterCallback(resp => {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
-        } else {
-            this.getLocServices();
-        }
-    });
-	Server.unInstallService(service,jsCbId);
+	this.$refs.procDlg.show(this.tags.mkt.unInstall,
+        this.tags.mkt.cfmUninstall+service+'?', 'clear',
+        (dlg)=> {
+            dlg.setInfo(this.tags.mkt.waitting);
+			return new Promise(resolve=>{
+				Server.unInstallService(service, __regsiterCallback(resp=> {
+					resolve(resp)
+				}));
+			});
+        },
+        (dlg,resp)=> {
+		  if(resp.code!=RetCode.OK) {
+			dlg.setInfo(formatErr(resp.code, resp.info));
+		  } else {
+			dlg.setInfo(this.tags.mkt.successToUnInstall);
+			this.getLocServices();
+		  }
+		}
+    )
 },
 getLocServices() {
-    this.install={dlg:false,percent:0,info:""};
     var jsCbId=__regsiterCallback(resp=> {
         if(resp.code != RetCode.OK) {
             Console.warn("code:"+resp.code+",info:"+resp.info);
@@ -115,15 +129,7 @@ getLocServices() {
         this.locServices=resp.data.services;
     });
     Server.getServices(jsCbId);
-},
-progress(inc,info){
-     if(this.install.percent+inc>100) {
- 		this.install.percent=100;
- 	} else {
- 		this.install.percent+=inc;
- 	}
-     this.install.info=info;
- }
+}
 },
 
 template: `
@@ -161,7 +167,7 @@ template: `
       <q-item-section>
         <q-item-label lines="1">{{s.displayName}}/{{s.service}}</q-item-label>
         <q-item-label caption>{{s.author}}</q-item-label>
-        <q-item-label caption>{{tags.updateAt}} {{s.updateAt}}</q-item-label>
+        <q-item-label caption>{{tags.mkt.updateAt}} {{s.updateAt}}</q-item-label>
       </q-item-section>
       <q-item-section side>
         <q-item-label><q-icon name="cloud_download" size="xs" color="primary"></q-icon></q-item-label>
@@ -180,13 +186,13 @@ template: `
        </q-item-section>
        <q-item-section class="text-left">
          <q-item-label overline>{{s.displayName}}/{{s.name}}
-		  <q-badge :label="tags.unInstall" @click="unInstall(s.name)" v-if="s.level>4"></q-badge>
+		  <q-badge :label="tags.mkt.unInstall" @click="unInstall(s.name)" v-if="s.level>4"></q-badge>
 		 </q-item-label>
          <q-item-label caption>{{s.author}}</q-item-label>
        </q-item-section>
        <q-item-section side v-if="s.updatable">
 	    <q-item-label class="q-mt-xs text-weight-bold text-primary"
-	    @click="update(s.name)">{{tags.update}}</q-item-label>
+	    @click="update(s.name)">{{tags.mkt.update}}</q-item-label>
 		<q-item-label caption>{{s.version}} -> {{s.srvVer}}</q-item-label>
 	   </q-item-section>
 	   <q-item-section side v-else>
@@ -199,12 +205,6 @@ template: `
 </q-page-container>
 </q-layout>
 
-<q-dialog v-model="install.dlg" persistent>
-  <q-card style="min-width:62vw" class="q-pa-lg">
-     <q-linear-progress :value="install.percent/100" color="primary" size="xl"></q-linear-progress>
-     <div>{{install.info}}</div>
-  </q-card>
-</q-dialog>
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
+<component-process-dialog ref="procDlg"></component-process-dialog>
 `
 }

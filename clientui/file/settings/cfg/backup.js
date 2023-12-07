@@ -24,7 +24,7 @@ init() {
             return;
         }
         var info=resp.data;
-        if(this.service.cid != info.companyId) {
+        if(Companies.curCompanyId() != info.companyId) {
             this.$refs.alertDlg.show(this.tags.invalidCid);
             return;
         }
@@ -150,7 +150,7 @@ backupNow() {
         this.tags.backupAlert, 'backup',
         (dlg)=> {
             dlg.setInfo('');
-            return this.service.command({cmd:"backup"});
+            return this.service.command({cmd:"backup"}, 100000);
         },
         (dlg,resp)=> {
           if(resp.code!=RetCode.OK) {
@@ -166,7 +166,7 @@ restore() {
         this.tags.restoreAlert, 'cloud_download',
         (dlg)=> {
             dlg.setInfo('');
-            return this.service.command({cmd:"restore"});
+            return this.service.command({cmd:"restore"}, 100000);
         },
         (dlg,resp)=> {
           if(resp.code!=RetCode.OK) {

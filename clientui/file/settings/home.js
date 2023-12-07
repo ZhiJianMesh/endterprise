@@ -35,7 +35,6 @@ init() {
                 c.name=this.tags.personalAcc;
             }
         }
-        this.service.cid=company.id;
         this.curCompanyId=company.id;
     }));
 
@@ -118,7 +117,6 @@ regCompany() {
 },
 setCurCompany(cid) {
     Companies.setCur(cid);
-	this.service.cid=cid;
     this.init();
 },
 exitCompany(){

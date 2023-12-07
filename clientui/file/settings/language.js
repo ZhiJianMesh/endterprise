@@ -142,13 +142,15 @@ cn:{
     author:"作者",
     version:"版本",
     displayName:"中文名",
-    waitting:"...",
+    waitting:"执行中...",
     update:"更新",
     unInstall:"卸载",
     install:"安装",
     cfmUpdate:"更新服务",
     cfmInstall:"安装服务",
-    cfmUninstall:"卸载服务"
+    cfmUninstall:"卸载服务",
+	successToInstall:"安装成功",
+	successToUnInstall:"卸载成功"
   }
 }
 };

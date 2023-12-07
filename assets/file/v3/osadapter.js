@@ -79,23 +79,23 @@ function readText(txt){
 }
 
 //在TextToVoice的回调中触发此函数
-function __tts_jscb(id, resp) {
-    var f=__callback_funs[id];
-    if(typeof(f)=='function') {
+function __tts_jscb(jsCbId, resp) {
+    var f=__callback_funs[jsCbId % MAX_TASK_NUM];
+    if(f && typeof(f)=='function') {
         status = resp.data.status;
         f(status);
         if(status=='done' || status=='error') {
-            __unRegsiterCallback(id)
+            __unRegsiterCallback(jsCbId)
         }
     } else {
-        Console.error("__tts_jscb " + id + " not exists");
+        Console.error("__tts_jscb " + jsCbId + " not exists");
     }
 }
 
 //通用的回调，在java程序中触发，传的resp就是HandleResult
 function __default_jscb(jsCbId, resp) {
-    var f=__callback_funs[jsCbId];
-    if(f) {
+    var f=__callback_funs[jsCbId % MAX_TASK_NUM];
+    if(f && typeof(f)=='function') {
         f(resp);
         __unRegsiterCallback(jsCbId)
     } else {
@@ -109,8 +109,8 @@ function __regsiterCallback(cb) {
     return __call_id;
 }
 
-function __unRegsiterCallback(cbId) {
-    __callback_funs[cbId % MAX_TASK_NUM] = undefined;
+function __unRegsiterCallback(jsCbId) {
+    __callback_funs[jsCbId % MAX_TASK_NUM] = undefined;
 }
 
 function copyObj(src,segs){
@@ -169,7 +169,7 @@ function storageRmv(k) {
 
 function findInArray(arr, s) {
     var no=0;
-    for(var a in arr) {
+    for(var a of arr) {
         if(a==s) {
             return no;
         }
