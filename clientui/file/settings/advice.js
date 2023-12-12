@@ -1,25 +1,17 @@
 export default {
 inject:['service', 'tags'],
 data(){return {
-    advice:'',
-    email:'',
-    mobile:'',
-    report_service:"",
-    services:[],
-    id:''
 }},
-created() {
-    this.id=new Date().toLocaleDateString();
-    var list = JSON.parse(App.list());
-    var services=[];
-    for(var l of list) {
-        services.push({label:l.displayName,value:l.name});
-    }
-    this.report_service=list[0].name;
-    this.services=services;
-},
 methods:{
-send_tocloud(){
+copy(txt){
+    this.service.copyToClipboard(txt).then(()=>{
+        this.$q.notify("`" + txt + "`" + this.tags.copied);
+    });
+},
+copyFmt(){
+    this.service.copyToClipboard(this.tags.adviceFmt).then(()=>{
+        this.$q.notify(this.tags.copied);
+    });
 }
 },
 template: `
@@ -32,29 +24,67 @@ template: `
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">    
- <q-list class="q-pa-md">
+<q-card>
+ <q-card-section>
+  <div class="text-h6">{{tags.sendAdvice}}</div>
+  <div class="text-subtitle2">{{tags.fmtLike}}:
+   <q-icon name="content_copy" color="primary" @click="copyFmt"></q-icon>
+  </div>
+ </q-card-section>
+ <q-card-section style="white-space: pre-wrap;">{{tags.adviceFmt}}</q-card-section>
+ <q-separator dark></q-separator>
+ <q-card-section>
+  <q-list>
+   <q-item>
+    <q-item-section avatar>
+     <q-icon name="svguse:/assets/imgs/meshicons.svg#qq" color="secondary" size="2em"></q-icon>
+    </q-item-section>
+    <q-item-section @click="copy('3803810851')" class="cursor-pointer">3803810851</q-item-section>
+   </q-item>
+   <q-item>
+    <q-item-section avatar><q-icon name="email" color="primary" size="2em"></q-icon></q-item-section>
+    <q-item-section @click="copy('zhijianmesh@sina.com')" class="cursor-pointer">zhijianmesh@sina.com</q-item-section>
+   </q-item>
+  </q-list>
+ </q-card-section>
+</q-card>
+<q-card class="q-mt-lg">
+ <q-card-section>
+	<div class="text-h6">{{tags.openSrcs}}</div>
+ </q-card-section>
+ <q-separator dark></q-separator>
+ <q-card-section>
+  <q-list>
   <q-item>
    <q-item-section>
-    <q-select outlined v-model="report_service" :options="services"
-     :label="tags.service" emit-value map-options></q-select>
+    <a href='https://gitee.com/zhijian_net/enterprise' target='_blank' style='color:#00f;'>码云</a>
+   </q-item-section>
+   <q-item-section side>
+    <q-icon name="content_copy" color="primary"
+     @click="copy('https://gitee.com/zhijian_net/enterprise')"></q-icon>
    </q-item-section>
   </q-item>
   <q-item>
-    <q-item-section>
-	 <q-input type="textarea" v-model="advice" :label="tags.advice" autogrow outlined></q-input>
-	</q-item-section>
+   <q-item-section>
+    <a href='https://gitcode.net/zhijian_net/enterprise' target='_blank' style='color:#00f;'>CSDN</a>
+   </q-item-section>
+   <q-item-section side>
+    <q-icon name="content_copy" color="primary"
+     @click="copy('https://gitcode.net/zhijian_net/enterprise')"></q-icon>
+   </q-item-section>
   </q-item>
   <q-item>
-   <q-item-section><q-input v-model="email" :label="tags.email"
-   :rules="[v=>/^\\w+@\\w+$/.test(v)||tags.emailPls]"></q-input></q-item-section>
+   <q-item-section>
+    <a href='https://github.com/ZhiJianMesh/endterpris' target='_blank' style='color:#00f;'>Github</a>
+   </q-item-section>
+   <q-item-section side>
+    <q-icon name="content_copy" color="primary"
+     @click="copy('https://github.com/ZhiJianMesh/endterpris')"></q-icon>
+   </q-item-section>
   </q-item>
-  <q-item>
-   <q-item-section><q-input v-model="mobile" :label="tags.mobile"
-   :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]"></q-input></q-item-section>
-  </q-item>
-</q-list>
-<div align="center">
-   <q-btn color="primary" icon-right="send" :label="tags.send" @click="send_tocloud" rounded></q-btn>
+  </q-list>
+ </q-card-section>
+</q-card>
 </div>
     </q-page>
   </q-page-container>

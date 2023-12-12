@@ -13,6 +13,7 @@ data() {return {
  logLevels:[{label:'Debug',value:"DEBUG"},{label:'Info',value:"INFO"},
    {label:'Warn',value:"WARN"},{label:'Error',value:"ERROR"}],
  addrList:[],
+ testing:false,
 
  logoOpts:{
     img: "",
@@ -197,7 +198,7 @@ addrChged() {
     });
 },
 connectionTest() {
-    if(Server.startupAt()<=0) { //服务没启动
+    if(Server.startupAt()<=0||this.testing) { //服务没启动
         this.$refs.alertDlg.show(this.tags.serverNotStart);
         return;
     }
@@ -207,9 +208,10 @@ connectionTest() {
     } else {
         addr=this.outsideAddr+':8523';
     }
-    
+    this.testing=true;
     var opts={method:"GET",url:"/api/test?addr="+addr,cloud:true};
     request(opts, "httpdns").then(resp=>{
+      this.testing=false;
       if(resp.code!=RetCode.OK) {
         this.$refs.alertDlg.show(this.tags.failToConnect + addr);
       } else {
@@ -267,14 +269,21 @@ template: `
    </td>
  </tr>
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
-  <td>{{tags.nwSettings}}<q-btn round dense flat icon="leak_add" class="q-ml-sm"
-    @click="connectionTest" color="secondary"></q-btn></td>
-  <td align="right"><q-btn round dense flat icon="add_circle" class="q-mr-sm" color="primary">
+  <td>{{tags.nwSettings}}
+   <q-circular-progress :indeterminate="testing" show-value size="3em"
+    @click="connectionTest" thickness="0.3" color="yellow"
+      track-color="transparent" class="text-white q-ma-none" dense>
+    <q-icon name="leak_add" color="secondary" class="q-ma-none" size="2em"></q-icon>
+   </q-circular-progress>
+  </td>
+  <td align="right">
+   <q-btn round dense flat icon="add_circle" color="primary" class="q-ma-none">
    <q-popup-edit v-slot="scope" @save="outsideAddrAdded"
 	buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
 	<q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
    </q-popup-edit>
-  </q-btn></td>
+   </q-btn>
+  </td>
  </tr>
  <tr>
   <td>{{tags.pubGwIp}}</td>

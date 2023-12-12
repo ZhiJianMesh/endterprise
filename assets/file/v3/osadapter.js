@@ -178,6 +178,10 @@ function findInArray(arr, s) {
     return -1;
 }
 
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 const Database = { //防止以后使用原生实现
     open(name, ver, descr) {
         return openDatabase('words', '1.0', 'words', 10 * 1024 * 1024);

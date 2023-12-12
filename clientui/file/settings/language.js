@@ -62,6 +62,11 @@ cn:{
   shutdown:"停用",
   dontSet:"不设置",
   doing:"任务执行中",
+  copied:"已复制到剪贴板",
+  adviceFmt:"服务名称：xxxxx\n建议类型：新需求/改进建议\n内容：xxxxxxx",
+  sendAdvice:"将建议发送到至简网格的邮箱或QQ",
+  openSrcs:"也可以在开源库中与我们交流",
+  fmtLike:"格式如下",
 
   backupSuccess:"数据已成功备份。",
   backupAlert:"<div>每次数据备份将占用一次备份机会。</div><p>请确认是否继续？</p>",

@@ -116,8 +116,13 @@ regCompany() {
         d.verifyCode,d.session,jsCbId);
 },
 setCurCompany(cid) {
-    Companies.setCur(cid);
-    this.init();
+    Companies.setCur(cid, __regsiterCallback(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+		this.init();//setCur需要重新probe，所以必须等它完成才能init
+	}));
 },
 exitCompany(){
     if(Companies.remove(this.curCompanyId)) {
