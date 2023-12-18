@@ -74,6 +74,8 @@ cn:{
   failToCall:"调用失败",
   alert:"提示",
   errMsgs:{
+    '10001':"验证码错误",
+    '2000':"信用码已存在",
     'unknown':"未知错误"
   },
   invalidImg:"请选择有效的图片文件",

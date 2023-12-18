@@ -88,8 +88,8 @@ chkCreditId(code) {
     return JStr.chkCreditCode(code);
 },
 refreshVc(){
-    var url="/image?w=120&h=40&session="+this.regDta.session;
-    request({method:"GET",url:url,private:false},"verifycode").then(resp=>{
+    var url="/image?w=120&h=40";
+    request({method:"GET",url:url,private:false,cloud:true},"verifycode").then(resp=>{
         if(resp.code==RetCode.OK) {
             this.regDta.vcImg=resp.data.img;
             this.regDta.session=resp.data.session;
