@@ -322,11 +322,11 @@ show_relations(){
             return {name:l};
         })
         var nodes=resp.data.nodes.map(function(n){
-            return {id:n.id,name:n.name,category:n.level,symbolSize:(1+n.level)*5,label:{show:true}};
+            return {id:''+n.id,name:n.name,category:n.level,symbolSize:(1+n.level)*5,label:{show:true}};
         })
         var labelCfg={show:true,formatter:function(p){return p.data.comment}}
         var links=resp.data.links.map(function(l){
-            return {source:l.source,target:l.target,comment:l.comment,label:labelCfg};
+            return {source:''+l.source,target:''+l.target,comment:l.comment,label:labelCfg};
         })
         this.relationChart.setOption({
             title: {show:false},

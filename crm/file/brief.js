@@ -19,7 +19,7 @@ mounted(){
 methods:{
 query_main() {
     var url="/api/report/main?beginTime="+this.beginTime+"&days="+this.days;
-    request({method:"GET",url:url},this.service.name).then(function(resp){
+    request({method:"GET",url:url},this.service.name).then(resp => {
         var customer=[], contact=[], ord=[], service=[],
          contract=[], revenue=[], cost=[];
         //var payment=[];
@@ -47,7 +47,7 @@ query_main() {
         if(resp.code==RetCode.OK) {
             t=this.beginTime;
             //customer,contact,ord,service,payment,contract,revenue,cost,reportAt
-            resp.data.data.forEach(function(l) {
+            resp.data.data.forEach(l => {
                 i=l[0]-t;
                 customer[i]=l[1];
                 contact[i]=l[2];
@@ -79,7 +79,7 @@ query_main() {
             yAxis: [{name:this.tags.unit.g,minInterval:1},{name:this.tags.unit.y}],
             series: series
         });
-    }.bind(this))
+    })
 },
 date_range_end(range) {
     var f=range.from;
