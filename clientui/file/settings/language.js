@@ -50,6 +50,7 @@ cn:{
   invalidPwd:"密码与确认密码必须一致，请更正后再尝试",
   nickName:"昵称",
   failToCall:"调用失败",
+  successToCall:"调用成功",
   alert:"提示",
   successToConnect:"已成功连接服务器",
   utCompany:"公司帐号",
@@ -116,7 +117,9 @@ cn:{
     buckets:"备份站点",
     restore:"恢复数据",
     backupNow:"立即备份",
-    invalidCid:"公司ID不正确"
+    invalidCid:"公司ID不正确",
+    invalidPwd:"密码必须大于4个字符，请密码必须与确认密码一致",
+    sucessToReg:"注册成功，公司ID为："
   },
   om:{//管理台
     title:"维护工具",

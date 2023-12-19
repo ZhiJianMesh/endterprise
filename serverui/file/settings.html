@@ -24,6 +24,7 @@ import Backup from "./settings/backup.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import AddressDialog from "/assets/v3/components/addr_dialog.js"
+import ProcessDialog from "/assets/v3/components/process_dialog.js"
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
@@ -73,6 +74,7 @@ app.component('component-alert-dialog', AlertDialog);
 app.component('register-dialog', RegisterDlg);
 app.component('component-confirm-dialog', ConfirmDialog);
 app.component('address-dialog', AddressDialog);
+app.component('component-process-dialog', ProcessDialog);
 //--------------------------启动APP
 app.mount('#app');
 </script>

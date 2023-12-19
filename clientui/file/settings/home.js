@@ -7,10 +7,11 @@ data(){return{
 	companyName:'',
     companies:[],
     curCompanyId:-1,
-    regComDta:{creditCode:'',name:'',pwd:'',cfmPwd:'',verifyCode:'',session:'',addr:'',vcImg:'',pwdVis:false},
-    newComDta:{id:'',accessCode:'',insideAddr:'',needInside:false,dlg:false,tab:'checkin'},
-    newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:'',dlg:false},
-    doing:false //是否正在添加公司，用于显示进度条
+    regComDta:{creditCode:'',name:'',pwd:'',cfmPwd:'',verifyCode:'',session:'',
+	  addr:{province:'',city:'',county:''},vcImg:'',pwdVis:false},
+    addComDta:{id:'',accessCode:'',insideAddr:'',needInside:false},
+    newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:''},
+    dlg:{com:false,comTab:'checkin',usr:false,doing:false}//是否正在添加公司，用于显示进度条
 }},
 created() {
     this.init();
@@ -72,20 +73,20 @@ logInOrOut() {
     }
 },
 company_btn_act() {
-    if(this.newComDta.tab=='login') {
+    if(this.dlg.comTab=='checkin') {
         this.addCompany()
-    } else {
+    } else {//register
         this.regCompany();
     }
 },
 addCompany(){
-    var dta=this.newComDta;
-    this.doing=true;
+    var dta=this.addComDta;
+    this.dlg.doing=true;
     Companies.add(dta.id, dta.accessCode, dta.insideAddr,
     __regsiterCallback(resp=>{
-        this.doing=false;
+        this.dlg.doing=false;
         if(resp.code==RetCode.OK) {
-			this.newComDta.dlg=false;
+			this.dlg.com=false;
             this.init();
             return;
         }
@@ -97,23 +98,41 @@ addCompany(){
     }))
 },
 regCompany() {
-    this.doing=true;
     var jsCbId=__regsiterCallback(resp=>{
-        this.doing=false;
+        this.dlg.doing=false;
         if(resp.code!=RetCode.OK) {
-            this.message="Code:" + resp.code + ",Info:" + resp.info;
+            this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.newComDta.dlg=false;
-        if(this.cb&&typeof(this.cb)=='function'){
-            this.cb();
-        }
+        this.dlg.com=false;
+        this.$refs.successDlg.show(this.tags.cfg.sucessToReg+resp.data.cid);
     });
-    var d=this.regDta;
-    Console.debug("register(creditCode:" + d.creditCode + ",name:" + d.name+")");
-    Company.register(d.creditCode,d.pwd,d.cfmPwd,d.name,
-        '86',this.addr.province,this.addr.city,this.addr.county,'',
-        d.verifyCode,d.session,jsCbId);
+    var d=this.regComDta;
+    if(!d.pwd || d.pwd.length<4 || d.pwd != d.cfmPwd) {
+        __default_jscb(jsCbId, {code:RetCode.WRONG_PARAMETER, info:this.tags.cfg.invalidPwd});
+        return;
+    }
+
+    this.dlg.doing=true;
+    var data={creditCode:d.creditCode,
+        pwd:Secure.sha256(d.pwd),
+        cfmPwd:Secure.sha256(d.cfmPwd),
+        verifyCode:d.verifyCode,
+        session:d.session,
+        //任意一个公钥，公司登录时会更新，在更新之前，是无法操作COMPANY认证类接口
+        pubKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
+        name:d.name,
+        partition:250000, //私有云统一的分区ID
+        info:'',
+        country:'86',
+        province:d.addr.province,
+        city:d.addr.city,
+        county:d.addr.county
+    };
+    var opts={url:"/company/register", method:"POST", data:data, private:false, cloud:true}
+    request(opts, "company").then(resp=>{
+        __default_jscb(jsCbId, resp)
+    })
 },
 setCurCompany(cid) {
     Companies.setCur(cid, __regsiterCallback(resp => {
@@ -130,7 +149,7 @@ exitCompany(){
     }
 },
 showRegister() {
-    this.newUsrDta.dlg=true;
+    this.dlg.usr=true;
     this.refreshUsrVc();
 },
 registerAcc() { //注册个人账号
@@ -138,7 +157,7 @@ registerAcc() { //注册个人账号
         this.$refs.errDlg.show(this.tags.invalidPwd);
         return;        
     }
-    this.doing=true;
+    this.dlg.doing=true;
     var opts={method:"POST",url:"/user/register", private:false, data:{
         account:this.newUsrDta.account,
         accType:'N',
@@ -148,17 +167,17 @@ registerAcc() { //注册个人账号
         verifyCode:this.newUsrDta.verifyCode
     },cloud:true};
     request(opts, SERVICE_UNIUSER).then(resp=>{
-        this.doing=false;
+        this.dlg.doing=false;
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.newUsrDta.dlg=false;
+        this.dlg.usr=false;
         this.newUsrDta={account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:true,vc:''};
     })
 },
 refreshUsrVc(){
-    var url="/image?w=120&h=40&session="+this.newUsrDta.session;
+    var url="/image?w=120&h=40";
     request({method:"GET",url:url,private:false,cloud:true},"verifycode").then(resp=>{
         if(resp.code==RetCode.OK) {
             this.newUsrDta.vc=resp.data.img;
@@ -167,7 +186,7 @@ refreshUsrVc(){
     })
 },
 refreshRegVc(){
-    var url="/image?w=120&h=40&session="+this.regComDta.session;
+    var url="/image?w=120&h=40";
     request({method:"GET",url:url,private:false,cloud:true},"verifycode").then(resp=>{
         if(resp.code==RetCode.OK) {
             this.regComDta.vcImg=resp.data.img;
@@ -198,7 +217,7 @@ template: `
           </q-item-section>
           <q-item-section no-wrap>{{c.name}}</q-item-section>
         </q-item>
-        <q-item clickable v-close-popup @click="newComDta.dlg=true">
+        <q-item clickable v-close-popup @click="dlg.com=true">
           <q-item-section avatar>
             <q-avatar icon="add" color="teal-3" text-color="white"></q-avatar>
           </q-item-section>
@@ -279,24 +298,24 @@ template: `
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="newComDta.dlg">
+<q-dialog v-model="dlg.com">
   <q-card style="min-width:62vw;max-width:80vw">
     <q-card-section>
       <div class="text-h6">{{tags.addCompany}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-  <q-tabs v-model="newComDta.tab" dense class="text-grey" active-color="primary"
+  <q-tabs v-model="dlg.comTab" dense class="text-grey" active-color="primary"
    indicator-color="primary" align="justify" narrow-indicator
    @update:model-value="newComTabChged">
    <q-tab name="checkin" :label="tags.checkin"></q-tab>
    <q-tab name="register" :label="tags.register"></q-tab>
   </q-tabs>
   <q-separator></q-separator>
-  <q-tab-panels v-model="newComDta.tab" animated>
+  <q-tab-panels v-model="dlg.comTab" animated>
    <q-tab-panel name="checkin">
-    <q-input dense v-model="newComDta.id" autofocus :label="tags.cfg.id"></q-input>
-    <q-input dense v-model="newComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
-    <q-input dense v-model="newComDta.insideAddr" :label="tags.insideAddr" v-show="newComDta.needInside"></q-input>
+    <q-input dense v-model="addComDta.id" autofocus :label="tags.cfg.id"></q-input>
+    <q-input dense v-model="addComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
+    <q-input dense v-model="addComDta.insideAddr" :label="tags.insideAddr" v-show="addComDta.needInside"></q-input>
    </q-tab-panel>
    <q-tab-panel name="register">
     <q-input autofocus v-model="regComDta.creditCode" :label="tags.cfg.creditCode" dense maxlength=18
@@ -318,20 +337,20 @@ template: `
     <q-input v-model="regComDta.verifyCode" :label="tags.verifyCode">
       <template v-slot:append><img :src="regComDta.vcImg" @click="refreshRegVc"></template>
     </q-input>
-    <address-dialog :label="tags.cfg.address" v-model="regComDta.addr"></address-dialog>
+    <address-input :label="tags.cfg.address" v-model="regComDta.addr"></address-input>
    </q-tab-panel>
   </q-tab-panels>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="addCompany" :disable="doing"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="doing"></q-btn>
+      <q-btn color="primary" :label="tags.ok" @click="company_btn_act" :disable="dlg.doing"></q-btn>
+      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="dlg.doing"></q-btn>
     </q-card-actions>
     <q-linear-progress indeterminate rounded color="pink"
-    class="q-mt-sm" v-show="doing"></q-linear-progress>
+    class="q-mt-sm" v-show="dlg.doing"></q-linear-progress>
   </q-card>
 </q-dialog>
 
-<q-dialog v-model="newUsrDta.dlg">
+<q-dialog v-model="dlg.usr">
   <q-card style="min-width:62vw;max-width:80vw">
     <q-card-section>
       <div class="text-h6">{{tags.home.registerAcc}}</div>
@@ -355,16 +374,18 @@ template: `
       </q-input>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="registerAcc" :disable="doing"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="doing"></q-btn>
+      <q-btn color="primary" :label="tags.ok" @click="registerAcc" :disable="dlg.doing"></q-btn>
+      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="dlg.doing"></q-btn>
     </q-card-actions>
     <q-linear-progress indeterminate rounded color="pink"
-    class="q-mt-sm" v-show="doing"></q-linear-progress>
+    class="q-mt-sm" v-show="dlg.doing"></q-linear-progress>
   </q-card>
 </q-dialog>
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="errDlg"></component-alert-dialog>
+<component-alert-dialog :title="tags.successToCall" :errMsgs="tags.errMsgs"
+ :close="tags.close" ref="successDlg"></component-alert-dialog>
 <component-login-dialog ref="loginDlg" :title="tags.login" :login="tags.login" 
  :cancel="tags.cancel" :close="tags.close" :failToCall="tags.failToCall"
  :account="tags.account" :pwd="tags.pwd" :accType="N">

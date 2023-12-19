@@ -48,7 +48,7 @@ searchService() {
         }
         this.fmt_services(resp.data);
         this.page.max=1;
-    })    
+    })
 },
 fmt_services(rows) {
     var cols=rows.cols;

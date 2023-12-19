@@ -64,7 +64,9 @@ register() {
     var jsCbId=__regsiterCallback(resp=>{
         this.doing=false;
         if(resp.code!=RetCode.OK) {
-            this.message="Code:" + resp.code + ",Info:" + resp.info;
+            var info=this.tags.errMsgs[''+resp.code];
+            if(!info) info=resp.info
+            this.message="Code:" + resp.code + ",Info:" + info;
             return;
         }
         this.registerDlg=false;

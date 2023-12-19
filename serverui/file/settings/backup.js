@@ -149,7 +149,7 @@ backupNow() {
   )
 },
 restore() {
-  this.$refs.procDlg.show(this.tags.cfg.restore,
+  this.$refs.procDlg.show(this.tags.restore,
     this.tags.restoreAlert, 'cloud_download',
     (dlg)=> {
       dlg.setInfo('');
