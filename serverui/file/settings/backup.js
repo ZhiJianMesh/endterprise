@@ -85,7 +85,7 @@ turnOn(service) {
     });
 },
 turnOff(service) {
-	request({method:"PUT",url:"/api/service/turnoff", data:{service:service}, cloud:true}, 'company').then(resp => {
+	request({method:"DELETE",url:"/api/service/turnoff", data:{service:service}, cloud:true}, 'company').then(resp => {
 		if(resp.code != RetCode.OK) {
 			this.$refs.alertDlg.showErr(resp.code, resp.info);
 		}

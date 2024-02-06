@@ -344,7 +344,7 @@ template: `
  </q-card>
  <input type="file" ref="logoImg" v-show="false"
    style="position:absolute;clip:rect(0 0 0 0);"
-   accept="image/png, image/jpeg, image/gif, image/jpg"
+   accept="image/png,image/jpeg,image/gif,image/jpg"
    @change="startCropLogo($event)">
 </q-dialog>
 <register-dialog :tags="tags" ref="regDlg"></register-dialog>

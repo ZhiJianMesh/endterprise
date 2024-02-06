@@ -36,7 +36,7 @@ showStats(){
 		if(resp.data.stats.length==0) {
 			return;
 		}
-		//at,api,exc,fail,file
+		//at,api,exc,fail
 		var cols=resp.data.cols;
 		var cn=cols.length;
 		var data=[];
@@ -54,7 +54,6 @@ showStats(){
 		var apis=[];
 		var fails=[];
 		var excs=[];
-		var files=[];
 		
 		var n,t,h,oldAt=data[0].at;
 		for(var l of data) {
@@ -66,7 +65,6 @@ showStats(){
 					apis.push(0);
 					fails.push(0);
 					excs.push(0);
-					files.push(0);
 					h=dt.getHours();
 					if(h==0) {
 						xAxis.push(dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate());
@@ -78,7 +76,6 @@ showStats(){
 			apis.push(l.api);
 			fails.push(l.fail);
 			excs.push(l.exc);
-			files.push(l.file);
 			
 			t=l.at*HOUR_MS;
 			dt.setTime(t);
@@ -93,8 +90,7 @@ showStats(){
 		var series=[
 			{name:this.tags.om.requests, type:'bar', data:apis, yAxisIndex:0},
 			{name:this.tags.om.fails, type:'line', data:fails, yAxisIndex:0, itemStyle:{color:'orange'}},
-			{name:this.tags.om.excs, type:'line', data:excs, yAxisIndex:0, itemStyle:{color:'red'}},
-			{name:this.tags.om.files, type:'line', data:files, yAxisIndex:0, itemStyle:{color:'green'}}
+			{name:this.tags.om.excs, type:'line', data:excs, yAxisIndex:0, itemStyle:{color:'red'}}
 		];
 		
 		this.stats.chart.setOption({

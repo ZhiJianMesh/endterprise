@@ -11,7 +11,7 @@ created() {
 methods:{
 listLogs() {
     var opts={method:"GET", url:"/api/listlogs"};
-    this.service.request_private(opts, 'serverui').then(resp => {
+    this.service.request_private(opts, 'backend').then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             this.logs=[];
@@ -22,12 +22,12 @@ listLogs() {
 },
 dl(f){
     var fn=f.replaceAll('/', '_');
-    var token=this.service.getToken('serverui');
+    var token=this.service.getToken('backend');
     var hh={access_token:token,cid:Companies.curCompanyId()};
     var url='/downloadlog?n=' + encodeURIComponent(f);
 	this.dlState.dlg=true;
 	this.dlState.progressing=true;
-    download({private:false, file:true, file_name:fn, headers:hh, url:url, timeout:30000}, 'serverui').then(resp => {
+    download({private:false, file:true, file_name:fn, headers:hh, url:url, timeout:30000}, 'backend').then(resp => {
         if(resp.code == RetCode.OK) {
             this.dlList.splice(0,0,{file:resp.data.saveAs,size:resp.data.size,bg:'#00000000'})
         } else {

@@ -176,16 +176,19 @@ created(){
     service.baseInfo();
     this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
 },
-setup() {
-    //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用
-    window.sys_go_back = () => {
-        Console.info("current page:" + router.currentRoute.value.path);
-        if(router.currentRoute.value.path!='/home') {
-            router.back();
-            return true;
-        }
+mounted() {
+    window.sys_go_back = this.sysGoBack;//给webview调用
+},
+methods:{
+sysGoBack() {
+    //声明全局函数，在webview中调用，
+    //实现按回退按钮回退历史页面，如果无历史，则退出activity或应用
+    if(this.$router.currentRoute.value.path==="/home") {
         return false;
     }
+    this.$router.back();
+    return true;
+}
 }
 });
 

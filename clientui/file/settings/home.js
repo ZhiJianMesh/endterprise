@@ -52,6 +52,9 @@ init() {
     }
     this.companyName=company.name;
 },
+isPersonal(){//在ui中使用了，则必须用到this中的数据，否则不会刷新
+    return Companies.personalComId()==this.curCompanyId;
+},
 about() {
     App.openApp("clientui");
 },
@@ -108,19 +111,24 @@ regCompany() {
         this.$refs.successDlg.show(this.tags.cfg.sucessToReg+resp.data.cid);
     });
     var d=this.regComDta;
-    if(!d.pwd || d.pwd.length<4 || d.pwd != d.cfmPwd) {
+    if(!JStr.chkCreditCode(d.creditCode)) {
+        __default_jscb(jsCbId, {code:RetCode.WRONG_PARAMETER, info:this.tags.cfg.invalidCredit});
+        return;
+    }
+    if(!Secure.isPwdStrong(d.creditCode,d.pwd,6,2,3)) {
         __default_jscb(jsCbId, {code:RetCode.WRONG_PARAMETER, info:this.tags.cfg.invalidPwd});
         return;
     }
-
+    if(d.pwd != d.cfmPwd) {
+        __default_jscb(jsCbId, {code:RetCode.WRONG_PARAMETER, info:this.tags.cfg.invalidCfmPwd});
+        return;
+    }
     this.dlg.doing=true;
     var data={creditCode:d.creditCode,
         pwd:Secure.sha256(d.pwd),
         cfmPwd:Secure.sha256(d.cfmPwd),
         verifyCode:d.verifyCode,
         session:d.session,
-        //任意一个公钥，公司登录时会更新，在更新之前，是无法操作COMPANY认证类接口
-        pubKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
         name:d.name,
         partition:250000, //私有云统一的分区ID
         info:'',
@@ -186,7 +194,7 @@ refreshUsrVc(){
     })
 },
 refreshRegVc(){
-    var url="/image?w=120&h=40";
+    var url="/image?w=130&h=40&l=5";
     request({method:"GET",url:url,private:false,cloud:true},"verifycode").then(resp=>{
         if(resp.code==RetCode.OK) {
             this.regComDta.vcImg=resp.data.img;
@@ -233,7 +241,7 @@ template: `
     <q-item-section side top>
       <div class="row no-wrap">
        <q-btn flat color="indigo" :label="tags.home.register"
-        @click="showRegister" v-show="curCompanyId==0&&!authorized"></q-btn>
+        @click="showRegister" v-show="isPersonal()&&!authorized"></q-btn>
        <q-btn flat dense color="primary" :label="authorized?tags.logout:tags.login" @click="logInOrOut"
         :icon-right="authorized?'logout':'login'"></q-btn>
       </div>
@@ -244,7 +252,7 @@ template: `
  <q-page-container>
     <q-page class="q-pa-md">
 <q-list class="q-pa-md">
-  <q-item clickable v-ripple @click="jump('/company')" v-show="curCompanyId!=0">
+  <q-item clickable v-ripple @click="jump('/company')" v-show="!isPersonal()">
     <q-item-section avatar>
       <q-icon color="primary" name="business"></q-icon>
     </q-item-section>
@@ -285,7 +293,7 @@ template: `
     </q-item-section>
   </q-item>
   
-  <q-item clickable v-ripple v-show="curCompanyId!=0" @click="exitCompany">
+  <q-item clickable v-ripple v-show="!isPersonal()" @click="exitCompany">
     <q-item-section avatar>
       <q-icon color="red" name="cancel"></q-icon>
     </q-item-section>

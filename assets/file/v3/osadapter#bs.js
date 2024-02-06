@@ -142,11 +142,11 @@ function sendRequest(opts, service) {
     __traceid++;
     var hh = opts.headers;
     if(!hh) {
-        hh={trace_id:'browser'+__traceid, cid:Companies.cid()};
+        hh={trace_id:'browser'+__traceid};
     } else {
         hh.trace_id='browser'+__traceid;
-        hh.cid=Companies.cid();
     }
+    hh.cid=Companies.cid();
 
     return new Promise((resolve, reject) => {
         var req = {method:opts.method, url:url, headers:hh};
@@ -733,7 +733,7 @@ const Company={//used in server
             pwd:Secure.sha256(pwd),
             cfmPwd:Secure.sha256(cfmPwd),
             verifyCode:verifyCode,session:session,
-            pubKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
+            authKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps=',
             name:name,
             partition:250000,info:info,
             country:country,province:province,city:city,county:county
@@ -744,7 +744,7 @@ const Company={//used in server
         })
     },
     login(id,pwd,jsCbId){
-        var data={id:id,pwd:Secure.sha256(pwd),pubKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps='};
+        var data={id:id,pwd:Secure.sha256(pwd),authKey:'1&IBs8SxVSe4Hu+GX4Q7wUIHOmGQcERRBhCVh80D/2m3qCXPXdpH5KwRBjAmtAxGKoI+EG3DNsvsfipxXdfbux7ps='};
         var opts={url:"/company/login", method:"POST", data:data, private:false}
         request(opts, "company").then(resp=>{
             __default_jscb(jsCbId, resp)
@@ -790,16 +790,16 @@ const Companies={
     outsideAddr() {return currentCompany().outsideAddr;},
     name(){return currentCompany().name},
 	accessCode(){return currentCompany().accessCode},
-	userService(){return currentCompany().id==0?SERVICE_UNIUSER:SERVICE_USER},
-	isPersonal(){return currentCompany().id==0},
+	userService(){return currentCompany().id==1?SERVICE_UNIUSER:SERVICE_USER},
+	personalComId(){return 1},
     authorized(){return (this.userService() in currentCompany().tokens)},
     login(acc,pwd,tp,jsCbId) {
         var company=currentCompany();
+        var userService=this.userService();
         var dta={account:acc,password:pwd,grant_type:'password',accType:tp/*uniuser中才会需要*/};
-        company.userService=this.userService();
-        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, company.userService).then(resp=> {
+        sendRequest({method:'POST',url:'/api/login',private:false,data:dta}, userService).then(resp=> {
             if(resp.code==RetCode.OK) {
-                company.tokens[company.userService]=resp.data.access_token;
+                company.tokens[userService]=resp.data.access_token;
                 company.authorized=true;
                 company.uid=resp.data.id;
                 saveCompanies();
@@ -874,7 +874,7 @@ const Companies={
         saveCompanies();
         return true;
     },
-    setCur(cid){
+    setCur(cid, jsCbId){
         if(__companies[__curCompany].id==cid) return;
 
         var idx = -1;
@@ -886,6 +886,7 @@ const Companies={
                 break;
             }
         }
+        __default_jscb(jsCbId, {code:0});        
     },
     curCompany(){
         return JSON.stringify(__companies[__curCompany]);
@@ -933,7 +934,7 @@ const App={
     logPath(){return "d:\\work\\code\\release"},
     isInstalled(){return true},
     isBuiltin(app) {return app=="market"||app=="settings"||app=="about"||app=="assets"},
-    build(){return {ver:"0.1.0",os:"android",brand:"njhx",language:"zh_CN",agent:"mc_android_0.1.0"}}
+    build(){return {ver:"0.1.0",os:"android",brand:"zhijian",language:"zh_CN",agent:"mc_android_0.1.0"}}
 }
 
 const Platform={
@@ -1044,7 +1045,7 @@ function storageRmv(k) {
     if(s) {
         __companies=JSON.parse(s);
     } else {
-        __companies=[{id:0,name:"zhijian.net.cn",accessCode:"ABCDEFGHIJ",tokens:{}}]
+        __companies=[{id:1,name:"zhijian.net.cn",accessCode:"ABCDEFGHIJ",tokens:{}}]
     }
     __curCompany=localStorage.getItem("curCompany");
     if(!__curCompany || __curCompany >= __companies.length) {

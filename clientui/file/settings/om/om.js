@@ -7,7 +7,7 @@ created(){
 },
 methods:{
 jumpTo(name) {
-    if(!this.service.getToken('serverui')){
+    if(!this.service.getToken('backend')){
         this.$refs.errDlg.show(this.tags.noToken);
         return; //还未准备好
     }

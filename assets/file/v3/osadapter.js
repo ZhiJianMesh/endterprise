@@ -182,54 +182,6 @@ function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-const Database = { //防止以后使用原生实现
-    open(name, ver, descr) {
-        return openDatabase('words', '1.0', 'words', 10 * 1024 * 1024);
-    },
-    execute(db, sql, params) {
-        return new Promise(resolve=>{
-            db.transaction(tx=>{
-                tx.executeSql(sql, params,
-                    (tx, res) => {
-                        resolve({code:RetCode.OK, data:res});
-                    },
-                    (tx, err) => {
-                        resolve({code:RetCode.CLIENT_DBERROR, info:err.message});
-                    });
-                }
-            )
-        })
-    },
-    /*private*/txExecSql(tx, sqls, i) {
-        console.info("execute:" + sqls[i]);
-        return new Promise(resolve=>{
-            tx.executeSql(sqls[i], [],
-                (tx, res) => {
-                    if(i<sqls.length-1) {
-                        this.txExecSql(tx, sqls, i+1).then(r => {
-                            resolve(r);
-                        });
-                    } else {//执行完成了
-                        resolve({code:RetCode.OK, data:res});
-                    }
-                },
-                (tx, err) => {
-                    resolve({code:6000, info:err.message});
-                }
-            );
-        })
-    },
-    executes(db, sqls) { //只能执行增删改
-        return new Promise(resolve=>{
-            db.transaction(tx=>{
-                this.txExecSql(tx, sqls, 0).then(res => {
-                    return resolve(res);
-                });
-            })
-        });
-    }
-}
-
 function formatErr(code,info,errInfos){
     var err=__err_infos[''+code];
     if(!err) {

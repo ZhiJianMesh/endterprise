@@ -100,7 +100,7 @@ turnOn(service) {
     });
 },
 turnOff(service) {
-    var opts={method:"PUT",url:"/api/service/turnoff",data:{service:service}};
+    var opts={method:"DELETE",url:"/api/service/turnoff",data:{service:service}};
     this.service.request_cloud(opts,"company").then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);

@@ -24,9 +24,7 @@ init() {
     this.insideAddr=c.insideAddr;
     this.outsideAddr=c.outsideAddr;
     this.accessCode=c.accessCode;
-    if(c.authorized && c.uid=='1'){
-        this.authorized=true;
-    }
+    this.authorized=c.authorized;
 	Companies.getLogo(c.id, __regsiterCallback(png=>{
 		if(png) {
 			this.logo="img:"+png;
@@ -80,8 +78,8 @@ copy() {
 },
 onAuth() {
     var shaPwd=Secure.sha256(this.auth.pwd);
-    var dta={pwd:shaPwd, services:["company","httpdns","serverui"]};
-    request({method:"POST",url:"/company/token", data:dta, private:false},"company").then(resp=>{
+    var dta={pwd:shaPwd, services:["company","httpdns","backend"]};
+    request({method:"POST",url:"/token", data:dta, private:false},"company").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;

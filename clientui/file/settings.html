@@ -10,7 +10,7 @@
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/vue-cropper.css" rel="stylesheet" type="text/css">
 </head>
-<body><div id="app">
+<body><div id="app" v-cloak>
  <router-view></router-view>
 </div></body>
 <script src="/assets/v3/vue.js"></script>
@@ -75,8 +75,8 @@ clrUserInfo() {
 },
 refreshState() {
     var opts={method:"GET", url:"/api/servicestate",
-        private:false, headers:{access_token:this.getToken('serverui')}};
-    request(opts, 'serverui').then(resp => {
+        private:false, headers:{access_token:this.getToken('backend')}};
+    request(opts, 'backend').then(resp => {
         if(resp.code != RetCode.OK) {
             this.services={list:[],cols:[]};
             return;
@@ -166,15 +166,19 @@ provide:{tags:tags, service:service},
 created(){
     this.$router.push('/home').catch(err => {err})
 },
-setup() {
-    //声明全局函数，在webview中调用，实现按回退按钮回退历史页面，如果无历史，则退出应用
-    window.sys_go_back = () => {
-        if(this.$router.currentRoute.path==="/home") {
-            return false;
-        }
-        this.$router.back();
-        return true;
+mounted() {
+    window.sys_go_back = this.sysGoBack;//给webview调用
+},
+methods:{
+sysGoBack() {
+    //声明全局函数，在webview中调用，
+    //实现按回退按钮回退历史页面，如果无历史，则退出activity或应用
+    if(this.$router.currentRoute.value.path==="/home") {
+        return false;
     }
+    this.$router.back();
+    return true;
+}
 }
 });
 

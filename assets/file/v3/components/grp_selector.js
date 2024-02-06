@@ -4,7 +4,7 @@ data() {return {grpOpts:[]}},//选择项，调用search获得
 props: {
     grp:{type:Number,required:true}, //复杂对象，可以直接在组件中修改
     label:{type:String,required:true},
-    useid:{type:Boolean,required:false,default:false}
+    useid:{type:Boolean,required:false,default:false} //是否返回id
 },
 methods:{
 search_grps(val,update) {

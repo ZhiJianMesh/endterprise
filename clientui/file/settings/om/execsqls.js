@@ -26,7 +26,7 @@ methods:{
 execute() {
     var opts={method:"POST", url:"/api/sqlexec",timeout:30000,
        data:{service:this.serviceName, db:this.db, sql:this.sql}};
-    this.service.request_private(opts, "serverui").then(resp => {
+    this.service.request_private(opts, "company").then(resp => {
         if(resp.code!=RetCode.OK) {
             this.hint='';
             this.$refs.errDlg.showErr(resp.code, resp.info);

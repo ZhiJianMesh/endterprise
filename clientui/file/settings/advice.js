@@ -1,7 +1,6 @@
 export default {
 inject:['service', 'tags'],
-data(){return {
-}},
+data(){return {}},
 methods:{
 copy(txt){
     this.service.copyToClipboard(txt).then(()=>{

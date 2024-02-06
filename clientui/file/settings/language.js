@@ -118,7 +118,9 @@ cn:{
     restore:"恢复数据",
     backupNow:"立即备份",
     invalidCid:"公司ID不正确",
-    invalidPwd:"密码必须大于4个字符，请密码必须与确认密码一致",
+    invalidPwd:"密码必须大于6个字符，至少需要二种不同的字符（字母、数字、其他），且不可有太多重复字符",
+    invalidCfmPwd:"密码必须与确认密码一致",
+    invalidCredit:"无效的统一信用码",
     sucessToReg:"注册成功，公司ID为："
   },
   om:{//管理台
