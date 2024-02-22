@@ -675,6 +675,24 @@ const Server = {
         __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
     },
     saveFile(service, file, content) {},
+    command(reqDta) {
+        var opts={method:"POST", url:"/command", data:reqDta};
+        return request(opts, 'company');
+    },
+    setName(name,jsCbId) {
+        this.command({cmd:"setInfo", name:name}).then(resp => {
+            __default_jscb(jsCbId,resp);
+        });
+    },
+    setLocation(province,city,county,jsCbId) {
+        this.command({cmd:"setInfo",
+            province:province,
+            city:city,
+            county:county
+        }).then(resp=> {
+            __default_jscb(jsCbId,resp);
+        });
+    },
     query(items, jsCbId) {
         var ii=items.split(",");
         var item;
@@ -691,7 +709,7 @@ const Server = {
                 data["recent"] = (new Date()).getTime(); //最近备份时间
                 data[i] = 65;
             } else if(item == "companyid") {
-                data[i] = 40;
+                data[i] = 50;
             } else if(item == "creditcode") {
                 data[i] = "1111111111";
             } else if(item == "companyname") {
@@ -727,7 +745,7 @@ const Server = {
 }
 
 const Company={//used in server
-    id(){return 40}, //storageGet(COMPANY_ID,'0')
+    id(){return 50}, //storageGet(COMPANY_ID,'0')
     register(creditCode,pwd,cfmPwd,name,country,province,city,county,info,verifyCode,session,jsCbId){
         var data={creditCode:creditCode,
             pwd:Secure.sha256(pwd),

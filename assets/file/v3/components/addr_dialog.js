@@ -9,15 +9,15 @@ data() {return {
     cache:{}
 }},//选择项，调用search获得
 props: {
-    modelValue:{type:Object},
+    modelValue:{type:Object,required:true},
     country:{type:String,required:false,default:'156'},//156为中国
     label:{type:String,required:false,default:''},
     ok:{type:String,default:"确定"},
     close:{type:String,default:"关闭"}
 },
-emits: ['update:modelValue'],
+emits: ['update:modelValue', 'confirm:modelValue'],
 created(){
-    this.subs(this.country,list=>{ 
+    this.subs(this.country,list=>{
         this.provinces=list;
         if(!this.modelValue.province) {
             this.addr.province=list[0];
@@ -27,8 +27,8 @@ created(){
     if(this.modelValue.province) {
         this.addr.province.name=this.modelValue.province;
         this.addr.city.name=this.modelValue.city;
-        this.addr.county.name=this.modelValue.county;   
-    }    
+        this.addr.county.name=this.modelValue.county;
+    }
 },
 methods:{
 subs(fid,cb) {
@@ -82,26 +82,20 @@ setCounty(c) {
     this.$emit('update:modelValue', addr);
 },
 confirm(){
+    var addr={
+        code:this.addr.county.zip,
+        province:this.addr.province.name,
+        city:this.addr.city.name,
+        county:this.addr.county.name
+    }
+    this.$emit('confirm:modelValue', addr);
     this.addrDlg=false;
 }
 },
 computed: {
 value: {
   get() {
-    return this.addr.province.name+' '+this.addr.city.name+' '+this.addr.county.name;
-  },
-  set(v) {
-    if(!v) {
-        this.$emit('update:modelValue', {province:'',city:'',county:'',code:''});
-    } else {
-        var addr={
-            code:this.addr.county.zip,
-            province:this.addr.province.name,
-            city:this.addr.city.name,
-            county:this.addr.county.name
-        }
-        this.$emit('update:modelValue', addr);
-    }
+    return this.modelValue.province+' '+this.modelValue.city+' '+this.modelValue.county;
   }
 }
 },

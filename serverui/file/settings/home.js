@@ -44,6 +44,7 @@ data() {return {
  }
 }},
 created(){
+    this.init();
     var w=document.documentElement.clientWidth;
     var h=document.documentElement.clientHeight;
     if(w>h) {
@@ -51,7 +52,6 @@ created(){
     }else{
         this.logoOpts.width=parseInt(w*0.6);
     }
-    this.init();
 },
 methods:{
 init() {
@@ -70,7 +70,7 @@ init() {
         this.accessCode=info.accessCode;
         this.companyName=info.companyName;
         this.creditCode=info.creditCode;
-        this.location={province:info.province,city:info.city,county:info.county};
+        this.location={province:info.province, city:info.city, county:info.county};
         this.logLevel=info.logLevel;
         this.outsideAddr=info.outsideAddr;
 
@@ -140,11 +140,11 @@ setLogo() {
   })
 },
 nameChged(){
-    this.service.command({cmd:"setInfo", name:this.companyName}).then(resp => {
-        if(resp.code != RetCode.OK) {
+    Server.setName(this.companyName,__regsiterCallback(resp=>{
+        if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         }
-    });
+    }));
 },
 outsideAddrAdded(val, initVal) {
     if(!Http.isIPv4(val) && !Http.isIPv6(val)) {
@@ -190,12 +190,13 @@ setLogLevel() {
 resetAccessToken(){//用于重置公司调测服务的令牌
     this.accessToken = Server.resetAccessToken();
 },
-addrChged() {
-    this.service.command({cmd:"setInfo",
-        province:this.location.province,
-        city:this.location.city,
-        county:this.location.county
-    });
+locationChged() {
+    Server.setLocation(this.location.province, this.location.city, this.location.county,
+    __regsiterCallback(resp=>{
+          if(resp.code!=RetCode.OK) {
+              this.$refs.alertDlg.showErr(resp.code, resp.info);
+          }
+    }));
 },
 connectionTest() {
     if(Server.startupAt()<=0||this.testing) { //服务没启动
@@ -253,7 +254,7 @@ template: `
  <tr>
    <td>{{tags.address}}</td>
    <td class="cursor-pointer">
-    <address-dialog v-model="location" @update:model-value="addrChged"></address-dialog>
+    <address-dialog v-model="location" @confirm:model-value="locationChged"></address-dialog>
    </td>
  </tr>
  <tr>
