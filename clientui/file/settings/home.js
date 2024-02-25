@@ -11,9 +11,11 @@ data(){return{
 	  addr:{province:'',city:'',county:''},vcImg:'',pwdVis:false},
     addComDta:{id:'',accessCode:'',insideAddr:'',needInside:false},
     newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:''},
-    dlg:{com:false,comTab:'checkin',usr:false,doing:false}//是否正在添加公司，用于显示进度条
+    dlg:{com:false,comTab:'checkin',usr:false,doing:false},//是否正在添加公司，用于显示进度条
+    rootComId:1
 }},
 created() {
+    this.rootComId=Companies.rootCompanyId();
     this.init();
 },
 methods:{
@@ -32,11 +34,10 @@ init() {
                     c['logo']="/assets/imgs/logo_example.png";
                 }
             }));
-            if(c.id==0) {
+            if(c.id==this.rootComId) {
                 c.name=this.tags.personalAcc;
             }
         }
-        this.curCompanyId=company.id;
     }));
 
 	this.account=this.tags.account;
@@ -51,9 +52,6 @@ init() {
 		this.authorized=false;
     }
     this.companyName=company.name;
-},
-isPersonal(){//在ui中使用了，则必须用到this中的数据，否则不会刷新
-    return Companies.personalComId()==this.curCompanyId;
 },
 about() {
     App.openApp("clientui");
@@ -145,9 +143,9 @@ regCompany() {
 setCurCompany(cid) {
     Companies.setCur(cid, __regsiterCallback(resp => {
         if(resp.code!=RetCode.OK) {
-            this.$refs.alertDlg.showErr(resp.code, resp.info);
-            return;
-        }
+            this.$refs.errDlg.showErr(resp.code, resp.info);
+        } //即使失败，也要切换过去
+        this.curCompanyId=cid;
 		this.init();//setCur需要重新probe，所以必须等它完成才能init
 	}));
 },
@@ -241,7 +239,7 @@ template: `
     <q-item-section side top>
       <div class="row no-wrap">
        <q-btn flat color="indigo" :label="tags.home.register"
-        @click="showRegister" v-show="isPersonal()&&!authorized"></q-btn>
+        @click="showRegister" v-show="rootComId==curCompanyId&&!authorized"></q-btn>
        <q-btn flat dense color="primary" :label="authorized?tags.logout:tags.login" @click="logInOrOut"
         :icon-right="authorized?'logout':'login'"></q-btn>
       </div>
@@ -252,7 +250,7 @@ template: `
  <q-page-container>
     <q-page class="q-pa-md">
 <q-list class="q-pa-md">
-  <q-item clickable v-ripple @click="jump('/company')" v-show="!isPersonal()">
+  <q-item clickable v-ripple @click="jump('/company')" v-show="rootComId!=curCompanyId">
     <q-item-section avatar>
       <q-icon color="primary" name="business"></q-icon>
     </q-item-section>
@@ -293,7 +291,7 @@ template: `
     </q-item-section>
   </q-item>
   
-  <q-item clickable v-ripple v-show="!isPersonal()" @click="exitCompany">
+  <q-item clickable v-ripple v-show="rootComId!=curCompanyId" @click="exitCompany">
     <q-item-section avatar>
       <q-icon color="red" name="cancel"></q-icon>
     </q-item-section>

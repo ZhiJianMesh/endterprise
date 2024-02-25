@@ -58,11 +58,6 @@ init() {
     });
 },
 switchBackup() {
-    if(Server.startupAt()<=0) { //服务没启动
-        this.$refs.alertDlg.show(this.tags.serverNotStart);
-        return;
-    }
-
     if(this.backup.at<0) {
 		this.backup.at=120;
 		this.backup.atStr='02:00';
