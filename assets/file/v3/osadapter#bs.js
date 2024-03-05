@@ -809,7 +809,7 @@ const Companies={
     name(){return currentCompany().name},
 	accessCode(){return currentCompany().accessCode},
 	userService(){return currentCompany().id==1?SERVICE_UNIUSER:SERVICE_USER},
-	personalComId(){return 1},
+	rootCompanyId(){return 1},
     authorized(){return (this.userService() in currentCompany().tokens)},
     login(acc,pwd,tp,jsCbId) {
         var company=currentCompany();
@@ -996,13 +996,20 @@ function findInArray(arr, s) {
 }
 
 const Database = {
-    open(name, ver, descr) {
-        return openDatabase('words', '1.0', 'words', 10 * 1024 * 1024);
+    dbs:{},
+    open(name) {
+        var db = openDatabase(name, '1.0', '', 10 * 1024 * 1024);
+        this.dbs[name]=db;
     },
-    execute(db, sql, params) {
+    close(name) {},
+    remove(name) {},
+
+    execute(name, sql) {
+        var db=this.dbs[name];
+        if(!db) {return {code:RetCode.CLIENT_DBERROR, info:"no such db"}};
         return new Promise(resolve=>{
             db.transaction(tx=>{
-                tx.executeSql(sql, params,
+                tx.executeSql(sql, [],
                     (tx, res) => {
                         resolve({code:RetCode.OK, data:res});
                     },
@@ -1013,12 +1020,29 @@ const Database = {
             )
         })
     },
+
+    executes(name, sqls) {
+        var db=this.dbs[name];
+        if(!db) {return {code:RetCode.CLIENT_DBERROR, info:"no such db"}};
+        var ss = sqls.split(";");
+        return new Promise(resolve=>{
+            db.transaction(tx=>{
+                this.txExecSql(tx, ss, 0).then(res => {
+                    return resolve(res);
+                });
+            })
+        });
+    },
+
+    initialize(name, sqls) {
+        return this.executes(name, sqls);
+    },
+
     /*private*/txExecSql(tx, sqls, i) {
-        console.info("execute:" + sqls[i]);
         return new Promise(resolve=>{
             tx.executeSql(sqls[i], [],
                 (tx, res) => {
-                    if(i<sqls.length-1) {
+                    if(i < sqls.length-1) {
                         this.txExecSql(tx, sqls, i+1).then(r => {
                             resolve(r);
                         });
@@ -1032,15 +1056,36 @@ const Database = {
             );
         })
     },
-    executes(db, sqls) { //只能执行增删改
-        return new Promise(resolve=>{
-            db.transaction(tx=>{
-                this.txExecSql(tx, sqls, 0).then(res => {
-                    return resolve(res);
-                });
-            })
+
+    queryArrays(name, sql) {return new Promise(resolve=>{
+        return this.execute(name, sql).then(res => {
+            var arr = [];
+            for(var item of res.data.rows.item) {
+                var line = []
+                for(var i in item) {
+                    line.push(item[i]);
+                }
+                arr.push(line);
+            }
+            resolve({code:RetCode.OK, data:{rows:arr}});
         });
-    }
+    })},
+
+    queryMaps(name, sql) {return new Promise(resolve=>{
+        return this.execute(name, sql).then(res => {
+            var arr = [];
+            for(var item of res.data.rows.item) {
+                arr.push(item);
+            }
+            resolve({code:RetCode.OK, data:{rows:arr}});
+        });
+    })},
+
+    queryMap(name, sql) {return new Promise(resolve=>{
+        return this.execute(name, sql).then(res => {
+            resolve({code:RetCode.OK, data:{rows:res.data.item}});
+        });
+    })}
 }
 
 function storageSet(k, v) {

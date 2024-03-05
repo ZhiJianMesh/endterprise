@@ -42,39 +42,35 @@ var __call_id=0;
 function request(opts,service) {
 	var jsonOpts = JSON.stringify(opts);
     return new Promise(resolve=>{
-		var jsCbId = __regsiterCallback(resp => {
+        Http.request(jsonOpts, service,  __regsiterCallback(resp => {
 			resolve(resp);
-		});
-        Http.request(jsonOpts, service, jsCbId);
+		}));
     });
 }
 
 function getExternal(opts) {
 	var jsonOpts = JSON.stringify(opts);
     return new Promise(resolve=>{
-		var jsCbId = __regsiterCallback(resp => {
+        Http.getExternal(jsonOpts, __regsiterCallback(resp => {
 			resolve(resp);
-		});
-        Http.getExternal(jsonOpts, jsCbId);
+		}));
     });
 }
 
 function download(opts, service) {
 	var jsonOpts = JSON.stringify(opts);
     return new Promise(resolve=>{
-        var jsCbId = __regsiterCallback(resp => {
+        Http.download(jsonOpts, service, __regsiterCallback(resp => {
             resolve(resp); //{code:xx,info:'',data:{size:yy,path:'path of local saved file'}}
-        });
-        Http.download(jsonOpts, service, jsCbId);
+        }));
     });
 }
 
 function readText(txt){
     return new Promise(resolve=>{
-        var jsCbId = __regsiterCallback(resp => {
+        TTS.read(txt, _regsiterCallback(resp => {
             resolve(resp);
-        });
-        TTS.read(txt, jsCbId);
+        }));
     });
 }
 
@@ -209,5 +205,47 @@ function formatErr(code,info,errInfos){
 
 function addErrInfo(code,info) {
     __err_infos[''+code]=info;
+}
+
+const Database = {
+    open(name) {
+        return NativeDB.open(name);
+    },
+    initialize(db, sqls) {return new Promise(resolve=>{
+        NativeDB.initialize(db,sqls,__regsiterCallback(resp => {
+            resolve(resp);
+        }));
+    })},
+    execute(db, sql) {return new Promise(resolve=>{
+        NativeDB.execute(db,sql,__regsiterCallback(resp => {
+            resolve(resp); //{code:xx,info:'',data:{lineNum:"affected line num"}}
+        }));
+    })},
+    executes(db, sqls) {return new Promise(resolve=>{
+        NativeDB.executes(db,sqls,__regsiterCallback(resp => {
+            resolve(resp); //{code:xx,info:'',data:{lineNum:"affected line num"}}
+        }));
+    })},
+    queryArrays(db, sql) {return new Promise(resolve=>{
+        NativeDB.queryArrays(db,sql,__regsiterCallback(resp => {
+            resolve(resp); //{code:xx,info:'',data:{rows:[[...]...]}}
+        }));
+    })},
+    queryMaps(db, sql) {return new Promise(resolve=>{
+        NativeDB.queryMaps(db,sql,__regsiterCallback(resp => {
+            resolve(resp); //{code:xx,info:'',data:{rows:[{...}...]}}
+        }));
+    })},
+    queryMap(db, sql) {return new Promise(resolve=>{
+        NativeDB.queryMap(db,sql,__regsiterCallback(resp => {
+            resolve(resp); //{code:xx,info:'',data:{...}}
+        }));
+    })},
+    close(db) {
+        NativeDB.close(db);
+    },
+    remove(db) {
+        NativeDB.remove(db);
+    }
 }
 document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");

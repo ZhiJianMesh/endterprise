@@ -22,7 +22,7 @@ showErr(code,info) {
 },
 template: `
 <q-dialog v-model="dlg">
-  <q-card>
+  <q-card style="min-width:40vw;">
     <q-card-section><div class="text-h6">{{title}}</div></q-card-section>
     <q-card-section class="q-pt-none" v-html="message"></q-card-section>
     <q-card-actions align="right" class="q-pr-md">

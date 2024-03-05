@@ -25,7 +25,7 @@ confirm(){
 },
 template: `
 <q-dialog v-model="cfmDlg">
-  <q-card>
+  <q-card style="min-width:40vw;">
     <q-card-section><div class="text-h6">{{title}}</div></q-card-section>
     <q-card-section class="q-pt-none">{{message}}</q-card-section>
     <q-card-actions align="right" class="q-pr-md">
