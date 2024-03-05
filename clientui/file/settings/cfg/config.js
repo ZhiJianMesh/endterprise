@@ -9,6 +9,7 @@ company:{
     accessCode:"",
     logLevel:'DEBUG',
     accessToken:"",
+	runMode:'SGT',
     logo:"/assets/imgs/logo_example.png"
 },
 outsideAddr:'', //为空时，表示不开启
@@ -54,12 +55,7 @@ created(){
 },
 methods:{
 init() {
-    var dta = {cmd:"query", items:[
-        "accessCode", "creditCode",
-        "companyName", "companyId",
-        "province", "city", "county",
-        "logLevel", "outsideAddr", "externAddrs"
-    ]};
+    var dta = {cmd:"query"};
     this.cid=Companies.curCompanyId();
     this.service.command(dta).then(resp=>{
         if(resp.code!=RetCode.OK) {
@@ -79,10 +75,15 @@ init() {
         this.outsideAddr=info.outsideAddr;
         
         var l=[];
-        for(var addr of info.externAddrs) {
-            l.push({label:addr, value:addr})
-        }
-        l.push({label:this.tags.dontSet, value:""});
+		if(info.mode) {
+			this.runMode=info.mode;
+			if(info.mode!='RT') {
+				for(var addr of info.externAddrs) {
+					l.push({label:addr, value:addr})
+				}
+				l.push({label:this.tags.dontSet, value:""});
+			}
+		}
         this.addrList=l;
         Companies.getLogo(this.cid, __regsiterCallback(png=> {
             if(png) {
@@ -277,7 +278,7 @@ template: `
    </q-btn>
   </td>
  </tr>
- <tr>
+ <tr v-if="runMode!='RT'">
   <td>{{tags.cfg.pubGwIp}}</td>
   <td>
    <q-select v-model="outsideAddr" :options="addrList" emit-value
@@ -297,7 +298,7 @@ template: `
       <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessToken" size="1.5em"></q-icon>
    </td>
  </tr>
- <tr>
+ <tr v-if="runMode!='RT'">
    <td>{{tags.cfg.logLevel}}</td>
    <td>
     <q-select v-model="company.logLevel" :options="logLevels"

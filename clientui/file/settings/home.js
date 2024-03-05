@@ -133,7 +133,8 @@ regCompany() {
         country:'86',
         province:d.addr.province,
         city:d.addr.city,
-        county:d.addr.county
+        county:d.addr.county,
+        runMode:"RT"
     };
     var opts={url:"/company/register", method:"POST", data:data, private:false, cloud:true}
     request(opts, "company").then(resp=>{

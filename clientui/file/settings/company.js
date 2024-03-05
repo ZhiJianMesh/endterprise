@@ -175,7 +175,8 @@ template: `
       <div class="text-h6">{{tags.cfg.auth}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-      <q-input dense v-model="auth.pwd" autofocus :type="auth.visible?'text':'password'" :label="tags.cfg.pwd">
+      <q-input dense v-model="auth.pwd" autofocus :type="auth.visible?'text':'password'"
+	  :label="tags.cfg.pwd" @keyup.enter="onAuth">
         <template v-slot:append>
           <q-icon :name="auth.visible ? 'visibility_off':'visibility'"
             class="cursor-pointer" @click="auth.visible=!auth.visible"></q-icon>
