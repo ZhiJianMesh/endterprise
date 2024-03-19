@@ -6,8 +6,9 @@ data() {return {
     orders:[], //id,createAt,pkgName,balance
     student:{name:'',createAt:'',mobile:'',points:0,birth:'',sex:'U',ext:{},creator:'',age:0},
     ext:{},
-    newOrder:{pkgId:'',pwd:'',price:0,student:0},
-	newOrderDlg:false,
+    newOrder:{pkgId:'',price:0,student:0},
+	newConsume:{order:0,val:'',student:0,comment:''},
+	dlgs:{order:false,consume:false,extName:''},
     packages:[],
     packageOpts:[],
     isMore:false,
@@ -81,7 +82,7 @@ create_order() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.newOrderDlg=false;
+        this.dlgs.order=false;
         this.query_orders(0);
     })
 },
@@ -93,7 +94,7 @@ open_crt_order(){
         }
         this.packages=resp.pkgs;
         this.packageOpts=resp.opts;
-        this.newOrderDlg=true;
+        this.dlgs.order=true;
         var pkg=this.packages[0];
         this.newOrder.pkgId=pkg.id;
 		this.newOrder.price=pkg.price;
@@ -130,6 +131,21 @@ exchange(v, v0) {
         }
         this.student.points-=v;
 		this.usePoint=null;
+    })
+},
+open_create_consume(orderId,name){
+    this.newConsume={order:orderId, val:'', student:this.id, comment:''};
+	this.dlgs.consume=true;
+	this.dlgs.extName='-' + name;
+},
+create_consume(){
+    var url="/api/consume/create";
+    request({method:"POST",url:url,data:this.newConsume}, this.service.name).then(resp=>{
+        if(resp.code != RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.dlgs.consume=false;
     })
 }
 },
@@ -230,6 +246,7 @@ template:`
   <q-item-section>{{o.balance}}</q-item-section>
   <q-item-section>{{o.price}}</q-item-section>
   <q-item-section>{{o.createAt}}</q-item-section>
+  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-btn></q-item-section>
   <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-btn></q-item-section>
  </q-item>
 </q-list>
@@ -242,7 +259,7 @@ template:`
 </q-layout>
 
 <!-- 新建订单弹窗 -->
-<q-dialog v-model="newOrderDlg">
+<q-dialog v-model="dlgs.order">
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.addOrder}}</div>
@@ -259,6 +276,26 @@ template:`
     </q-card-actions>
   </q-card>
 </q-dialog>
+
+<!-- 新建消费弹窗 -->
+<q-dialog v-model="dlgs.consume">
+ <q-card style="min-width:70vw">
+  <q-card-section>
+      <div class="text-h6">{{tags.addConsume}}{{dlgs.extName}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+    <q-input v-model="newConsume.val" :label="tags.consumeVal" dense type="number"></q-input>
+	<q-input v-model="newConsume.point" :label="tags.consumePoint" type="number"></q-input>
+    <q-input v-model="newConsume.comment" :label="tags.comment" dense
+     type="textarea" autogrow></q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+     <q-btn flat :label="tags.ok" color="primary" @click="create_consume"></q-btn>
+     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
 `
 }

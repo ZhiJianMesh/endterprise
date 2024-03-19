@@ -8,7 +8,7 @@ data() {return {
     ext:{},
     newOrder:{pkgId:'',pwd:'',price:0,vip:0},
 	newConsume:{order:0,pwd:'',val:'',vip:0,comment:''},
-	dlgs:{order:false,consume:false,chkOrd:false,chkOrdResult:2}, //不显示结果
+	dlgs:{order:false,consume:false,chkOrd:false,extName:'',chkOrdResult:2/*不显示结果*/}, 
     chkOrder:{id:'',pwd:'',createAt:'',balance:0},
     packages:[],
     packageOpts:[],
@@ -136,9 +136,10 @@ check_order(){
         }
     })
 },
-open_create_consume(order){
-    this.newConsume={order:order, val:'', pwd:'', vip:this.id};
+open_create_consume(orderId, name){
+    this.newConsume={order:orderId, val:'', pwd:'', vip:this.id, comment:''};
 	this.dlgs.consume=true;
+	this.dlgs.extName='-'+name;
 },
 create_consume(){
     var url="/api/consume/create";
@@ -245,7 +246,7 @@ template:`
   <q-item-section>{{o.balance}}</q-item-section>
   <q-item-section>{{o.price}}</q-item-section>
   <q-item-section>{{o.createAt}}</q-item-section>
-  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id)" color="accent"></q-btn></q-item-section>
+  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-btn></q-item-section>
   <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-btn></q-item-section>
   <q-item-section avatar><q-icon name="security" @click="open_check_order(o)" color="positive"></q-btn></q-item-section>
  </q-item>
@@ -283,7 +284,7 @@ template:`
 <q-dialog v-model="dlgs.consume">
  <q-card style="min-width:70vw">
   <q-card-section>
-      <div class="text-h6">{{tags.addConsume}}</div>
+   <div class="text-h6">{{tags.addConsume}}{{dlgs.extName}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
     <q-input v-model="newConsume.val" :label="tags.consumeVal" dense

@@ -301,8 +301,7 @@ template:`
 	</q-select>
     <q-input v-model="newConsume.val" :label="tags.consumeVal" dense
      :rules="[v=>/^[0-9]+(.[0-9]{1,2})?$/.test(v)|| tags.numberPls]"></q-input>
-    <q-input v-model="newConsume.point" :label="tags.consumePoint" dense
-     :rules="[v=>/^[0-9]+(.[0-9]{1,2})?$/.test(v)|| tags.numberPls]"></q-input>
+    <q-input v-model="newConsume.point" :label="tags.consumePoint" type="number"></q-input>
     <q-input v-model="newConsume.comment" :label="tags.comment" dense
      type="textarea" autogrow></q-input>
   </q-card-section>
