@@ -810,6 +810,7 @@ const Companies={
 	accessCode(){return currentCompany().accessCode},
 	userService(){return currentCompany().id==1?SERVICE_UNIUSER:SERVICE_USER},
 	rootCompanyId(){return 1},
+	refreshEntrance(){},
     authorized(){return (this.userService() in currentCompany().tokens)},
     login(acc,pwd,tp,jsCbId) {
         var company=currentCompany();
@@ -998,8 +999,11 @@ function findInArray(arr, s) {
 const Database = {
     dbs:{},
     open(name) {
-        var db = openDatabase(name, '1.0', '', 10 * 1024 * 1024);
-        this.dbs[name]=db;
+        var db = this.dbs[name];
+		if(!db) {
+			db = openDatabase(name, '1.0', '', 10 * 1024 * 1024);
+	        this.dbs[name]=db;
+		}
     },
     close(name) {},
     remove(name) {},

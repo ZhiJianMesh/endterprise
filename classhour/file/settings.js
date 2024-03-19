@@ -4,20 +4,15 @@ data() {return {
     configs:{},
     tab:'package',
     segTypes:[],
-    pkgUnits:[],
     template:{},
     packages:[],
     newSeg:{k:'',n:'',t:'s'},
-    newPackage:{name:'',cls:'0',price:'',val:'',ext:{}}
+    newPackage:{name:'',price:'',val:'',ext:{}}
 }},
 created(){
     for(var n in this.tags.segTypes){
         this.segTypes.push({value:n,label:this.tags.segTypes[n]})
     }
-    for(var n in this.tags.pkgUnits){
-        this.pkgUnits.push({value:n,label:this.tags.pkgUnits[n]})
-    }
-    
     var url1="/api/template/get?unuseCache=1";
     request({method:"GET",url:url1}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
@@ -35,7 +30,7 @@ created(){
             Console.debug("Url:" + url2 + ",code:" + resp.code + ",info:" + resp.info);
             return;
         }
-        this.packages=resp.data.packages; //id,createAt,name,cls,val,price,ext
+        this.packages=resp.data.packages; //id,createAt,name,val,price,ext
     });
 },
 
@@ -83,7 +78,7 @@ add_package(){
             return;
         }
         this.packages.push(this.newPackage);
-        this.newPackage={name:'',cls:'0',price:'',val:'',ext:{}};
+        this.newPackage={name:'',price:'',val:'',ext:{}};
     });
 }
 },
@@ -153,7 +148,7 @@ template:`
     <q-item v-for="(p,n) in packages">
      <q-item-section>{{p.name}}</q-item-section>
      <q-item-section>{{p.price}}</q-item-section>
-     <q-item-section>{{p.val}}{{tags.pkgUnits[p.cls]}}</q-item-section>
+     <q-item-section>{{p.val}} {{tags.unit.T}}</q-item-section>
      <q-item-section avatar><q-icon color="green" name="cancel" @click="rmv_package(p.id)"><q-icon></q-item-section>
     </q-item>
     <q-item>
@@ -164,10 +159,7 @@ template:`
       <q-input v-model="newPackage.price" :label="tags.pkgPrice"></q-input>
      </q-item-section>
      <q-item-section>
-      <div class="q-gutter-md row">
-       <div class="col"><q-input v-model="newPackage.val" :label="tags.pkgVal"></q-input></div>
-       <div class="col"><q-select v-model="newPackage.cls" :options="pkgUnits" emit-value map-options></q-select></div>
-      </div>
+      <q-input v-model="newPackage.val" :label="tags.unit.T"></q-input>
      </q-item-section>
      <q-item-section avatar><q-icon color="primary" name="add_circle" @click="add_package()"><q-icon></q-item-section>
     </q-item>

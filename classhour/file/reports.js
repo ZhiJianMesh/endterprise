@@ -32,7 +32,7 @@ mounted(){
         this.pkgId=data.pkgs[0].id;
         this.query_pkg();
         this.query_revenue();
-    }).catch(err=>{
+    }).catch(function(err) {
         Console.info(err);
     });
 },
@@ -42,8 +42,8 @@ query_main() {
     var url="/api/report/main?beginTime="+beginTime+"&days="+this.days;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
 		var list=resp.code==RetCode.OK?resp.data.data:[];
-        //reportAt,vipNum,revenue,orderNum,logNum
-        var vipNum=[];
+        //reportAt,stuNum,revenue,orderNum,logNum
+        var stuNum=[];
         var revenue=[];
         var orderNum=[];
         var reportAt=[];
@@ -63,7 +63,7 @@ query_main() {
                 foreDay=dayNo;
             }
             reportAt.push(xDt);
-            vipNum.push(l[1]);
+            stuNum.push(l[1]);
             revenue.push(l[2]);
             orderNum.push(l[3]);
 			mainList.push([dt.toLocaleString(), l[1], l[2], l[3], l[4]])
@@ -71,7 +71,7 @@ query_main() {
         this.mainList = mainList;
         var series=[
             {name:this.tags.revenue,type:'line',data:revenue,yAxisIndex:0,itemStyle:{color:"#ff0011"}}, //新增收入
-            {name:this.tags.vipNum,type:'bar',data:vipNum,yAxisIndex:1,itemStyle:{color:"#11ff00"}}, //新增会员(个)
+            {name:this.tags.stuNum,type:'bar',data:stuNum,yAxisIndex:1,itemStyle:{color:"#11ff00"}}, //新增学员(个)
             {name:this.tags.orderNum,type:'bar',data:orderNum,yAxisIndex:1,itemStyle:{color:"#0011ff"}} //新增订单
         ];
         
@@ -111,8 +111,8 @@ query_pkg() {
 		this.pkgList = pkgList;
         var series=[
             {name:this.tags.revenue,type:'line',data:revenue,yAxisIndex:0,itemStyle:{color:"#ff0011"}}, //新增收入(元)
-            {name:this.tags.orderBal,type:'bar',data:orderBal,yAxisIndex:1,stack:'balance',itemStyle:{color:"#11ff00"}},//剩余服务
-            {name:this.tags.logVal,type:'bar',data:logVal,yAxisIndex:1,stack:'balance',itemStyle:{color:"#0011ff"}}//当天服务
+            {name:this.tags.orderBal,type:'bar',data:orderBal,yAxisIndex:1,stack:'balance',itemStyle:{color:"#11ff00"}},//剩余课时
+            {name:this.tags.logVal,type:'bar',data:logVal,yAxisIndex:1,stack:'balance',itemStyle:{color:"#0011ff"}}//当天课时
         ];
         
         this.pkgCharts.setOption({
@@ -253,7 +253,7 @@ template:`
    <q-markup-table flat><tbody>
 	 <thead><tr>
 	  <th class="text-left">{{tags.reportAt}}</th>
-	  <th class="text-right">{{tags.vipNum}}</th>
+	  <th class="text-right">{{tags.stuNum}}</th>
 	  <th class="text-right">{{tags.revenue}}</th>
 	  <th class="text-right">{{tags.orderNum}}</th>
 	  <th class="text-right">{{tags.logNum}}</th>

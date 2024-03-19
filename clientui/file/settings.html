@@ -27,24 +27,37 @@ import LoginDialog from "/assets/v3/components/login_dialog.js"
 import ProcessDialog from "/assets/v3/components/process_dialog.js"
 import AddressInput from "/assets/v3/components/addr_input.js"
 
+import Home from "./settings/home.js"
+import Advice from "./settings/advice.js"
+import Personal from "./settings/personal.js"
+import Company from "./settings/company.js"
+import Config from "./settings/cfg/config.js"
+import Backup from "./settings/cfg/backup.js"
+import OmHome from "./settings/om/om.js"
+import ExecSqls from "./settings/om/execsqls.js"
+import ServerLogs from "./settings/om/serverlogs.js"
+import ServiceState from "./settings/om/servicestate.js"
+import MktHome from './settings/mkt/home.js'
+import MktDetail from './settings/mkt/detail.js'
+
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //-------------------------------------------router定义
 const router = VueRouter.createRouter({
 "history": VueRouter.createMemoryHistory(),
 routes:[
- {path:'/home', component:()=>import("./settings/home.js")},
- {path:'/advice', component:()=>import("./settings/advice.js")},
- {path:'/personal', component:()=>import("./settings/personal.js")},
- {path:'/company', component:()=>import("./settings/company.js")},
- {path:'/cfg', component:()=>import("./settings/cfg/config.js")},
- {path:'/cfg/backup', component:()=>import("./settings/cfg/backup.js")},
- {path:'/om', component:()=>import('./settings/om/om.js')},
- {path:'/om/execsqls', component:()=>import('./settings/om/execsqls.js')},
- {path:'/om/serverlogs', component:()=>import('./settings/om/serverlogs.js')},
- {path:'/om/servicestate', component:()=>import('./settings/om/servicestate.js')},
- {path:'/mkt', component:()=>import('./settings/mkt/home.js')},
- {path:'/mkt/detail', component:()=>import('./settings/mkt/detail.js')}
+ {path:'/home', component:Home},
+ {path:'/advice', component:Advice},
+ {path:'/personal', component:Personal},
+ {path:'/company', component:Company},
+ {path:'/cfg', component:Config},
+ {path:'/cfg/backup', component:Backup},
+ {path:'/om', component:OmHome},
+ {path:'/om/execsqls', component:ExecSqls},
+ {path:'/om/serverlogs', component:ServerLogs},
+ {path:'/om/servicestate', component:ServiceState},
+ {path:'/mkt', component:MktHome},
+ {path:'/mkt/detail', component:MktDetail}
 ]});
 //-------------------------------------------service定义
 const service={name:"settings",N_PAGE:10,N_SMPG:5,

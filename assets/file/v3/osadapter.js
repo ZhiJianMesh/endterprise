@@ -208,8 +208,8 @@ function addErrInfo(code,info) {
 }
 
 const Database = {
-    open(name) {
-        return NativeDB.open(name);
+    open(db) {
+        return NativeDB.open(db);
     },
     initialize(db, sqls) {return new Promise(resolve=>{
         NativeDB.initialize(db,sqls,__regsiterCallback(resp => {

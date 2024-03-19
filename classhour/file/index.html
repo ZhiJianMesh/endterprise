@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/ico;base64,aWNv">
 <link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
-<title>Member</title>
+<title>ClassHour</title>
 </head>
 <body style="overflow:hidden"><div id="app" v-cloak><router-view></router-view></div></body>
 <script src="/assets/v3/vue.js"></script>
@@ -27,14 +27,14 @@ const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
   {path: '/home', component: () => import('./home.js')},
-  {path: '/vip', component: () => import('./vip.js')},
+  {path: '/student', component: () => import('./student.js')},
   {path: '/consumelogs', component: () => import('./consumelogs.js')},
   {path: '/reports', component: () => import('./reports.js')},
   {path: '/settings', component: () => import('./settings.js')}
 ]});
 
 //service定义
-const service = {name:"member",NUM_PER_PAGE:10,NUM_PER_SMPG:5,
+const service = {name:"classhour",NUM_PER_PAGE:10,NUM_PER_SMPG:5,
 template:{}, //模板定义
 packages:[], //套餐定义，启动时获取
 packageOpts:[], //套餐选择项
@@ -76,8 +76,7 @@ getTemplate() {return new Promise((resolve,reject)=>{
 assemb_pkgs(pkgs) {//拼装套餐信息，便于q-select列表显示
     var pkgOpts=[];
     pkgs.forEach(function(p){
-        var unit=tags.pkgUnits[''+p.cls];
-        var pkg={label:p.name+"("+p.price+","+p.val+unit+")",value:p.id};
+        var pkg={label:p.name+"("+p.price+","+p.val+tags.unit.T+")",value:p.id};
         pkgOpts.push(pkg);
     }.bind(this));
     return pkgOpts;

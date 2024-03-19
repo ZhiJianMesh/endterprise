@@ -4,7 +4,7 @@ data() {return {
     orderId:this.$route.query.orderId,
     logs:[],
     pkgName:'',
-    vipName:'',
+    studentName:'',
     creatorName:'',
     dlgs:{detail:false, dl:false},
 	dlList:[],
@@ -18,7 +18,7 @@ created(){
             return;
         }
         this.pkgName=resp.data.pkgName;
-        this.vipName=resp.data.vipName;
+        this.studentName=resp.data.studentName;
     })
 },
 
@@ -56,7 +56,7 @@ on_load_logs(offset,done){
 },
 dldocx(){
     var dlUrl='/api/consume/todocx?order=' + this.orderId;
-    download({url:dlUrl, file_name:this.vipName+'.docx'}, this.service.name).then(resp => {
+    download({url:dlUrl, file_name:this.studentName+'.docx'}, this.service.name).then(resp => {
         if(resp.code == RetCode.OK) {
             this.dlList.splice(0,0,{file:resp.data.saveAs, size:resp.data.size, bg:'#00000000'})
         } else {
@@ -72,7 +72,7 @@ template:`
   <q-header class="bg-grey-1 text-primary" elevated>
    <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
-      <q-toolbar-title>{{vipName}}-{{pkgName}}</q-toolbar-title>
+      <q-toolbar-title>{{studentName}}-{{pkgName}}</q-toolbar-title>
    </q-toolbar>
   </q-header>
 

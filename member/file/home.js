@@ -4,28 +4,18 @@ data() {return {
     isOwner:false,
     vips:[], //会员列表
     search:'',
-    curVipPg:1,
-    maxVipPgs:0,
-    newVip:{name:'',mobile:'',pwd:''},
-    newConsume:{order:0,pwd:'',val:'',vip:0,comment:''},
-    orders:[], //消费时，查询某个vip的所有订单
-    curOrderPg:1,
-    maxOrderPgs:0,
-    newVipDlg:false,
-    newConsumeDlg:false,
-    curVip:0, //当前点击的会员，用于alert中
-    message:'',
-    resetFun:null //让滑动菜单归位的函数
+	vipPg:{cur:1,max:0,searchTag:''},
+    newVip:{name:'',mobile:'',pwd:'',sex:'',birth:'',dlg:false}
 }},
 created(){
     var url="/power/get?service="+this.service.name;
-    request({method:"GET",url:url}, SERVICE_USER).then(function(resp){
+    request({method:"GET",url:url}, SERVICE_USER).then(resp=>{
         if(resp.code!=0) {
             Console.warn("request "+url+" failed:" + resp.code + ",info:" + resp.info);
             return;
         }
         this.isOwner=resp.data.role=='admin';
-    }.bind(this)); 
+    }); 
     this.query_vips(0);
 },
 methods:{
@@ -35,10 +25,12 @@ query_vips(offset) {
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.vips=[];
-            this.maxVipPgs=0;
+            this.vipPg.max=0;
+            this.vipPg.searchTag=this.tags.search;
         } else {
-            this.vips=resp.data.vips;
-            this.maxVipPgs=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
+            this.formatData(resp.data.vips);
+			this.vipPg.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
+            this.vipPg.searchTag=this.tags.search + '(' + resp.data.total + ')';
         }
     })
 },
@@ -53,144 +45,103 @@ search_vips() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.vips=resp.data.vips;
-        this.maxVipPgs=1;
+        this.formatData(resp.data.vips);
+        this.vipPg.max=1;
     }.bind(this))
 },
-jumpTo(url) {
-    this.resetFun=null;//避免跳页时再执行它，导致异常
-    this.$router.push(url);
+formatData(rows) {
+    var vips=[];
+    var dt=new Date();
+	var updAt, birth;
+    for(var r of rows) {
+        dt.setTime(r.update_time);
+		updAt = dt.toLocaleDateString();
+		dt.setTime(r.birth*86400000);
+		birth = dt.toLocaleDateString();
+        vips.push({id:r.id, name:r.name, birth:birth, updateAt:updAt});
+    }
+    this.vips=vips;
 },
 add_vip() {
     var url="/api/vip/add";
-    request({method:"POST",url:url,data:this.newVip}, this.service.name).then(function(resp){
+	var d=this.newVip;
+	var birth=Math.round(new Date(d.birth).getTime()/86400000);
+	var reqDta={name:d.name, mobile:d.mobile, pwd:d.pwd, sex:d.sex, birth:birth};
+    request({method:"POST",url:url,data:reqDta}, this.service.name).then(function(resp){
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.newVipDlg=false;
+        this.newVip.dlg=false;
         this.query_vips(0);
     }.bind(this))
 },
 change_vip_page(page) {
     this.query_vips((parseInt(page)-1)*this.service.NUM_PER_PAGE);
 },
-on_slide({reset}) {
-    this.hide_slider();//关闭已经打开的，如果有
-    this.resetFun=reset;
-},
-hide_slider() {
-    if(!this.resetFun || typeof(this.resetFun) !== 'function') {
-        return;
-    }
-    try{
-        this.resetFun();
-    }catch(e) {
-        console.error(e);
-    }finally{
-        this.resetFun=null;
-    }
-},
-query_orders(offset,done) {
-    var url="/api/order/validOrders?vip="+this.curVip+"&offset="+offset+"&num="+this.service.NUM_PER_SMPG;
-    request({method:"GET", url:url}, this.service.name).then(resp=>{
-        if(resp.code==RetCode.OK) {
-            this.maxOrderPgs=Math.ceil(resp.data.total/this.service.NUM_PER_SMPG);
-            this.orders=resp.data.orders;
-        }
-        done(true);
-    });
-},
-change_order_page(page) {
-    this.query_orders((parseInt(page)-1)*this.service.NUM_PER_SMPG,()=>{});
-},
-open_create_consume(vip){
-    this.curVip=vip;
-    this.newConsume={order:-1,val:'',pwd:'',vip:vip};
-    this.orders=[];
-    this.query_orders(0,()=>{
-        if(this.orders.length<=0) {
-            this.$refs.errMsg.show(this.tags.noOrders);
-            return;
-        }
-        this.newConsume.order=this.orders[0].id;
-        this.newConsumeDlg=true;
-    })
-},
-create_consume(){
-    var url="/api/consume/create";
-    request({method:"POST",url:url,data:this.newConsume}, this.service.name).then(function(resp){
-        if(resp.code != 0) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.newConsumeDlg=false;
-    }.bind(this))
-},
-on_load_orders(offset,done){
-    this.query_orders(this.newConsume.vip,offset,done);
+open_newvip_dlg() {
+	this.newVip={name:'',mobile:'',pwd:'',birth:'',sex:'', dlg:true};
 }
 },
 
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
-  <q-header elevated>
+  <q-header class="bg-grey-1 text-primary" elevated>
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
     <q-btn flat round dense icon="menu" v-if="isOwner">
      <q-menu>
       <q-list style="min-width: 100px">
-        <q-item clickable v-close-popup @click="jumpTo('/settings')">
+        <q-item clickable v-close-popup @click="service.jumpTo('/reports')">
+          <q-item-section>{{tags.reports}}</q-item-section>
+        </q-item>
+        <q-item clickable v-close-popup @click="service.jumpTo('/settings')">
           <q-item-section>{{tags.settings}}</q-item-section>
         </q-item>
         <q-separator></q-separator>
-        <q-item clickable v-close-popup @click="jumpTo('/reports')">
-          <q-item-section>{{tags.reports}}</q-item-section>
-        </q-item>
        </q-list>
      </q-menu>
     </q-btn>
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search_vips">
+    <q-input outlined bottom-slots v-model="search" :label="vipPg.searchTag" dense @keyup.enter="search_vips">
     <template v-slot:append>
-      <q-icon v-if="search!==''" name="close" @click="query_vips(0)" class="cursor-pointer"></q-icon>
-      <q-icon name="search" @click="search_vips"></q-icon>
+      <q-icon name="close" v-show="search!==''" @click="query_vips(0)" class="cursor-pointer q-mr-md"></q-icon>
+      <q-icon name="search" @click="search_vips" class="cursor-pointer q-mr-md"></q-icon>
     </template>
     <template v-slot:after>
-      <q-btn round color="primary" icon="add_circle"
-       @click="newVip={name:'',mobile:'',pwd:''};newVipDlg=true;"></q-btn>
+      <q-btn round color="primary" icon="add_circle" @click="open_newvip_dlg"></q-btn>
     </template>
     </q-input>
   </q-footer>
 
   <q-page-container>
     <q-page class="q-pa-md">
-<div class="q-pa-lg flex flex-center" v-if="maxVipPgs>1">
- <q-pagination v-model="curVipPg" color="primary" :max="maxVipPgs" max-pages="10"
+<div class="q-pa-lg flex flex-center" v-if="vipPg.max>1">
+ <q-pagination v-model="vipPg.cur" color="primary" :max="vipPg.max" max-pages="10"
   boundary-numbers="false" @update:model-value="change_vip_page"></q-pagination>
 </div>
-<q-list separator>
-  <q-slide-item @right="on_slide" @click="hide_slider" v-for="v in vips" right-color="purple">
-    <template v-slot:right>
-      <q-icon name="payment" @click="open_create_consume(v.id)" class="q-mr-md"></q-icon> 
-      <q-icon name="person_pin_circle" @click="jumpTo('/vip?id='+v.id)"></q-icon> 
-    </template>
-
-    <q-item>
-      <q-item-section>{{v.name}}</q-item-section>
-      <q-item-section>{{v.mobile}}</q-item-section>
-      <q-item-section>{{v.update_time}}</q-item-section>
-    </q-item>
- </q-slide-item>
-</q-list>
+<q-markup-table flat>
+ <thead><tr>
+  <th class="text-left">{{tags.name}}</th>
+  <th class="text-right">{{tags.birth}}</th>
+  <th class="text-right">{{tags.updateAt}}</th>
+ </tr></thead>
+ <tbody>
+ <tr v-for="v in vips" @click="service.jumpTo('/vip?id='+v.id)">
+  <td class="text-left">{{v.name}}</td>
+  <td class="text-right">{{v.birth}}</td>
+  <td class="text-right">{{v.updateAt}}</td>
+ </tr>
+ </tbody>
+</q-markup-table>
     </q-page>
   </q-page-container>
 </q-layout>
     
-<q-dialog v-model="newVipDlg">
+<q-dialog v-model="newVip.dlg">
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.addVip}}</div>
@@ -202,47 +153,17 @@ template:`
      :rules="[v=>/^1[0-9]{10}$/.test(v)|| tags.mobilePls]" dense></q-input>
      <q-input v-model="newVip.pwd" :label="tags.pwd" type="password" dense
      :rules="[/^[0-9]{4,20}$/.test(v)|| tags.pwdPls]"></q-input>
+ 	 <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth"></component-date-input>
+     <div class="q-gutter-sm">
+      <q-radio v-model="newVip.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
+      <q-radio v-model="newVip.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>
+     </div>
     </q-card-section>
-    <q-card-section class="q-pt-none">{{message}}</q-card-section>
     <q-card-actions align="right">
       <q-btn flat :label="tags.ok" color="primary" @click="add_vip"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>
-</q-dialog>
-
-<q-dialog v-model="newConsumeDlg">
- <q-card style="min-width:70vw">
-  <q-card-section>
-      <div class="text-h6">{{tags.addConsume}}</div>
-  </q-card-section>
-  <q-card-section class="q-pt-none">
-    <q-list>
-     <q-item v-for="o in orders">
-      <q-item-section>
-       <q-radio dense v-model="newConsume.order" :val="o.id" :label="o.pkgName" ></q-radio>
-      </q-item-section>
-      <q-item-section>{{o.balance}}</q-item-section>
-      <q-item-section>{{o.createAt}}</q-item-section>
-     </q-item>
-    </q-list>
-    <div class="q-pa-lg flex flex-center" v-if="maxOrderPgs>1">
-    <q-pagination v-model="curOrderPg" color="primary" :max="maxOrderPgs" max-pages="10"
-     boundary-numbers="false" @update:model-value="change_order_page"></q-pagination>
-    </div>
-    <q-input v-model="newConsume.val" :label="tags.consumeVal" dense
-     :rules="[v=>/^[0-9]+(.[0-9]{1,2})?$/.test(v)|| tags.numberPls]"></q-input>
-    <q-input v-model="newConsume.pwd" :label="tags.pwd" type="password" dense
-     :rules="[v=>/^[0-9]{4,20}$/.test(v)|| tags.pwdPls]"></q-input>
-    <q-input v-model="newConsume.comment" :label="tags.comment" dense
-     type="textarea" autogrow></q-input>
-  </q-card-section>
-  <q-card-section class="q-pt-none">{{message}}</q-card-section>
-  <q-card-actions align="right">
-     <q-btn flat :label="tags.ok" color="primary" @click="create_consume"></q-btn>
-     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
-  </q-card-actions>
- </q-card>
 </q-dialog>
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
