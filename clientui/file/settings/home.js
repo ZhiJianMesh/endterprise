@@ -8,9 +8,9 @@ data(){return{
     companies:[],
     curCompanyId:-1,
     regComDta:{creditCode:'',name:'',pwd:'',cfmPwd:'',verifyCode:'',session:'',
-	  addr:{province:'',city:'',county:''},vcImg:'',pwdVis:false},
-    addComDta:{id:'',accessCode:'',insideAddr:'',needInside:false},
-    newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:''},
+	  addr:{province:'',city:'',county:''},vcImg:'',pwdVis:false}, //注册新公司数据
+    addComDta:{id:'',accessCode:'',insideAddr:'',needInside:false}, //添加已存在公司数据
+    newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:''}, //注册个人帐号
     dlg:{com:false,comTab:'checkin',usr:false,doing:false},//是否正在添加公司，用于显示进度条
     rootComId:1
 }},
@@ -52,6 +52,7 @@ init() {
 		this.authorized=false;
     }
     this.companyName=company.name;
+    this.curCompanyId=company.id;
 },
 about() {
     App.openApp("clientui");
@@ -142,11 +143,11 @@ regCompany() {
     })
 },
 setCurCompany(cid) {
+    this.curCompanyId=cid;
     Companies.setCur(cid, __regsiterCallback(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
         } //即使失败，也要切换过去
-        this.curCompanyId=cid;
 		this.init();//setCur需要重新probe，所以必须等它完成才能init
 	}));
 },
@@ -180,7 +181,7 @@ registerAcc() { //注册个人账号
             return;
         }
         this.dlg.usr=false;
-        this.newUsrDta={account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:true,vc:''};
+        this.newUsrDta={account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:''};
     })
 },
 refreshUsrVc(){
@@ -305,7 +306,7 @@ template: `
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="dlg.com">
+<q-dialog v-model="dlg.com"> <!-- 添加公司或注册新公司 -->
   <q-card style="min-width:62vw;max-width:80vw">
     <q-card-section>
       <div class="text-h6">{{tags.addCompany}}</div>
@@ -357,16 +358,16 @@ template: `
   </q-card>
 </q-dialog>
 
-<q-dialog v-model="dlg.usr">
+<q-dialog v-model="dlg.usr"> <!-- 注册个人帐号 -->
   <q-card style="min-width:62vw;max-width:80vw">
     <q-card-section>
       <div class="text-h6">{{tags.home.registerAcc}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-input dense v-model="newUsrDta.account" autofocus :label="tags.account"></q-input>
-      <q-input dense v-model="newUsrDta.pwd" autofocus :type="newUsrDta.pwdVis?'password':'text'" :label="tags.pwd">
+      <q-input dense v-model="newUsrDta.pwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.pwd">
         <template v-slot:append>
-          <q-icon :name="newUsrDta.pwdVis ? 'visibility_off':'visibility'"
+          <q-icon :name="newUsrDta.pwdVis ? 'visibility' : 'visibility_off'"
             class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>
         </template>
       </q-input>

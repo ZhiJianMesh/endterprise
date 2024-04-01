@@ -20,7 +20,7 @@ get_userbase() {
 },
 changePwd() {
     if(this.oldPwd==''||this.newPwd==''||this.newPwd!=this.cfmPwd){
-        this.$refs.errDlg.show(this.tags.invalidNewPwd);
+        this.$refs.errDlg.show(this.tags.invalidPwd);
         return;
     }
     var company=this.service.curCompany();

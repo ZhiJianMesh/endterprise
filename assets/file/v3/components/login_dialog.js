@@ -14,7 +14,6 @@ props: {
     label:{type:String,required:true, default:"登录"},
     account:{type:String,required:true, default:"帐号"},
     pwd:{type:String,required:true, default:"密码"},
-    login:{type:String,default:"登录"},
     close:{type:String,default:"关闭"},
     failToCall:{type:String,default:"调用失败"},
     cancel:{type:String,default:"取消"}
