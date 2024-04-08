@@ -10,7 +10,7 @@ data() {return {
         author: "",
         level: 100,
         icon: "",
-		cloud:false
+		cloud:false //个人服务，都访问云侧
     },
     intro: {},
     subTitle: '',
@@ -29,7 +29,8 @@ created() {
         this.imgWidth="30vw";
     }
     this.isNormal=!App.isBuiltin(this.name);
-    request({method:"GET",url:"/api/introduce",private:false},this.name).then(resp=> {
+    this.app = this.service.list[this.name];
+    request({method:"GET",url:"/api/introduce",private:false,cloud:this.app.cloud},this.name).then(resp=> {
         if (resp.code!=RetCode.OK) {
             this.intro = {descrs: [this.app.displayName], images:[]};
             return;
@@ -50,7 +51,6 @@ created() {
         this.intro=intro;
     });
 
-    this.app = this.service.list[this.name];
 	this.refreshUI();
 },
 methods: {

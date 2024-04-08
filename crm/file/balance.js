@@ -267,19 +267,23 @@ template:`
 </q-tabs>
 <q-separator></q-separator>
 <div v-show="tab=='mon'">
-   <div id="monthCharts" :style="{width:'100vw', height:'45vh'}"></div>
-   <q-list>
-      <q-item>
-        <q-item-section>{{tags.order.title}}</q-item-section>
-        <q-item-section>{{tags.order.signAt}}</q-item-section>
-        <q-item-section>{{tags.order.price}}</q-item-section>
-      </q-item>
-      <q-item v-for="o in monthOrders" clickable @click="order_detail(o.id)">
-        <q-item-section>{{o.customer}}-{{o.skuName}}</q-item-section>
-        <q-item-section>{{o.signAt}}</q-item-section>
-        <q-item-section>{{o.price}}</q-item-section>
-      </q-item>
-    </q-list>
+ <div id="monthCharts" :style="{width:'100vw', height:'45vh'}"></div>
+ <q-markup-table flat>
+  <thead>
+    <tr>
+      <th class="text-left">{{tags.order.title}}</th>
+      <th class="text-right">{{tags.order.signAt}}</th>
+      <th class="text-right">{{tags.order.price}}</th>
+    </tr>
+   </thead>
+   <tbody>
+     <tr v-for="o in monthOrders" @click="order_detail(o.id)">
+      <td class="text-left">{{o.customer}}-{{o.skuName}}</td>
+      <td class="text-right">{{o.signAt}}</td>
+      <td class="text-right">{{o.price}}</td>
+     </tr>
+   </tbody>
+ </q-markup-table>
 </div>
 <div v-show="tab=='sku'">
    <q-select v-model="skuId" emit-value map-options

@@ -18,28 +18,33 @@ created(){
         this.pkgUnits.push({value:n,label:this.tags.pkgUnits[n]})
     }
     
-    var url1="/api/template/get?unuseCache=1";
-    request({method:"GET",url:url1}, this.service.name).then(resp=>{
+    this.query_tmpls();
+	this.query_pkgs();
+},
+
+methods:{
+query_tmpls() {
+    var url="/api/template/get?unuseCache=1";
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
-            Console.debug("Url:" + url1 + ",code:" + resp.code + ",info:" + resp.info);
+            Console.debug("Url:" + url + ",code:" + resp.code + ",info:" + resp.info);
             return;
         }
         if(resp.data.template) {
             this.template=resp.data.template;
         }
     });
-    
-    var url2="/api/package/list?unuseCache=1";
-    request({method:"GET",url:url2}, this.service.name).then(resp=>{
+},
+query_pkgs() {
+    var url="/api/package/list?unuseCache=1";
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
-            Console.debug("Url:" + url2 + ",code:" + resp.code + ",info:" + resp.info);
+            Console.debug("Url:" + url + ",code:" + resp.code + ",info:" + resp.info);
             return;
         }
         this.packages=resp.data.packages; //id,createAt,name,cls,val,price,ext
     });
 },
-
-methods:{
 rmv_tpl_seg(n){
     var tpls={};
     for(var k in this.template) {
@@ -82,7 +87,7 @@ add_package(){
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.packages.push(this.newPackage);
+        this.query_pkgs();
         this.newPackage={name:'',cls:'0',price:'',val:'',ext:{}};
     });
 }
@@ -154,7 +159,7 @@ template:`
      <q-item-section>{{p.name}}</q-item-section>
      <q-item-section>{{p.price}}</q-item-section>
      <q-item-section>{{p.val}}{{tags.pkgUnits[p.cls]}}</q-item-section>
-     <q-item-section avatar><q-icon color="green" name="cancel" @click="rmv_package(p.id)"><q-icon></q-item-section>
+     <q-item-section avatar><q-icon color="green" name="cancel" @click="rmv_package(p.id,n)"><q-icon></q-item-section>
     </q-item>
     <q-item>
      <q-item-section>

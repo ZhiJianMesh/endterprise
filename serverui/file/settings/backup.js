@@ -139,6 +139,7 @@ backupNow() {
         dlg.setInfo(formatErr(resp.code, resp.info));
       } else {
         dlg.setInfo(this.tags.backupSuccess);
+        this.backup.recent=(new Date()).toLocaleString();
       }
     }
   )

@@ -53,7 +53,7 @@ query_main() {
                 contact[i]=l[2];
                 ord[i]=l[3];
                 service[i]=l[4];
-                payment[i]=l[5];
+                //payment[i]=l[5];
                 contract[i]=l[6];
                 revenue[i]=l[7];
                 cost[i]=l[8];
@@ -64,7 +64,7 @@ query_main() {
             {name:this.tags.report.contact,type:'line',data:contact,yAxisIndex:0},
             {name:this.tags.report.ord,type:'line',data:ord,yAxisIndex:0},
             {name:this.tags.report.service,type:'line',data:service,yAxisIndex:0},
-            {name:this.tags.report.payment,type:'bar',data:payment,yAxisIndex:0,stack:"flow"},
+            //{name:this.tags.report.payment,type:'bar',data:payment,yAxisIndex:0,stack:"flow"},
             {name:this.tags.report.contract,type:'bar',data:contract,yAxisIndex:1,stack:"flow"},
             {name:this.tags.report.revenue,type:'bar',data:revenue,yAxisIndex:1,stack:"balance"},
             {name:this.tags.report.cost,type:'bar',data:cost,yAxisIndex:1,stack:"balance"}
