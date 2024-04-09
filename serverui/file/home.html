@@ -10,12 +10,13 @@
 <title>ServerUIHome</title>
 </head>
 <body>
-<div id="app" class="q-pa-none">
+<div id="app" v-cloak>
 <q-layout view="lHh lpr lFf" container style="height:100vh" v-cloak>
 <q-header elevated>
     <q-toolbar>
         <q-avatar square><q-icon name="home"></q-icon></q-avatar>
         <q-toolbar-title>{{tags.home}}</q-toolbar-title>
+        <q-btn flat round dense icon="verified" @click="dlgLic=true"></q-btn>
     </q-toolbar>
 </q-header>
 <q-page-container>
@@ -42,6 +43,16 @@
 </q-layout>
 <register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
 <component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
+<q-dialog v-model="dlgLic">
+ <q-card>
+   <q-toolbar>
+    <q-avatar><q-icon name="verified"></q-icon></q-avatar>
+    <q-toolbar-title>{{tags.license}}</q-toolbar-title>
+    <q-btn flat round dense icon="close" v-close-popup></q-btn>
+   </q-toolbar>
+   <q-card-section v-html="tags.licenseContent"></q-card-section>
+ </q-card>
+</q-dialog>
 </div>
 </body>
 <script src="/assets/v3/vue.js"></script>
@@ -58,6 +69,7 @@ const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 const app = Vue.createApp({
 data(){return{
     tags:tags,
+    dlgLic:false,
     runtime:"",
     startupAt:"",
     address:"",
