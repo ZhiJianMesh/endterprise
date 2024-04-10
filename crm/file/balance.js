@@ -153,11 +153,11 @@ query_month() {
     }.bind(this))
     
     //点击x轴的柱状图对应的段，而不仅是柱状图
-    this.monthCharts.on('click', function(params){
+    this.monthCharts.on('click', (params)=>{
         if(params.dataIndex<this.monNum){
             this.monthOrders=this.orders[params.dataIndex];
         }
-    }.bind(this))
+    })
 },
 sku_changed() {
     this.query_sku();

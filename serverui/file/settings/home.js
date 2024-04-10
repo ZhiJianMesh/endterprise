@@ -227,7 +227,10 @@ template: `
    <q-toolbar>
       <q-avatar square><q-icon name="settings"></q-icon></q-avatar>
       <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
-      <q-btn icon="beenhere" :label="cid?tags.reRegister:(tags.login+'/'+tags.register)" @click="register" flat></q-btn>
+      <q-chip clickable color="primary" text-color="white" @click="register">
+        <q-avatar><q-icon name="beenhere"></q-icon></q-avatar>
+        {{cid?tags.reRegister:(tags.login+'/'+tags.register)}}
+      </q-chip>
    </q-toolbar>
 </q-header>
 <q-page-container>

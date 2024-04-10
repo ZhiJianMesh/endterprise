@@ -13,11 +13,11 @@
 <div id="app" v-cloak>
 <q-layout view="lHh lpr lFf" container style="height:100vh" v-cloak>
 <q-header elevated>
-    <q-toolbar>
-        <q-avatar square><q-icon name="home"></q-icon></q-avatar>
-        <q-toolbar-title>{{tags.home}}</q-toolbar-title>
-        <q-btn flat round dense icon="verified" @click="dlgLic=true"></q-btn>
-    </q-toolbar>
+ <q-toolbar>
+    <q-avatar square><q-icon name="home"></q-icon></q-avatar>
+    <q-toolbar-title>{{tags.home}}</q-toolbar-title>
+    <q-avatar square><q-icon name="verified" @click="dlgLic=true"></q-icon></q-avatar>
+ </q-toolbar>
 </q-header>
 <q-page-container>
   <q-page class="text-center">
@@ -46,7 +46,7 @@
 <q-dialog v-model="dlgLic">
  <q-card>
    <q-toolbar>
-    <q-avatar><q-icon name="verified"></q-icon></q-avatar>
+    <q-avatar><q-icon name="verified" color="green-9"></q-icon></q-avatar>
     <q-toolbar-title>{{tags.license}}</q-toolbar-title>
     <q-btn flat round dense icon="close" v-close-popup></q-btn>
    </q-toolbar>
