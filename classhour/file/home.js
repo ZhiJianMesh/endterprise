@@ -119,9 +119,12 @@ create_consumes(){
 		var orders={};
 		var num=0;
         if(resp.code == RetCode.OK) {
-			for(var stu of resp.data.list) {//id,balance,student
-				orders[stu.student]={order:stu.id,balance:stu.balance};
+			for(var ord of resp.data.list) {//id,balance,student
+			  var stu=ord.student;
+			  if(!orders[stu]) {//可能存在多个订单，已经有了，不必再插入
+				orders[stu]={order:ord.id,balance:ord.balance};
 				num++;
+			  }
 			}
         }
 		
@@ -142,8 +145,7 @@ create_consumes(){
 		
 		var url="/api/consume/create";
 		for(var stu in c.students) {
-			var order=orders[stu].order;
-			var reqData={order:order,val:c.val,student:stu,comment:c.comment,point:c.point};
+			var reqData={order:orders[stu].order,val:c.val,student:stu,comment:c.comment,point:c.point};
 			request({method:"POST",url:url,data:reqData}, this.service.name).then(resp=>{
 				if(resp.code != RetCode.OK) {
 					if(msg!='') {

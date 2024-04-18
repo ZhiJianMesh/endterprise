@@ -6,9 +6,10 @@ data() {return {
     orders:[], //id,createAt,pkgName,balance
     student:{name:'',createAt:'',mobile:'',points:0,birth:'',sex:'U',ext:{},creator:'',age:0},
     ext:{},
-    newOrder:{pkgId:'',price:0,student:0},
+    newOrder:{pkgId:'',price:0,val:0,student:0},
+    chgOrder:{orderId:0,price:0,val:0},
 	newConsume:{order:0,val:'',student:0,comment:''},
-	dlgs:{order:false,consume:false,extName:''},
+	dlgs:{order:false,consume:false,extName:'',chgOrder:false},
     packages:[],
     packageOpts:[],
     isMore:false,
@@ -86,6 +87,17 @@ create_order() {
         this.query_orders(0);
     })
 },
+recharge_order() {
+    var url="/api/order/recharge";
+    request({method:"POST",url:url,data:this.chgOrder}, this.service.name).then(resp=>{
+        if(resp.code != 0) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.dlgs.chgOrder=false;
+        this.query_orders(0);
+    })
+},
 open_crt_order(){
     this.service.getPackages().then(resp=>{
         if(resp.code != 0) {
@@ -98,6 +110,7 @@ open_crt_order(){
         var pkg=this.packages[0];
         this.newOrder.pkgId=pkg.id;
 		this.newOrder.price=pkg.price;
+        this.newOrder.val=pkg.val;
     }).catch(err=>{
         Console.info(err);
     });
@@ -106,6 +119,7 @@ pkg_changed(pkgId) {
     for(var k in this.packages) {
         if(pkgId==this.packages[k].id) {
             this.newOrder.price=this.packages[k].price;
+            this.newOrder.val=this.packages[k].val;
             break;
         }
     }
@@ -247,6 +261,7 @@ template:`
   <q-item-section>{{o.price}}</q-item-section>
   <q-item-section>{{o.createAt}}</q-item-section>
   <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-btn></q-item-section>
+  <q-item-section avatar><q-icon name="request_quote" @click="chgOrder.orderId=o.id;dlgs.chgOrder=true" color="amber"></q-btn></q-item-section>
   <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-btn></q-item-section>
  </q-item>
 </q-list>
@@ -267,12 +282,29 @@ template:`
     <q-card-section class="q-pt-none">
      <q-select v-model="newOrder.pkgId" emit-value map-options
      :options="packageOpts" @update:model-value="pkg_changed"></q-select>
-     <q-input v-model="newOrder.price" :label="tags.payment" dense
-     :rules="[v=>/^[0-9]+(\\.[0-9]{1,2})?$/.test(v)|| tags.numberPls]"></q-input>
+     <q-input v-model="newOrder.price" :label="tags.payment" dense type="number"></q-input>
+     <q-input v-model="newOrder.val" :label="tags.orderVal" dense type="number"></q-input>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn flat :label="tags.ok" color="primary" @click="create_order"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
+<!-- 订单充值弹窗 -->
+<q-dialog v-model="dlgs.chgOrder">
+  <q-card style="min-width:70vw">
+    <q-card-section>
+      <div class="text-h6">{{tags.chgOrder}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+     <q-input v-model="chgOrder.price" :label="tags.payment" dense type="number"></q-input>
+     <q-input v-model="chgOrder.val" :label="tags.orderVal" dense type="number"></q-input>
+    </q-card-section>
+    <q-card-actions align="right">
+     <q-btn flat :label="tags.ok" color="primary" @click="recharge_order"></q-btn>
+     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>
 </q-dialog>
