@@ -190,8 +190,11 @@ cn:{
   oldPwd:"原密码",
   newPwd:"新密码",
   cfmPwd:"确认密码",
+  invalidCfmPwd:"确认密码必须与密码相同",
+  successToChgPwd:"密码已修改",
+
   verifyCode:"验证码",
-  invalidPwd:"密码与确认密码必须一致，请更正后再尝试",
+  invalidPwd:"密码不符合要求，请更正后再尝试",
   nickName:"昵称",
   failToCall:"调用失败",
   successToCall:"调用成功",

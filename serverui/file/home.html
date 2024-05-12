@@ -16,7 +16,7 @@
  <q-toolbar>
     <q-avatar square><q-icon name="home"></q-icon></q-avatar>
     <q-toolbar-title>{{tags.home}}</q-toolbar-title>
-    <q-avatar square><q-icon name="verified" @click="dlgLic=true"></q-icon></q-avatar>
+    <q-avatar square><q-icon name="verified"></q-icon></q-avatar>
  </q-toolbar>
 </q-header>
 <q-page-container>
@@ -43,16 +43,6 @@
 </q-layout>
 <register-dialog :title="tags.register" :tags="tags" ref="regDlg"></register-dialog>
 <component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
-<q-dialog v-model="dlgLic">
- <q-card>
-   <q-toolbar>
-    <q-avatar><q-icon name="verified" color="green-9"></q-icon></q-avatar>
-    <q-toolbar-title>{{tags.license}}</q-toolbar-title>
-    <q-btn flat round dense icon="close" v-close-popup></q-btn>
-   </q-toolbar>
-   <q-card-section v-html="tags.licenseContent"></q-card-section>
- </q-card>
-</q-dialog>
 </div>
 </body>
 <script src="/assets/v3/vue.js"></script>

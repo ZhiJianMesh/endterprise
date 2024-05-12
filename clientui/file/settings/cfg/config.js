@@ -14,6 +14,7 @@ company:{
 },
 outsideAddr:'', //为空时，表示不开启
 addrList:[],
+chgPwdDta:{oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false},
 logoOpts:{
     img: "/assets/imgs/logo_example.png",
     size: 1,
@@ -212,6 +213,19 @@ connectionTest() {
           }
         }
     )
+},
+changePwd() {
+    this.service.command({oldPwd:this.chgPwdDta.oldPwd,
+        newPwd:this.chgPwdDta.newPwd,
+        cfmPwd:this.chgPwdDta.cfmPwd,
+        cmd:"changePwd"}).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        } else {
+    		this.chgPwdDta={oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false};
+	        this.$refs.alertDlg.show(this.tags.successToChgPwd);
+		}
+    });
 }
 },
 template: `
@@ -225,8 +239,9 @@ template: `
 <q-page-container>
  <q-page>
 <q-markup-table bordered="false" flat>
- <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
-  <td>{{tags.cfg.baseSettings}}</td><td></td>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1">
+  <td class="text-bold">{{tags.cfg.baseSettings}}</td>
+  <td align="right" @click="chgPwdDta.dlg=true">{{tags.chgPwd}}</td>
  </tr>
  <tr>
    <td>{{tags.cfg.id}}</td>
@@ -340,6 +355,36 @@ template: `
    style="position:absolute;clip:rect(0 0 0 0);"
    accept="image/png, image/jpeg, image/gif, image/jpg"
    @change="startCropLogo($event)">
+</q-dialog>
+
+<q-dialog v-model="chgPwdDta.dlg">
+ <q-card bordered>
+   <q-card-section>
+    <q-input v-model="chgPwdDta.oldPwd" :label="tags.oldPwd" dense :type="chgPwdDta.vis ? 'text':'password'">
+     <template v-slot:append>
+      <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
+        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+     </template>
+    </q-input>
+    <q-input v-model="chgPwdDta.newPwd" :label="tags.newPwd" dense :type="chgPwdDta.vis ? 'text':'password'">
+     <template v-slot:append>
+      <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
+        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+     </template>
+    </q-input>
+    <q-input v-model="chgPwdDta.cfmPwd" :label="tags.cfmPwd" dense :type="chgPwdDta.vis ? 'text':'password'"
+     :rules="[v=>chgPwdDta.newPwd==chgPwdDta.cfmPwd||tags.invalidCfmPwd]">
+     <template v-slot:append>
+      <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
+        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+     </template>
+    </q-input>
+   </q-card-section>
+   <q-card-actions align="right" class="text-primary">
+    <q-btn flat :label="tags.ok" @click="changePwd"></q-btn>
+    <q-btn flat :label="tags.cancel" v-close-popup></q-btn>
+  </q-card-actions>
+ </q-card>
 </q-dialog>
 
 <register-dialog :tags="tags" ref="regDlg"></register-dialog>

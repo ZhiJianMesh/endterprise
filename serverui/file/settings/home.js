@@ -13,6 +13,8 @@ data() {return {
  logLevels:[{label:'Debug',value:"DEBUG"},{label:'Info',value:"INFO"},
    {label:'Warn',value:"WARN"},{label:'Error',value:"ERROR"}],
  addrList:[],
+ dlgs:{chgPwd:false,setLogo:false,testing:false},
+ chgPwdDta:{oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false},
  testing:false,
 
  logoOpts:{
@@ -38,7 +40,7 @@ data() {return {
     fixed: true,
     fixedNumber: [1, 1],
 
-    dlg:false,
+	dlg:false,
     width:0,
     loading:false
  }
@@ -219,6 +221,17 @@ connectionTest() {
         this.$refs.alertDlg.show(this.tags.succeedToConnect + addr);
       }
     });
+},
+changePwd() {
+    Company.changePwd(this.chgPwdDta.oldPwd,this.chgPwdDta.newPwd,this.chgPwdDta.cfmPwd,
+	__regsiterCallback(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        } else {
+    		this.chgPwdDta={oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false};
+	        this.$refs.alertDlg.show(this.tags.successToChgPwd);
+		}
+    }));
 }
 },
 template: `
@@ -236,10 +249,12 @@ template: `
 <q-page-container>
  <q-page>
 <q-markup-table bordered="false" flat>
- <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.baseSettings}}</td><td></td></tr>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1">
+  <td class="text-bold">{{tags.baseSettings}}</td><td></td>
+ </tr>
  <tr>
    <td>{{tags.companyId}}</td>
-   <td>{{cid}}</td>
+   <td>{{cid}}<q-badge color="primary" @click="chgPwdDta.dlg=true" class="q-ml-md">{{tags.chgPwd}}</q-badge></td>
  </tr>
  <tr>
    <td>{{tags.creditCode}}</td>
@@ -273,27 +288,30 @@ template: `
    </td>
  </tr>
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
-  <td>{{tags.nwSettings}}
-   <q-circular-progress :indeterminate="testing" show-value size="3em"
-    @click="connectionTest" thickness="0.3" color="yellow"
-      track-color="transparent" class="text-white q-ma-none" dense>
-    <q-icon name="leak_add" color="secondary" class="q-ma-none" size="2em"></q-icon>
-   </q-circular-progress>
-  </td>
-  <td align="right">
-   <q-btn round dense flat icon="add_circle" color="primary" class="q-ma-none">
-   <q-popup-edit v-slot="scope" @save="outsideAddrAdded"
-	buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
-	<q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
-   </q-popup-edit>
-   </q-btn>
-  </td>
+  <td>{{tags.nwSettings}}</td><td></td>
  </tr>
  <tr>
   <td>{{tags.pubGwIp}}</td>
   <td>
    <q-option-group dense color="primary" v-model="outsideAddr" :options="addrList"
-    @update:model-value="outsideAddrChged"></q-option-group>
+    @update:model-value="outsideAddrChged" style="overflow-wrap: break-all;"></q-option-group>
+   
+   <span>
+    <q-btn round dense flat icon="add_circle" color="primary" class="q-ma-none">
+    <q-popup-edit v-slot="scope" @save="outsideAddrAdded"
+     buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+     <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+    </q-popup-edit>
+    {{tags.addGw}}</q-btn>
+   </span>
+
+   <span v-show="outsideAddr!=''">
+    <q-circular-progress :indeterminate="testing" show-value size="3em"
+     @click="connectionTest" thickness="0.3" color="yellow"
+      track-color="transparent" class="text-white q-ml-lg" dense>
+     <q-icon name="leak_add" color="secondary" class="q-ma-none" size="2em"></q-icon>
+    </q-circular-progress>{{tags.testGw}}
+   </span>
   </td>
  </tr>
  <tr>
@@ -351,6 +369,37 @@ template: `
    accept="image/png,image/jpeg,image/gif,image/jpg"
    @change="startCropLogo($event)">
 </q-dialog>
+
+<q-dialog v-model="chgPwdDta.dlg">
+ <q-card bordered>
+   <q-card-section>
+    <q-input v-model="chgPwdDta.oldPwd" :label="tags.oldPwd" dense :type="chgPwdDta.vis ? 'text':'password'">
+     <template v-slot:append>
+      <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
+        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+     </template>
+    </q-input>
+    <q-input v-model="chgPwdDta.newPwd" :label="tags.newPwd" dense :type="chgPwdDta.vis ? 'text':'password'">
+     <template v-slot:append>
+      <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
+        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+     </template>
+    </q-input>
+    <q-input v-model="chgPwdDta.cfmPwd" :label="tags.cfmPwd" dense :type="chgPwdDta.vis ? 'text':'password'"
+     :rules="[v=>chgPwdDta.newPwd==chgPwdDta.cfmPwd||tags.invalidCfmPwd]">
+     <template v-slot:append>
+      <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
+        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+     </template>
+    </q-input>
+   </q-card-section>
+   <q-card-actions align="right" class="text-primary">
+    <q-btn flat :label="tags.ok" @click="changePwd"></q-btn>
+    <q-btn flat :label="tags.cancel" v-close-popup></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
 <register-dialog :tags="tags" ref="regDlg"></register-dialog>
 <component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
 `}

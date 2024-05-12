@@ -167,10 +167,12 @@ template: `
 <q-layout view="lHh lpr lFf" container style="height:100vh" v-cloak>
 <q-header elevated class="primary">
    <q-toolbar>
-      <q-btn icon="arrow_back" dense @click="service.go_back" flat round></q-btn>
-      <q-toolbar-title>{{tags.backup}}</q-toolbar-title>
-      <q-btn flat icon="power_settings_new" :label="backup.at<0?tags.startup:tags.shutdown"
-        @click="switchBackup" dense></q-btn>
+     <q-avatar square><q-icon name="arrow_back" @click="service.go_back"></q-icon></q-avatar>
+     <q-toolbar-title>{{tags.backup}}</q-toolbar-title>
+     <q-chip clickable color="primary" text-color="white" @click="switchBackup">
+       <q-avatar><q-icon name="power_settings_new"></q-icon></q-avatar>
+       {{backup.at<0?tags.startup:tags.shutdown}}
+     </q-chip>
    </q-toolbar>
 </q-header>
 <q-page-container>
