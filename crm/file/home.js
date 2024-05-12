@@ -2,7 +2,6 @@ export default {
 inject:['service', 'tags', 'icons'],
 data(){return{
     taskNum:0,
-    role:'',
     myList:{
         c:{icon:this.icons.customer,name:this.tags.home.customers,url:'/customers',weekInc:0},
         n:{icon:this.icons.contact,name:this.tags.home.contacts,url:'/contacts',weekInc:0},
@@ -23,10 +22,10 @@ refresh() {
             return;
         }
         this.taskNum=resp.data.num;
-    }); 
+    });
 
     var url2="/api/report/bulletin?days=7";
-    request({method:"GET",url:url2}, this.service.name).then(function(resp){
+    request({method:"GET",url:url2}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             Console.warn("request "+url2+" failed:" + resp.code + ",info:" + resp.info);
             return;
@@ -36,16 +35,7 @@ refresh() {
         this.myList.o.weekInc=resp.data.ord;
         this.myList.p.weekInc=resp.data.payment;
         this.myList.s.weekInc=resp.data.service;
-    }.bind(this));
-
-    var url3="/power/getrole?service="+this.service.name;
-    request({method:"GET",url:url3}, SERVICE_USER).then(function(resp){
-        if(resp.code!=RetCode.OK) {
-            Console.warn("request "+url3+" failed:" + resp.code + ",info:" + resp.info);
-            return;
-        }
-        this.role=resp.data.role;
-    }.bind(this)); 
+    });
 },
 flowDef() {
     var proxyUrl=encodeURIComponent("/api/proxy/flow");
@@ -58,7 +48,7 @@ template:`
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
-    <q-btn flat round dense icon="menu" v-if="role=='admin'">
+    <q-btn flat round dense icon="menu" v-if="service.role=='admin'">
       <q-menu>
        <q-list style="min-width:100px">
         <q-item clickable @click.stop="service.jumpTo('/settings')">
@@ -111,7 +101,8 @@ template:`
     <q-item-section thumbnail>
     </q-item-section>
   </q-item>
-  <q-item clickable @click="service.jumpTo('/balance')" v-if="role=='admin'||role=='finance'">
+  <q-item clickable @click="service.jumpTo('/balance')"
+   v-if="service.role=='admin'||service.role=='finance'">
     <q-item-section avatar>
       <q-icon name="svguse:/assets/imgs/meshicons.svg#settle" color="yellow-10"></q-icon>
     </q-item-section>

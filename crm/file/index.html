@@ -64,7 +64,8 @@ const icons={
 const service = {
 name:"crm",N_PAGE:10,N_SMPG:5,WF:"workflow",
 CLIENTW:document.documentElement.clientWidth,
-userinfo:{},/*帐号基本信息缓存*/
+userinfo:{}, /*帐号基本信息缓存*/
+role:'', /*在服务中的角色*/
 flowsteps:{customer:[],order:[],service:[],payment:[]},/*工作流步骤定义缓存*/
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
 skus:[],//商品缓存
@@ -86,26 +87,21 @@ decodeExt(extStr,tmpl) { //return {a:xx,b:yy,...}
     }
     return o;
 },
-template(n,refresh){return new Promise(resolve=>{
-    if(!refresh){
-        if(Object.keys(this.tmpl[n]).length>0) {
-            resolve(this.tmpl[n]);
-            return;
-        }
+template(n,refresh){
+    if(!refresh && Object.keys(this.tmpl[n]).length>0){
+        return new Promise(resolve=>{resolve(this.tmpl[n])});
     }
     var url="/api/proxy/gettemplate?name="+n;
-    request({method:"GET",url:url}, this.name).then((resp)=>{
+    return request({method:"GET",url:url}, this.name).then((resp)=>{
         if(resp.code!=RetCode.OK || !('data' in resp) || !('v' in resp.data)) {
             Console.info("request template `"+n+"` failed:" + resp.code + ",info:" + resp.info);
-            resolve({'cmt':{n:tags.comment,t:'s'}});//只有一个备注字段
-            return;
+            return {'cmt':{n:tags.comment,t:'s'}};//只有一个备注字段
         }
         if(resp.data.v) {
             this.tmpl[n]=resp.data.v;
         }
-        resolve(this.tmpl[n]);
+        return this.tmpl[n];
     });
-})
 },
 baseInfo() {
     var opts={method:"GET",url:"/api/getbaseinfo?"};
@@ -117,35 +113,29 @@ baseInfo() {
         this.userinfo=resp.data;
     });
 },
-skuList() {return new Promise(resolve=>{
+skuList() {
     if(this.skus.length>0){
-        resolve(this.skus);
-        return;
+        return new Promise(resolve=>{ resolve(this.skus) });
     }
     var url="/api/sku/list";
-    request({method:"GET",url:url}, this.name).then(resp=>{
+    return request({method:"GET",url:url}, this.name).then(resp=>{
         if(resp.code != 0) {
-            resolve([]);
-            return;
+            return [];
         }
         this.skus=resp.data.skus;
-        resolve(this.skus);
+        return this.skus;
     });
-});
 },
-flowDef(id,refresh) {return new Promise(resolve=>{
-    if(!refresh) {
-        if(this.flowsteps[id]){
-            resolve(this.flowsteps[id]);
-            return;
-        }
+flowDef(id,refresh) {
+    if(!refresh && this.flowsteps[id]) {
+        return new Promise(resolve=>{resolve(this.flowsteps[id])});
     }
 
     var url="/api/flow/info?flowid="+id
-    request({method:"GET",url:url}, this.WF).then(resp=>{
+    return request({method:"GET",url:url}, this.WF).then(resp=>{
         if(resp.code!=0) {
             reject(url + ",code:"+resp.code+",info:"+resp.info);
-            return;
+            return {};
         }
         var sd={name:resp.data.dispName,maxStep:0,steps:[]};//steps definition
         //step,type,name,ext,comment
@@ -157,9 +147,22 @@ flowDef(id,refresh) {return new Promise(resolve=>{
             }
         });
         this.flowsteps[id]=sd;
-        resolve(sd);
+        return sd;
     });
-});
+},
+get_role() {
+    if(this.role!='') {
+        return new Promise(resolve=>{resolve(this.role)});
+    }
+    var url="/power/getrole?service="+this.name;
+    return request({method:"GET",url:url}, SERVICE_USER).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            Console.warn("request "+url+" failed:" + resp.code + ",info:" + resp.info);
+            return '';
+        }
+        this.role=resp.data.role;
+        return this.role;
+    });
 },
 go_back() { //返回，在页面中通过service.go_back调用
     router.back();
@@ -174,7 +177,9 @@ const app = Vue.createApp({
 provide:{tags:tags, service:service, icons:icons},
 created(){
     service.baseInfo();
-    this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+    service.get_role().then(role=>{
+        this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+    });
 },
 mounted() {
     window.sys_go_back = this.sysGoBack;//给webview调用
