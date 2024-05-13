@@ -173,7 +173,20 @@ outsideAddrChged() {
       }  
     }));
 },
-resetAccessCode() {
+saveAccessCode(val, initVal) { //httpdns接入码
+    if(Server.startupAt()<=0) { //服务没启动
+        this.$refs.alertDlg.show(this.tags.serverNotStart);
+        return;
+    }
+    Server.saveAccessCode(val, __regsiterCallback(resp => {
+        if(resp.code!=RetCode.OK) {
+			this.$refs.alertDlg.showErr(resp.code, resp.info);
+		} else {
+            this.accessCode=val;
+        }
+    }));
+},
+resetAccessCode() { //远程调测接入码
     if(Server.startupAt()<=0) { //服务没启动
         this.$refs.alertDlg.show(this.tags.serverNotStart);
         return;
@@ -182,8 +195,8 @@ resetAccessCode() {
         if(resp.code==RetCode.OK) {
             this.accessCode=resp.data.code;
         } else {
-			this.$refs.alertDlg.showErr(resp.code, resp.info);
-		}
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
     }));
 },
 setLogLevel() {
@@ -316,11 +329,18 @@ template: `
  </tr>
  <tr>
    <td>{{tags.accessCode}}</td>
-   <td>{{accessCode}}
-    <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessCode" size="2em"></q-icon>
+   <td>
+    <span>{{accessCode}}
+     <q-popup-edit v-slot="scope" @save="saveAccessCode" v-model="accessCode"
+      buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+      <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+     </q-popup-edit>
+    </span>
+    <q-btn round dense flat icon="auto_mode" text-color="secondary"
+     @click="resetAccessCode" class="q-ml-md"></q-btn>
    </td>
  </tr>
- <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.remoteTest}}</td><td></td></tr>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.testSettings}}</td><td></td></tr>
  <tr>
    <td>{{tags.accessToken}}</td>
    <td>

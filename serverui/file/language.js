@@ -36,7 +36,7 @@ cn:{
   advanced:"高级服务",
 
   backup:"数据备份",
-  remoteTest:"调测设置",
+  testSettings:"调测设置",
   baseSettings:"基本设置",
   nwSettings:"网络接入",
   debug:"调测助手",
@@ -44,7 +44,7 @@ cn:{
   faultreport:"故障上报",
   backupNow:"立即备份",
   restore:"恢复数据",
-  accessToken:"访问令牌",
+  accessToken:"调测令牌",
   neverBackup:"尚无备份",
   startup:"启用",
   shutdown:'停用',
