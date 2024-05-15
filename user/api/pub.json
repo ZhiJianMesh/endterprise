@@ -7,6 +7,14 @@
             "grp":"*",
             "power":"*"
         }
+    },
+    "employee":{
+        "name":"员工",
+        "rights":{
+            "user":"base",
+			"grp":"base",
+			"power":"base"
+        }
     }
 }
 }
