@@ -176,7 +176,7 @@ template:`
       :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]">
        <template v-slot:prepend><q-icon name="contact_phone"></q-icon></template>
       </q-input>
- 	  <component-date-input :close="tags.ok" :label="tags.birth" v-model="scope.value.birth"></component-date-input>
+ 	  <component-date-input :close="tags.ok" :label="tags.birth" v-model="scope.value.birth" max="today"></component-date-input>
 	  <div class="q-gutter-sm">
        <q-radio v-model="scope.value.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
        <q-radio v-model="scope.value.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>

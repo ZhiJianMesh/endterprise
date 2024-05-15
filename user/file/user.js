@@ -152,7 +152,7 @@ template:`
  <q-item>
   <q-item-section><q-item-label caption>{{tags.user.birthday}}</q-item-label></q-item-section>
   <q-item-section>
-   <component-date-input v-model="dtl.sBirthday" max="today" @update:modelValue="birthChged"></component-date-input>
+   <component-date-input v-model="dtl.sBirthday" max="today" min="1900/1/1" @update:modelValue="birthChged"></component-date-input>
   </q-item-section>
  </q-item>
  <q-item>

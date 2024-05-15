@@ -524,7 +524,7 @@ template:`
         :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]" maxlength=11></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <component-date-input :label="tags.contact.birthday" v-model="newContact.birthday"></component-date-input>
+       <component-date-input :label="tags.contact.birthday" v-model="newContact.birthday" max="today"></component-date-input>
       </q-item-section></q-item>
       <!-- ext/comment -->
       <q-item v-for="(tpl,k) in cntTmpl"><q-item-section>

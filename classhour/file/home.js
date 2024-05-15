@@ -269,7 +269,7 @@ template:`
      :rules="[v=>v!=''|| tags.namePls]"></q-input>
      <q-input v-model="newStudent.mobile" :label="tags.mobile" maxlength=11
      :rules="[v=>/^1[0-9]{10}$/.test(v)|| tags.mobilePls]" dense></q-input>
-     <component-date-input :close="tags.ok" :label="tags.birth" v-model="newStudent.birth"></component-date-input>
+     <component-date-input :close="tags.ok" :label="tags.birth" v-model="newStudent.birth" max="today"></component-date-input>
      <q-input v-model="newStudent.points" :label="tags.points" dense type="number"></q-input>
      <div class="q-gutter-sm">
       <q-radio v-model="newStudent.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>

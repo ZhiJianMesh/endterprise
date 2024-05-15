@@ -153,7 +153,7 @@ template:`
      :rules="[v=>/^1[0-9]{10}$/.test(v)|| tags.mobilePls]" dense></q-input>
      <q-input v-model="newVip.pwd" :label="tags.pwd" type="password" dense
      :rules="[/^[0-9]{4,20}$/.test(v)|| tags.pwdPls]"></q-input>
- 	 <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth"></component-date-input>
+ 	 <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth" max="today"></component-date-input>
      <div class="q-gutter-sm">
       <q-radio v-model="newVip.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
       <q-radio v-model="newVip.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>

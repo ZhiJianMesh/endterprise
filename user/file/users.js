@@ -92,12 +92,12 @@ template:`
  <q-item>
   <q-item-section><q-item-label caption>{{tags.user.account}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.user.nickName}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.user.mobile}}</q-item-label></q-item-section>
+  <q-item-section><q-item-label caption>{{tags.user.sex}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="u in users" :class="u.ustatus=='N'?'':'bg-grey-1'" @click="service.jumpTo('/user?id='+u.id)" clickable>
   <q-item-section>{{u.account}}</q-item-section>
   <q-item-section>{{u.nickName}}</q-item-section>
-  <q-item-section>{{u.mobile}}</q-item-section>
+  <q-item-section>{{tags.user.sexTitles[u.sex]}}</q-item-section>
  </q-item>
 </q-list>
     </q-page>

@@ -49,6 +49,7 @@ user:{
     createAt:"创建时间",
     birthday:"生日",
     sex:"性别",
+	sexTitles:{"M":"男","F":"女"},
 	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}]
 },
 grp:{

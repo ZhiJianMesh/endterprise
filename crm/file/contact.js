@@ -461,7 +461,7 @@ template:`
         <q-input :label="tags.contact.address" v-model="dtl.address" dense></q-input>
       </q-item-section></q-item>   
       <q-item><q-item-section>
-       <component-date-input :close="tags.ok" :label="tags.contact.birthday" v-model="dtl.birthday"></component-date-input>
+       <component-date-input :close="tags.ok" :label="tags.contact.birthday" v-model="dtl.birthday" max="today"></component-date-input>
       </q-item-section></q-item>
       <q-item v-for="(tpl,k) in tmpl"><q-item-section>
         <div v-if="tpl.t=='d'">
