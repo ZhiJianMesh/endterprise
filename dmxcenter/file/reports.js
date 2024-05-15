@@ -11,11 +11,11 @@ data() {return {
 }},
 created(){
     var dt=new Date();
-    this.end=Math.floor(dt.getTime()/HOUR_MS);
+    this.end=Math.ceil(dt.getTime()/HOUR_MS);
     var begin=this.end - WEEKDAY_HOURS;
     var dt1=new Date(begin*HOUR_MS)
     var dt2=new Date(dt1.getFullYear(), dt1.getMonth(),dt1.getDate(),0,0,0,0);
-    this.begin=Math.floor(dt2.getTime()/HOUR_MS);
+    this.begin=Math.ceil(dt2.getTime()/HOUR_MS);
     this.dateStr=dt2.toLocaleDateString()+' - '+dt.toLocaleDateString();
     this.queryReports();
 },

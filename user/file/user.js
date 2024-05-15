@@ -4,7 +4,7 @@ data() {return {
     id:this.$route.query.id,
     dtl:{},
     infos:[],
-    newPwd:'',
+    pwd:{val:'',dlg:false},
     baseChged:false,
     roleNames:{},
     serviceNames:{}
@@ -27,10 +27,16 @@ detail() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.dtl=resp.data;//account,nickName,mobile,email,loginTime,powers[],groups[]
+        this.dtl=resp.data;//account,nickName,mobile,email,loginTime,createAt,birthday,sex,powers[],groups[]
         var dt = new Date(this.dtl.loginTime);
         this.dtl['loginAt']=dt.toLocaleString();
+        dt.setTime(this.dtl.createAt?this.dtl.createAt:0)//老版本没有此字段
+        this.dtl['createAt']=dt.toLocaleString();
+        dt.setTime(this.dtl.birthday?this.dtl.birthday*86400000:0)
+        
+        this.dtl['sBirthday']=dt.toLocaleDateString();
         this.dtl['status']=this.dtl.ustatus=='N'?'person':'person_off';
+
         this.dtl.powers=resp.data.powers.map(p => {
             var pn='';
             if(p.power && p.power.length>=2) {
@@ -64,13 +70,21 @@ reset_pwd() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.newPwd=resp.data.newPwd;
+        this.pwd.val=resp.data.newPwd;
+        this.pwd.dlg=true;
     });
 },
 save_baseinfo() {
     var opts={method:"POST",url:"/api/user/setBaseInfo",
-        data:{uid:this.id,nickName:this.dtl.nickName,
-        mobile:this.dtl.mobile, email:this.dtl.email}};
+        data:{
+            uid:this.id,
+            nickName:this.dtl.nickName,
+            mobile:this.dtl.mobile,
+            email:this.dtl.email,
+            sex:this.dtl.sex,
+            birthday:this.dtl.birthday
+        }
+    };
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -98,6 +112,11 @@ remove_power(service,i) {
             this.dtl.powers.splice(i, 1);
         }
     });
+},
+birthChged(v){
+    var dt = Date.parse(v);
+    this.dtl.birthday=Math.ceil(dt/86400000);
+    this.baseChged=true;
 }
 },
 template:`
@@ -124,6 +143,19 @@ template:`
   </q-item-section>
  </q-item>
  <q-item>
+  <q-item-section><q-item-label caption>{{tags.user.sex}}</q-item-label></q-item-section>
+  <q-item-section>
+   <q-option-group v-model="dtl.sex" :options="tags.user.sexOpts" color="primary" inline
+    @update:model-value="baseChged=true"></q-option-group>
+  </q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section><q-item-label caption>{{tags.user.birthday}}</q-item-label></q-item-section>
+  <q-item-section>
+   <component-date-input v-model="dtl.sBirthday" max="today" @update:modelValue="birthChged"></component-date-input>
+  </q-item-section>
+ </q-item>
+ <q-item>
   <q-item-section><q-item-label caption>{{tags.user.mobile}}</q-item-label></q-item-section>
   <q-item-section>{{dtl.mobile}}
    <q-popup-edit v-model="dtl.mobile" auto-save v-slot="scope" @save="baseChged=true">
@@ -146,8 +178,8 @@ template:`
   <q-item-section>{{dtl.loginAt}}</q-item-section>
  </q-item>
  <q-item>
-  <q-item-section><q-item-label caption>{{tags.user.pwd}}</q-item-label></q-item-section>
-  <q-item-section class="text-red">{{newPwd}}</q-item-section>
+  <q-item-section><q-item-label caption>{{tags.user.createAt}}</q-item-label></q-item-section>
+  <q-item-section>{{dtl.createAt}}</q-item-section>
  </q-item>
 </q-list>
 <div class="text-right">
@@ -191,28 +223,17 @@ template:`
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="newEmployeeDlg">
- <q-card style="min-width:70vw">
-  <q-card-section>
-      <div class="text-h6">{{tags.addEmployee}}</div>
-  </q-card-section>
-  <q-card-section class="q-pt-none">
-    <q-item><q-item-section>
-     <q-input v-model="newEmployee.account" dense :label="tags.user.account"></q-input>
-    </q-item-section></q-item>
-    <q-item><q-item-section>
-      <q-select v-model="newEmployee.role" :options="roleOpts" :label="tags.power.role" emit-value map-options></q-select>
-    </q-item-section></q-item>
-    <q-item><q-item-section>
-     <q-input v-model="newEmployee.password" type="password" :label="tags.user.pwd" dense></q-input>
-    </q-item-section></q-item>
-   </q-list>
-  </q-card-section>
-  <q-card-actions align="right">
-     <q-btn flat :label="tags.ok" color="primary" @click="add_member"></q-btn>
-     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
-  </q-card-actions>
- </q-card>
+<q-dialog v-model="pwd.dlg">
+  <q-card style="min-width:40vw;">
+    <q-card-section>
+      <div class="text-h6">{{tags.user.pwd}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">{{tags.user.pwdReseted}}<br>{{pwd.val}}</q-card-section>
+    <q-card-actions align="right">
+      <q-btn flat :label="tags.user.resetPwd" color="secondary" @click="reset_pwd"></q-btn>
+      <q-btn :label="tags.ok" color="primary" v-close-popup></q-btn>
+    </q-card-actions>
+  </q-card>
 </q-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
 `

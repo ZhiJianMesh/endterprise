@@ -655,6 +655,9 @@ const Server = {
     resetAccessCode(jsCbId){
         __default_jscb(jsCbId,{code:RetCode.OK, data:{code:"723456"}});
     },
+    saveAccessCode(code, jsCbId){
+        __default_jscb(jsCbId,{code:RetCode.OK, data:{code:code}});
+    },
     getServices(jsCbId){ //只是用于测试
         var data={code:RetCode.OK, data:{services:[
             {name:"crm",displayName:"客户关系管理",author:"Lgy", level:5, favicon:"/crm/favicon.png", version:"0.1.0",updatable:false},
@@ -775,7 +778,10 @@ const Company={//used in server
         var logoUrl=Http.cloudFileUrl("/logo?cid="+this.cid, "company");
         return getExternal({url:logoUrl});
     },
-    saveLogo(){}
+    saveLogo(){},
+    changePwd(oldPwd, newPwd, cfmPwd, jsCbId) {
+        __default_jscb(jsCbId, {code:RetCode.OK,info:"success"})
+    }
 }
 
 const Http={

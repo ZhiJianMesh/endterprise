@@ -1,27 +1,43 @@
 //日期选择组件component-date-input
 export default{
+data(){return {end:253234080000000/*10000AC*/,start:-377485920000000/*10000BC*/}},
 props: {
     modelValue:{type:String},
     label:{type:String,required:true},
-    min:{type:String},
-    max:{type:String},
+    min:{type:String,default:''},
+    max:{type:String,default:''},
     dateFormat:{type:String, default:"YYYY/MM/DD"},
     weekDays:{type:Array, default:["日","一","二","三","四","五","六"]},
     months:{type:Array, default:["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"]},
     close:{type:String, default:'关闭'}
 },
 emits: ['update:modelValue'],
+created(){
+    if(this.max) {
+        if(this.max=="today") {
+            this.end=Date.now();
+        } else {
+            this.end=Date.parse(this.max);
+        }
+    }
+    if(this.min) {
+        this.start=Date.parse(this.min);
+    }
+},
 methods:{
 rangeFilter(dt) {
-    if(this.min && this.min>dt){return false}
-    if(this.max && this.max<dt){return false}
-    return true
+    var t=Date.parse(dt);
+    return t>this.start&&t<this.end
 }
 },
 computed: {
    value: {
       get() {return this.modelValue},
-      set(v) {this.$emit('update:modelValue', v)}
+      set(v) {
+          if(this.rangeFilter(v)) {
+            this.$emit('update:modelValue', v)
+          }
+      }
    }
 },
 template: `<q-input dense :label="label" v-model="value" readonly>
@@ -32,7 +48,7 @@ template: `<q-input dense :label="label" v-model="value" readonly>
    :locale="{daysShort:weekDays,months:months,monthsShort:months}"
    :options="rangeFilter">
     <div class="row items-center justify-end">
-       <q-btn v-close-popup :label="close" color="primary" flat></q-btn>
+     <q-btn v-close-popup :label="close" color="primary"></q-btn>
     </div>
   </q-date>
  </q-popup-proxy>

@@ -40,11 +40,16 @@ user:{
     role:"角色",
     power:"服务权限",
     pwd:"密码",
+    pwdReseted:"密码已重置，请记住以下密码（区分大小写）:",
     resetPwd:"重置密码",
     groups:"任职部门",
     nickName:"昵称",
     mobile:"电话",
-    loginAt:"登录时间"
+    loginAt:"登录时间",
+    createAt:"创建时间",
+    birthday:"生日",
+    sex:"性别",
+	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}]
 },
 grp:{
     name:"部门名称",

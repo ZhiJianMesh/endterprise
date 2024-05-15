@@ -11,7 +11,6 @@ en:{
   login:"Login",
   logout:"Logout",
   personalAcc:"Account",
-  email:"Email",
   invalidEmail:"Please input a valid email",
   invalidMobile:"Please input a valid phone number",
   invalidExtIP:"Please input a valid outside IP address",
@@ -165,7 +164,6 @@ cn:{
   login:"登录",
   logout:"退出",
   personalAcc:"个人帐号",
-  email:"邮箱",
   invalidEmail:"请输入正确的邮箱",
   invalidMobile:"请输入正确的手机号",
   invalidExtIP:"不是正确的公网地址",
@@ -227,6 +225,12 @@ cn:{
     'unknown':"未知错误",
     '5101':"请在‘公司信息’中设置公司编号之后再尝试",
     '5102':"没有合适的服务器可以使用"
+  },
+  user:{
+	createAt:"创建时间",
+    birthday:"生日",
+    sex:"性别",
+	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}]
   },
   home:{
     personal:"帐号信息",

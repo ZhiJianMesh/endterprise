@@ -14,8 +14,11 @@ created() {
 },
 methods:{
 get_userbase() {
-    this.service.getUserInfo().then(userInfo=>{
-        this.userInfo=userInfo;
+    this.service.getUserInfo().then(ui=>{
+        this.userInfo=ui;
+		var dt = new Date();
+		dt.setTime(ui.birthday?ui.birthday*86400000:0)
+        this.userInfo['sBirthday']=dt.toLocaleDateString();
     });
 },
 changePwd() {
@@ -35,9 +38,13 @@ changePwd() {
 },
 saveChanges(){
     var company=this.service.curCompany();
-    var req={nickName:this.userInfo.nickName,
-             mobile:this.userInfo.mobile,
-             email:this.userInfo.email};
+    var req = {
+		nickName:this.userInfo.nickName,
+		mobile:this.userInfo.mobile,
+		email:this.userInfo.email,
+		birthday:this.userInfo.birthday,
+		sex:this.userInfo.sex
+	};
     request({method:"POST", url:"/api/setBaseInfo", data:req, cloud:company.cloud}, company.userService).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
@@ -45,6 +52,11 @@ saveChanges(){
         }
         this.changed=false;
     });
+},
+birthChged(v){
+    var dt = Date.parse(v);
+    this.userInfo.birthday=Math.ceil(dt/86400000);
+    this.changed=true;
 }
 },
 
@@ -63,6 +75,20 @@ template: `
   <td>{{tags.nickName}}</td>
   <td>
    <q-input v-model="userInfo.nickName" dense @update:model-value="changed=true"></q-input>
+  </td>
+ </tr>
+ <tr>
+  <td><{{tags.user.sex}}</td>
+  <td>
+   <q-option-group v-model="userInfo.sex" :options="tags.user.sexOpts" color="primary" inline
+    @update:model-value="changed=true"></q-option-group>
+  </td>
+ </tr>
+ <tr>
+  <td>{{tags.user.birthday}}</td>
+  <td>
+   <component-date-input v-model="userInfo.sBirthday" max="today" min="1900/1/1"
+   @update:modelValue="birthChged"></component-date-input>
   </td>
  </tr>
  <tr>
