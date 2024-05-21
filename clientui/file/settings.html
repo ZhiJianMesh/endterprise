@@ -66,22 +66,23 @@ cdns:[], introductions:{},
 comTokens:{}, users:{},
 services:{list:[], cols:[]},
 curCompany() {return JSON.parse(Companies.curCompany());},
-getUserInfo() {return new Promise((resolve, reject)=>{
+getUserInfo() {
     if(this.users[Companies.curCompanyId()]) {
-        resolve(this.users[Companies.curCompanyId()]);
-        return;
+        return new Promise(resolve=>{
+            resolve(this.users[Companies.curCompanyId()]);
+        });
     }
     var company=this.curCompany();
     var userService=company.userService;
-    request({method:"GET",url:"/api/getBaseInfo", cloud:company.cloud}, userService).then(resp => {
+    return request({method:"GET",url:"/api/getBaseInfo", cloud:company.cloud}, userService).then(resp => {
         if(resp.code != RetCode.OK) {
             Console.warn("Fail to getBaseInfo " + JSON.stringify(resp));
             return;
         }
         this.users[company.id]=resp.data;
-        resolve(this.users[company.id]);
+        return resp.data;
     });
-})},
+},
 clrUserInfo() {
     if(this.users[Companies.curCompanyId()]) {
         this.users[Companies.curCompanyId()] = undefined

@@ -163,7 +163,7 @@ create_consumes(){
     })
 },
 //处理学员选择的三个函数
-search_student(val,update) {
+filter_student(val,update) {
   if(val==='') {
     update(() => {
       this.stuOpts.opts=[]
@@ -179,8 +179,6 @@ search_student(val,update) {
         }
 
         var opts=[];
-        var user, val;
-        var cols=resp.data.cols;
         for(var stu of resp.data.students) {
             opts.push({value:stu.id, label:stu.name});
         }
@@ -292,7 +290,7 @@ template:`
 	<q-select v-model="stuOpts.values" :label="tags.student" :options="stuOpts.opts"
 	  use-input use-chips multiple
 	  hide-dropdown-icon input-debounce=200 dense
-	  @new-value="input_student" @filter="search_student"
+	  @new-value="input_student" @filter="filter_student"
 	  @update:model-value="student_changed">
 	 <template v-slot:selected-item="scope">
 	  <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"

@@ -179,7 +179,7 @@ template:`
   <template v-slot:action>
     <q-icon name="edit" color="primary"></q-icon>
     <q-popup-edit v-model="student" cover="false" buttons auto-save v-slot="scope"
-      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel">
+      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel" style="min-width:40vw">
       <q-input color="accent" v-model="scope.value.name" dense autofocus>
        <template v-slot:prepend><q-icon name="person"></q-icon></template>
       </q-input>
