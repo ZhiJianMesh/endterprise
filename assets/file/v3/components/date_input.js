@@ -21,7 +21,11 @@ created(){
         }
     }
     if(this.min) {
-        this.start=Date.parse(this.min);
+        if(this.min=="today") {
+            this.start=Date.now();
+        } else {
+            this.start=Date.parse(this.min);
+        }
     }
 },
 methods:{

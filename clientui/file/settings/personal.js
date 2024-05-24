@@ -78,7 +78,7 @@ template: `
   </td>
  </tr>
  <tr>
-  <td><{{tags.user.sex}}</td>
+  <td>{{tags.user.sex}}</td>
   <td>
    <q-option-group v-model="userInfo.sex" :options="tags.user.sexOpts" color="primary" inline
     @update:model-value="changed=true"></q-option-group>

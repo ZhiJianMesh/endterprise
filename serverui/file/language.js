@@ -71,6 +71,7 @@ cn:{
   login:"登录",
   reRegister:"重注册/登录",
   search:"搜索",
+  platformVersion:"平台版本",
   day:"天",
   hour:"时",
   minute:"分",

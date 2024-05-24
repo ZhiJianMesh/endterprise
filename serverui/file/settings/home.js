@@ -16,6 +16,7 @@ data() {return {
  dlgs:{chgPwd:false,setLogo:false,testing:false},
  chgPwdDta:{oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false},
  testing:false,
+ platformVersion:"",
 
  logoOpts:{
     img: "",
@@ -54,6 +55,7 @@ created(){
     }else{
         this.logoOpts.width=parseInt(w*0.6);
     }
+    this.platformVersion=Platform.version();
 },
 methods:{
 init() {
@@ -299,6 +301,10 @@ template: `
    <td @click="service.jump('/backup')">
     <q-icon name="cloud_sync" color="primary" size="2em" class="q-ml-md"></q-icon>
    </td>
+ </tr>
+ <tr>
+    <td>{{tags.platformVersion}}</td>
+    <td>{{platformVersion}}</td>
  </tr>
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
   <td>{{tags.nwSettings}}</td><td></td>
