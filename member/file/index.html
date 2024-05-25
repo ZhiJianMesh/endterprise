@@ -17,6 +17,12 @@
 <script src="/assets/v3/echarts.js"></script>
 <script type="module">
 import Language from "./language.js"
+import Home from "./home.js"
+import Vip from "./vip.js"
+import ConsumeLogs from "./consumelogs.js"
+import Reports from "./reports.js"
+import Settings from "./settings.js"
+
 import DateInput from "/assets/v3/components/date_input.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
@@ -26,11 +32,11 @@ const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
-  {path: '/home', component: () => import('./home.js')},
-  {path: '/vip', component: () => import('./vip.js')},
-  {path: '/consumelogs', component: () => import('./consumelogs.js')},
-  {path: '/reports', component: () => import('./reports.js')},
-  {path: '/settings', component: () => import('./settings.js')}
+  {path: '/home', component:Home},
+  {path: '/vip', component:Vip},
+  {path: '/consumelogs', component:ConsumeLogs},
+  {path: '/reports', component:Reports},
+  {path: '/settings', component:Settings}
 ]});
 
 //service定义
