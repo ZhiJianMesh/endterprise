@@ -20,6 +20,7 @@ cn:{
   update:"更新",
   waitting:"...",
   author:"作者",
+  version:"版本",
   releaseAt:"更新时间",
   aboutApp:"关于此应用",
   failToCall:"调用失败",

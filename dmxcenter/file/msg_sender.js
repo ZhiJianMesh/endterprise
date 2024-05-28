@@ -1,15 +1,15 @@
-//发送消息组件
+//消息发送组件
 export default{
 data() {return {
     dlg:false,
-    codes:[],
+    batch:[], //按设备号批量发送
     msg:'',
     tmpls:[],
     tmpl:'',
     percent:{val:0,each:0},
     type:"1", //1：按客户，2：按设备
     errMsg:'',
-    adminCust:0,
+    customer:0,
 }},
 props: {
     title:{type:String,required:true},
@@ -17,7 +17,7 @@ props: {
     custName:{type:String, required:true},
     service:{type:String, required:true},
     batchNum:{type:Number, required:false, default:150},
-    tags:{type:Object, required:true}
+    tags:{type:Object, required:false, default:{}}
 },
 created() {
     this.getTmpls();
@@ -26,7 +26,7 @@ created() {
             this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
             return;
         }
-        this.adminCust=resp.data.customer;
+        this.customer=resp.data.customer;
     });
 },
 methods:{
@@ -36,45 +36,78 @@ show() {
 },
 sendMessage() {
     if(this.type==1) {
-        var url=this.adminCust>0?"/msg/send_by_customer":"/msg/pro_send_by_customer";
-        var dta={customer:this.custId,msg:this.msg,maxTimes:1};
-        request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
-            if(resp.code!=RetCode.OK) {
-                this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
-                return;
-            }
-            this.errMsg='';
-            this.dlg=false;
-        });
-        return;
-    }
-    
-    var codes=this.codes.split(/[(\r\n)\r\n\s\t,;]+/);
-    this.percent.val=0;
-    if(codes.length<this.batchNum) {
-        this.percent.each=0;//不显示
-    } else {
-        var n=Math.ceil(codes.length/this.batchNum);
-        this.percent.each=1.0/n;
-    }
-    this.send_by_code_batch(codes,this.msg,0);
+        send_by_customer(this.cutomer, this.msg);
+    } else if(this.type==2) {
+		var codes=this.batch.split(/[(\r\n)\r\n;]+/);
+		this.percent.val=0;
+		if(codes.length<this.batchNum) {
+			this.percent.each=0;//不显示
+		} else {
+			var n=Math.ceil(codes.length/this.batchNum);
+			this.percent.each=1.0/n;
+		}
+		this.send_by_codes(codes,this.msg,0);
+	} else {
+		var msgs=this.batch.split(/[(\r\n)\r\n]+/);
+		this.percent.val=0;
+		if(msgs.length<this.batchNum*2) {
+			this.percent.each=0;//不显示
+		} else {
+			var n=Math.ceil(msgs.length/(this.batchNum*2));
+			this.percent.each=1.0/n;
+		}
+		this.send_by_msgs(msgs,0);
+	}
 },
-send_by_code_batch(codes,msg,start) {
+send_by_customer(customer, msg) {
+	var url=this.customer>0?"/msg/send_by_customer":"/msg/pro_send_by_customer";
+	var dta={customer:customer,msg:msg,maxTimes:1};
+	request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
+		if(resp.code!=RetCode.OK) {
+			this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
+			return;
+		}
+		this.errMsg='';
+		this.dlg=false;
+	});
+},
+send_by_codes(codes,msg,start) {
     var dta={msg:msg,codes:[],maxTimes:1};
     for(var n=0,i=start,l=codes.length; i<l&&n<this.batchNum; i++,n++) {
         dta.codes.push(codes[i]);
     }
-    var url=this.adminCust>0?"/msg/send_by_code":"/msg/pro_send_by_code";
+    var url=this.customer>0?"/msg/send_by_codes":"/msg/pro_send_by_codes";
     request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
         if(resp.code!=RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
+            this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
             this.percent.val=0;
             return;
         }
         
         this.percent.val+=this.percent.each;
         if(start+this.batchNum < codes.length) {
-            this.send_by_code_batch(codes,msg,start+this.batchNum);
+            this.send_by_codes(codes,msg,start+this.batchNum);
+            return;
+        }
+        this.dlg=false;
+    }); 
+},
+send_by_msgs(msgs,start) {
+    var dta={msgs:[],maxTimes:1};
+    for(var n=0,i=start,l=msgs.length; i<l&&n<this.batchNum; i+=2,n++) {
+        dta.msgs.push({code:msgs[i], msg:msgs[i+1]});
+    }
+    var url=this.customer>0?"/msg/send_by_msgs":"/msg/pro_send_by_msgs";
+    request({method:"POST",url:url, data:dta}, this.service).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
+            this.percent.val=0;
+            return;
+        }
+        
+        this.percent.val+=this.percent.each;
+        if(start+this.batchNum*2 < msgs.length) {
+            this.send_by_msgs(msgs,start+this.batchNum*2);
             return;
         }
         this.dlg=false;
@@ -110,13 +143,12 @@ template: `
      <div class="text-h6">{{title}} {{custName}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-    <q-list>
-      <q-item><q-item-section>
-       <div class="q-gutter-sm">
-        <q-radio v-model="type" :label="tags.byCust" val="1"></q-radio>
-        <q-radio v-model="type" :label="tags.byCode" val="2"></q-radio>
-       </div>
-      </q-item-section></q-item>
+    <div class="q-gutter-sm">
+	 <q-radio v-model="type" :label="tags.byCust" val="1"></q-radio>
+	 <q-radio v-model="type" :label="tags.byCodes" val="2"></q-radio>
+	 <q-radio v-model="type" :label="tags.byMsgs" val="3"></q-radio>
+    </div>
+    <q-list v-show="type<3">
       <q-item><q-item-section>
        <q-select emit-value map-options :options="tmpls" dense
        @update:model-value="(v)=>{msg=v}" v-model="tmpl"></q-select>
@@ -125,10 +157,18 @@ template: `
        <q-input v-model="msg" :label="tags.message" dense maxlength=300></q-input>
       </q-item-section></q-item>
       <q-item v-show="type==2"><q-item-section>
-       <q-input v-model="codes" :label="tags.code"
+	   {{tags.codePrompt}}<br><span class="text-red">{{tags.codeFmt}}</span>
+       <q-input v-model="batch" :label="tags.code"
         dense maxlength=100000 type="textarea" rows="12"></q-input>
       </q-item-section></q-item>
-     </q-list>
+    </q-list>
+    <q-list v-show="type==3">
+      <q-item><q-item-section>
+	   {{tags.msgPrompt}}<br><span class="text-red">{{tags.msgFmt}}</span>
+       <q-input v-model="batch" :label="tags.message"
+        dense maxlength=100000 type="textarea" rows="12"></q-input>
+      </q-item-section></q-item>
+    </q-list>
     </q-card-section>
     <q-card-section>
      <div class="text-red" v-if="errMsg!=''">{{errMsg}}</div>

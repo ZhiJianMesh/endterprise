@@ -40,7 +40,8 @@ cn:{
   exceedsDayNum:"报表查询时间超过366天",
   homeMenus:{
       prt:{name:"产品", url:"/products",icon:"settings_remote"},
-      tpl:{name:"消息模板", url:"/tmpls", icon:"speaker_notes"}
+      tpl:{name:"消息模板", url:"/tmpls", icon:"speaker_notes"},
+      err:{name:"错误请求", url:"/errreqs", icon:"error"}
   },
   reports:{name:"报表",url:"/reports",icon:"svguse:/assets/imgs/meshicons.svg#barChart",
     sendMsg:"发送消息",
@@ -83,13 +84,18 @@ cn:{
     ukPrt:"未知产品"
   },
   sender:{
-    code:'编码',
-    message:'消息',
-    confirm:'确定',
-    close:'关闭',
-    byCust:"客户的全部设备",
-    byCode:"指定设备号",
-    failed:"发生错误，错误码:"
+    code:'设备号',
+	message:'消息',
+	confirm:'确定',
+	close:'关闭',
+    byCust:"客户全部设备",
+	byCodes:"指定设备号群发",
+	byMsgs:"指定设备号单发",
+	failed:"发生错误，错误码:",
+    codePrompt:"指定设备号，所有设备发送相同的消息",
+    msgPrompt:"指定设备号与消息，每个设备可以发送不同的消息",
+	codeFmt:"格式：设备号+换行+设备号+换行+...",
+	msgFmt:"格式：设备号1+换行+消息1+设备号2+换行+消息2+..."
   },
   failToCall:"调用失败",
   errMsgs:{},
