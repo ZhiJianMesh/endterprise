@@ -168,13 +168,13 @@ template:`
  <q-item-section side><q-item-label caption>{{tags.step.step}}</q-item-label></q-item-section>
  <q-item-section><q-item-label caption>{{tags.step.name}}</q-item-label></q-item-section>
  <q-item-section><q-item-label caption>{{tags.step.type}}</q-item-label></q-item-section>
- <q-item-section avatar><q-icon name="add_circle" color="primary" @click="open_add_step"><q-icon></q-item-section>
+ <q-item-section avatar><q-icon name="add_circle" color="primary" @click="open_add_step"></q-icon></q-item-section>
 </q-item>
 <q-item v-for="(s,i) in steps" clickable @click="show_step_detail(i)">
  <q-item-section side>{{s.step}}</q-item-section>
  <q-item-section>{{s.name}}</q-item-section>
  <q-item-section>{{tags.flowTypes[s.type]}}</q-item-section>
- <q-item-section avatar><q-icon name="cancel" color="green" @click="remove_step(i)"><q-icon></q-item-section>
+ <q-item-section avatar><q-icon name="cancel" color="green" @click="remove_step(i)"></q-icon></q-item-section>
 </q-item>
 </q-list>
 <div align="center" v-show="changed">

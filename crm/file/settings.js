@@ -157,7 +157,7 @@ template:`
      <q-item-section>{{k}}</q-item-section>
      <q-item-section>{{tpl.n}}</q-item-section>
      <q-item-section>{{tags.segTypes[tpl.t]}}</q-item-section>
-     <q-item-section avatar><q-icon name="cancel" color="green" @click="rmv_tpl_seg(k)"><q-icon></q-item-section>
+     <q-item-section avatar><q-icon name="cancel" color="green" @click="rmv_tpl_seg(k)"></q-icon></q-item-section>
     </q-item>
     <q-item>
      <q-item-section>
@@ -170,7 +170,7 @@ template:`
      <q-item-section>
       <q-select v-model="newSeg.t" :options="segTypes" emit-value map-options></q-select>
      </q-item-section>
-     <q-item-section avatar><q-icon name="add_circle" color="primary" @click="add_tpl_seg()"><q-icon></q-item-section>
+     <q-item-section avatar><q-icon name="add_circle" color="primary" @click="add_tpl_seg()"></q-icon></q-item-section>
     </q-item>
     </q-list>
   </q-tab-panel>

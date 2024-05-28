@@ -52,13 +52,16 @@ search_vips() {
 formatData(rows) {
     var vips=[];
     var dt=new Date();
-	var updAt, birth;
+	var updAt, birth, age;
+	var nowYear = dt.getFullYear();
     for(var r of rows) {
         dt.setTime(r.update_time);
 		updAt = dt.toLocaleDateString();
 		dt.setTime(r.birth*86400000);
+		age=nowYear-dt.getFullYear();
 		birth = dt.toLocaleDateString();
-        vips.push({id:r.id, name:r.name, birth:birth, updateAt:updAt});
+        vips.push({id:r.id, name:r.name, birth:birth, updateAt:updAt,
+			sex:this.tags.sexInfo[r.sex].n, age:age});
     }
     this.vips=vips;
 },
@@ -125,14 +128,15 @@ template:`
 </div>
 <q-markup-table flat>
  <thead><tr>
-  <th class="text-left">{{tags.name}}</th>
-  <th class="text-right">{{tags.birth}}</th>
+  <th class="text-left">{{tags.vip}}</th>
   <th class="text-right">{{tags.updateAt}}</th>
  </tr></thead>
  <tbody>
  <tr v-for="v in vips" @click="service.jumpTo('/vip?id='+v.id)">
-  <td class="text-left">{{v.name}}</td>
-  <td class="text-right">{{v.birth}}</td>
+  <td class="text-left"><list dense><q-item-section>
+    <q-item-label>{{v.name}}({{v.sex}}, {{v.age}})</q-item-label>
+    <q-item-label caption>{{tags.birth}}:{{v.birth}}</q-item-label>
+   </q-item-section></list></td>
   <td class="text-right">{{v.updateAt}}</td>
  </tr>
  </tbody>
@@ -142,7 +146,7 @@ template:`
 </q-layout>
     
 <q-dialog v-model="newVip.dlg">
-  <q-card style="min-width:70vw">
+  <q-card style="min-width:70vw" class="q-pa-md">
     <q-card-section>
       <div class="text-h6">{{tags.addVip}}</div>
     </q-card-section>
@@ -160,8 +164,8 @@ template:`
      </div>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn flat :label="tags.ok" color="primary" @click="add_vip"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="add_vip"></q-btn>
     </q-card-actions>
   </q-card>
 </q-dialog>

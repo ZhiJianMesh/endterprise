@@ -385,7 +385,7 @@ template:`
   </q-item>
   <q-item v-if="dtl.power=='O'||dtl.power=='W'" clickable @click.stop="customer_flow">
     <q-item-section>{{tags.customer.status}}</q-item-section>
-    <q-item-section><q-icon :name="dtl.icon" color="blue"><q-icon></q-item-section>
+    <q-item-section><q-icon :name="dtl.icon" color="blue"></q-icon></q-item-section>
   </q-item>
   <q-item v-if="dtl.power=='O'" clickable @click.stop="show_relations">
     <q-item-section>{{tags.contactRelations}}</q-item-section>

@@ -57,10 +57,16 @@ search_students() {
 formatData(rows) {
     var students=[];
     var dt=new Date();
+	var updateAt, birth, age;
+	var nowYear=dt.getFullYear();
     for(var r of rows) {
         dt.setTime(r.update_time);
+		updateAt=dt.toLocaleDateString();
+		dt.setTime(r.birth*86400000);
+		birth=dt.toLocaleDateString();
+		age=nowYear-dt.getFullYear();
         students.push({id:r.id, name:r.name,points:r.points,sex:this.tags.sexInfo[r.sex].n,
-				updateAt:dt.toLocaleDateString()});
+		updateAt:updateAt,birth:birth,age:age});
     }
     this.students=students;
 },
@@ -226,15 +232,18 @@ template:`
 
 <q-markup-table flat>
  <thead><tr>
-  <th class="text-left">{{tags.name}}</th>
-  <th class="text-right">{{tags.sex}}</th>
+  <th class="text-left">{{tags.student}}</th>
   <th class="text-right">{{tags.points}}</th>
   <th class="text-right">{{tags.updateAt}}</th>
  </tr></thead>
  <tbody>
  <tr v-for="v in students" @click="service.jumpTo('/student?id='+v.id)">
-  <td class="text-left">{{v.name}}</td>
-  <td class="text-right">{{v.sex}}</td>
+  <td class="text-left">
+   <list dense><q-item-section>
+	<q-item-label>{{v.name}}({{v.sex}},{{v.age}})</q-item-label>
+    <q-item-label caption>{{tags.birth}}:{{v.birth}}</q-item-label>
+   </q-item-section></list>
+  </td>
   <td class="text-right">{{v.points}}</td>
   <td class="text-right">{{v.updateAt}}</td>
  </tr>

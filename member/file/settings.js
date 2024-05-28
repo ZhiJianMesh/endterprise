@@ -8,7 +8,8 @@ data() {return {
     template:{},
     packages:[],
     newSeg:{k:'',n:'',t:'s'},
-    newPackage:{name:'',cls:'0',price:'',val:'',ext:{}}
+    newPackage:{name:'',cls:'0',price:'',val:'',ext:{}},
+	dlg:{pkg:false,seg:false}
 }},
 created(){
     for(var n in this.tags.segTypes){
@@ -17,9 +18,9 @@ created(){
     for(var n in this.tags.pkgUnits){
         this.pkgUnits.push({value:n,label:this.tags.pkgUnits[n]})
     }
-    
-    this.query_tmpls();
+   
 	this.query_pkgs();
+    this.query_tmpls();
 },
 
 methods:{
@@ -58,7 +59,6 @@ rmv_tpl_seg(n){
 add_tpl_seg(){
     this.template[this.newSeg.k]={n:this.newSeg.n,t:this.newSeg.t};
     this.save_tpl();
-    this.newSeg={k:'',n:'',t:'s'};
 },
 save_tpl(){
     var url="/api/template/set";
@@ -68,6 +68,8 @@ save_tpl(){
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
+		this.newSeg={k:'',n:'',t:'s'};
+		this.dlg.seg=false;
     });
 },
 rmv_package(id,n){
@@ -89,6 +91,7 @@ add_package(){
         }
         this.query_pkgs();
         this.newPackage={name:'',cls:'0',price:'',val:'',ext:{}};
+		this.dlg.pkg=false;
     });
 }
 },
@@ -112,29 +115,16 @@ template:`
   <q-tab-panel name="template">
    <q-list>
     <q-item>
-     <q-item-section><q-item-label caption>{{tags.segKey}}</q-item-label></q-item-section>
      <q-item-section><q-item-label caption>{{tags.segName}}</q-item-label></q-item-section>
-     <q-item-section><q-item-label caption>{{tags.segType}}</q-item-label></q-item-section>
-     <q-item-section avatar></q-item-section>
+     <q-item-section avatar><q-icon name="add_circle" color="primary" @click="dlg.seg=true"></q-icon></q-item-section>
     </q-item>
     <q-separator></q-separator>
     <q-item v-for="(tpl,k) in template">
-     <q-item-section>{{k}}</q-item-section>
-     <q-item-section>{{tpl.n}}</q-item-section>
-     <q-item-section>{{tags.segTypes[tpl.t]}}</q-item-section>
-     <q-item-section avatar><q-icon name="cancel" color="green" @click="rmv_tpl_seg(k)"><q-icon></q-item-section>
-    </q-item>
-    <q-item>
      <q-item-section>
-      <q-input v-model="newSeg.k" :label="tags.segKey"></q-input>
-     </q-item-section>
-     <q-item-section>
-      <q-input v-model="newSeg.n" :label="tags.segName"></q-input>
-     </q-item-section>
-     <q-item-section>
-      <q-select v-model="newSeg.t" :options="segTypes" emit-value map-options></q-select>
-     </q-item-section>
-     <q-item-section avatar><q-icon name="add_circle" color="primary" @click="add_tpl_seg()"><q-icon></q-item-section>
+	  <q-item-label>{{tpl.n}}</q-item-label>
+	  <q-item-label caption>{{tags.segKey}}:{{k}}, {{tags.segType}}:{{tags.segTypes[tpl.t]}}</q-item-label>
+	 </q-item-section>
+     <q-item-section avatar><q-icon name="cancel" color="green" @click="rmv_tpl_seg(k)"></q-icon></q-item-section>
     </q-item>
    </q-list>
   </q-tab-panel>
@@ -150,31 +140,15 @@ template:`
    <q-list>
     <q-item>
      <q-item-section><q-item-label caption>{{tags.pkgName}}</q-item-label></q-item-section>
-     <q-item-section><q-item-label caption>{{tags.pkgPrice}}</q-item-label></q-item-section>
-     <q-item-section><q-item-label caption>{{tags.pkgVal}}</q-item-label></q-item-section>
-     <q-item-section avatar></q-item-section>
+     <q-item-section avatar><q-icon color="primary" name="add_circle" @click="dlg.pkg=true"></q-icon></q-item-section>
     </q-item>
     <q-separator></q-separator>
     <q-item v-for="(p,n) in packages">
-     <q-item-section>{{p.name}}</q-item-section>
-     <q-item-section>{{p.price}}</q-item-section>
-     <q-item-section>{{p.val}}{{tags.pkgUnits[p.cls]}}</q-item-section>
-     <q-item-section avatar><q-icon color="green" name="cancel" @click="rmv_package(p.id,n)"><q-icon></q-item-section>
-    </q-item>
-    <q-item>
      <q-item-section>
-      <q-input v-model="newPackage.name" :label="tags.pkgName"></q-input>
-     </q-item-section>
-     <q-item-section>
-      <q-input v-model="newPackage.price" :label="tags.pkgPrice"></q-input>
-     </q-item-section>
-     <q-item-section>
-      <div class="q-gutter-md row">
-       <div class="col"><q-input v-model="newPackage.val" :label="tags.pkgVal"></q-input></div>
-       <div class="col"><q-select v-model="newPackage.cls" :options="pkgUnits" emit-value map-options></q-select></div>
-      </div>
-     </q-item-section>
-     <q-item-section avatar><q-icon color="primary" name="add_circle" @click="add_package()"><q-icon></q-item-section>
+	  <q-item-label>{{p.name}}</q-item-label>
+	  <q-item-label caption>{{tags.pkgPrice}}:{{p.price}}, {{tags.pkgVal}}:{{p.val}}{{tags.pkgUnits[p.cls]}}</q-item-label>
+	 </q-item-section>
+     <q-item-section avatar><q-icon color="green" name="cancel" @click="rmv_package(p.id,n)"></q-icon></q-item-section>
     </q-item>
    </q-list>
   </q-tab-panel>
@@ -183,6 +157,45 @@ template:`
     </q-page>
   </q-page-container>
 </q-layout>
+
+<q-dialog v-model="dlg.pkg">
+  <q-card style="min-width:70vw" class="q-pa-md">
+    <q-card-section>
+      <div class="text-h6">{{tags.newPkg}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+      <q-input v-model="newPackage.name" :label="tags.pkgName"></q-input>
+      <q-input v-model="newPackage.price" :label="tags.pkgPrice"></q-input>
+      <div class="q-gutter-md row">
+       <div class="col"><q-input v-model="newPackage.val" :label="tags.pkgVal"></q-input></div>
+       <div class="col"><q-select v-model="newPackage.cls" :options="pkgUnits" emit-value map-options></q-select></div>
+      </div>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="add_package"></q-btn>
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
+<q-dialog v-model="dlg.seg">
+  <q-card style="min-width:70vw" class="q-pa-md">
+    <q-card-section>
+      <div class="text-h6">{{tags.newSeg}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+      <q-input v-model="newSeg.n" :label="tags.segName"></q-input>
+      <q-input v-model="newSeg.k" :label="tags.segKey" :hint="tags.segKeyHint" hide-hint></q-input>
+      <q-select v-model="newSeg.t" :options="segTypes" emit-value map-options></q-select>
+    </q-item>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="add_tpl_seg"></q-btn>
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
 `
 }

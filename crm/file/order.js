@@ -207,7 +207,7 @@ template:`
   </q-item>
   <q-item v-if="dtl.power=='O'" clickable @click.stop="order_flow">
     <q-item-section>{{tags.order.status}}</q-item-section>
-    <q-item-section><q-icon :name="dtl.icon" color="blue"><q-icon></q-item-section>
+    <q-item-section><q-icon :name="dtl.icon" color="blue"></q-icon></q-item-section>
   </q-item>
   <q-item v-for="(tpl,k) in tmpl">
     <q-item-section>{{tpl.n}}</q-item-section>

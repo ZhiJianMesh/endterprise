@@ -179,7 +179,7 @@ template:`
   <template v-slot:action>
     <q-icon name="edit" color="primary"></q-icon>
     <q-popup-edit v-model="student" cover="false" buttons auto-save v-slot="scope"
-      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel" style="min-width:40vw">
+      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel" style="min-width:40vw;">
       <q-input color="accent" v-model="scope.value.name" dense autofocus>
        <template v-slot:prepend><q-icon name="person"></q-icon></template>
       </q-input>
@@ -210,6 +210,11 @@ template:`
   <q-item-section side><q-icon name="contact_phone" color="primary"></q-icon></q-item-section>
   <q-item-section side>{{tags.mobile}}</q-item-section>
   <q-item-section>{{student.mobile}}</q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section side><q-icon name="cake" color="primary"></q-icon></q-item-section>
+  <q-item-section side>{{tags.birth}}</q-item-section>
+  <q-item-section>{{student.birth}}</q-item-section>
  </q-item>
  <q-item>
   <q-item-section side><q-icon name="military_tech" color="orange"></q-icon></q-item-section>
@@ -256,13 +261,14 @@ template:`
 </q-banner>
 <q-list separator>
  <q-item v-for="o in orders">
-  <q-item-section>{{o.pkgName}}</q-item-section>
-  <q-item-section>{{o.balance}}</q-item-section>
-  <q-item-section>{{o.price}}</q-item-section>
-  <q-item-section>{{o.createAt}}</q-item-section>
-  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-btn></q-item-section>
-  <q-item-section avatar><q-icon name="request_quote" @click="chgOrder.orderId=o.id;dlgs.chgOrder=true" color="amber"></q-btn></q-item-section>
-  <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-btn></q-item-section>
+  <q-item-section>
+   <q-item-label>{{o.pkgName}}({{o.createAt}})</q-item-label>
+   <q-item-label caption>{{tags.balance}}:{{o.balance}}</q-item-label>
+   <q-item-label caption>{{tags.pkgPrice}}:{{o.price}}</q-item-label>
+  </q-item-section>
+  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-icon></q-item-section>
+  <q-item-section avatar><q-icon name="request_quote" @click="chgOrder.orderId=o.id;dlgs.chgOrder=true" color="amber"></q-icon></q-item-section>
+  <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-icon></q-item-section>
  </q-item>
 </q-list>
 <div class="q-pa-lg flex flex-center" v-if="pages.max>1">

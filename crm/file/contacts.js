@@ -228,7 +228,7 @@ template:`
          <q-input :label="tags.touchCtnt" v-model="newTouchlog.comment" type="textarea"
           dense autogrow></q-input>
         </q-item-section>
-        <q-item-section avatar><q-icon name="add_circle" color="primary" @click="add_touchlog"><q-icon></q-item-section>
+        <q-item-section avatar><q-icon name="add_circle" color="primary" @click="add_touchlog"></q-icon></q-item-section>
       </q-item>
     </q-list>
   </q-card-section>

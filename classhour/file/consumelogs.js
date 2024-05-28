@@ -83,16 +83,15 @@ template:`
   <q-markup-table flat>
    <thead><tr>
     <th class="text-left">{{tags.createAt}}</th>
-    <th class="text-right">{{tags.payment}}</th>
-	<th class="text-right">{{tags.balance}}</th>
 	<th class="text-right">{{tags.comment}}</th>
 	<th></th>
    </tr></thead>
    <tbody>
    <tr v-for="(l,i) in logs">
-    <td class="text-left">{{l.createAt}}</td>
-    <td class="text-right">{{l.val}}</td>
-    <td class="text-right">{{l.balance}}</td>
+   	<td><list dense><q-item-section>
+      <q-item-label>{{l.createAt}}</q-item-label>
+      <q-item-label caption>{{tags.payment}}:{{l.val}}, {{tags.balance}}:{{l.balance}}</q-item-label>
+    </q-item-section></list></td>
     <td class="text-right">{{l.comment}}</td>
     <td class="text-right"><q-icon name="edit" @click="detail(i)" color="primary"></q-icon></td>
    </tr>

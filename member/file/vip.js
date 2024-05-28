@@ -168,7 +168,7 @@ template:`
   <template v-slot:action>
     <q-icon name="edit" color="primary"></q-icon>
     <q-popup-edit v-model="vip" cover="false" buttons auto-save v-slot="scope"
-      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel">
+      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel" style="min-width:40vw">
       <q-input color="accent" v-model="scope.value.name" dense autofocus>
        <template v-slot:prepend><q-icon name="person"></q-icon></template>
       </q-input>
@@ -242,13 +242,17 @@ template:`
 </q-banner>
 <q-list separator>
  <q-item v-for="o in orders">
-  <q-item-section>{{o.pkgName}}</q-item-section>
-  <q-item-section>{{o.balance}}</q-item-section>
-  <q-item-section>{{o.price}}</q-item-section>
-  <q-item-section>{{o.createAt}}</q-item-section>
-  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-btn></q-item-section>
-  <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-btn></q-item-section>
-  <q-item-section avatar><q-icon name="security" @click="open_check_order(o)" color="positive"></q-btn></q-item-section>
+  <q-item-section>
+   <q-item-label>{{o.pkgName}}</q-item-label>
+   <q-item-label caption>{{tags.balance}}:{{o.balance}}</q-item-label>
+  </q-item-section>
+  <q-item-section>
+    <q-item-label>{{o.createAt}}</q-item-label>
+    <q-item-label caption>{{tags.pkgPrice}}:{{o.price}}</q-item-label>
+  </q-item-section>
+  <q-item-section avatar><q-icon name="payment" @click="open_create_consume(o.id,o.pkgName)" color="accent"></q-icon></q-item-section>
+  <q-item-section avatar><q-icon name="list" @click="service.jumpTo('/consumelogs?orderId='+o.id)" color="primary"></q-icon></q-item-section>
+  <q-item-section avatar><q-icon name="security" @click="open_check_order(o)" color="positive"></q-icon></q-item-section>
  </q-item>
 </q-list>
 <div class="q-pa-lg flex flex-center" v-if="pages.max>1">
