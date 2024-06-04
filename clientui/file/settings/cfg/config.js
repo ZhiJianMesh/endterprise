@@ -93,10 +93,21 @@ init() {
         }));
     });
 },
-resetAccessCode() { //用于重置公司服务接入码
+resetAccessCode() { //用于重置httpdns服务接入码
     this.service.command({cmd:"resetAccessCode"}).then(resp=>{
-        if(resp.code==RetCode.OK) {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        } else {
             this.company.accessCode=resp.data.code;
+        }
+    });
+},
+saveAccessCode(val, initVal) { //用于保存httpdns服务接入码
+    this.service.command({cmd:"saveAccessCode", code:val}).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        } else {
+            this.company.accessCode=val;
         }
     });
 },
@@ -293,18 +304,24 @@ template: `
    </q-btn>
   </td>
  </tr>
+ <tr>
+   <td>{{tags.cfg.accessCode}}</td>
+   <td><span>{{company.accessCode}}
+    <q-popup-edit v-slot="scope" @save="saveAccessCode" v-model="company.accessCode"
+     buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+     <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+    </q-popup-edit>
+    </span>
+    <q-btn round dense flat icon="auto_mode" text-color="secondary"
+    @click="resetAccessCode" class="q-ml-md"></q-btn>
+   </td>
+ </tr>
  <tr v-if="runMode!='RT'">
   <td>{{tags.cfg.pubGwIp}}</td>
   <td>
    <q-select v-model="outsideAddr" :options="addrList" emit-value
     @update:model-value="outsideAddrChged" dense></q-select>
   </td>
- </tr>
- <tr>
-   <td>{{tags.cfg.accessCode}}</td>
-   <td>{{company.accessCode}}
-    <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessCode" size="1.5em"></q-icon>
-   </td>
  </tr>
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.cfg.remoteTest}}</td><td></td></tr>
  <tr>
