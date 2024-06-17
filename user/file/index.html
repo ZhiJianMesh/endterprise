@@ -41,15 +41,15 @@ routes:[
 //service定义
 const service = {name:"user",N_PAGE:10,N_SMPG:5,
 services:[],roles:{},serviceNames:{},roleNames:{}, //用在授权页面
-get_roles(srv) {return new Promise((resolve,reject) =>{
+get_roles(srv) {
     if(this.roles[srv]) {
-        resolve({options:this.roles[srv],names:this.roleNames[srv]});
-        return;
+        return new Promise(resolve => {
+            resolve({options:this.roles[srv],names:this.roleNames[srv]});
+        });
     }
-    request({method:"GET",url:"/api/roles"}, srv).then(resp => {
+    return request({method:"GET",url:"/api/roles"}, srv).then(resp => {
         if(resp.code != RetCode.OK) {
-            resolve(resp);
-            return;
+            return resp;
         }
         var roles=[];
         var roleNames={};
@@ -61,19 +61,19 @@ get_roles(srv) {return new Promise((resolve,reject) =>{
         }
         this.roles[srv]=roles;
         this.roleNames[srv]=roleNames;
-        resolve({options:this.roles[srv],names:this.roleNames[srv]});
+        return {options:this.roles[srv],names:this.roleNames[srv]};
     })
-})},
-get_services(){return new Promise((resolve,reject) =>{
+},
+get_services(){
     if(this.services.length>0) {
-        resolve({options:this.services, names:this.serviceNames})
-        return;
+        return new Promise(resolve =>{
+            resolve({options:this.services, names:this.serviceNames});
+        });
     }
     var opts={method:"GET",url:"/power/serviceList"};
-    request(opts, this.name).then(resp => {
+    return request(opts, this.name).then(resp => {
         if(resp.code!=RetCode.OK) {
-            resolve(resp)
-            return;
+            return resp;
         }
 
         var list=[];
@@ -88,9 +88,9 @@ get_services(){return new Promise((resolve,reject) =>{
         }
         this.services=list;
         this.serviceNames=names;
-        resolve({options:this.services,names:this.serviceNames});
+        return {options:this.services,names:this.serviceNames};
     });
-})},
+},
 go_back() { //返回，在页面中通过service.go_back调用
     router.back();
 },

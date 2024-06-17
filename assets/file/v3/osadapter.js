@@ -66,6 +66,15 @@ function download(opts, service) {
     });
 }
 
+function upload(opts, service) {
+    var jsonOpts = JSON.stringify(opts);
+    return new Promise(resolve=>{
+        Http.upload(jsonOpts, service, __regsiterCallback(resp => {
+            resolve(resp);
+        }));
+    });
+}
+
 function readText(txt){
     return new Promise(resolve=>{
         TTS.read(txt, _regsiterCallback(resp => {

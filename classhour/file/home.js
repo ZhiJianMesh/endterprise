@@ -14,13 +14,13 @@ data() {return {
 }},
 created(){
     var url="/power/get?service="+this.service.name;
-    request({method:"GET",url:url}, SERVICE_USER).then(function(resp){
+    request({method:"GET",url:url}, SERVICE_USER).then(resp => {
         if(resp.code!=0) {
             Console.warn("request "+url+" failed:" + resp.code + ",info:" + resp.info);
             return;
         }
         this.isOwner=resp.data.role=='admin';
-    }.bind(this)); 
+    }); 
     this.query_students(0);
 },
 methods:{
