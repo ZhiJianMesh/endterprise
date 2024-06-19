@@ -63,6 +63,7 @@ routes:[
 //-------------------------------------------service定义
 const service={name:"settings",N_PAGE:10,N_SMPG:5,
 cdns:[], introductions:{},
+cmdList:[],
 comTokens:{}, users:{},
 services:{list:[], cols:[]},
 curCompany() {return JSON.parse(Companies.curCompany());},
@@ -111,6 +112,22 @@ command(reqDta,timeout) {
       private:false};
     if(timeout) opts['timeout']=timeout;
     return request(opts, "company");
+},
+supportedCmds() {
+    if(this.cmdList.length>0) {
+        return new Promise(resolve=>{
+            resolve(this.cmdList);
+        });
+    }
+    return this.command({cmd:'functions'}).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            Console.error("get cdns result:" + resp);
+            this.cmdList=[];
+            return false;
+        }
+        this.cmdList=resp.data.functions;
+        return this.cmdList;
+    });
 },
 request_cloud(opts,service) {
     opts.cloud = true;

@@ -10,10 +10,16 @@ data() {return {
         buckets:[] //id list
     },
     addrList:[],
+    cmds:{backup:false,restore:false,setbackup:false},
 	bucketOpts:[]//[{label:'xxx',value:123}...]
 }},
 created(){
     this.init();
+    this.service.supportedCmds().then(list=> {
+        this.cmds.backup=findInArray(list,'backup')>=0;
+        this.cmds.restore=findInArray(list,'restore')>=0;
+        this.cmds.setbackup=findInArray(list,'setbackup')>=0;
+    });
 },
 methods:{
 init() {
@@ -29,7 +35,7 @@ init() {
             return;
         }
         
-        if(info.recent<=0) {
+        if(!info.recent || info.recent<=0) {
             this.backup.recent=this.tags.neverBackup;
         } else {
             this.backup.recent=new Date(info.recent).toLocaleString();
@@ -185,7 +191,7 @@ template: `
   <q-btn icon="arrow_back" dense @click="service.go_back" flat round></q-btn>
   <q-toolbar-title>{{tags.cfg.backup}}</q-toolbar-title>
   <q-btn flat icon="power_settings_new" :label="backup.at<0?tags.cfg.startup:tags.cfg.shutdown"
-    @click="switchBackup" dense></q-btn>
+    @click="switchBackup" dense v-if="cmds.setbackup"></q-btn>
  </q-toolbar>
 </q-header>
 <q-page-container>
@@ -195,7 +201,7 @@ template: `
   <td>{{tags.cfg.recentBackup}}</td>
   <td>{{backup.recent}}</td>
  </tr>
- <tr>
+ <tr v-if="cmds.backup">
   <td>
    <q-btn flat icon="cloud_download" :label="tags.cfg.restore"
     @click="restore" color="primary" dense class="q-ml-md"
@@ -209,7 +215,7 @@ template: `
  <tr>
   <td>{{tags.cfg.backupAt}}</td>
   <td>{{backup.atStr}}
-    <q-btn icon="access_time" flat color="primary" :disable="backup.at<0">
+    <q-btn icon="access_time" flat color="primary" :disable="backup.at<0"  v-if="cmds.setbackup">
       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
         <q-time v-model="backup.atStr" format24h @update:model-value="backupAtChanged"></q-time>
       </q-popup-proxy>

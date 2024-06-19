@@ -12,6 +12,7 @@ company:{
 	runMode:'SGT',
     logo:"/assets/imgs/logo_example.png"
 },
+cmds:{setloglevel:false,setoutsideaddr:false},
 outsideAddr:'', //为空时，表示不开启
 addrList:[],
 chgPwdDta:{oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false},
@@ -53,6 +54,10 @@ created(){
         this.logoOpts.width=parseInt(w*0.6);
     }
     this.init();
+    this.service.supportedCmds().then(list=> {
+        this.cmds.setloglevel=findInArray(list,'setloglevel')>=0;
+        this.cmds.setoutsideaddr=findInArray(list,'setoutsideaddr')>=0;
+    });
 },
 methods:{
 init() {
@@ -316,7 +321,7 @@ template: `
     @click="resetAccessCode" class="q-ml-md"></q-btn>
    </td>
  </tr>
- <tr v-if="runMode!='RT'">
+ <tr v-if="cmds.setoutsideaddr">
   <td>{{tags.cfg.pubGwIp}}</td>
   <td>
    <q-select v-model="outsideAddr" :options="addrList" emit-value
@@ -330,7 +335,7 @@ template: `
       <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessToken" size="1.5em"></q-icon>
    </td>
  </tr>
- <tr v-if="runMode!='RT'">
+ <tr v-if="cmds.setloglevel">
    <td>{{tags.cfg.logLevel}}</td>
    <td>
     <q-select v-model="company.logLevel" :options="logLevels"
