@@ -40,14 +40,14 @@ search_vips() {
         return;
     }
     var url="/api/vip/search?s="+this.search+"&limit="+this.service.NUM_PER_PAGE
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.formatData(resp.data.vips);
         this.vipPg.max=1;
-    }.bind(this))
+    })
 },
 formatData(rows) {
     var vips=[];
@@ -70,14 +70,14 @@ add_vip() {
 	var d=this.newVip;
 	var birth=Math.round(new Date(d.birth).getTime()/86400000);
 	var reqDta={name:d.name, mobile:d.mobile, pwd:d.pwd, sex:d.sex, birth:birth};
-    request({method:"POST",url:url,data:reqDta}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:reqDta}, this.service.name).then(resp => {
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.newVip.dlg=false;
         this.query_vips(0);
-    }.bind(this))
+    })
 },
 change_vip_page(page) {
     this.query_vips((parseInt(page)-1)*this.service.NUM_PER_PAGE);
