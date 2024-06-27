@@ -34,9 +34,6 @@ init() {
                     c['logo']="/assets/imgs/logo_example.png";
                 }
             }));
-            if(c.id==this.rootComId) {
-                c.name=this.tags.personalAcc;
-            }
         }
     }));
 

@@ -11,7 +11,7 @@ jumpTo(name) {
         this.$refs.errDlg.show(this.tags.noToken);
         return; //还未准备好
     }
-    if(this.service.services.list.length==0)  {
+    if(this.service.services.length==0)  {
         return;
     }
     this.service.go_to('/om/'+name);

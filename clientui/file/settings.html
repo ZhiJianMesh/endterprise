@@ -10,9 +10,7 @@
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/vue-cropper.css" rel="stylesheet" type="text/css">
 </head>
-<body><div id="app" v-cloak>
- <router-view></router-view>
-</div></body>
+<body><div id="app" v-cloak><router-view></router-view></div></body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
@@ -62,10 +60,8 @@ routes:[
 ]});
 //-------------------------------------------service定义
 const service={name:"settings",N_PAGE:10,N_SMPG:5,
-cdns:[], introductions:{},
-cmdList:[],
-comTokens:{}, users:{},
-services:{list:[], cols:[]},
+cdns:[], introductions:{}, cmdList:{},
+comTokens:{}, users:{},services:[],
 curCompany() {return JSON.parse(Companies.curCompany());},
 getUserInfo() {
     if(this.users[Companies.curCompanyId()]) {
@@ -94,10 +90,19 @@ refreshState() {
         private:false, headers:{access_token:this.getToken('backend')}};
     request(opts, 'backend').then(resp => {
         if(resp.code != RetCode.OK) {
-            this.services={list:[],cols:[]};
+            this.services=[];
             return;
         }
-        this.services={list:resp.data.list, cols:resp.data.cols};
+		var sl=[];
+		var cols=resp.data.cols;
+		for(var l of resp.data.list) {
+			var ln={};
+			for(var i in cols) {
+				ln[cols[i]]=l[i];//name,queries,cpuTime,reportAt,hasDb,ver
+			}
+			sl.push(ln);
+		}
+        this.services=sl;
     });
 },
 setToken(service,tk) {
@@ -114,19 +119,20 @@ command(reqDta,timeout) {
     return request(opts, "company");
 },
 supportedCmds() {
-    if(this.cmdList.length>0) {
+    var key=""+Companies.curCompanyId();
+    if(this.cmdList[key] && this.cmdList[key].length>0) {
         return new Promise(resolve=>{
-            resolve(this.cmdList);
+            resolve(this.cmdList[key]);
         });
     }
     return this.command({cmd:'functions'}).then(resp=>{
         if(resp.code!=RetCode.OK) {
             Console.error("get cdns result:" + resp);
-            this.cmdList=[];
+            this.cmdList[key]=[];
             return false;
         }
-        this.cmdList=resp.data.functions;
-        return this.cmdList;
+        this.cmdList[key]=resp.data.functions;
+        return this.cmdList[key];
     });
 },
 request_cloud(opts,service) {

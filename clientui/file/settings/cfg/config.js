@@ -12,7 +12,7 @@ company:{
 	runMode:'SGT',
     logo:"/assets/imgs/logo_example.png"
 },
-cmds:{setloglevel:false,setoutsideaddr:false},
+cmds:{setloglevel:false,setoutsideaddr:false,resetaccesstoken:false},
 outsideAddr:'', //为空时，表示不开启
 addrList:[],
 chgPwdDta:{oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false},
@@ -43,7 +43,7 @@ logoOpts:{
     width:'60vw',
     loading:false
 },
-logLevels:['DEBUG','INFO','WARN','ERROR'],
+logLevels:['DEBUG','INFO','WARN','ERROR']
 }},
 created(){
     var w=document.documentElement.clientWidth;
@@ -57,6 +57,7 @@ created(){
     this.service.supportedCmds().then(list=> {
         this.cmds.setloglevel=findInArray(list,'setloglevel')>=0;
         this.cmds.setoutsideaddr=findInArray(list,'setoutsideaddr')>=0;
+        this.cmds.resetaccesstoken=findInArray(list,'resetaccesstoken')>=0;
     });
 },
 methods:{
@@ -328,8 +329,11 @@ template: `
     @update:model-value="outsideAddrChged" dense></q-select>
   </td>
  </tr>
- <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.cfg.remoteTest}}</td><td></td></tr>
- <tr>
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"
+  v-if="cmds.resetaccesstoken||cmds.setloglevel">
+  <td>{{tags.cfg.remoteTest}}</td><td></td>
+ </tr>
+ <tr v-if="cmds.resetaccesstoken">
    <td>{{tags.cfg.accessToken}}<q-icon name="key"></q-icon></td>
    <td>{{company.accessToken}}
       <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessToken" size="1.5em"></q-icon>

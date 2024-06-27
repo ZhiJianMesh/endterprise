@@ -3,12 +3,10 @@ export default {
 inject:['service', 'tags'],
 data(){return {
     services:[],
-    cols:[],
 	stats:{dlg:false,chart:null,width:0,date:{from:'',to:''},proxyDate:{from:'',to:''},service:''}
 }},
 created() {
-    this.cols=this.service.services.cols;
-    this.services=this.service.services.list;
+    this.services=this.service.services;//name,queries,cpuTime,reportAt,hasDb,ver
 	var dt=new Date();
 	var to=dt.getFullYear()+'/'+(dt.getMonth()+1)+'/'+dt.getDate();
 	dt.setTime(dt.getTime()-3*24*HOUR_MS);
@@ -19,8 +17,7 @@ created() {
 methods:{
 refresh(){
     this.service.refreshState();
-    this.cols=this.service.services.cols;
-    this.services=this.service.services.list;
+    this.services=this.service.services;
 },
 showStats(){
 	this.stats.dlg=true;
@@ -122,14 +119,25 @@ template: `
     </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-md">  
+    <q-page class="q-pa-md">
 <q-markup-table flat>
-  <thead>
-   <tr><td v-for="c in cols">{{c}}</td></tr>
-  </thead>
-  <tbody><tr v-for="row in services" @click="stats.dlg=true;stats.service=row[0]">
-   <td v-for="c in row">{{c}}</td>
-  </tr></tbody>
+ <thead><tr>
+  <th class="text-left">{{tags.om.sericeName}}</th>
+  <th class="text-right">{{tags.om.cpuTime}}</th>
+  <th class="text-right">{{tags.om.queries}}</th>
+ </tr></thead>
+ <tbody>
+ <tr v-for="s in services" @click="stats.dlg=true;stats.service=s.name">
+  <td class="text-left">
+   <list dense><q-item-section>
+	<q-item-label>{{s.name}}({{s.ver}},{{s.hasDb?tags.om.hasDb:tags.om.noDb}})</q-item-label>
+    <q-item-label caption>{{s.reportAt}}</q-item-label>
+   </q-item-section></list>
+  </td>
+  <td class="text-right">{{s.cpuTime}}</td>
+  <td class="text-right">{{s.queries}}</td>
+ </tr>
+ </tbody>
 </q-markup-table>
     </q-page>
   </q-page-container>

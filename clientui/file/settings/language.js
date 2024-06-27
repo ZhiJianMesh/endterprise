@@ -10,7 +10,6 @@ en:{
   save:"Save",
   login:"Login",
   logout:"Logout",
-  personalAcc:"Account",
   invalidEmail:"Please input a valid email",
   invalidMobile:"Please input a valid phone number",
   invalidExtIP:"Please input a valid outside IP address",
@@ -163,7 +162,6 @@ cn:{
   save:"保存",
   login:"登录",
   logout:"退出",
-  personalAcc:"个人帐号",
   invalidEmail:"请输入正确的邮箱",
   invalidMobile:"请输入正确的手机号",
   invalidExtIP:"不是正确的公网地址",
@@ -292,7 +290,12 @@ cn:{
     fails:"失败统计",
     excs:"异常",
     files:"静态文件",
-    unit:"次"
+    unit:"次",
+	sericeName:"服务",
+	cpuTime:"执行时长(ms)",
+	queries:"执行次数",
+	hasDb:"有数据库",
+	noDb:"无数据库"
   },
   mkt:{
     title:"应用管理",

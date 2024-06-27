@@ -11,13 +11,9 @@ data(){return {
 }},
 created() {
     this.service.refreshState();
-    var list=this.service.services.list;
-    var sl=[], s;
-    for(var i in list) {
-        s=list[i];
-        if(s[4]) {
-            sl.push(s[0]);
-        }
+    var sl=[];
+    for(var s of this.service.services) {
+		sl.push(s.name);
     }
     this.serviceName=sl[0];
     this.services=sl;

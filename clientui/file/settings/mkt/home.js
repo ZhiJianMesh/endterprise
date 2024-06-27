@@ -117,7 +117,17 @@ getLocServices() {
             Console.warn("code:"+resp.code+",info:"+resp.info);
             return;
         }
-        this.locServices=resp.data.services;
+
+		var cdnNum=this.cdns.length;
+        this.locServices=resp.data.services.map(s=>{
+			if(!s.icon) {
+				if(cdnNum>0){
+					var cdnNo=Math.floor(Math.random()*cdnNum);
+					s.icon = this.cdns[cdnNo]+s.name+"/favicon.png";
+				}
+			}
+			return s;
+		});
     });
 }
 },
@@ -172,7 +182,7 @@ template: `
    <q-list>
      <q-item v-for="s in locServices" class="q-my-sm">
        <q-item-section avatar>
-         <q-avatar square><img :src="s.favicon"></q-avatar>
+         <q-avatar square><img :src="s.icon"></q-avatar>
        </q-item-section>
        <q-item-section class="text-left">
          <q-item-label overline>{{s.displayName}}/{{s.name}}
