@@ -82,6 +82,7 @@ save_baseinfo() {
             mobile:this.dtl.mobile,
             email:this.dtl.email,
             sex:this.dtl.sex,
+            type:this.dtl.type,
             birthday:this.dtl.birthday
         }
     };
@@ -146,6 +147,13 @@ template:`
   <q-item-section><q-item-label caption>{{tags.user.sex}}</q-item-label></q-item-section>
   <q-item-section>
    <q-option-group v-model="dtl.sex" :options="tags.user.sexOpts" color="primary" inline
+    @update:model-value="baseChged=true"></q-option-group>
+  </q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section><q-item-label caption>{{tags.user.type}}</q-item-label></q-item-section>
+  <q-item-section>
+   <q-option-group v-model="dtl.type" :options="tags.user.typeOpts" color="primary" inline
     @update:model-value="baseChged=true"></q-option-group>
   </q-item-section>
  </q-item>

@@ -49,8 +49,11 @@ user:{
     createAt:"创建时间",
     birthday:"生日",
     sex:"性别",
+    type:"类别",
 	sexTitles:{"M":"男","F":"女"},
-	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}]
+    typeTitles:{"I":"内部员工","O":"外部人员","D":"设备"},
+	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}],
+	typeOpts:[{label:"内部员工",value:"I"},{label:"外部人员",value:"O"},{label:"设备",value:"D"}]
 },
 grp:{
     name:"部门名称",
