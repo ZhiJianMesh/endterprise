@@ -112,7 +112,7 @@ backupAtChanged(v, details) {
 saveBackupAt() {
     var at = this.backup.at;
     if(at>=0) {
-        at += (new Date()).getTimezoneOffset();
+        at += (new Date()).getTimezoneOffset(); //java中时区偏移是正值,js中是负值
         if(at < 0) { //转成UTC，在端侧才有效
             at += 1440;
         } else if(at >= 1440) {
