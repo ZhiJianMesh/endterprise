@@ -1,0 +1,21 @@
+{
+"roles": {
+    "admin":{
+        "name":"超级管理员",
+        "rights":{
+            "config":"*",
+            "grp":"*",
+            "member":"*"
+        }
+    },
+    "hr":{
+        "name":"人事",
+        "rights":{
+            "pool":"*",
+            "employee":"*",
+            "resume":"*",
+            "attendance":"*"
+        }
+    }
+}
+}

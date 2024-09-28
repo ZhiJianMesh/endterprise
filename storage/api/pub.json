@@ -1,0 +1,30 @@
+{
+"roles": {
+    "admin":{
+        "name":"超级管理员",
+        "rights":{
+            "sku":"*",
+            "warehouse":"*",
+            "supplier":"*",
+            "contact":"*"
+        }
+    },
+    "buyer":{
+        "name":"采购员",
+        "rights":{
+            "sku":"*",
+            "supplier":"*",
+            "contact":"*"
+        }
+    },
+    "whadmin":{
+        "name":"仓库管理员",
+        "rights":{
+            "sku":"*",
+            "supplier":"*",
+            "contact":"*",
+            "resource":"*"
+        }
+    }
+}
+}
