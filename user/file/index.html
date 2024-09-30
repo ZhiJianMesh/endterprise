@@ -19,9 +19,7 @@ import Language from "./language.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
-import GrpSelector from "/assets/v3/components/grp_selector.js"
 import DateInput from "/assets/v3/components/date_input.js"
-import Grps from "./grps.js"
 import Users from "./users.js"
 import User from "./user.js"
 import Authorizes from "./authorizes.js"
@@ -32,7 +30,6 @@ const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
- {path:'/grps', component:Grps},
  {path:'/users', component:Users},
  {path:'/user', component:User},
  {path:'/authorizes', component:Authorizes}
@@ -127,7 +124,6 @@ app.use(router);
 app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
 app.component('component-user-selector', UserSelector);
-app.component('component-grp-selector', GrpSelector);
 app.component('component-date-input', DateInput);
 //启动APP
 app.mount('#app');

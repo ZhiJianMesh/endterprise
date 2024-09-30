@@ -16,7 +16,6 @@ owner:"Owner"
 },
 cn:{
 app_name:"帐号管理",
-grps:"组织管理",
 authorize:"服务授权",
 failToCall:"调用失败",
 close:"关闭",
@@ -54,12 +53,6 @@ user:{
     typeTitles:{"I":"内部员工","O":"外部人员","D":"设备"},
 	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}],
 	typeOpts:[{label:"内部员工",value:"I"},{label:"外部人员",value:"O"},{label:"设备",value:"D"}]
-},
-grp:{
-    name:"部门名称",
-    descr:"描述",
-    title:"职位",
-    fname:'上层组织'
 },
 power:{
     service:"服务名",

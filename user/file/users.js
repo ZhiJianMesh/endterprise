@@ -67,7 +67,6 @@ template:`
    <q-toolbar>
       <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
       <q-btn icon="fact_check" flat round @click="service.jumpTo('/authorizes')"></q-btn>
-      <q-btn icon="groups" flat round @click="service.jumpTo('/grps')"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-px-md q-pt-md">
