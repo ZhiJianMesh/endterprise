@@ -6,7 +6,8 @@
             "sku":"*",
             "warehouse":"*",
             "supplier":"*",
-            "contact":"*"
+            "contact":"*",
+            "inbound":"*"
         }
     },
     "buyer":{
@@ -23,7 +24,9 @@
             "sku":"*",
             "supplier":"*",
             "contact":"*",
-            "resource":"*"
+            "resource":"*",
+            "inbound":"whadmin",
+            "outbound":"whadmin"
         }
     }
 }
