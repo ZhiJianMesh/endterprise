@@ -6,7 +6,6 @@
         "expect" : true, //如果不存在，则返回NOT_EXISTS，否则返回OK
         "errorCode":111,
         "errorInfo":"no right",
-        "numSeg":"prjNum",
         "sql":"select * from project where id=#PID# and leader='@{#tokenAcc}'"
     },
     

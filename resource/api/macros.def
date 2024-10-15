@@ -1,0 +1,20 @@
+[
+    "is_prj_leader" : {
+        "name" : "prj_info",
+        "type" : "call",
+        "method" : "GET",
+        "tokenSign" : "APP",
+        "cache" : "@{pid}",
+        "trans" : false,
+        "comment" : "查询项目基本信息，返回name、leader、owner等",
+        "service" : "project",
+        "url" : "/get?id=#PID#",
+        "afterAll" : "
+            if('@{!leader}'!='@{#tokenAcc}') {
+                Mesh.error(RetCode.NO_RIGHT, 'not leader');
+            } else {
+                Mesh.success({});
+            }
+        "
+    }
+]
