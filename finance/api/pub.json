@@ -1,0 +1,21 @@
+{
+"roles": {
+    "admin":{
+        "name":"超级管理员",
+        "rights":{
+            "config":"*",
+            "grp":"*",
+            "member":"*"
+        }
+    },
+    "finance":{
+        "name":"财务",
+        "rights":{
+            "pay":"*",
+            "income":"*",
+            "balance":"*",
+            "salary":"*"
+        }
+    }
+}
+}
