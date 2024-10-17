@@ -16,5 +16,26 @@
                 Mesh.success({});
             }
         "
+    },
+    "is_grp_leader" : {
+        "name" : "check_grp_admin",
+        "type" : "dataexists",
+        "db" : "hr",
+        "expect" : true,
+        "errorCode" : 6002,
+        "errorInfo" : "no right",
+        "sql" : "select * from grp where id=#GID# and admin=@{#tokenCaller} and type='D'"
+    },
+    
+    "is_his_leader" : {
+        "name" : "check_grp_admin",
+        "type" : "dataexists",
+        "db" : "hr",
+        "expect" : true,
+        "errorCode" : 6002,
+        "errorInfo" : "no right",
+        "sql" : "select * from member m,grp g
+             where m.uid=#UID# and g.id=m.gid and g.type='D'
+               and g.admin=@{#tokenCaller}"
     }
 ]
