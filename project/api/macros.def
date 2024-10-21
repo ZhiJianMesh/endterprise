@@ -9,16 +9,6 @@
         "sql":"select * from project where id=#PID# and leader='@{#tokenAcc}'"
     },
     
-    "is_prj_party":{ //利益相关方
-        "name":"judge_prj_exists",
-        "db":"project",
-        "type":"dataexists",
-        "expect" : true, //如果不存在，则返回NOT_EXISTS，否则返回OK
-        "errorCode":111,
-        "errorInfo":"no right",
-        "sql":"select * from project where id=#PID# and (leader='@{#tokenAcc}' or owner='@{#tokenAcc}')"
-    },
-    
     "is_prj_exists": {
         "name":"judge_prj_exists",
         "db":"project",

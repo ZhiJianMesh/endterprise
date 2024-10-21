@@ -1,10 +1,10 @@
-[
+{
     "is_prj_leader" : {
         "name" : "prj_info",
         "type" : "call",
         "method" : "GET",
         "tokenSign" : "APP",
-        "cache" : "@{pid}",
+        "cache" : "#PID#",
         "trans" : false,
         "comment" : "查询项目基本信息，返回name、leader、owner等",
         "service" : "project",
@@ -17,6 +17,7 @@
             }
         "
     },
+
     "is_grp_leader" : {
         "name" : "check_grp_admin",
         "type" : "dataexists",
@@ -38,4 +39,4 @@
              where m.uid=#UID# and g.id=m.gid and g.type='D'
                and g.admin=@{#tokenCaller}"
     }
-]
+}

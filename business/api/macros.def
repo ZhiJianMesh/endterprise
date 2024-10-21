@@ -1,4 +1,4 @@
-[
+{
     "get_prj_info" : {
         "name" : "prj_info",
         "type" : "call",
@@ -11,4 +11,4 @@
         "service" : "project",
         "url" : "/get?id=#PID#"
     }
-]
+}
