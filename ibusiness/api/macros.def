@@ -8,7 +8,7 @@
         "trans" : false,
         "nameSpace" : "prj",
         "comment" : "查询项目基本信息，返回name、leader、owner等",
-        "service" : "project",
+        "service" : "iproject",
         "url" : "/get?id=#PID#"
     }
 }

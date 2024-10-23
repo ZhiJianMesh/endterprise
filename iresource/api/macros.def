@@ -1,5 +1,5 @@
 {
-    "is_prj_stakeholder" : {
+    "is_prj_leader" : {
         "name" : "prj_info",
         "type" : "call",
         "method" : "GET",
@@ -7,10 +7,11 @@
         "cache" : "#PID#",
         "trans" : false,
         "comment" : "查询项目基本信息，返回name、leader、owner等",
-        "service" : "project",
+        "service" : "iproject",
+        "nameSpace" : "prj",
         "url" : "/get?id=#PID#",
         "afterAll" : "
-            if('@{!leader}'!='@{#tokenAcc}' && '@{!owner}'!='@{#tokenAcc}') {
+            if('@{!leader}'!='@{#tokenAcc}') {
                 Mesh.error(RetCode.NO_RIGHT, 'not leader');
             } else {
                 Mesh.success({});
