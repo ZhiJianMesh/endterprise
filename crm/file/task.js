@@ -20,9 +20,8 @@ created(){
     var dtlUrl="/api/"+this.flName+"/detail";
     var segNames=this.tags[this.flName];
     request({method:"GET",url:dtlUrl+"?id="+this.did}, this.service.name).then(function(resp){
-        if(resp.code!=RetCode.OK) {
-            this.removeWf(this.did, this.flName)
-            return;
+        if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS
+            reutrn;
         }
         var dtl=[];
         resp.data.segs.forEach(function(s) {
@@ -152,11 +151,7 @@ reject() {
 removeWf() { //工作流数据错乱的情况下，删除工作流记录
     var url="/api/"+this.flName+"/exists?id="+this.did;
     request({method:"GET",url:url}, this.service.name).then(function(resp){
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        if(resp.data.num > 0) {
+        if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS
             reutrn;
         }
         this.$refs.confirmDlg.show(this.tags.wrongFlowState, function(){
