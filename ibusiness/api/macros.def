@@ -5,10 +5,28 @@
         "method" : "GET",
         "tokenSign" : "APP",
         "cache" : "@{pid}",
-        "trans" : false,
         "nameSpace" : "prj",
         "comment" : "查询项目基本信息，返回name、leader、owner等",
         "service" : "iproject",
         "url" : "/get?id=#PID#"
+    },
+    
+    "is_prj_stakeholder" : {
+        "name" : "is_prj_stakeholder",
+        "type" : "call",
+        "method" : "GET",
+        "tokenSign" : "APP",
+        "cache" : "@{pid}",
+        "nameSpace" : "prj",
+        "comment" : "判断当前请求的帐号是否为项目经理或项目投资人",
+        "service" : "iproject",
+        "url" : "/get?id=#PID#",
+        "afterAll" : "
+            if('@{!prj.leader}'!='@{#tokenAcc}'||'@{!prj.owner}'!='@{#tokenAcc}') {
+                Mesh.error(RetCode.NO_RIGHT, 'not leader');
+            } else {
+                Mesh.success({});
+            }
+        "
     }
 }
