@@ -41,7 +41,7 @@ detail() {
 
         var dt=new Date();
         var year=dt.getFullYear();
-        dt.setTime(dtl.createAt);
+        dt.setTime(dtl.createAt*60000);
         dtl.createAt=this.tags.date2str(dt);
 
         if(dtl.power!='O') {//不是联系人的所有人，是客户的所有人也可以修改、删除
@@ -68,7 +68,7 @@ query_touchlogs(pg) {
         var dt=new Date();
         for(var i in resp.data.touchlogs) { //createAt,creator,comment
             var l=resp.data.touchlogs[i];
-            dt.setTime(l.createAt);
+            dt.setTime(l.createAt*60000);
             logs.push({creator:l.creator,comment:l.comment,createAt:dt.toLocaleString(),
              t:l.createAt/*用于修改删除*/});
         }

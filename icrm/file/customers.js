@@ -35,7 +35,7 @@ fmt_customer_lines(data) {
         for(var i in cols) {
             cu[cols[i]]=row[i];
         }
-        dt.setTime(cu.createAt);
+        dt.setTime(cu.createAt*60000);
         cu.createAt=this.tags.date2str(dt);
         cu.status=this.tags.sta2icon(cu.status);
         tl=touchlogs[cu.id];//客户可以没有最新的接触记录

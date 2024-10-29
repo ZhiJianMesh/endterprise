@@ -25,7 +25,7 @@ fmt_contact_lines(cols, lines) {
         for(var j in cols) {
             o[cols[j]]=ln[j];
         }
-        dt.setTime(o.createAt);
+        dt.setTime(o.createAt*60000);
         o.createAt=this.tags.date2str(dt);
         contacts.push(o);
     }
@@ -71,7 +71,7 @@ query_touchlogs(id) {
         var logs=[];
         var dt=new Date();
         for(var l of resp.data.touchlogs) {
-            dt.setTime(l.createAt);
+            dt.setTime(l.createAt*60000);
             logs.push({creator:l.creator,comment:l.comment,createAt:this.tags.date2str(dt)});
         }
         this.touchlogs=logs;

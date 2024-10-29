@@ -56,7 +56,7 @@ query_services(pg) {
         var dt=new Date();
         var icon;
         for(var s of resp.data.services) { //id,createAt,creator,budget,status
-            dt.setTime(s.createAt);
+            dt.setTime(s.createAt*60000);
             icon=this.tags.sta2icon(s.status);
             services.push({id:s.id,creator:s.creator,createAt:dt.toLocaleString(),budget:s.budget,status:icon});
         }
@@ -76,7 +76,7 @@ query_payments(pg) {
         var p,icon;
         for(var i in resp.data.payments) { //id,createAt,creator,amount,status
             p=resp.data.payments[i];
-            dt.setTime(p.createAt);
+            dt.setTime(p.createAt*60000);
             icon=this.tags.sta2icon(p.status);
             payments.push({id:p.id,creator:p.creator,createAt:dt.toLocaleString(),amount:p.amount,status:icon});
         }

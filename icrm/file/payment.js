@@ -24,7 +24,7 @@ detail() {
             return;
         }
         this.dtl=resp.data;
-        this.dtl.createAt=new Date(parseInt(resp.data.createAt)).toLocaleString();
+        this.dtl.createAt=new Date(resp.data.createAt*60000).toLocaleString();
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
         this.ext=this.service.decodeExt(this.dtl.comment, this.tmpl);
     }.bind(this));

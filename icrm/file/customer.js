@@ -41,7 +41,7 @@ detail() {
             return;
         }
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
-        this.dtl.createAt=this.tags.date2str(new Date(parseInt(resp.data.createAt)));
+        this.dtl.createAt=this.tags.date2str(new Date(resp.data.createAt*60000));
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
         
         this.service.template('customer').then(function(tmpl) {
@@ -61,7 +61,7 @@ query_orders(pg) {
         var dt=new Date();
         var icon;
         for(var o of resp.data.orders){
-            dt.setTime(o.createAt);
+            dt.setTime(o.createAt*60000);
             icon=this.tags.sta2icon(o.status);
             orders.push({id:o.id,price:o.price,skuName:o.skuName,creator:o.creator,
                 createAt:this.tags.date2str(dt),status:icon});
@@ -80,7 +80,7 @@ query_contacts(pg) {
         var contacts=[];
         var dt=new Date();
         for(var c of resp.data.contacts) {
-            dt.setTime(c.createAt);
+            dt.setTime(c.createAt*60000);
             contacts.push({id:c.id,name:c.name,post:c.post,
              createAt:this.tags.date2str(dt),creator:c.creator});
         }
@@ -100,7 +100,7 @@ query_touchlogs(pg) {
         var logs=[];
         var dt=new Date();
         for(var l of resp.data.touchlogs) {
-            dt.setTime(l.createAt);
+            dt.setTime(l.createAt*60000);
             logs.push({name:l.name,comment:l.comment,createAt:dt.toLocaleString(),
             t:l.createAt/*用于删除修改*/,cid:l.contact,creator:l.creator});
         }

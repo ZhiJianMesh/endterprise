@@ -2,8 +2,7 @@ export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
     list:[], //服务列表，包括自己可见的
-    page:{cur:1,max:0},
-    onlyMine:true
+    page:{cur:1,max:0}
 }},
 created(){
     this.onlyMine=storageGet('service_onlyMine') == 'true';
@@ -20,7 +19,7 @@ fmt_lines(cols, lines) {
         for(var j in cols) {
             sv[cols[j]]=ln[j];
         }
-        dt.setTime(sv.createAt);
+        dt.setTime(sv.createAt*60000);
         sv.createAt=dt.toLocaleDateString();
         sv.status=this.tags.sta2icon(sv.status);
         list.push(sv)
@@ -29,8 +28,7 @@ fmt_lines(cols, lines) {
 },
 query_list(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
-    var url = this.onlyMine ? "/api/service/my" : "/api/service/readable";
-    url+="?offset="+offset+"&num="+this.service.N_PAGE;
+    var url="/api/service/my?offset="+offset+"&num="+this.service.N_PAGE;
     request({method:"GET",url:url}, this.service.name).then(function(resp){
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             this.list=[];
@@ -45,11 +43,6 @@ query_list(pg) {
 show_detail(id) {
     this.$router.push('/service?id='+id);
 },
-onlyMineClk() {
-    storageSet('service_onlyMine', this.onlyMine);
-    this.page.cur=1;
-    this.query_list(1);
-},
 customer_detail(id) {
     this.$router.push('/customer?id='+id);
 }
@@ -60,18 +53,6 @@ template:`
   <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.home.services}}</q-toolbar-title>
-    <q-btn flat round dense icon="menu">
-      <q-menu>
-       <q-list style="min-width:100px">
-        <q-item clickable v-close-popup>
-          <q-item-section avatar>
-           <q-checkbox v-model="onlyMine" @update:model-value="onlyMineClk"></q-checkbox>
-          </q-item-section>
-          <q-item-section>{{tags.onlyMine}}</q-item-section>
-        </q-item>        
-       </q-list>
-     </q-menu>
-    </q-btn>
   </q-toolbar>
 </q-header>
 
@@ -85,14 +66,12 @@ template:`
  <q-item>
   <q-item-section><q-item-label caption>{{tags.service.cname}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.service.skuName}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.service.budget}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.service.creator}}</q-item-label></q-item-section>
   <q-item-section thumbnail></q-item-section>
  </q-item>
  <q-item v-for="l in list" @click="show_detail(l.id)" clickable>
   <q-item-section @click.stop="customer_detail(l.customer)">{{l.cname}}</q-item-section>
   <q-item-section>{{l.skuName}}</q-item-section>
-  <q-item-section>{{l.budget}}</q-item-section>
   <q-item-section>
    <q-item-label>{{l.creator}}</q-item-label>
    <q-item-label caption>@{{l.createAt}}</q-item-label>
