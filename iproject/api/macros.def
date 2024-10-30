@@ -1,6 +1,6 @@
 {
     "is_prj_leader":{
-        "name":"judge_prj_exists",
+        "name":"judge_prj_leader",
         "db":"project",
         "type":"dataexists",
         "expect" : true, //如果不存在，则返回NOT_EXISTS，否则返回OK
@@ -8,6 +8,16 @@
         "errorInfo":"no right",
         "sql":"select * from member where pid=#PID#
              and account='@{#tokenAcc}' and role='L'"
+    },
+    
+    "is_prj_member":{
+        "name":"judge_prj_member",
+        "db":"project",
+        "type":"dataexists",
+        "expect" : true,
+        "errorCode":111,
+        "errorInfo":"no right",
+        "sql":"select * from member where pid=#PID# and account='@{#tokenAcc}'"
     },
     
     "is_prj_exists": {
