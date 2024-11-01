@@ -19,6 +19,22 @@ cn:{
   add:"增加",
   save:"保存",
   search:"搜索",
+  salTp:{
+    SALARY:'工资',
+    SUBSIDY:'补贴',
+    EXPENSE:'报销',
+    BONUS:'奖金',
+    SHARE:'分红',
+    TAX:'个人所得税',
+    SECURITY0:'劳动保障(个人)',
+    SECURITY1:'劳动保障(公司)',
+    OLD:'养老保险',
+    MEDICARE:'医疗保险',
+    JOB:'失业保险',
+    INJURY:'工伤保险',
+    PCREATION:'生育保险',
+    HOUSE:'住房公积金'
+  },
   errMsgs:{
     '6001':'请假时间必须是在工作日',
     '6002':'无权执行此操作',
