@@ -58,7 +58,7 @@
         "service": "user",
         "method":"POST",
         "url":"/user/userid",
-        "tokenSign":"OAUTH",
+        "tokenSign":"APP",
         "parameters":"{\"accounts\":#ACCLIST#}"
     },
     
