@@ -24,7 +24,7 @@
         "expect" : true,
         "errorCode" : 6002,
         "errorInfo" : "no right",
-        "sql" : "select * from grp where id=#GID# and admin=@{#tokenCaller} and type='D'"
+        "sql" : "select * from member where gid=#GID# and uid=@{#tokenCaller} and role='ADM'"
     },
     
     "is_his_leader" : {
@@ -34,8 +34,9 @@
         "expect" : true,
         "errorCode" : 6002,
         "errorInfo" : "no right",
-        "sql" : "select * from member m,grp g
-             where m.uid=#UID# and g.id=m.gid and g.type='D'
-               and g.admin=@{#tokenCaller}"
+        "sql" : "select * from member
+           where gid in(select m.gid from member m,grp g
+             where m.uid=#UID# and g.id=m.gid and g.type='D')
+              and uid=@{#tokenCaller} and role='ADM'"
     }
 }
