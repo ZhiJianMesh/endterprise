@@ -68,12 +68,12 @@
         "method" : "GET",
         "tokenSign" : "APP",
         "cache" : "#PID#",
-        "comment" : "查询项目基本信息，返回name、leader、owner等",
+        "comment" : "查询帐号在项目中的角色",
         "service" : "iproject",
-        "url" : "/get?id=#PID#",
+        "url" : "/role?id=#PID#&account=@{#tokenAcc}",
         "afterAll" : "
-            if('@{!leader}'!='@{#tokenAcc}'||'@{!owner}'!='@{#tokenAcc}') {
-                Mesh.error(RetCode.NO_RIGHT, 'not leader');
+            if('@{!role}'!='L' && '@{!role}' != 'O') {
+                Mesh.error(RetCode.NO_RIGHT, 'not stakeholder');
             } else {
                 Mesh.success({});
             }
