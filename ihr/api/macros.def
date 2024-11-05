@@ -24,7 +24,8 @@
         "expect" : true,
         "errorCode" : 6002,
         "errorInfo" : "no right",
-        "sql" : "select * from member where gid=#GID# and uid=@{#tokenCaller} and role='ADM'"
+        "sql" : "select * from member where gid=#GID# 
+            and uid=@{#tokenCaller} and role='ADM'"
     },
     
     "is_his_leader" : {
