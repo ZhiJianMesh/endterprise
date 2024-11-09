@@ -29,7 +29,7 @@
     },
     
     "is_his_leader" : {
-        "name" : "check_grp_admin",
+        "name" : "check_employee_admin",
         "type" : "dataexists",
         "db" : "hr",
         "expect" : true,

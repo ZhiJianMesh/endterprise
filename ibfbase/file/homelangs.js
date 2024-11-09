@@ -19,14 +19,8 @@ cn:{
   add:"增加",
   save:"保存",
   search:"搜索",
-  confirm:"确定",
-  submit:"提交",
-  reject:"拒绝",
-  init:"初始化",
-  clear:"清除",
   more:"更多",
   
-  attendance:"打卡",
   chkin_time:"上班时间",
   chkout_time:"下班时间",
   
@@ -49,35 +43,11 @@ cn:{
   prjReport:"报告",
   prjRes:"资源申请",
   
+  department:"部门",
   business:"差旅",
   perfMng:"绩效管理",
 
   oprSuccess:"操作成功",
-  oprFailed:"操作失败",
-  
-  grps:"群组",
-  grpTitle:"职称",
-  grpRole:{
-    ADM:"经理",
-    HR:"人事",
-    SEC:"秘书",
-    NOR:"员工"
-  },
-  grpType:{D:"部门",V:"群组"},
-  clockExp:"考勤异常",
-  struct:"组织结构",
-  perf:"绩效",
-  salary:"工资",
-  
-  perfCmt:"绩效说明",
-  
-  prjRole:{
-    L:"项目经理",
-    O:"投资人",
-    W:"普通成员"
-  },
-  errMsgs:{
-    6002:"没有获得授权执行此操作！"
-  }
+  oprFailed:"操作失败"
 }
 };

@@ -5,12 +5,14 @@
         "rights":{
             "config":"*",
             "grp":"*",
-            "member":"*"
+            "member":"*",
+            "pool":"*",
+            "employee":"*"
         }
     },
     "hr":{
         "name":"人事",
-        "rights":{
+        "rights": {
             "pool":"*",
             "employee":"*",
             "resume":"*",

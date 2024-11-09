@@ -105,7 +105,7 @@ function getToken(service) {
         });
     }
     
-    var userService=company.id==0?SERVICE_UNIUSER:SERVICE_USER;
+    var userService=company.id==1?SERVICE_UNIUSER:SERVICE_USER;
     var at=company.tokens[userService];
     if(!at){//以用户token换服务token
         return new Promise((resolve, reject)=>{
@@ -863,6 +863,7 @@ const Companies={
                 c.accessCode=accessCode;
                 c.insideAddr=resp.data.insideAddr;
                 c.outsideAddr=resp.data.outsideAddr;
+                c.userService=SERVICE_USER;
                 c.name=resp.data.name;
             } else {
                 __companies.push({id:cid,
@@ -870,6 +871,7 @@ const Companies={
                     insideAddr:resp.data.insideAddr,
                     outsideAddr:resp.data.outsideAddr,
                     name:resp.data.name,
+                    userService:SERVICE_USER,
                     tokens:{}
                 });
                 __curCompany=__companies.length-1;
@@ -914,7 +916,12 @@ const Companies={
         __default_jscb(jsCbId, {code:0});        
     },
     curCompany(){
-        return JSON.stringify(__companies[__curCompany]);
+        var c = __companies[__curCompany];
+		if(c) {
+	        c.userService=c.id==1?SERVICE_UNIUSER:SERVICE_USER;
+	        return JSON.stringify(c);
+		}
+		return "{}";
     },
 	curCompanyId() {
 		return __companies[__curCompany].id;
@@ -1155,5 +1162,21 @@ function formatErr(code,info,errInfos){
 function addErrInfo(code,info) {
     __err_infos[''+code]=info;
 }
-document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");
-document.write("<script src='/assets/axios_0.21.1.js'></script>");
+
+function loadJs(url) {
+    return new Promise((resolve) => {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = url;
+        script.onload = function() {
+            resolve(true);
+        };
+        script.onerror = function() {
+            console.error('fail to load js:' + url);
+            resolve(false);
+        };
+        document.head.appendChild(script);
+    });
+}
+loadJs('/assets/v3/tags/'+Platform.language()+'.js');
+loadJs('/assets/axios_0.21.1.js');

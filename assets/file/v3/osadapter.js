@@ -257,4 +257,20 @@ const Database = {
         NativeDB.remove(db);
     }
 }
-document.write("<script src='/assets/v3/tags/"+Platform.language()+".js'></script>");
+
+function loadJs(url) {
+    return new Promise((resolve) => {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = url;
+        script.onload = function() {
+            resolve(true);
+        };
+        script.onerror = function() {
+            console.error('Fail to load ' + url);
+            resolve(false);
+        };
+        document.head.appendChild(script);
+    });
+}
+loadJs('/assets/v3/tags/'+Platform.language()+'.js');
