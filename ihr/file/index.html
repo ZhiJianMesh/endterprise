@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="content-type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:image/ico;base64,aWNv">
+<link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
+<link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
+<title>iHr</title>
+</head>
+<body style="overflow:hidden">
+<div id="app" v-cloak><router-view></router-view></div>
+</body>
+<script src="/assets/v3/vue.js"></script>
+<script src="/assets/v3/vue-router.js"></script>
+<script src="/assets/v3/quasar.js"></script>
+<script src="/assets/v3/osadapter.js"></script>
+<script src="/assets/v3/echarts.js"></script>
+<script type="module">
+import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import DateInput from "/assets/v3/components/date_input.js"
+import Home from "./home.js"
+import Config from "./config.js"
+import Grp from "./grp.js"
+import Salary from "./salary.js"
+import Employee from "./employee.js"
+import Pool from "./pool.js"
+import Resume from "./resume.js"
+
+import Language from "./language.js"
+import { registerIbf } from '/ibfbase/ibf.js';
+
+const l=Platform.language();
+const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+//router定义
+const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
+routes:[
+  {path:'/home', component:Home},
+  {path:'/grp', component:Grp}, //群组、成员管理
+  {path:'/config', component:Config},
+  {path:'/slary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
+  {path:'/employee', component:Employee}, //入职、离职、职级
+  {path:'/pool', component:Pool}, //人才库
+  {path:'/resume', component:Resume} //简历
+]});
+
+//service定义
+const service = {name:"ihr",N_PAGE:10,N_SMPG:5,
+go_back() { //返回，在页面中通过service.go_back调用
+    router.back();
+},
+jumpTo(url) {
+    router.push(url)
+}
+};
+//app主体定义
+const app = Vue.createApp({
+provide:{tags:tags, service:service},
+created(){
+    registerIbf(app,router).then((r)=> {
+        this.$router.push('/home').catch(err => {err});
+    });
+},
+mounted() {
+    window.sys_go_back = this.sysGoBack;//给webview调用
+},
+methods:{
+sysGoBack() {
+    //声明全局函数，在webview中调用，
+    //实现按回退按钮回退历史页面，如果无历史，则退出activity或应用
+    if(this.$router.currentRoute.value.path==="/home") {
+        return false;
+    }
+    this.$router.back();
+    return true;
+}
+}
+});
+
+app.use(Quasar);
+app.use(router);
+app.component('alert-dialog', AlertDialog);
+app.component('date-input', DateInput);
+//启动APP
+app.mount('#app');
+</script>
+</html>

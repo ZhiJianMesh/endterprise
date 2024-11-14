@@ -10,7 +10,7 @@ en:{
   search:"Search"
 },
 cn:{
-  app_name:"人力资源管理",
+  app_name:"人力资源",
   ok:"确定",
   cancel:"取消",
   close:"关闭",
@@ -19,6 +19,24 @@ cn:{
   add:"增加",
   save:"保存",
   search:"搜索",
+  age:"岁",
+
+  sex:{
+    M:"先生",
+    F:"女士",
+    O:"未知"
+  },
+  edu:{
+    E0:"无",
+    E1:"小学",
+    E2:"初中",
+    E3:"高中/中专",
+    E4:"大专",
+    E5:"本科",
+    E6:"研究生",
+    E7:"博士生",
+    E8:"博士后"
+  },
   salTp:{
     SALARY:'工资',
     SUBSIDY:'补贴',
@@ -34,6 +52,48 @@ cn:{
     INJURY:'工伤保险',
     PCREATION:'生育保险',
     HOUSE:'住房公积金'
+  },
+  evtType:{
+    JOIN:"入职",
+    LEAV:"离职",
+    ADDS:"加薪",
+    SUBS:"减薪",
+    FINE:"罚款",
+    WARN:"警告",
+    ERR:"记过",
+    DIS:"开除",
+    PRJ:"项目经历",
+    LAUD:"表扬",
+    OTH:"其他"
+  },
+  pool:{
+    title:"人才库",
+    name:"姓名",
+    sex:"性别",
+    quali:"任职等级",
+    birth:"生日",
+    expSalary:"期望的工资",
+    maxEdu:"最高学历",
+    firstEdu:"第一学历",
+    phone:"联系电话",
+    email:"邮箱",
+    addr:"地址",
+    cmt:"备注",
+    contact:"联系方式",
+    ability:"能力"
+  },
+  employee:{
+    title:"员工"
+  },
+  grp:{
+    title:"部门",
+    
+  },
+  salary:{
+    title:"发薪"
+  },
+  config:{
+    title:"HR配置"
   },
   errMsgs:{
     '6001':'请假时间必须是在工作日',
