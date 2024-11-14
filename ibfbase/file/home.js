@@ -1,8 +1,8 @@
-import IBFHome from './ibfhome.js'
+import IBF from './ibf.js'
 export default {
 inject:['service', 'tags'],
 components: { // 局部注册组件
-    'ibf-home':IBFHome
+    'ibf':IBF
 },
 data() {return {
 }},
@@ -12,6 +12,6 @@ methods:{
 },
 
 template:`
-<ibf-home></ibf-home>
+<ibf></ibf>
 `
 }
