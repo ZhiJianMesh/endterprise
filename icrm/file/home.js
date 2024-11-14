@@ -43,7 +43,7 @@ flowDef() {
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hhh lpr fff" container style="height:99vh">
   <q-header elevated>
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>

@@ -211,7 +211,7 @@ back() {
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:99vh">
+<q-layout view="hhh lpr fff" container style="height:99vh">
   <q-header>
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="back()"></q-btn>

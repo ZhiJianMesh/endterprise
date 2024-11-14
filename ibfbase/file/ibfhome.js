@@ -165,6 +165,6 @@ template:`<div class="q-ma-md">
  </q-list>
 </div>
 </div>
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
 `
 }
