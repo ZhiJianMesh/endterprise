@@ -16,7 +16,7 @@ goto(url) {
 },
 
 template:`
-<q-layout view="hhh lpr fff" container style="height:99vh">
+<q-layout view="lHh lpr lFf" container style="height:99vh">
   <q-header>
    <q-toolbar>
      <q-avatar square><img src="./favicon.png"></q-avatar>
@@ -25,13 +25,13 @@ template:`
    <div class="text-right bg-white">
     <q-btn :label="tags.pool.title" @click="goto('/pool')"
      icon="group" color="primary" padding="xs" flat></q-btn>
-    <q-btn :label="tags.employee.title" @click="goto('/employee')" 
+    <q-btn :label="tags.employee.title" @click="goto('/employees')" 
      icon="badge" color="primary" flat></q-btn>
     <q-btn :label="tags.grp.title" @click="goto('/grp?id=0')"
      icon="account_tree" color="orange" flat padding="xs"></q-btn>
     <q-btn :label="tags.config.title" @click="goto('/config')"
      icon="settings" color="accent" flat></q-btn>
-    <q-btn :label="tags.salary.title" @click="goto('/config')"
+    <q-btn :label="tags.salary.title" @click="goto('/salary')"
      icon="attach_money" color="primary" flat></q-btn>
    </div>
   </q-header>

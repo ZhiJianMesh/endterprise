@@ -24,9 +24,10 @@ import Home from "./home.js"
 import Config from "./config.js"
 import Grp from "./grp.js"
 import Salary from "./salary.js"
+import Employees from "./employees.js"
 import Employee from "./employee.js"
 import Pool from "./pool.js"
-import Resume from "./resume.js"
+import Person from "./person.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -40,17 +41,92 @@ routes:[
   {path:'/grp', component:Grp}, //群组、成员管理
   {path:'/config', component:Config},
   {path:'/slary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
-  {path:'/employee', component:Employee}, //入职、离职、职级
+  {path:'/employees', component:Employees}, //雇员列表
+  {path:'/employee', component:Employee}, //雇员详情、简历等
   {path:'/pool', component:Pool}, //人才库
-  {path:'/resume', component:Resume} //简历
+  {path:'/person', component:Person} //人才详情
 ]});
 
 //service定义
 const service = {name:"ihr",N_PAGE:10,N_SMPG:5,
-go_back() { //返回，在页面中通过service.go_back调用
+runtime:{}, //运行时
+zones:[],offices:[],officeMap:{},worktimes:[],worktimeMap:{},
+zoneList() {
+    if(this.zones.length>0){
+        return new Promise(resolve=>{ resolve(this.zones) });
+    }
+    var url="/api/config/queryZone";
+    return request({method:"GET",url:url}, this.name).then(resp=>{
+        if(resp.code != 0) {
+            return [];
+        }
+        var opts=[];
+        for(var l of resp.data.list) {
+            opts.push({label:l.name,value:l.id});
+        }
+        this.zones=opts;
+        return opts;
+    });
+},
+officeList(zone) {
+    if(this.offices.length>0){
+        return new Promise(resolve=>{ resolve(this.formOfficeList(zone)) });
+    }
+    var url="/api/config/queryOffice";
+    return request({method:"GET",url:url}, this.name).then(resp=>{
+        if(resp.code != 0) {
+            return [];
+        }
+        var opts=[];
+        var map={};
+        for(var l of resp.data.list) {
+            opts.push({label:l.name,value:l.id,z:l.zone});
+            map[l.id]=l.name;
+        }
+        this.offices=opts;
+        this.officeMap=map;
+        return zone ? this.formOfficeList(zone) : [];
+    });
+},
+formOfficeList(z) {
+    var opts=[];
+    for(var o of this.offices) {
+        if(o.z == z) {
+            opts.push(o)
+        }
+    }
+    return opts;
+},
+worktimeList() {
+    if(this.worktimes.length>0){
+        return new Promise(resolve=>{ resolve(this.worktimes) });
+    }
+    var url="/api/config/queryWorktime";
+    return request({method:"GET",url:url}, this.name).then(resp=>{
+        if(resp.code != 0) {
+            return [];
+        }
+        var opts=[];
+        var map={};
+        for(var l of resp.data.list) {
+            opts.push({label:l.name,value:l.id});
+            map[l.id]=l.name;
+        }
+        this.worktimes=opts;
+        this.worktimeMap=map;
+        return opts;
+    });
+},
+setRt(k, v) {
+    this.runtime[router.currentRoute.value.path+':'+k]=v;
+},
+getRt(k) {
+    return this.runtime[router.currentRoute.value.path+':'+k];
+},
+back() { //返回，在页面中通过service.go_back调用
     router.back();
 },
-jumpTo(url) {
+goto(url) {
     router.push(url)
 }
 };

@@ -1,18 +1,22 @@
-const EMPTY_PERSON={name:'',email:'',addr:'',phone:'',maxEdu:'',firstEdu:'',
-            quali:0,birth:'',sex:'M',expSalary:0,cmt:'',createAt:0,uid:0};
+const EMPTY_PERSON={name:'',email:'',phone:'',maxEdu:'',firstEdu:'',
+            quali:0,birth:'',sex:'M',expSalary:0,cmt:''};
 export default {
 inject:['service', 'tags'],
 data() {return {
     list:[], //人才列表
     search:'',
-    page:{cur:1, max:0},
-    dlg:{title:'',show:false,act:'create'},
-    perInfo:{},
-    eduOpts:[]
+    ctrl:{cur:1,max:0,dlg:false},
+    perInfo:{}
 }},
 created(){
     copyObjTo(EMPTY_PERSON,this.perInfo);
-    this.query(1);
+    var pg=this.service.getRt('pg');
+    if(pg) {
+        this.query(pg);
+    } else {
+        this.query(1);
+        this.service.setRt('pg',1);
+    }
     var opts=[];
     for(var i in this.tags.edu) {
         opts.push({value:i,label:this.tags.edu[i]});
@@ -27,13 +31,14 @@ fmt_lines(data) {
     var p; //人才
     var cols=data.cols;
     var rows=data.list;
-    //quali,sex,birth,expSalary,maxEdu,firstEdu,name,phone,email,addr,cmt,createAt
+    //quali,sex,birth,expSalary,state,maxEdu,firstEdu,name,phone,email,cmt,createAt
     for(var row of rows) {
         p={};
         for(var i in cols) {
             p[cols[i]]=row[i];
         }
         p.sex_s=this.tags.sex[p.sex];
+        p.state=this.tags.perState[p.state];
         p.maxEdu_s=this.tags.edu[p.maxEdu];
         p.firstEdu_s=this.tags.edu[p.firstEdu];
         dt.setTime(p.birth*60000);
@@ -48,23 +53,24 @@ fmt_lines(data) {
     this.list=list;
 },
 query(pg) {
+    this.service.setRt('pg',pg);
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = "/api/pool/list?offset="+offset+"&num="+this.service.N_PAGE;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             this.list=[];
-            this.page.max=0;
-            this.page.cur=1;
+            this.ctrl.max=0;
+            this.ctrl.cur=1;
             return;
         }
         this.fmt_lines(resp.data);
-        this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+        this.ctrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 search() {
     if(this.search=='') {
-        this.query(1);
+        this.query(this.service.getRt('pg'));
         return;
     }
     var url="/api/pool/search?s="+this.search+"&limit="+this.service.N_PAGE;
@@ -73,60 +79,36 @@ search() {
             return;
         }
         this.fmt_lines(resp.data);
-        this.page.max=1;
+        this.ctrl.max=1;
     })
-},
-showModify(ln) {
-    copyObjTo(this.list[ln], this.perInfo);
-    this.perInfo.birth=this.perInfo.birth_s;
-    this.dlg.act='modify';
-    this.dlg.show=true;
-    this.dlg.title=this.tags.modify;
 },
 showCreate() {
     copyObjTo(EMPTY_PERSON, this.perInfo);
-    this.dlg.act='create';
-    this.dlg.show=true;
-    this.dlg.title=this.tags.add;
+    this.ctrl.dlg=true;
 },
-remove() {
-    request({method:"DELETE",url:"/api/pool/remove?uid="+this.perInfo.uid}, this.service.name).then(resp => {
-        if(resp.code != 0) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.dlg.show=false;
-        this.query(this.page.cur);
-    });
-},
-act() {
-    var url,dta,method;
-    if(this.dlg.act=='create') {
-        dta=excCopyObj(this.perInfo,['uid','birth']);
-        url="/api/pool/add";
-        method="POST";
-    } else {
-        url="/api/pool/update";
-        dta=excCopyObj(this.perInfo,['birth']);
-        method="PUT";
-    }
+create() {
+    var dta=excCopyObj(this.perInfo,['uid','birth']);
+    var url="/api/pool/add";
     dta.birth=parseInt(new Date(this.perInfo.birth).getTime()/60000);
     
-    request({method:method,url:url,data:dta}, this.service.name).then(resp => {
+    request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.dlg.show=false;
-        this.query(this.page.cur);
+        this.ctrl.dlg=false;
+        this.query(this.ctrl.cur);
     });
+},
+detail(id) {
+    this.service.goto("/person?uid="+id);
 }
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-    <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
+    <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.pool.title}}</q-toolbar-title>
   </q-toolbar>
   </q-header>
@@ -143,31 +125,30 @@ template:`
   </q-footer>
   <q-page-container>
     <q-page class="q-pa-md">
-<div class="q-pa-sm flex flex-center" v-if="page.max>1">
- <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"
+<div class="q-pa-sm flex flex-center" v-show="ctrl.max>1">
+ <q-pagination v-model="ctrl.cur" color="primary" :max="ctrl.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query"></q-pagination>
 </div>
 <q-list separator>
  <q-item>
-  <q-item-section><q-item-label caption>{{tags.pool.name}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.pool.contact}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.pool.ability}}</q-item-label></q-item-section>
+  <q-item-section><q-item-label caption>{{tags.pub.name}}</q-item-label></q-item-section>
+  <q-item-section><q-item-label caption>{{tags.pub.contact}}</q-item-label></q-item-section>
+  <q-item-section><q-item-label caption>{{tags.pub.ability}}</q-item-label></q-item-section>
   <q-item-section thumbnail></q-item-section>
  </q-item>
- <q-item v-for="(p,i) in list" @click="showModify(i)" clickable>
+ <q-item v-for="p in list" @click="detail(p.uid)" clickable>
   <q-item-section>
-   <q-item-label>{{p.name}} {{p.sex_s}}</q-item-label>
-   <q-item-label caption>{{p.age}}{{tags.age}}</q-item-label>
-   <q-item-label caption>{{p.updateAt}}/{{p.createAt_s}}</q-item-label>
+   <q-item-label>{{p.name}} {{p.sex_s}} {{p.age}}{{tags.age}}</q-item-label>
+   <q-item-label caption>{{p.createAt_s}} {{p.state}}</q-item-label>
+   <q-item-label caption>{{p.updateAt}}</q-item-label>
   </q-item-section>
   <q-item-section>
    <q-item-label>{{p.phone}}</q-item-label>
    <q-item-label caption>{{p.email}}</q-item-label>
-   <q-item-label caption>{{p.addr}}</q-item-label>
   </q-item-section>
   <q-item-section>
    <q-item-label caption>{{p.cmt}}</q-item-label>
-   <q-item-label caption>{{p.quali}}</q-item-label>
+   <q-item-label caption>{{p.quali}}/{{p.expSalary}}</q-item-label>
    <q-item-label caption>{{p.maxEdu_s}}/{{p.firstEdu_s}}</q-item-label>
   </q-item-section>
  </q-item>
@@ -176,15 +157,15 @@ template:`
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="dlg.show">
+<q-dialog v-model="ctrl.dlg">
   <q-card style="min-width:70vw">
     <q-card-section>
-      <div class="text-h6">{{dlg.title}}</div>
+      <div class="text-h6">{{tags.add}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
      <q-list>
       <q-item><q-item-section>
-       <q-input v-model="perInfo.name" :label="tags.pool.name" dense maxlength=80>
+       <q-input v-model="perInfo.name" :label="tags.pub.name" dense maxlength=80>
         <template v-slot:after>
          <q-radio v-model="perInfo.sex" class="text-caption"
          v-for="(s,v) in tags.sex" :val="v" :label="s"></q-radio>
@@ -200,23 +181,20 @@ template:`
         :label="tags.pool.firstEdu" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model.number="perInfo.quali" :label="tags.pool.quali" dense></q-input>
+       <q-input v-model.number="perInfo.quali" :label="tags.pub.quali" dense></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-input v-model.number="perInfo.expSalary" :label="tags.pool.expSalary" dense></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model.number="perInfo.phone" :label="tags.pool.phone" dense maxlength=90></q-input>
+       <q-input v-model.number="perInfo.phone" :label="tags.pub.phone" dense maxlength=90></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <date-input :close="tags.ok" :label="tags.pool.birth"
+       <date-input :close="tags.ok" :label="tags.pub.birth"
         v-model="perInfo.birth" max="today"></date-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model="perInfo.email" :label="tags.pool.email" dense maxlength=80></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="perInfo.addr" :label="tags.pool.addr" dense maxlength=80></q-input>
+       <q-input v-model="perInfo.email" :label="tags.pub.email" dense maxlength=80></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-input v-model="perInfo.cmt" :label="tags.pool.cmt" dense maxlength=500></q-input>
@@ -224,10 +202,7 @@ template:`
      </q-list>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn flat :label="tags.remove" color="primary" v-close-popup
-       v-show="dlg.act=='modify'" @click="remove"></q-btn>
-      <q-space></q-space>
-      <q-btn :label="tags.ok" color="primary" @click="act"></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="create"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>

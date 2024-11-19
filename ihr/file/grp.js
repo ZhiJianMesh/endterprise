@@ -160,7 +160,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-     <q-btn flat round icon="arrow_back" dense @click="service.go_back()"></q-btn>
+     <q-btn flat round icon="arrow_back" dense @click="service.back()"></q-btn>
      <q-toolbar-title>{{tags.grps}}</q-toolbar-title>
    </q-toolbar>
   </q-header>
