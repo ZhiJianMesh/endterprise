@@ -118,6 +118,7 @@ function __unRegsiterCallback(jsCbId) {
     __callback_funs[jsCbId % MAX_TASK_NUM] = undefined;
 }
 
+//只拷贝在segs中的字段
 function copyObj(src,segs){
     var dst={};
     for(var i of segs) {
@@ -126,11 +127,30 @@ function copyObj(src,segs){
     return dst;
 }
 
+//排除部分字段的拷贝
+function excCopyObj(src,excludes){
+    var copy = {};
+    for(var k in src) {
+        copy[k] = src[k];
+    }
+    for(var s of excludes) {
+        delete copy[s];
+    }
+    return copy;
+}
+
 function copyObjTo(src,dst,segs){
-    for(var i of segs) {
-        dst[i]=src[i]?src[i]:'';
+    if(segs && segs.length>0) {
+        for(var i of segs) {
+            dst[i]=src[i]?src[i]:'';
+        }
+    } else { //全部拷贝
+        for(var i in src) {
+            dst[i]=src[i];
+        }
     }
 }
+
 
 function cloneObj(obj) {
     if(obj == null || obj == undefined) {return obj;}
