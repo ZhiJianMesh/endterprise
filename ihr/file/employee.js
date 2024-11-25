@@ -2,14 +2,15 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     uid:this.$route.query.uid,
-    empInfo:{},
+    events:[],
+    resources:[],
     empInfo:{uid:this.$route.query.uid,
         office:0,worktime:0,stock:0,quali:'',post:'',attend:'',
         salary:'',dSalary:'',hSalary:'',subsidy:'',entryAt:'',
         account:'',addr:'',email:'',idno:'',state:'',holiday:0,weal:0,sickRatio:0},
-    ctrl:{ei:{},resumeDlg:false,eventDlg:false,
-          grade:false,salary:false,weal:false,zone:false},
-    opts:{zone:[],office:[],worktime:[]}
+    ctrl:{ei:{},leave:false,grade:false,salary:false,weal:false,zone:false},
+    opts:{zone:[],office:[],worktime:[]},
+    leave:{disable:false, type:'LEAV', cmt:''}
 }},
 created(){
     this.service.worktimeList().then(opts=>{
@@ -20,6 +21,7 @@ created(){
     });
     this.service.officeList().then(()=> {
         this.get();
+        this.getEvents();
     }); //生成officeMap
 },
 methods:{
@@ -51,12 +53,27 @@ convert(src) {
     p.office_s=this.service.officeMap[p.office];
     return p;
 },
-showModify() {
-    copyObjTo(this.empInfo, this.ctrl.ei);
-    this.ctrl.fun='modify';
+getEvents() {
+    var url = "/api/employee/listEvent?uid="+this.uid;
+    request({method:"GET",url:url}, this.service.name).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            return;
+        }
+        var dt=new Date();
+        var list=[];
+        for(var e of resp.data.list) {
+            dt.setTime(e.at*60000);
+            e.at=this.tags.date2str(dt);
+            e.type=this.tags.evtType[e.type];
+            list.push(e);
+        }
+        this.events=list;
+    })
 },
-remove() {
-    request({method:"DELETE",url:"/api/employee/remove?uid="+this.uid}, this.service.name).then(resp => {
+doLeave() { //离职
+    var url="/api/employee/remove";
+    var dta={uid:this.uid,state:this.leave.type, cmt:this.leave.cmt};
+    request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -64,18 +81,22 @@ remove() {
         this.service.back();
     });
 },
-modify() {
-    var url="/api/employee/update";
-    var dta=excCopyObj(this.ctrl.ei,[]);
-
-    request({method:"PUT",url:url,data:dta}, this.service.name).then(resp => {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
+showLeave() {
+    var url = "/api/resource/list?uid="+this.uid;
+    request({method:"GET",url:url}, this.service.name).then(resp =>{
+        var list=[];
+        if(resp.code==RetCode.OK) {
+            var dt=new Date();
+            for(var l of resp.data.list) {
+                dt.setTime(l.start*60000);
+                l.start=this.tags.date2str(dt);
+                list.push(l);
+            }
+            this.resources=list;
         }
-        this.empInfo=this.convert(this.ctrl.ei);
-        this.ctrl.fun='';
+        this.leave.disable=list.length>0; //挂了资产，离职前必须先清除
     });
+    this.ctrl.leave=true;
 },
 toggleHide() {
     var state;
@@ -161,17 +182,29 @@ modifyWeal() {
     });
     
 },
+cfmEvent(at,type) {
+    var url="/api/employee/cfmEvent";
+    var dta={uid:this.uid,at:at,type:type};
+    request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.getEvents();
+    }); 
+},
 salaryChange(v) {
     this.empInfo.dSalary=parseInt(v/22);
     this.empInfo.hSalary=parseInt(v/(22*8));
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf" container style="height:100vh">
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.employee.detail}}-{{empInfo.name}} {{empInfo.sex_s}}</q-toolbar-title>
+    <q-btn flat dense :label="tags.employee.leave" @click="showLeave" v-if="uid>1"></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -179,7 +212,12 @@ template:`
 <q-list dense>
   <q-item>
    <q-item-section>{{tags.pool.maxEdu}}/{{tags.pool.firstEdu}}</q-item-section>
-   <q-item-section>{{empInfo.maxEdu_s}}/{{empInfo.firstEdu_s}}</q-item-section>
+   <q-item-section><div>
+    {{empInfo.maxEdu_s}}/{{empInfo.firstEdu_s}}
+    <q-badge color="primary" @click="service.goto('/resume?uid='+uid)">
+     {{tags.employee.resume}}<q-icon name="event_note" color="white"></q-icon>
+    </q-badge>
+   </div></q-item-section>
   </q-item>
   <q-item>
    <q-item-section>{{tags.employee.addr}}</q-item-section>
@@ -312,72 +350,47 @@ template:`
   </q-item-section>
  </q-item>
 </q-list>
+<q-separator inset></q-separator>
+<div class="bg-indigo-1 q-mt-md q-pa-sm">{{tags.employee.event}}</div>
+<q-list dense>
+  <q-item v-for="e in events">
+   <q-item-section>{{e.type}}/{{e.val}}</q-item-section>
+   <q-item-section>
+    <q-item-label caption>{{e.at}}: {{e.cmt}}</q-item-label>
+   </q-item-section>
+   <q-item-section side v-if="e.cfmAcc!=''">{{e.cfmAcc}}</q-item-section>
+   <q-item-section side v-else>
+    <q-btn name="done" @click="cfmEvent(e.at,e.type)" color="primary" flat></q-btn>
+   </q-item-section>
+  </q-item>
+</q-list>
     </q-page>
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="ctrl.entryDlg">
+<q-dialog v-model="ctrl.leave">
   <q-card style="min-width:70vw">
     <q-card-section>
-      <div class="text-h6">{{tags.employee.entry}}</div>
+      <div class="text-h6">{{tags.employee.leave}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-     <q-list>
-      <q-item><q-item-section>{{empInfo.name}}</q-item-section></q-item>
-      <q-item><q-item-section>{{empInfo.phone}}</q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.account" :label="tags.pub.account" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.quali" :label="tags.employee.quali" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.post" :label="tags.employee.post" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-select v-model="empInfo.zone" :options="opts.zone" emit-value
-       @update:model-value="changeOffice"
-       :label="tags.employee.zone" dense map-options></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-select v-model="empInfo.office" :options="opts.office" emit-value
-       :label="tags.employee.office" dense map-options></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-select v-model="empInfo.worktime" :options="opts.worktime" emit-value
-       :label="tags.employee.worktime" dense map-options></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.salary" :label="tags.employee.salary"
-       @update:model-value="salaryChange" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.dSalary" :label="tags.employee.dSalary" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.hSalary" :label="tags.employee.hSalary" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.subsidy" :label="tags.employee.subsidy" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="empInfo.idno" :label="tags.employee.idno" dense maxlength=18></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="empInfo.email" :label="tags.employee.email" dense maxlength=80></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="empInfo.addr" :label="tags.employee.addr" dense maxlength=80></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <date-input v-model="empInfo.entryAt" :label="tags.employee.entryAt"
-        :close="tags.ok"></date-input>
-      </q-item-section></q-item>
+     <div class="q-gutter-sm">
+      <q-radio dense v-model="leave.type" val="LEAV" :label="tags.evtType.LEAV"></q-radio>
+      <q-radio dense v-model="leave.type" val="DIS" :label="tags.evtType.DIS"></q-radio>
+     </div>
+     <q-input outlined v-model="leave.cmt" :label="tags.cmt" type="textarea"></q-input>
+     <q-list dense>
+      <q-item v-for="r in resources">
+       <q-item-section>
+        <q-item-label caption>{{r.skuName}}</q-item-label caption>
+        <q-item-label caption>{{r.start}}</q-item-label caption>
+       </q-item-section>
+       <q-item-section>{{r.no}}</q-item-section>
+      </q-item>
      </q-list>
     </q-card-section>
     <q-card-actions align="right">
-      <q-space></q-space>
-      <q-btn :label="tags.ok" color="primary" @click="entry"></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="doLeave" :disable="leave.disable"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>

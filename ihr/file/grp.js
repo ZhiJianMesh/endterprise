@@ -6,14 +6,17 @@ data() {return {
     members:[],
     grps:[],
     errMsgs:{},
-    newMbr:{dlg:false,account:[],title:''},
-    newGrp:{dlg:false,name:'',descr:'',admin:''},
+    newMbr:{dlg:false,uid:[],title:'',role:''},
+    newGrp:{dlg:false,name:'',type:'',descr:'',admin:''},
     edtGrp:{dlg:false,id:0,fname:{value:null,label:''},name:'',descr:''},
     paths:[],
-    resetFun:null //让滑动菜单归位的函数
+    roleOpts:[]
 }},
 created(){
     this.open_grp(0, '');
+    for(var r in this.tags.roleTp) {
+        this.roleOpts.push({value:r, label:this.tags.roleTp[r]});
+    }
 },
 methods:{
 query_subs(){//查询子群组及成员
@@ -24,22 +27,20 @@ query_subs(){//查询子群组及成员
         }
         var dt=new Date();
         if(resp.data.members) {
-            this.members=resp.data.members.map(function(m){
+            this.members=resp.data.members.map(m=>{
                 dt.setTime(m.update_time);
-                return {id:m.id, account:m.account, title:m.title,
-                 createAt:dt.toLocaleDateString()}
+                m.role=this.tags.roleTp[m.role];
+                m.createAt=dt.toLocaleDateString();
+                return m;
             });
         } else {
             this.members=[];
         }
         if(resp.data.grps) {
-            var fname=this.fname;
-            this.grps=resp.data.grps.map(function(g){
+            this.grps=resp.data.grps.map(g=>{
                 dt.setTime(g.update_time);
-                var pos=g.name.lastIndexOf('/');
-                var n=pos>0?g.name.substring(pos+1):g.name;
-                return {id:g.id, name:n, descr:g.descr,createAt:dt.toLocaleDateString(),
-                 outdated:g.name.substring(0,pos)!=fname}//组织重构后没有更新下层组织，需要逐层重构
+                g.createAt=dt.toLocaleDateString();
+                return g;
             });
         } else {
             this.grps=[];
@@ -47,19 +48,22 @@ query_subs(){//查询子群组及成员
     })  
 },
 create_grp() {
-    var dta={fname:this.fname,name:this.newGrp.name,descr:this.newGrp.descr};
+    var g=this.newGrp;
+    var dta={fid:this.gid, name:g.name,type:g.type, descr:g.descr};
     var opts={method:"POST",url:"/grp/create",data:dta};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.query_subs();
-        this.newGrp={dlg:false,name:'',descr:''};
+        var dt=new Date();
+        this.grps.push({id:resp.data.gid,
+            name:g.name,type:g.type,descr:g.descr,
+            createAt:dt.toLocaleDateString()});
+        this.newGrp={dlg:false,name:'',descr:'',type:''};
     });
 },
 rmv_grp(id,i) {
-    this.hide_slider();
     var opts={method:"DELETE",url:"/grp/remove?id="+id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
@@ -71,28 +75,26 @@ rmv_grp(id,i) {
 },
 update_grp() {
     var g=this.edtGrp;
-    var dta={id:g.id,fname:g.fname.value,name:g.name,descr:g.descr};
-    var opts={method:"POST",url:"/grp/set",data:dta};
+    var dta={id:g.id,name:g.name,descr:g.descr};
+    var opts={method:"PUT",url:"/grp/set",data:dta};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        if(dta.fname!=this.fname) {//改变了父群组才需要刷新
-            this.query_subs();
-        }
-        this.edtGrp.dlg=false;
+        var i=this.edtGrp.i;
+        this.edtGrp={dlg:false,name:'',descr:'',type:''};
+        this.grps[i].name=g.name;
+        this.grps[i].descr=g.descr;
     });
 },
-on_edit_grp(g) {
-    this.hide_slider();
-    this.edtGrp={dlg:true,id:g.id,
-        fname:{value:this.fname,label:this.fname},
-        name:g.name,descr:g.descr
-    };
+on_edit_grp(i) {
+    var g=this.grps[i];
+    this.edtGrp={dlg:true,id:g.id,name:g.name,descr:g.descr,i:i};
 },
 add_member() {
-    var dta={gid:this.gid,uid:this.newMbr.account[0],title:this.newMbr.title};
+    var dta={gid:this.gid,uid:this.newMbr.uid[0],
+        title:this.newMbr.title,role:this.newMbr.role};
     var opts={method:"POST",url:"/api/member/add",data:dta};
     request(opts, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
@@ -100,11 +102,10 @@ add_member() {
             return;
         }
         this.query_subs();
-        this.newMbr={dlg:false,account:[],title:''};
+        this.newMbr={dlg:false,uid:[],title:'',role:''};
     });
 },
 rmv_member(id,i) {
-    this.hide_slider();
     var opts={method:"DELETE",url:"/api/member/remove?gid="+this.gid+"&uid="+id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
@@ -118,7 +119,6 @@ open_grp(id,name){
     if(id==this.gid){
         return;
     }
-    this.hide_slider();
     if(id==0){
         this.paths=[];
         this.fname='';
@@ -138,22 +138,6 @@ open_grp(id,name){
     }
     this.gid=id;
     this.query_subs();
-},
-on_slide({reset}) {
-    this.hide_slider();//关闭已经打开的，如果有
-    this.resetFun=reset;
-},
-hide_slider() {
-    if(!this.resetFun || typeof(this.resetFun) !== 'function') {
-        return;
-    }
-    try{
-        this.resetFun();
-    }catch(e) {
-        console.error(e);
-    }finally{
-        this.resetFun=null;
-    }
 }
 },
 template:`
@@ -161,36 +145,36 @@ template:`
   <q-header elevated>
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="service.back()"></q-btn>
-     <q-toolbar-title>{{tags.grps}}</q-toolbar-title>
+     <q-toolbar-title>{{tags.grp.title}}</q-toolbar-title>
+     <div v-show="gid>0">
+      <q-btn @click="newGrp.dlg=true" icon="create_new_folder" flat></q-btn>
+      <q-btn @click="newMbr.dlg=true" icon="person_add" flat></q-btn>
+     </div>
    </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
-<q-page-sticky position="bottom-right" :offset="[18, 18]" v-show="gid>0">
- <q-fab icon="add" direction="up" color="primary" push>
-  <q-fab-action @click="newGrp.dlg=true" color="accent" icon="create_new_folder"></q-fab-action>
-  <q-fab-action @click="newMbr.dlg=true" color="accent" icon="person_add"></q-fab-action>
- </q-fab>
-</q-page-sticky>
-<q-breadcrumbs gutter="sm" class="q-pb-lg" class="text-primary">
+<q-breadcrumbs gutter="sm" class="q-pb-lg cursor-pointer text-primary">
   <q-breadcrumbs-el @click="open_grp(0,'')" icon="home"></q-breadcrumbs-el>
   <q-breadcrumbs-el v-for="p in paths" :label="p.n" @click="open_grp(p.id,p.n)"></q-breadcrumbs-el>
 </q-breadcrumbs>
 <q-list>
-  <q-slide-item v-if="gid>0" clickable @right="on_slide" v-for="(g,i) in grps" @click="open_grp(g.id,g.name)" right-color="purple">
-   <template v-slot:right>
-      <q-icon name="edit" @click="on_edit_grp(g)" class="q-mr-md"></q-icon> 
-      <q-icon name="delete_forever" @click="rmv_grp(g.id)"></q-icon> 
-   </template>
-   <q-item>
-    <q-item-section thumbnail><q-icon name="folder"></q-icon></q-item-section>
-    <q-item-section>{{g.name}}</q-item-section>
-    <q-item-section>{{g.descr}}</q-item-section>
-    <q-item-section>{{g.createAt}}</q-item-section>
-   </q-item>
-  </q-slide-item>
-  <q-item v-else clickable v-for="g in grps" @click="open_grp(g.id,g.name)">
-   <q-item-section thumbnail><q-icon name="folder"></q-icon></q-item-section>
+  <q-item clickable v-for="(g,i) in grps" @click="open_grp(g.id,g.name)">
+    <q-menu touch-position context-menu v-if="g.id>=100">
+      <q-list dense style="min-width:100px">
+        <q-item clickable v-close-popup @click="on_edit_grp(i)">
+          <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
+          <q-item-section>{{tags.modify}}</q-item-section>
+        </q-item>
+        <q-item clickable v-close-popup @click="rmv_grp(g.id,i)">
+          <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
+          <q-item-section>{{tags.remove}}</q-item-section>
+        </q-item>
+      </q-list>
+    </q-menu>
+   <q-item-section thumbnail>
+    <q-icon name="folder" :color="g.type=='D'?'orange':'amber'"></q-icon>
+   </q-item-section>
    <q-item-section>{{g.name}}</q-item-section>
    <q-item-section>{{g.descr}}</q-item-section>
    <q-item-section>{{g.createAt}}</q-item-section>
@@ -198,18 +182,20 @@ template:`
   
   <q-separator></q-separator>
   
-  <q-slide-item v-for="(m,i) in members" clickable
-   @click="service.jumpTo('/user?id='+m.id)" clickable @right="on_slide">
-   <template v-slot:right>
-      <q-icon name="delete_forever" @click="rmv_member(m.id,i)"></q-icon> 
-   </template>
-   <q-item>
-    <q-item-section thumbnail><q-icon name="person_outline"></q-icon></q-item-section>
+  <q-item v-for="(m,i) in members">
+    <q-menu touch-position context-menu>
+     <q-list dense style="min-width:100px">
+      <q-item clickable v-close-popup @click="rmv_member(m.uid,i)">
+        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
+        <q-item-section>{{tags.remove}}</q-item-section>
+      </q-item>
+     </q-list>
+    </q-menu>
+    <q-item-section thumbnail><q-icon name="person_outline" color="indigo"></q-icon></q-item-section>
     <q-item-section>{{m.account}}</q-item-section>
-    <q-item-section>{{m.title}}</q-item-section>
+    <q-item-section>{{m.role}}/{{m.title}}</q-item-section>
     <q-item-section>{{m.createAt}}</q-item-section>
-   </q-item>
-  </q-slide-item>
+  </q-item>
 </q-list>
     </q-page>
   </q-page-container>
@@ -218,17 +204,14 @@ template:`
 <q-dialog v-model="newMbr.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-      <div class="text-h6">{{tags.addMbr}}</div>
+      <div class="text-h6">{{tags.grp.addMbr}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-    <q-item><q-item-section>
-     <component-user-selector :label="tags.user.account"
-      :accounts="newMbr.account" :multi="false" useid="true"></component-user-selector>
-    </q-item-section></q-item>
-    <q-item><q-item-section>
-     <q-input :label="tags.grp.title" v-model="newMbr.title" dense></q-input>
-    </q-item-section></q-item>
-   </q-list>
+    <user-selector :label="tags.grp.account"
+      :accounts="newMbr.uid" :multi="false" useid="true"></user-selector>
+    <q-select v-model="newMbr.role" :options="roleOpts"
+     :label="tags.grp.role" dense map-options emit-value></q-select>
+    <q-input :label="tags.grp.mbrTitle" v-model="newMbr.title" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
      <q-btn :label="tags.ok" color="primary" @click="add_member"></q-btn>
@@ -240,18 +223,16 @@ template:`
 <q-dialog v-model="newGrp.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-   <div class="text-h6">{{tags.crtGrp}}</div>
+   <div class="text-h6">{{tags.add}}</div>
   </q-card-section>
-  <q-card-section class="q-pt-none">
-   <q-list dense>
-    <q-item><q-item-section>
-     <q-input :label="tags.grp.name" v-model="newGrp.name" dense></q-input>
-    </q-item-section></q-item>
-    <q-item><q-item-section>
-     <q-input :label="tags.grp.descr" v-model="newGrp.descr" dense></q-input>
-    </q-item-section></q-item>
-   </q-list>
-  </q-card-section>
+  <q-card-section class="q-pt-none"><div class="q-pa-sm">
+    <q-input :label="tags.grp.name" v-model="newGrp.name" dense></q-input>
+    <div class="q-gutter-sm">
+     <q-radio v-model="newGrp.type" class="text-caption"
+      v-for="(s,v) in tags.grpTp" :val="v" :label="s"></q-radio>
+    </div>
+    <q-input :label="tags.grp.descr" v-model="newGrp.descr" dense></q-input>
+  </div></q-card-section>
   <q-card-actions align="right">
      <q-btn :label="tags.ok" color="primary" @click="create_grp"></q-btn>
      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
@@ -267,7 +248,7 @@ template:`
   <q-card-section class="q-pt-none">
    <q-list dense>
     <q-item><q-item-section>
-     <component-grp-selector :label="tags.grp.fname" v-model="edtGrp.fname"></component-grp-selector>
+     <grp-selector :label="tags.grp.fname" v-model="edtGrp.fname"></grp-selector>
     </q-item-section></q-item>
     <q-item><q-item-section>
       <q-input v-model="edtGrp.name" :label="tags.grp.name" dense></q-input>
@@ -284,6 +265,6 @@ template:`
  </q-card>
 </q-dialog>
 
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></alert-dialog>
 `
 }

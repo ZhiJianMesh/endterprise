@@ -2,12 +2,14 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     uid:this.$route.query.uid,
-    perInfo:{},
+    perInfo:{}, //人才信息
+    contacts:[], //联系记录
     empInfo:{uid:this.$route.query.uid,
         office:'',worktime:0,quali:'',post:'',
         salary:'',dSalary:'',hSalary:'',subsidy:'',entryAt:'',
         account:'',addr:'',email:'',idno:''},
-    ctrl:{fun:'',pi:{},entryDlg:false},
+    ctrl:{fun:'',pi:{},entryDlg:false,cntDlg:false},
+    contact:{dlg:false, act:'',cmt:'',at:'',uid:this.$route.query.uid,tag:''},
     opts:{edu:[],state:[],zone:[],office:[],worktime:[]}
 }},
 created(){
@@ -20,6 +22,7 @@ created(){
     
     var sOpts=[];
     for(var i in this.tags.perState) {
+        if(i=='JOIN') continue;
         sOpts.push({value:i,label:this.tags.perState[i]});
     }
     this.opts.state=sOpts;
@@ -29,6 +32,7 @@ created(){
     this.service.zoneList().then(opts=>{
         this.opts.zone=opts;
     });
+    this.getContacts();
 },
 methods:{
 get() {
@@ -107,6 +111,56 @@ changeOffice(zone) {
 salaryChange(v) {
     this.empInfo.dSalary=parseInt(v/22);
     this.empInfo.hSalary=parseInt(v/(22*8));
+},
+//联系记录操作
+getContacts() {
+    var url = "/api/pool/listContact?uid="+this.uid;
+    request({method:"GET",url:url}, this.service.name).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            return;
+        }
+        var dt=new Date();
+        var list=[];
+        for(var e of resp.data.list) {
+            dt.setTime(e.at*60000);
+            e.at_s=this.tags.date2str(dt);
+            list.push(e);
+        }
+        this.contacts=list;
+    })
+},
+showCntDlg(act,i) {
+    if(act=='add') {
+        this.contact.tag=this.tags.add;
+        this.contact.cmt='';
+        this.contact.at_s=this.tags.date2str(new Date());
+    } else {
+        this.contact.tag=this.tags.modify;
+        this.contact.cmt=this.contacts[i].cmt;
+        this.contact.at_s=this.contacts[i].at_s;
+    }
+    this.contact.act=act;
+    this.contact.dlg=true;
+},
+doContactAct(act) {
+    var vPromize;
+    var dta={uid:this.uid, cmt:this.contact.cmt};
+    dta.at=parseInt(new Date(this.contact.at_s).getTime()/60000);
+    if(act=='add') {
+        vPromize = request({method:"POST",url:"/api/pool/addContact",data:dta}, this.service.name);
+    } else if(act=='rmv') {
+        vPromize = request({method:"DELETE",url:"/api/pool/removeContact?uid="+dta.uid+"&at="+dta.at}, this.service.name);
+    } else {
+        vPromize = request({method:"PUT",url:"/api/pool/updateContact",data:dta}, this.service.name);
+    }
+    vPromize.then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.contact.dlg=false;
+        this.getContacts();
+    });
 }
 },
 template:`
@@ -114,20 +168,16 @@ template:`
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
-    <q-toolbar-title>{{tags.pool.detail}}</q-toolbar-title>
+    <q-toolbar-title>{{tags.pool.detail}}-{{perInfo.name}} {{perInfo.sex_s}}</q-toolbar-title>
     <q-btn icon="delete" @click="remove" v-show="perInfo.state=='DISC'" flat></q-btn>
     <q-btn icon="edit" @click="showModify" v-show="ctrl.fun==''" flat></q-btn>
-    <q-btn icon="badge" @click="ctrl.entryDlg=true" v-if="perInfo.state!='JOIN'" flat></q-btn>
+    <q-btn :label="tags.employee.join" @click="ctrl.entryDlg=true" v-if="perInfo.state!='JOIN'" flat></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
 <div v-show="ctrl.fun==''">
  <q-list dense>
-  <q-item>
-   <q-item-section>{{tags.pub.name}}</q-item-section>
-   <q-item-section>{{perInfo.name}} {{perInfo.sex_s}}</q-item-section>
-  </q-item>
   <q-item>
    <q-item-section>{{tags.pool.maxEdu}}</q-item-section>
    <q-item-section>{{perInfo.maxEdu_s}}</q-item-section>
@@ -197,10 +247,12 @@ template:`
    <date-input v-model="ctrl.pi.birth_s" :label="tags.pool.birth"
     :close="tags.ok" max="today"></date-input>
   </q-item-section></q-item>
-  <q-item><q-item-section>
-   <q-select v-model="ctrl.pi.state" :options="opts.state" emit-value
+  <q-item v-if="ctrl.pi.state!='JOIN'">
+   <q-item-section>
+    <q-select v-model="ctrl.pi.state" :options="opts.state" emit-value
     :label="tags.pool.state" dense map-options></q-select>
-  </q-item-section></q-item>
+   </q-item-section>
+  </q-item>
   <q-item><q-item-section>
    <q-input v-model="ctrl.pi.email" :label="tags.pub.email" dense maxlength=80></q-input>
   </q-item-section></q-item>
@@ -213,11 +265,48 @@ template:`
    <q-btn icon="done" :label="tags.ok" color="primary" @click="modify"></q-btn>
  </div>
 </div>
+
+<q-separator inset></q-separator>
+<q-banner inline-actions class="bg-indigo-1 q-ma-sm" dense>
+  {{tags.pool.contact}}
+  <template v-slot:action>
+   <q-icon flat color="primary" name="add_circle" @click.stop="showCntDlg('add')"></q-icon>
+  </template>
+</q-banner>
+<q-list dense>
+  <q-item v-for="(c,i) in contacts" clickable @click="showCntDlg('edit',i)">
+   <q-item-section>
+    <q-item-label>{{c.cmt}}</q-item-label>
+   </q-item-section>
+   <q-item-section side>
+    <q-item-label caption>{{c.at_s}}</q-item-label>
+   </q-item-section>
+  </q-item>
+</q-list>
     </q-page>
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="ctrl.entryDlg">
+<q-dialog v-model="contact.dlg" persistent>
+  <q-card style="min-width:70vw">
+    <q-card-section>
+      <div class="text-h6">{{contact.tag}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+     <div v-if="contact.act=='edit'">{{contact.at_s}}</div>
+     <date-input v-else :close="tags.ok" :label="tags.pool.at" v-model="contact.at_s" max="today"></date-input>
+     <q-input v-model="contact.cmt" :label="tags.cmt" type="textarea"></q-input>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn :label="tags.remove" color="indigo" @click="doContactAct('rmv')" flat></q-btn>
+      <q-space></q-space>
+      <q-btn :label="tags.ok" color="primary" @click="doContactAct(contact.act)"></q-btn>
+      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
+<q-dialog v-model="ctrl.entryDlg" persistent>
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.employee.entry}}</div>
@@ -277,14 +366,11 @@ template:`
      </q-list>
     </q-card-section>
     <q-card-actions align="right">
-      <q-space></q-space>
       <q-btn :label="tags.ok" color="primary" @click="entry"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>
 </q-dialog>
-
-
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="errMsg"></alert-dialog>

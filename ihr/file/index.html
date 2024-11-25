@@ -20,12 +20,14 @@
 <script type="module">
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
 import Home from "./home.js"
 import Config from "./config.js"
 import Grp from "./grp.js"
 import Salary from "./salary.js"
 import Employees from "./employees.js"
 import Employee from "./employee.js"
+import Resume from "./resume.js"
 import Pool from "./pool.js"
 import Person from "./person.js"
 
@@ -42,7 +44,8 @@ routes:[
   {path:'/config', component:Config},
   {path:'/slary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
   {path:'/employees', component:Employees}, //雇员列表
-  {path:'/employee', component:Employee}, //雇员详情、简历等
+  {path:'/employee', component:Employee}, //雇员详情、关键事件
+  {path:'/resume', component:Resume}, //简历
   {path:'/pool', component:Pool}, //人才库
   {path:'/person', component:Person} //人才详情
 ]});
@@ -158,6 +161,7 @@ app.use(Quasar);
 app.use(router);
 app.component('alert-dialog', AlertDialog);
 app.component('date-input', DateInput);
+app.component('user-selector', UserSelector);
 //启动APP
 app.mount('#app');
 </script>
