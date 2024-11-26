@@ -20,12 +20,10 @@
         "comment" : "查询帐号在项目中的角色",
         "service" : "iproject",
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
-        "afterAll" : "
-            if('@{!role}'!='L' && '@{!role}' != 'O') {
-                Mesh.error(RetCode.NO_RIGHT, 'not stakeholder');
-            } else {
-                Mesh.success({});
-            }
-        "
+        "onSuccess" : {
+            "errorCode":"NO_RIGHT",
+            "errorInfo":"not stakeholder",
+            "script":"@{CONDITION|!role,'s.!=','L'}&&@{CONDITION|!role,'s.!=','O'}"
+        }
     }
 }

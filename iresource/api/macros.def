@@ -8,13 +8,11 @@
         "comment" : "查询帐号在项目中的角色",
         "service" : "iproject",
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
-        "afterAll" : "
-            if('@{!role}'!='L') {
-                Mesh.error(RetCode.NO_RIGHT, 'not leader');
-            } else {
-                Mesh.success({});
-            }
-        "
+        "onSuccess" : {
+            "errorCode":"NO_RIGHT",
+            "errorInfo":"not leader",
+            "script":"@{CONDITION|!role,'s.!=','L'}"
+        }
     },
     
     "is_prj_member" : {
@@ -26,12 +24,10 @@
         "comment" : "确认是否为项目成员",
         "service" : "iproject",
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
-        "afterAll" : "
-            if('@{!role}'=='') {
-                Mesh.error(RetCode.NO_RIGHT, 'not a member');
-            } else {
-                Mesh.success({});
-            }
-        "
+        "onSuccess" : {
+            "errorCode":"NO_RIGHT",
+            "errorInfo":"not a member",
+            "script":"@{CONDITION|!role,'s.==',''}"
+        }
     }
 }
