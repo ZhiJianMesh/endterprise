@@ -23,6 +23,7 @@ cn:{
   cmt:"备注",
   start:"开始",
   end:"结束",
+  name:"名称",
 
   sex:{
     M:"先生",
@@ -176,6 +177,37 @@ cn:{
     mbrTitle:"职位",
     account:"帐号"
   },
+  cfg:{
+    title:"HR配置",
+    
+    zone:"大区",
+    office:"办公区",
+    worktime:"作息制度",
+    calendar:"日历",
+    perf:"绩效等级",
+    workDay:"工作日",
+    festival:"节假日",
+    offDay:"休息日",
+    
+    subsidy:'补贴系数',
+    salary:'工资系数',
+    fowSalary:'节假日加班工资系数',
+    oowSalary:'休息日加班工资系数',
+    wowSalary:'工作日加班工资系数',
+    timeOff:'时区偏差(分钟)',
+    taxFunc:'计税函数',
+    
+    calendar:'工作日历',
+    first:'上班时间(分钟)',
+    second:'上午下班时间(分钟)',
+    third:'下午上班时间(分钟)',
+    forth:'下班时间(分钟)',
+    leadTime:'刷卡提前量(分钟)',
+    maxEdit:'每月最大忘刷卡次数',
+    
+    level:'等级',
+    month:'月'
+  },
   grpTp:{
     D:"部门",
     V:"群组"
@@ -186,6 +218,7 @@ cn:{
   config:{
     title:"HR配置"
   },
+  weekDays:['日','一','二','三','四','五','六'],
   errMsgs:{
     '6001':'请假时间必须是在工作日',
     '6002':'无权执行此操作',

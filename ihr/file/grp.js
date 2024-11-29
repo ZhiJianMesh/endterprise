@@ -2,13 +2,12 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     gid:-1,
-    fname:'',
     members:[],
     grps:[],
     errMsgs:{},
     newMbr:{dlg:false,uid:[],title:'',role:''},
     newGrp:{dlg:false,name:'',type:'',descr:'',admin:''},
-    edtGrp:{dlg:false,id:0,fname:{value:null,label:''},name:'',descr:''},
+    edtGrp:{dlg:false,id:0,name:'',descr:''},
     paths:[],
     roleOpts:[]
 }},
@@ -121,19 +120,13 @@ open_grp(id,name){
     }
     if(id==0){
         this.paths=[];
-        this.fname='';
     } else {
-        var fn='';
         for(var i in this.paths){
             if(this.paths[i].id==id){
                 this.paths.length=i;//删除后面的
                 break;
             }
-            if(i>0){fn += '/'}
-            fn += this.paths[i].n;
         }
-        if(fn != '') {fn += '/'}
-        this.fname=fn + name;
         this.paths.push({n:name, id:id});
     }
     this.gid=id;
@@ -247,9 +240,6 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
    <q-list dense>
-    <q-item><q-item-section>
-     <grp-selector :label="tags.grp.fname" v-model="edtGrp.fname"></grp-selector>
-    </q-item-section></q-item>
     <q-item><q-item-section>
       <q-input v-model="edtGrp.name" :label="tags.grp.name" dense></q-input>
     </q-item-section></q-item>

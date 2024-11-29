@@ -23,6 +23,8 @@ import DateInput from "/assets/v3/components/date_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import Home from "./home.js"
 import Config from "./config.js"
+import Zone from "./zone.js"
+import Calendar from "./calendar.js"
 import Grp from "./grp.js"
 import Salary from "./salary.js"
 import Employees from "./employees.js"
@@ -42,6 +44,8 @@ routes:[
   {path:'/home', component:Home},
   {path:'/grp', component:Grp}, //群组、成员管理
   {path:'/config', component:Config},
+  {path:'/zone', component:Zone}, //大区管理
+  {path:'/calendar', component:Calendar},
   {path:'/slary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
   {path:'/employees', component:Employees}, //雇员列表
   {path:'/employee', component:Employee}, //雇员详情、关键事件
