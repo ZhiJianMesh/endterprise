@@ -35,7 +35,7 @@ data() {return {
 created(){
     request({method:"GET",url:"/grp/mygrp"}, SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            Console.warn("Fail to get mygrp:" + resp.code + ",info:" + resp.info);
+            Console.debug("Fail to get mygrp:" + resp.code + ",info:" + resp.info);
             return;
         }
         var dta=resp.data;
@@ -47,9 +47,16 @@ created(){
         }
         this.grps=grps;
     }); 
+    request({method:"GET",url:"/attendance/clockAt"}, SERVICE_HR).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            Console.debug("Fail to get my clock time:" + resp.code + ",info:" + resp.info);
+            return;
+        }
+        this.set_clockTm(resp.data.start, resp.data.end);
+    }); 
     request({method:"GET",url:"/project/my?offset=0&num=5"}, SERVICE_PRJ).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            Console.warn("Fail to get my prj:" + resp.code + ",info:" + resp.info);
+            Console.debug("Fail to get my prj:" + resp.code + ",info:" + resp.info);
             return;
         }
         var role, tm;
@@ -69,21 +76,26 @@ methods:{
 goto(url) {
     this.$router.push(url);
 },
+set_clockTm(start, end) {
+    var dt=new Date();
+    if(start>0) {
+        dt.setTime(start*60000);
+        this.clockTm.start=dt.getHours().toString().padStart(2,'0')
+         + ":" + dt.getMinutes().toString().padStart(2,'0');
+    }
+    if(end>0) {
+        dt.setTime(end*60000);
+        this.clockTm.end= dt.getHours().toString().padStart(2,'0')
+         + ":" + dt.getMinutes().toString().padStart(2,'0');
+    }    
+},
 clock() { //上下班刷卡
     request({method:"GET",url:"/attendance/clock"}, SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        var dt=new Date();
-        if(resp.data.start>0) {
-            dt.setTime(resp.data.start*60000);
-            this.clockTm.start=dt.getHours() + ":" + dt.getMinutes();
-        }
-        if(resp.data.end>0) {
-            dt.setTime(resp.data.end*60000);
-            this.clockTm.end=dt.getHours() + ":" + dt.getMinutes();
-        }
+        this.set_clockTm(resp.data.start, resp.data.end);
     })
 }
 },

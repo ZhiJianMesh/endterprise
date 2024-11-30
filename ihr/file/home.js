@@ -29,7 +29,7 @@ template:`
      icon="badge" color="primary" flat></q-btn>
     <q-btn :label="tags.grp.title" @click="goto('/grp?id=0')"
      icon="account_tree" color="orange" flat padding="xs"></q-btn>
-    <q-btn :label="tags.config.title" @click="goto('/config')"
+    <q-btn :label="tags.cfg.title" @click="goto('/config')"
      icon="settings" color="accent" flat></q-btn>
     <q-btn :label="tags.salary.title" @click="goto('/salary')"
      icon="attach_money" color="primary" flat></q-btn>

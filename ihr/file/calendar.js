@@ -203,7 +203,7 @@ template:`
     <q-page class="q-pa-md">
 <div>
 <q-select v-model="cal" :options="cals" @update:model-value="query_days"
-dense map-options emit-value dense ref="calSelect">
+dense map-options emit-value ref="calSelect">
  <template v-slot:after>
   <q-btn flat dense color="primary" icon="add_circle" @click="show_cal(-1)"></q-btn>
   <q-btn flat dense color="primary" icon="edit" @click="show_cal(1)"></q-btn>

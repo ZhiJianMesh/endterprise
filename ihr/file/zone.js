@@ -1,14 +1,20 @@
 const EMPTY_ZONE={subsidy:'',salary:'',fowSalary:'',oowSalary:'',wowSalary:'',timeOff:480,name:'',cmt:'',
     taxFunc:'if(s<5000)return 0;\nif(s>5000&&s<=36000)return 0.03*(s-5000);\nreturn 930+(s-36000)*0.1;'};
+const EMPTY_SECURITY={name:'',type:'R',sponsor:'C',val:''};
 export default {
 inject:['service', 'tags'],
 data() {return {
     zones:[],
-    edt:{zone:{}},
-    ctrl:{no:-2,tag:'',zoneDlg:false}
+    secs:{},
+    secOpts:[],
+    edt:{zone:{},security:{}},
+    ctrl:{no:-2,tag:'',zoneDlg:false,secDlg:false}
 }},
 created(){
     this.query_zones();
+    for(var i in this.tags.securityTp) {
+        this.secOpts.push({label:this.tags.securityTp[i],value:i});
+    }
 },
 methods:{
 query_zones(){//查询区域
@@ -18,6 +24,19 @@ query_zones(){//查询区域
             return;
         }
         this.zones=resp.data.list;
+        var secs={};
+        for(var z of resp.data.list) {
+            secs[z.id]=[]; //全部加一个空社保，避免未设置社保的secs为空，添加时抛异常
+        }
+        var props=this.tags.securityProp;
+        var names=this.tags.securityTp;
+        for(var s of resp.data.secs) {
+            s.name_s=names[s.name]?names[s.name]:s.name;
+            s.sponsor_s=props[s.sponsor];
+            s.type_s=props[s.type];
+            secs[s.zone].push(s);
+        }
+        this.secs=secs;
     })  
 },
 show_zone(i) {
@@ -65,6 +84,67 @@ remove_perf(i) {
         }
         this.zones.splice(i,1);
     });
+},
+show_security(zone,i) {
+    if(i<0) {
+        this.ctrl.tag=this.tags.add;
+        copyObjTo(EMPTY_SECURITY, this.edt.security);
+        this.edt.security.zone=zone;
+    } else {
+        this.ctrl.tag=this.tags.modify;
+        copyObjTo(this.secs[zone][i], this.edt.security);
+    }
+    this.ctrl.tag+=this.tags.cfg.security;
+    this.ctrl.no=i;
+    this.ctrl.secDlg=true;
+},
+security_do() {
+    var opts;
+    if(this.ctrl.no>-1) {
+        opts={method:"PUT",url:"/config/updateSecurity",data:this.edt.security};
+    } else {
+        opts={method:"POST",url:"/config/addSecurity",data:this.edt.security};
+    }
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        var props=this.tags.securityProp;
+        var names=this.tags.securityTp;
+        var security=cloneObj(this.edt.security);
+        var secs=this.secs[security.zone];
+        security.name_s=names[security.name]?names[security.name]:security.name;
+        security.sponsor_s=props[security.sponsor];
+        security.type_s=props[security.type];
+        if(this.ctrl.no>-1) {
+            copyObjTo(security, secs[this.ctrl.no]);
+        } else {
+            secs.push(security);
+        }
+        this.ctrl.no=-2;
+        this.ctrl.secDlg=false;
+    });
+    
+},
+remove_security(zone,i) {
+    var sec=this.secs[zone][i];
+    var url="/config/removeSecurity?zone="+zone+"&sponsor="+sec.sponsor+"&name="+sec.name;
+    var opts={method:"DELETE",url:url};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.secs[zone].splice(i,1);
+    });
+},
+add_sec_opt(val, done) {
+    if (val.length > 2) {
+      if (!this.tags.securityTp[val]) {
+        done(val, 'add-unique');
+      }
+    }
 }
 },
 template:`
@@ -78,11 +158,11 @@ template:`
   </q-header>
   <q-page-container>
     <q-page class="q-pa-none">
-<q-list>
- <q-item v-for="(z,i) in zones">
+<q-list v-for="(z,i) in zones" dense>
+ <q-item>
   <q-item-section>
-   <q-item-label>{{z.name}}</q-item-label>
-   <q-item-label>{{tags.cfg.timeOff}}:{{z.timeOff}}</q-item-label>
+   <q-item-label class="text-h5">{{z.name}}</q-item-label>
+   <q-item-label caption>{{tags.cfg.timeOff}}:{{z.timeOff}}</q-item-label>
    <q-item-label caption>{{z.cmt}}</q-item-label>
   </q-item-section>
   <q-item-section>
@@ -105,12 +185,37 @@ template:`
     </q-list>
   </q-menu>
  </q-item>
+ <q-item>
+  <q-item-section class="text-teal">{{tags.cfg.security}}</q-item-section>
+  <q-item-section>
+   <q-icon @click="show_security(z.id,-1)" name='add_circle' color="primary" flat size="1.5em"></q-icon>
+  </q-item-section>
+ </q-item>
+ <q-item v-for="(s,i) in secs[z.id]" dense>
+  <q-item-section><q-item-label caption>{{s.name_s}}({{s.sponsor_s}})</q-item-label></q-item-section>
+  <q-item-section>
+   <q-item-label caption>{{s.val}}({{s.type_s}})</q-item-label>
+  </q-item-section>
+  <q-menu touch-position context-menu>
+    <q-list dense style="min-width:100px">
+      <q-item clickable v-close-popup @click="show_security(z.id,i)">
+        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
+        <q-item-section>{{tags.modify}}</q-item-section>
+      </q-item>
+      <q-item clickable v-close-popup @click="remove_security(z.id,i)">
+        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
+        <q-item-section>{{tags.remove}}</q-item-section>
+      </q-item>
+    </q-list>
+  </q-menu>
+ </q-item>
+ <q-separator spaced></q-separator>
 </q-list>
     </q-page>
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="ctrl.zoneDlg">
+<q-dialog v-model="ctrl.zoneDlg" persistent>
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{ctrl.tag}}</div>
@@ -128,6 +233,35 @@ template:`
   </q-card-section>
   <q-card-actions align="right">
    <q-btn :label="tags.ok" color="primary" @click="zone_do"></q-btn>
+   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="ctrl.secDlg" persistent>
+ <q-card style="min-width:70vw">
+  <q-card-section>
+    <div class="text-h6">{{ctrl.tag}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <q-select v-model="edt.security.name" use-input @new-value="add_sec_opt"
+    :options="secOpts" :label="tags.name" dense map-options emit-value></q-select>
+   <div class="q-gutter-sm">
+     <q-radio v-model="edt.security.sponsor"
+      val="C" :label="tags.securityProp['C']"></q-radio>
+     <q-radio v-model="edt.security.sponsor"
+      val="P" :label="tags.securityProp['P']"></q-radio>
+   </div>
+   <div class="q-gutter-sm">
+    <q-radio v-model="edt.security.type"
+     val="R" :label="tags.securityProp['R']"></q-radio>
+    <q-radio v-model="edt.security.type"
+     val="V" :label="tags.securityProp['V']"></q-radio>
+   </div>
+   <q-input :label="tags.val" v-model.number="edt.security.val" dense></q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn :label="tags.ok" color="primary" @click="security_do"></q-btn>
    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
   </q-card-actions>
  </q-card>

@@ -108,6 +108,20 @@ cn:{
     SEC:"秘书",
     NOR:"成员"
   },
+  securityTp:{
+    OLD:'养老保险',
+    MEDICARE:'医疗保险',
+    JOB:'失业保险',
+    INJURY:'工伤保险',
+    PCREATION:'生育保险',
+    HOUSE:'住房公积金'
+  },
+  securityProp:{
+    P:'个人缴纳',
+    C:'公司缴纳',
+    R:'按比率',
+    V:'固定金额'
+  },
   pub:{
     account:"帐号",
     name:"姓名",
@@ -197,6 +211,9 @@ cn:{
     timeOff:'时区偏差(分钟)',
     taxFunc:'计税函数',
     
+    security:"社会保障",
+    val:"金额或比率",
+    
     calendar:'工作日历',
     first:'上班时间(分钟)',
     second:'上午下班时间(分钟)',
@@ -214,9 +231,6 @@ cn:{
   },
   salary:{
     title:"发薪"
-  },
-  config:{
-    title:"HR配置"
   },
   weekDays:['日','一','二','三','四','五','六'],
   errMsgs:{
