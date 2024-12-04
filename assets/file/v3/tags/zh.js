@@ -29,3 +29,9 @@ const __err_infos={
 '100000':"客户端处理失败",
 'unknown':"未知错误"
 };
+
+function date2str(dt) { //yyyy/MM/dd
+  return dt.getFullYear()
+   + '/' + (dt.getMonth()+1).toString().padStart(2,'0')
+   + '/' + dt.getDate().toString().padStart(2,'0');
+}

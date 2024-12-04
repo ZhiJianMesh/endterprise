@@ -59,10 +59,10 @@ fmt_lines(data) {
             dev[cols[i]]=row[i];
         }
         dt.setTime(dev.createAt*60000);
-        dev.createAt=this.tags.date2str(dt);
+        dev.createAt=date2str(dt);
         if(dev.sellAt>0) {
             dt.setTime(dev.sellAt*60000);
-            dev.sellAt=this.tags.date2str(dt);
+            dev.sellAt=date2str(dt);
         } else {
             dev.sellAt=this.tags.notSell;
         }

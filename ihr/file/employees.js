@@ -34,7 +34,7 @@ fmt_lines(data) {
         dt.setTime(p.birth*60000);
         p.age=year-dt.getFullYear();
         dt.setTime(p.entryAt*60000);
-        p.entryAt=this.tags.date2str(dt);
+        p.entryAt=date2str(dt);
         p.office_s=this.service.officeMap[p.office];
         list.push(p);
     }

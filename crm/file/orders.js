@@ -21,7 +21,7 @@ fmt_order_lines(cols, lines) {
             ord[cols[j]] = ln[j]
         }
         dt.setTime(ord.createAt);
-        ord.createAt=this.tags.date2str(dt);
+        ord.createAt=date2str(dt);
         ord.status=this.tags.sta2icon(ord.status);
         orders.push(ord)
     }

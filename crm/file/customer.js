@@ -18,7 +18,7 @@ data() {return {
     
     newOrder:{skuId:0,price:0,nextSigners:[],ext:{}},
     newContact:{name:'',sex:"0",level:0,phone:'',address:'',post:'',
-                birthday:this.tags.date2str(new Date()),ext:{}},
+                birthday:date2str(new Date()),ext:{}},
     newTl:{n:'',t:0,tp:0,cid:0,cmt:''},
     newShare:{endT:'',to:[],power:"S"},
     
@@ -29,7 +29,7 @@ data() {return {
     visSegs:["name","taxid","address","business","creator","ordNum","createAt"] //控制哪些字段需要显示
 }},
 created(){
-    this.curDate=this.tags.date2str(new Date());
+    this.curDate=date2str(new Date());
     this.detail();
 },
 methods:{
@@ -41,7 +41,7 @@ detail() {
             return;
         }
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
-        this.dtl.createAt=this.tags.date2str(new Date(parseInt(resp.data.createAt)));
+        this.dtl.createAt=date2str(new Date(parseInt(resp.data.createAt)));
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
         
         this.service.template('customer').then(function(tmpl) {
@@ -64,7 +64,7 @@ query_orders(pg) {
             dt.setTime(o.createAt);
             icon=this.tags.sta2icon(o.status);
             orders.push({id:o.id,price:o.price,skuName:o.skuName,creator:o.creator,
-                createAt:this.tags.date2str(dt),status:icon});
+                createAt:date2str(dt),status:icon});
         }
         this.orders=orders;
         this.page.order=Math.ceil(resp.data.total/this.service.N_SMPG);
@@ -82,7 +82,7 @@ query_contacts(pg) {
         for(var c of resp.data.contacts) {
             dt.setTime(c.createAt);
             contacts.push({id:c.id,name:c.name,post:c.post,
-             createAt:this.tags.date2str(dt),creator:c.creator});
+             createAt:date2str(dt),creator:c.creator});
         }
         this.contacts=contacts;
         this.page.contact=Math.ceil(resp.data.total/this.service.N_SMPG);
@@ -156,7 +156,7 @@ create_contact() {
         } else {
             this.visible.newContact=false;
             this.newContact={name:'',sex:0,level:0,phone:'',address:'',post:'',
-                birthday:this.tags.date2str(new Date()),ext:{}};
+                birthday:date2str(new Date()),ext:{}};
             this.query_contacts(1);
         }
     }.bind(this))

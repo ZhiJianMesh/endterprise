@@ -37,7 +37,7 @@ getCust() {
         this.custInfo=resp.data;
         var dt=new Date();
         dt.setTime(resp.data.createAt*60000);
-        this.custInfo.createAt=this.tags.date2str(dt);
+        this.custInfo.createAt=date2str(dt);
     })
 },
 showMsg(code) {

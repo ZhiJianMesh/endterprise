@@ -23,7 +23,7 @@
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
             "errorInfo":"not stakeholder",
-            "script":"@{CONDITION|!role,'s.!=','L'}&&@{CONDITION|!role,'s.!=','O'}"
+            "condition":"@{CONDITION|!role,'s.!=','L'}&&@{CONDITION|!role,'s.!=','O'}"
         }
     }
 }

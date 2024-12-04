@@ -29,3 +29,9 @@ const __err_infos={
 '100000':"client fail to handle",
 'unknown':"unknown"
 };
+
+function date2str(dt) {//MM-dd-yyyy
+  return (dt.getMonth()+1).toString().padStart(2,'0')
+   + '-' + dt.getDate().toString().padStart(2,'0')
+   + '-' + dt.getFullYear();
+}

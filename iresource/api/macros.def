@@ -11,7 +11,7 @@
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
             "errorInfo":"not leader",
-            "script":"@{CONDITION|!role,'s.!=','L'}"
+            "condition":"@{CONDITION|!role,'s.!=','L'}"
         }
     },
     
@@ -27,7 +27,7 @@
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
             "errorInfo":"not a member",
-            "script":"@{CONDITION|!role,'s.==',''}"
+            "condition":"@{CONDITION|!role,'s.==',''}"
         }
     }
 }

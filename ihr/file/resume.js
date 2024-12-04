@@ -27,9 +27,9 @@ query() {
         var dt=new Date();
         for(var l of resp.data.list) {
             dt.setTime(l.start*60000);
-            l.start_s=this.tags.date2str(dt);
+            l.start_s=date2str(dt);
             dt.setTime(l.end*60000);
-            l.end_s=this.tags.date2str(dt);
+            l.end_s=date2str(dt);
             l.type_s=this.tags.resumeTp[l.type];
             ll.push(l);
         }

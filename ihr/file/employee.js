@@ -48,7 +48,7 @@ convert(src) {
     dt.setTime(p.birth*60000);
     p.age=year-dt.getFullYear();
     dt.setTime(p.entryAt*60000);
-    p.entryAt_s=this.tags.date2str(dt);
+    p.entryAt_s=date2str(dt);
     p.worktime_s=this.service.worktimeMap[p.worktime];
     p.office_s=this.service.officeMap[p.office];
     return p;
@@ -63,7 +63,7 @@ getEvents() {
         var list=[];
         for(var e of resp.data.list) {
             dt.setTime(e.at*60000);
-            e.at=this.tags.date2str(dt);
+            e.at=date2str(dt);
             e.type=this.tags.evtType[e.type];
             list.push(e);
         }
@@ -89,7 +89,7 @@ showLeave() {
             var dt=new Date();
             for(var l of resp.data.list) {
                 dt.setTime(l.start*60000);
-                l.start=this.tags.date2str(dt);
+                l.start=date2str(dt);
                 list.push(l);
             }
             this.resources=list;

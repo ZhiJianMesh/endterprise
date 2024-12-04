@@ -43,11 +43,11 @@ fmt_lines(data) {
         p.firstEdu_s=this.tags.edu[p.firstEdu];
         dt.setTime(p.birth*60000);
         p.age=year-dt.getFullYear();
-        p.birth_s=this.tags.date2str(dt);
+        p.birth_s=date2str(dt);
         dt.setTime(p.createAt*60000);
-        p.createAt_s=this.tags.date2str(dt);
+        p.createAt_s=date2str(dt);
         dt.setTime(p.update_time);
-        p.updateAt=this.tags.date2str(dt);
+        p.updateAt=date2str(dt);
         list.push(p);
     }
     this.list=list;

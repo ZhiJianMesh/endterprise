@@ -23,7 +23,7 @@ data() {return {
          newRelation:false, share:false, newShare:false, remove:false}
 }},
 created(){
-    this.curDate=this.tags.date2str(new Date());
+    this.curDate=date2str(new Date());
     this.service.template('contact').then(tpl=>{
         this.tmpl=tpl;
         this.detail();
@@ -42,14 +42,14 @@ detail() {
         var dt=new Date();
         var year=dt.getFullYear();
         dt.setTime(dtl.createAt*60000);
-        dtl.createAt=this.tags.date2str(dt);
+        dtl.createAt=date2str(dt);
 
         if(dtl.power!='O') {//不是联系人的所有人，是客户的所有人也可以修改、删除
             dtl.power=dtl.custPower;
         }
         
         dt.setTime(dtl.birthday*86400000);
-        dtl.birthday=this.tags.date2str(dt);
+        dtl.birthday=date2str(dt);
         dtl.age=year-dt.getFullYear();
         
         dtl.sex=""+dtl.sex; //radio值必须转成字符串

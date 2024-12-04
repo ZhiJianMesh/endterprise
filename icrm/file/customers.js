@@ -36,13 +36,13 @@ fmt_customer_lines(data) {
             cu[cols[i]]=row[i];
         }
         dt.setTime(cu.createAt*60000);
-        cu.createAt=this.tags.date2str(dt);
+        cu.createAt=date2str(dt);
         cu.status=this.tags.sta2icon(cu.status);
         tl=touchlogs[cu.id];//客户可以没有最新的接触记录
         if(tl) {//customer,cmt,createAt,creator,contact
             cu['comment']=tl[1]+'@'+tl[4];
             dt.setTime(tl[2]);
-            cu['tlCreator']=tl[3]+'@'+this.tags.date2str(dt);
+            cu['tlCreator']=tl[3]+'@'+date2str(dt);
         }
         customers.push(cu);
     }

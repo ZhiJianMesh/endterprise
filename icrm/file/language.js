@@ -127,20 +127,6 @@ cn:{
     '5110':"必须指定下一步责任人",
     'unknown':"未知错误"
   },
-  date2str:function(dt) {
-    var s=dt.getFullYear()+'/';
-    var v=dt.getMonth()+1;
-    if(v<10) {
-        s+='0';
-    }
-    s+=v+'/';
-    v=dt.getDate();
-    if(v<10) {
-        s+='0';
-    }
-    s+=v;
-    return s;
-  },
   sta2icon:function(s){
     if(s==0) {
       return 'star_border';

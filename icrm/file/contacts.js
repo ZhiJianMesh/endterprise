@@ -26,7 +26,7 @@ fmt_contact_lines(cols, lines) {
             o[cols[j]]=ln[j];
         }
         dt.setTime(o.createAt*60000);
-        o.createAt=this.tags.date2str(dt);
+        o.createAt=date2str(dt);
         contacts.push(o);
     }
     this.contacts=contacts;
@@ -72,7 +72,7 @@ query_touchlogs(id) {
         var dt=new Date();
         for(var l of resp.data.touchlogs) {
             dt.setTime(l.createAt*60000);
-            logs.push({creator:l.creator,comment:l.comment,createAt:this.tags.date2str(dt)});
+            logs.push({creator:l.creator,comment:l.comment,createAt:date2str(dt)});
         }
         this.touchlogs=logs;
     }.bind(this))
@@ -90,7 +90,7 @@ show_detail(id) {
             var dayNum=parseInt(resp.data.birthday);
             if(dayNum>-60000 && dayNum<60000) {
                 var birthDate=new Date(dayNum*86400000);
-                resp.data.birthday=this.tags.date2str(birthDate);
+                resp.data.birthday=date2str(birthDate);
                 resp.data.age=new Date().getFullYear() - birthDate.getFullYear();
             } else {
                 resp.data.birthday=this.tags.unknown;

@@ -40,7 +40,7 @@ fmt_customer_lines(data) {
             cu[cols[i]]=row[i];
         }
         dt.setTime(cu.createAt*60000);
-        cu.createAt=this.tags.date2str(dt);
+        cu.createAt=date2str(dt);
         customers.push(cu);
     }
     this.customers=customers;

@@ -35,7 +35,7 @@ detail() {
             return;
         }
         var dtl=resp.data;
-        dtl.createAt=this.tags.date2str(new Date(parseInt(dtl.createAt)));
+        dtl.createAt=date2str(new Date(parseInt(dtl.createAt)));
         dtl.icon=this.tags.sta2icon(dtl.status);
         dtl.needPay=dtl.price-dtl.payment;
         if(!('cost' in dtl)) {

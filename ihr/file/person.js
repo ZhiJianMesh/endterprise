@@ -56,11 +56,11 @@ convert(src) {
     p.firstEdu_s=this.tags.edu[p.firstEdu];
     dt.setTime(p.birth*60000);
     p.age=year-dt.getFullYear();
-    p.birth_s=this.tags.date2str(dt);
+    p.birth_s=date2str(dt);
     dt.setTime(p.createAt*60000);
-    p.createAt_s=this.tags.date2str(dt);
+    p.createAt_s=date2str(dt);
     dt.setTime(p.update_time);
-    p.updateAt=this.tags.date2str(dt);
+    p.updateAt=date2str(dt);
     return p;
 },
 showModify() {
@@ -123,7 +123,7 @@ getContacts() {
         var list=[];
         for(var e of resp.data.list) {
             dt.setTime(e.at*60000);
-            e.at_s=this.tags.date2str(dt);
+            e.at_s=date2str(dt);
             list.push(e);
         }
         this.contacts=list;
@@ -133,7 +133,7 @@ showCntDlg(act,i) {
     if(act=='add') {
         this.contact.tag=this.tags.add;
         this.contact.cmt='';
-        this.contact.at_s=this.tags.date2str(new Date());
+        this.contact.at_s=date2str(new Date());
     } else {
         this.contact.tag=this.tags.modify;
         this.contact.cmt=this.contacts[i].cmt;

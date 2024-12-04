@@ -11,7 +11,7 @@
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
             "errorInfo":"not leader",
-            "script":"@{CONDITION|!role,'s.!=','L'}}"
+            "condition":"@{CONDITION|!role,'s.!=','L'}}"
         }
     },
 

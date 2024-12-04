@@ -130,7 +130,7 @@ setRt(k, v) {
 getRt(k) {
     return this.runtime[router.currentRoute.value.path+':'+k];
 },
-back() { //返回，在页面中通过service.go_back调用
+back() { //返回，在页面中通过service.back调用
     router.back();
 },
 goto(url) {

@@ -251,29 +251,6 @@ cn:{
     '6109':'群组下不能添加部门',
     '6200':'超过考勤修改次数上限',
     'unknown':'未知错误'
-  },
-  date2str:function(dt) {
-    var s=dt.getFullYear()+'/';
-    var v=dt.getMonth()+1;
-    if(v<10) {
-        s+='0';
-    }
-    s+=v+'/';
-    v=dt.getDate();
-    if(v<10) {
-        s+='0';
-    }
-    s+=v;
-    return s;
-  },
-  sta2icon:function(s){
-    if(s==0) {
-      return 'star_border';
-    }
-    if(s==100) {
-      return 'star';
-    }
-    return 'star_half';
   }
 }
 };

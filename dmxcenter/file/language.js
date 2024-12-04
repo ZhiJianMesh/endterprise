@@ -98,20 +98,6 @@ cn:{
 	msgFmt:"格式：设备号1+换行+消息1+设备号2+换行+消息2+..."
   },
   failToCall:"调用失败",
-  errMsgs:{},
-  date2str:(dt)=>{
-    var s=dt.getFullYear()+'/';
-    var v=dt.getMonth()+1;
-    if(v<10) {
-        s+='0';
-    }
-    s+=v+'/';
-    v=dt.getDate();
-    if(v<10) {
-        s+='0';
-    }
-    s+=v;
-    return s;
-  }
+  errMsgs:{}
 }
 };
