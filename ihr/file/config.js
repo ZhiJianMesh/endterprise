@@ -3,12 +3,8 @@ const EMPTY_PERF={level:'',name:'',cmt:''};
 const EMPTY_WT={calendar:0,first:0,second:0,third:0,forth:0,leadTime:0,maxEdit:0,name:''};
 function formatTime(t) {
     var v=t>1440?(t-1440):t;
-    var s=parseInt(v/60)+':';
-    var m=v%60;
-    if(m<10) {
-        return s + '0' + m;
-    }
-    return s + m;
+    return parseInt(v/60).toString().padStart(2,'0')
+      +':'+(v%60).toString().padStart(2,'0');
 }
 export default {
 inject:['service', 'tags'],
