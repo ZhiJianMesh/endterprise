@@ -16,7 +16,7 @@ search_grps(val,update) {
   }
   update(() => {
     var opts={method:"GET",url:"/api/grp/search?limit=10&s="+val};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, "ihr").then(resp => {
         if(resp.code!=RetCode.OK) {
             this.grpOpts=[]
             return;
