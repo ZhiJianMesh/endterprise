@@ -213,8 +213,8 @@ template:`
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
    </q-toolbar>
   </q-header>
-  <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="studentPg.searchTag" dense @keyup.enter="search_students">
+  <q-footer class="bg-white q-pa-md">
+    <q-input outlined v-model="search" :label="studentPg.searchTag" dense @keyup.enter="search_students">
     <template v-slot:append>
       <q-icon name="close" v-show="search!==''" @click="query_students(0)" class="cursor-pointer q-mr-md"></q-icon>
     </template>

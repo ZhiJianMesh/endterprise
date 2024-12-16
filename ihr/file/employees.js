@@ -82,8 +82,8 @@ template:`
     <q-toolbar-title>{{tags.employee.title}}</q-toolbar-title>
   </q-toolbar>
   </q-header>
-  <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search">
+  <q-footer class="bg-white q-pa-md">
+    <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="search">
      <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="query(1)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="search"></q-icon>

@@ -9,7 +9,8 @@ props: {
     dateFormat:{type:String, default:"YYYY/MM/DD"},
     weekDays:{type:Array, default:["日","一","二","三","四","五","六"]},
     months:{type:Array, default:["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"]},
-    close:{type:String, default:'关闭'}
+    close:{type:String, default:'关闭'},
+    disable:{type:Boolean, default:false}
 },
 emits: ['update:modelValue'],
 created(){
@@ -44,7 +45,7 @@ computed: {
       }
    }
 },
-template: `<q-input dense :label="label" v-model="value" readonly>
+template: `<q-input dense :label="label" v-model="value" readonly :disable="disable">
 <template v-slot:append>
 <q-icon name="event" class="cursor-pointer">
  <q-popup-proxy cover transition-show="scale" transition-hide="scale">

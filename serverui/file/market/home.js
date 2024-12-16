@@ -148,8 +148,7 @@ template: `
 <q-page class="text-center">
 <q-tab-panels v-model="tab" animated swipeable transition-prev="jump-up" transition-next="jump-up">
   <q-tab-panel name="market" class="text-left">
-   <q-input v-model="search" :placeholder="tags.search" @keyup.enter="searchService"
-    bg-color="white" outlined bottom-slots dense>
+   <q-input v-model="search" :placeholder="tags.search" @keyup.enter="searchService" bg-color="white" outlined dense>
      <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="queryService(1)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="searchService"></q-icon>

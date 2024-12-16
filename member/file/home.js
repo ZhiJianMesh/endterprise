@@ -108,8 +108,8 @@ template:`
     </q-btn>
    </q-toolbar>
   </q-header>
-  <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="vipPg.searchTag" dense @keyup.enter="search_vips">
+  <q-footer class="bg-white q-pa-md">
+    <q-input outlined v-model="search" :label="vipPg.searchTag" dense @keyup.enter="search_vips">
     <template v-slot:append>
       <q-icon name="close" v-show="search!==''" @click="query_vips(0)" class="cursor-pointer q-mr-md"></q-icon>
       <q-icon name="search" @click="search_vips" class="cursor-pointer q-mr-md"></q-icon>

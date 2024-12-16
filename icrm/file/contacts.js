@@ -146,8 +146,8 @@ template:`
    </q-btn>
    </q-toolbar>
   </q-header>
-  <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search_contacts">
+  <q-footer class="bg-white q-pa-md">
+    <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="search_contacts">
     <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="query_contacts(1)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="search_contacts"></q-icon>

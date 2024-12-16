@@ -290,29 +290,33 @@ function innerDownload(opts, service) {
 
 //只拷贝在segs中的字段
 function copyObj(src,segs){
-    var dst={};
-    for(var i of segs) {
-        dst[i]=src[i]?src[i]:'';
+    if(segs && segs.length>0) {
+        var dst={};
+        for(var i of segs) {
+            dst[i]=(i in src)?src[i]:'';
+        }
+        return dst;
     }
-    return dst;
+    return cloneObj(src);
 }
 
 //排除部分字段的拷贝
-function excCopyObj(src,excludes){
-    var copy = {};
+function copyObjExc(src,excludes){
+    const excs = new Set(excludes);
+    var obj = {};
     for(var k in src) {
-        copy[k] = src[k];
+        if(excs.has(k)) {
+            continue;
+        }
+        obj[k] = src[k];
     }
-    for(var s of excludes) {
-        delete copy[s];
-    }
-    return copy;
+    return obj;
 }
 
 function copyObjTo(src,dst,segs){
     if(segs && segs.length>0) {
         for(var i of segs) {
-            dst[i]=src[i]?src[i]:'';
+            dst[i]=(i in src)?src[i]:'';
         }
     } else { //全部拷贝
         for(var i in src) {
