@@ -25,25 +25,17 @@ query_subs(){//查询子群组及成员
             return;
         }
         var dt=new Date();
-        if(resp.data.members) {
-            this.members=resp.data.members.map(m=>{
-                dt.setTime(m.update_time);
-                m.role=this.tags.roleTp[m.role];
-                m.createAt=dt.toLocaleDateString();
-                return m;
-            });
-        } else {
-            this.members=[];
-        }
-        if(resp.data.grps) {
-            this.grps=resp.data.grps.map(g=>{
-                dt.setTime(g.update_time);
-                g.createAt=dt.toLocaleDateString();
-                return g;
-            });
-        } else {
-            this.grps=[];
-        }
+        this.members=resp.data.members.map(m=>{
+            dt.setTime(m.update_time);
+            m.role=this.tags.roleTp[m.role];
+            m.createAt=date2str(dt);
+            return m;
+        });
+        this.grps=resp.data.grps.map(g=>{
+            dt.setTime(g.update_time);
+            g.createAt=date2str(dt);
+            return g;
+        });
     })  
 },
 create_grp() {
@@ -151,6 +143,7 @@ template:`
   <q-breadcrumbs-el @click="open_grp(0,'')" icon="home"></q-breadcrumbs-el>
   <q-breadcrumbs-el v-for="p in paths" :label="p.n" @click="open_grp(p.id,p.n)"></q-breadcrumbs-el>
 </q-breadcrumbs>
+<q-separator color="teal"></q-separator>
 <q-list>
   <q-item clickable v-for="(g,i) in grps" @click="open_grp(g.id,g.name)">
     <q-menu touch-position context-menu v-if="g.id>=100">
@@ -172,9 +165,6 @@ template:`
    <q-item-section>{{g.descr}}</q-item-section>
    <q-item-section>{{g.createAt}}</q-item-section>
   </q-item>
-  
-  <q-separator></q-separator>
-  
   <q-item v-for="(m,i) in members">
     <q-menu touch-position context-menu>
      <q-list dense style="min-width:100px">
@@ -185,7 +175,7 @@ template:`
      </q-list>
     </q-menu>
     <q-item-section thumbnail><q-icon name="person_outline" color="indigo"></q-icon></q-item-section>
-    <q-item-section>{{m.account}}</q-item-section>
+    <q-item-section>{{m.account}}/{{m.name}}</q-item-section>
     <q-item-section>{{m.role}}/{{m.title}}</q-item-section>
     <q-item-section>{{m.createAt}}</q-item-section>
   </q-item>

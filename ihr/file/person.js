@@ -79,7 +79,7 @@ remove() {
 modify() {
     var url="/api/pool/update";
     this.ctrl.pi.birth=parseInt(new Date(this.ctrl.pi.birth_s).getTime()/60000);
-    var dta=excCopyObj(this.ctrl.pi,[]);
+    var dta=copyObjExc(this.ctrl.pi,[]);
 
     request({method:"PUT",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -92,7 +92,7 @@ modify() {
 },
 entry() {
     var url="/api/employee/add";
-    var dta=excCopyObj(this.empInfo,['entryAt']);
+    var dta=copyObjExc(this.empInfo,['entryAt']);
     dta.entryAt=parseInt(new Date(this.empInfo.entryAt).getTime()/60000);
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {

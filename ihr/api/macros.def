@@ -10,7 +10,7 @@
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
-            "errorInfo":"not leader",
+            "errorInfo":"not a leader",
             "condition":"@{CONDITION|!role,'s.!=','L'}}"
         }
     },

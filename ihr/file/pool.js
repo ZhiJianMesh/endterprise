@@ -87,7 +87,7 @@ showCreate() {
     this.ctrl.dlg=true;
 },
 create() {
-    var dta=excCopyObj(this.perInfo,['uid','birth']);
+    var dta=copyObjExc(this.perInfo,['uid','birth']);
     var url="/api/pool/add";
     dta.birth=parseInt(new Date(this.perInfo.birth).getTime()/60000);
     
@@ -112,8 +112,8 @@ template:`
     <q-toolbar-title>{{tags.pool.title}}</q-toolbar-title>
   </q-toolbar>
   </q-header>
-  <q-footer class="bg-white q-px-md q-pt-md">
-    <q-input outlined bottom-slots v-model="search" :label="tags.search" dense @keyup.enter="search">
+  <q-footer class="bg-white q-pa-md">
+    <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="search">
      <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="query(1)" class="cursor-pointer"></q-icon>
       <q-icon name="search" @click="search"></q-icon>

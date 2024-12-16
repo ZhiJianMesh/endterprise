@@ -37,7 +37,7 @@ query() {
     })
 },
 add() {
-    var dta=excCopyObj(this.rsInfo,['start','end','start_s', 'end_s']);
+    var dta=copyObjExc(this.rsInfo,['start','end','start_s', 'end_s']);
     dta.start=parseInt(new Date(this.rsInfo.start_s).getTime()/60000);
     dta.end=parseInt(new Date(this.rsInfo.end_s).getTime()/60000);
     request({method:"POST",url:"/api/resume/add",data:dta}, this.service.name).then(resp => {
@@ -50,7 +50,7 @@ add() {
     });
 },
 update() {
-    var dta=excCopyObj(this.rsInfo,['start','end','start_s', 'end_s']);
+    var dta=copyObjExc(this.rsInfo,['start','end','start_s', 'end_s']);
     dta.start=parseInt(new Date(this.rsInfo.start_s).getTime()/60000);
     dta.end=parseInt(new Date(this.rsInfo.end_s).getTime()/60000);
     request({method:"PUT",url:"/api/resume/update",data:dta}, this.service.name).then(resp => {

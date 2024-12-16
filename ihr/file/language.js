@@ -183,9 +183,10 @@ cn:{
   },
   grp:{
     title:"部门",
+    role:"角色",
     create:"新建",
     name:"名称",
-    descr:"概述",
+    descr:"描述",
     type:"类型",
     addMbr:"添加成员",
     mbrTitle:"职位",

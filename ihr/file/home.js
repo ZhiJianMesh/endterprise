@@ -16,7 +16,7 @@ goto(url) {
 },
 
 template:`
-<q-layout view="lHh lpr lFf" container style="height:99vh">
+<q-layout view="HHH LpR FFF" container style="height:99vh">
   <q-header>
    <q-toolbar>
      <q-avatar square><img src="./favicon.png"></q-avatar>

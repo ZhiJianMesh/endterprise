@@ -1,12 +1,15 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
 
 export default {
-inject:["ibfTags"],
+inject:["ibf"],
 components:{
-    "alert_dlg" : AlertDialog
+    "alert-dialog" : AlertDialog,
+    "user-selector" : UserSelector
 },
 data() {return {
     gid:this.$route.query.id,
+    tags:this.ibf.tags,
     tab:'subs',
     members:{},
     grps:[],
@@ -17,6 +20,7 @@ data() {return {
     month:{v:0,cur:0,s:'',e:false/*是否有可修改的行*/},
     popup:{obj:{},show:false},//待编辑的对象
     newMbr:{dlg:false,account:[],title:''},
+    roleOpts:[]
 }},
 created(){
     this.query_subs();
@@ -25,17 +29,18 @@ created(){
     var cur=dt.getFullYear()*12 + dt.getMonth();
     this.month = {v:cur, cur:cur, s: Math.floor(cur/12) + "/" + (1+cur%12)};
 
-    var opts={method:"GET",url:"/config/listPerfLevel",private:false};
-    request(opts, SERVICE_HR).then(resp => {
+    var opts={method:"GET",url:"/config/listPerfLevel"};
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code==RetCode.OK) {
             this.levels=resp.data.list;
         }
-    });
+    })
+    for(var r in this.tags.grp.role) {
+        this.roleOpts.push({value:r, label:this.tags.grp.role[r]});
+    }
 },
 methods:{
 tab_changed(tab) {
-    if(this.tab==tab)return;
-    this.tab=tab;
     if(tab=='subs') {
         if(this.grps.length==0||this.members.length==0) {
             this.query_subs();
@@ -52,7 +57,7 @@ tab_changed(tab) {
 },
 get_grp() {
     var opts={method:"GET",url:"/grp/get?id="+this.gid};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code==RetCode.OK) {
             this.grp=resp.data;
         }
@@ -60,7 +65,7 @@ get_grp() {
 },
 query_exps() {
     var opts={method:"GET", url:"/exception/waitforme?gid="+this.gid}
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -74,11 +79,11 @@ query_exps() {
             var end=dt.getHours() + ':' + dt.getMinutes();
             return {uid:e.uid,account:e.account,day:e.day,date:dts,start:start,end:end}
         });
-    })  
+    })
 },
 query_perfs(month) {
     var opts={method:"GET", url:"/perf/list?gid="+this.gid+"&month="+month}
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         this.month.e=false;
         if(resp.code!=RetCode.OK) {
             this.perfs=[];
@@ -88,7 +93,7 @@ query_perfs(month) {
             var l=p.level==''?this.levels[0].level:p.level;
             if(p.cfmed=='N') this.month.e=true;
             var mb = this.members[p.uid];
-            var cmt=p.cmt==''?this.ibfTags.perfCmt:p.cmt;
+            var cmt=p.cmt==''?this.tags.grp.perfCmt:p.cmt;
             return {uid:p.uid,level:l,account:mb.account,
                 name:mb.name,cmt:cmt,cfmed:p.cfmed};
         });
@@ -96,40 +101,44 @@ query_perfs(month) {
 },
 query_subs(){//查询子群组及成员
     var opts={method:"GET", url:"/grp/listAll?gid="+this.gid}
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
         }
         var mbs={};
+        var dt=new Date();
         for(var m of resp.data.members) {
+            dt.setTime(m.update_time);
+            m.createAt=date2str(dt);
+            m.role=this.tags.grp.role[m.role];
             mbs[m.uid]=m;
         }
         this.members=mbs;
-        if(resp.data.grps) {
-            var dt=new Date();
-            this.grps=resp.data.grps.map(g=>{
-                return {id:g.id, name:g.name, descr:g.descr,createAt:dt.toLocaleDateString()}
-            });
-        } else {
-            this.grps=[];
+        var grps=[];
+        for(var g of resp.data.grps) {
+            dt.setTime(g.update_time);
+            g.createAt=date2str(dt);
+            grps.push(g);
         }
+        this.grps=grps;
     })  
 },
 add_member() {
-    var dta={gid:this.gid,uid:this.newMbr.account[0],title:this.newMbr.title};
+    var dta={gid:this.gid,uid:this.newMbr.account[0],
+        title:this.newMbr.title, role:this.newMbr.role};
     var opts={method:"POST",url:"/api/member/add",data:dta};
-    request(opts, SERVICE_HR).then(resp =>{
+    request(opts, this.ibf.SERVIVE_HR).then(resp =>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
         this.query_subs();
-        this.newMbr={dlg:false,account:[],title:''};
+        this.newMbr={dlg:false,account:[],title:'',role:''};
     });
 },
 rmv_member(id,i) {
     var opts={method:"DELETE",url:"/api/member/remove?gid="+this.gid+"&uid="+id};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -139,7 +148,7 @@ rmv_member(id,i) {
 },
 cfm_perf() {
     var opts={method:"PUT",url:"/api/perf/confirm", data:{gid:this.gid,month:this.month.v}};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -149,7 +158,7 @@ cfm_perf() {
 },
 cfm_exp(uid,day) {
     var opts={method:"PUT",url:"/api/exception/confirm", data:{uid:uid,day:day}};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -159,7 +168,7 @@ cfm_exp(uid,day) {
 },
 rej_exp(uid,day) {
     var opts={method:"PUT",url:"/api/exception/reject", data:{uid:uid,day:day}};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -181,7 +190,7 @@ perf_next_mon() {
 },
 init_perf() {
     var opts={method:"POST",url:"/api/perf/init", data:{gid:this.gid,month:this.month.v}};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -191,7 +200,7 @@ init_perf() {
 },
 clear_perf() {
     var opts={method:"DELETE",url:"/api/perf/clear?gid="+this.gid+"&month="+this.month.v};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -202,66 +211,36 @@ clear_perf() {
 save_perf(v,org) {
     var opts={method:"PUT",url:"/api/perf/set",
         data:{month:this.month.v, uid:v.uid,level:v.level, cmt:v.cmt}};
-    request(opts, SERVICE_HR).then(resp => {
+    request(opts, this.ibf.SERVIVE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         }
         org.level=v.level;
         org.cmt=v.cmt;
     });
-},
-back() {
-    this.$router.back();
 }
 },
 template:`
-<q-layout view="hhh lpr fff" container style="height:99vh">
+<q-layout view="hhh lpr fff" container style="height:99.9vh">
   <q-header>
    <q-toolbar>
-     <q-btn flat round icon="arrow_back" dense @click="back()"></q-btn>
-     <q-toolbar-title>{{ibfTags.grps}} ({{grp.path}})</q-toolbar-title>
+     <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
+     <q-toolbar-title>{{tags.grp.title}} ({{grp.path}})</q-toolbar-title>
+     <q-btn flat icon="person_add" dense @click="newMbr.dlg=true" v-if="grp.role=='ADM'"></q-btn>
    </q-toolbar>
-   <q-separator></q-separator>
-   <div class="text-white row justify-center">
-    <div class="col text-center">
-     <q-btn icon="account_tree" :label="ibfTags.struct" @click="tab_changed('subs')" flat dense></q-btn>
-     <div style="height:3px" class="bg-warning" v-show="tab=='subs'"></div>
-    </div>
-    <div class="col text-center">
-     <q-btn icon="running_with_errors" :label="ibfTags.clockExp" @click="tab_changed('exps')" flat dense></q-btn>
-     <div style="height:3px" class="bg-warning" v-show="tab=='exps'"></div>
-    </div>
-    <div class="col text-center">
-     <q-btn-dropdown icon="diamond" :label="month.s + ibfTags.perf" @click="tab_changed('perfs')" flat dense>
-      <q-list dense class="text-primary">
-        <q-item v-close-popup>
-         <q-item-section>
-          <q-btn icon="navigate_before" @click="perf_fore_mon" flat></q-btn>
-         </q-item-section>
-         <q-item-section>
-          <q-btn icon="navigate_next" @click="perf_next_mon" flat></q-btn>
-         </q-item-section>
-        </q-item>
-        <q-item v-close-popup><q-item-section>
-          <q-btn @click="init_perf" flat :label="ibfTags.init"></q-btn>
-        </q-item-section></q-item>
-        <q-item v-close-popup v-show="month.e"><q-item-section>
-          <q-btn @click="clear_perf" flat :label="ibfTags.clear"></q-btn>
-        </q-item-section></q-item>
-        <q-item v-close-popup v-show="month.e"><q-item-section>
-          <q-btn @click="cfm_perf" flat :label="ibfTags.submit"></q-btn>
-        </q-item-section></q-item>
-      </q-list>
-     </q-btn-dropdown>
-     <div style="height:3px" class="bg-warning" v-show="tab=='perfs'"></div>
-    </div>
-   </div>
-
   </q-header>
+  <q-footer>
+   <q-tabs v-model="tab" @update:model-value="tab_changed"
+   dense align="justify" switch-indicator inline-label
+    class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
+    <q-tab name="subs" icon="mail" :label="tags.grp.struct"></q-tab>
+    <q-tab name="exps" icon="alarm" :label="tags.grp.clockExp"></q-tab>
+    <q-tab name="perfs" icon="movie" :label="month.s + tags.grp.perf"></q-tab>
+   </q-tabs>
+  </q-footer>
   <q-page-container>
-    <q-page class="q-pa-sm">
-    
-<q-tab-panels v-model="tab">
+    <q-page class="q-pa-none">
+<q-tab-panels v-model="tab" class="q-pa-none q-ma-none">
 <q-tab-panel name="subs">
 <q-list>
   <q-item v-for="g in grps">
@@ -270,32 +249,49 @@ template:`
    <q-item-section>{{g.descr}}</q-item-section>
    <q-item-section side>{{g.createAt}}</q-item-section>
   </q-item>
-  <q-separator></q-separator>
   <q-item v-for="(m,uid) in members">
     <q-item-section thumbnail><q-icon name="person_outline" color="indigo"></q-icon></q-item-section>
-    <q-item-section>{{m.name}}</q-item-section>
-    <q-item-section>{{m.account}}</q-item-section>
-    <q-item-section side>{{m.title}}</q-item-section>
+    <q-item-section>{{m.account}}/{{m.name}}</q-item-section>
+    <q-item-section>{{m.role}}/{{m.title}}</q-item-section>
+    <q-item-section side>{{m.createAt}}</q-item-section>
   </q-item>
 </q-list>
 </q-tab-panel>
 
-<q-tab-panel name="exps">
-<q-list>
+<q-tab-panel name="exps" class="q-pa-none q-ma-none">
+<q-list dense>
   <q-item v-for="e in exps">
    <q-item-section>{{e.account}}</q-item-section>
    <q-item-section>{{e.date}}</q-item-section>
    <q-item-section>{{e.start}}-{{e.end}}</q-item-section>
    <q-item-section side class="q-gutter-sm text-primary">
-    <q-btn @click="cfm_exp(e.uid,e.day)" :label="ibfTags.confirm" flat></q-btn>
-    <q-btn @click="rej_exp(e.uid,e.day)" :label="ibfTags.reject"></q-btn>
+    <q-btn @click="cfm_exp(e.uid,e.day)" :label="tags.confirm" flat></q-btn>
+    <q-btn @click="rej_exp(e.uid,e.day)" :label="tags.reject"></q-btn>
    </q-item-section>
   </q-item>
 </q-list>
 </q-tab-panel>
-
-<q-tab-panel name="perfs">
-<q-list dense separator>
+<q-tab-panel name="perfs" class="q-pa-none q-ma-none">
+<q-list dense class="text-primary bg-grey-3">
+  <q-item v-close-popup>
+   <q-item-section>
+    <q-btn icon="navigate_before" @click="perf_fore_mon" flat></q-btn>
+   </q-item-section>
+   <q-item-section>
+    <q-btn @click="init_perf" flat :label="tags.init"></q-btn>
+   </q-item-section>
+   <q-item-section v-show="month.e">
+    <q-btn @click="clear_perf" flat :label="tags.clear"></q-btn>
+   </q-item-section>
+   <q-item-section v-show="month.e">
+    <q-btn @click="cfm_perf" flat :label="tags.submit"></q-btn>
+   </q-item-section>
+   <q-item-section>
+    <q-btn icon="navigate_next" @click="perf_next_mon" flat></q-btn>
+   </q-item-section>
+  </q-item>
+</q-list>
+<q-list dense>
   <q-item v-for="(p,i) in perfs" :class="p.cfmed=='N'?'text-indigo':''">
    <q-item-section>
     <q-item-label>{{p.account}}</q-item-label>
@@ -315,10 +311,10 @@ template:`
     <q-input color="accent" v-model="popup.obj.cmt" dense autofocus></q-input>
     <div class="row text-center justify-end">
      <div class="col">
-      <q-btn :label="ibfTags.cancel" @click="popup.show=false" flat color="primary"></q-btn>
+      <q-btn :label="tags.cancel" @click="popup.show=false" flat color="primary"></q-btn>
      </div>
      <div class="col">
-      <q-btn :label="ibfTags.save" @click="save_perf(popup.obj,p);popup.show=false;" color="primary"></q-btn>
+      <q-btn :label="tags.save" @click="save_perf(popup.obj,p);popup.show=false;" color="primary"></q-btn>
       </div>
     </div>
    </div>
@@ -334,25 +330,22 @@ template:`
 <q-dialog v-model="newMbr.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-      <div class="text-h6">{{ibfTags.addMbr}}</div>
+      <div class="text-h6">{{tags.addMbr}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-    <q-item><q-item-section>
-     <component-user-selector :label="ibfTags.user.account"
-      :accounts="newMbr.account" :multi="false" useid="true"></component-user-selector>
-    </q-item-section></q-item>
-    <q-item><q-item-section>
-     <q-input :label="ibfTags.grp.title" v-model="newMbr.title" dense></q-input>
-    </q-item-section></q-item>
-   </q-list>
+    <user-selector :label="tags.grp.account"
+      :accounts="newMbr.account" :multi="false" useid="true"></user-selector>
+    <q-select v-model="newMbr.role" :options="roleOpts"
+     :label="tags.grp.mbrRole" dense map-options emit-value></q-select>
+     <q-input :label="tags.grp.mbrTitle" v-model="newMbr.title" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
-     <q-btn :label="ibfTags.ok" color="primary" @click="add_member"></q-btn>
-     <q-btn flat :label="ibfTags.close" color="primary" v-close-popup></q-btn>
+     <q-btn :label="tags.ok" color="primary" @click="add_member"></q-btn>
+     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>
 
-<alert-dialog :title="ibfTags.failToCall" :errMsgs="ibfTags.errMsgs" :close="ibfTags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
 `
 }

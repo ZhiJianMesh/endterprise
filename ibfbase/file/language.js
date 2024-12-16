@@ -25,60 +25,120 @@ cn:{
   init:"初始化",
   clear:"清除",
   more:"更多",
-  
-  attendance:"打卡",
-  chkin_time:"上班时间",
-  chkout_time:"下班时间",
-  
-  overtime:"加班",
-  leave:"请假",
-  worktime:"工时申报",
-  attExp:"考勤异常",
-  
-  my:"我的",
-  myEvent:"关键事件",
-  myPerm:"绩效",
-  myRes:"资产",
-  mySalary:"工资",
-  
-  prj:"项目",
-  prjMember:"成员",
-  prjPlan:"计划",
-  prjRisk:"风险",
-  prjStat:"统计",
-  prjReport:"报告",
-  prjRes:"资源申请",
-  
-  business:"差旅",
-  perfMng:"绩效管理",
+  name:"名称",
+  cmt:"描述",
+  detail:"详情",
+  opr:"操作",
 
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
-  
-  grps:"群组",
-  grpTitle:"职称",
-  grpRole:{
-    ADM:"经理",
-    HR:"人事",
-    SEC:"秘书",
-    NOR:"员工"
+  failToCall:"调用失败",
+
+  home:{
+    attendance:"打卡"
   },
-  grpType:{D:"部门",V:"群组"},
-  clockExp:"考勤异常",
-  struct:"组织结构",
-  perf:"绩效",
-  salary:"工资",
   
-  perfCmt:"绩效说明",
-  
-  prjRole:{
-    L:"项目经理",
-    O:"投资人",
-    W:"普通成员"
+  ovt:{
+    title:'加班'
   },
+  lev:{
+    title:"请假"
+  },
+  busi:{
+    title:"差旅"
+  },
+  wt:{
+    title:"工时申报"
+  },
+
+  my:{
+    title:"我的",
+    event:"关键事件",
+    perm:"绩效",
+    res:"资产",
+    salary:"工资"
+  },
+  
+  prj:{
+    title:'项目',
+    member:'成员',
+    plan:"计划",
+    target:"目标",
+    subPrj:'子项目',
+    stage:"阶段",
+    base:'达标值',
+    challenge:'挑战值',
+    real:'实际值',
+    account:"帐号",
+    mbrRole:'角色',
+    
+    type:"类型",
+    start:"开始时间",
+    end:"结束时间",
+    realEnd:"实际结束时间",
+    owner:"投资人",
+    leader:"项目经理",
+    scope:"范围",
+    finish:"完成",
+    appraise:"评价",
+    cancel:"取消",
+    
+    typeCfg:{
+      PROD:'生产',
+      RND:'研发',
+      HR:'人力资源',
+      PUR:'采购',
+      TRAI:'培训',
+      SALE:'销售',
+      OTH:'其他'
+    },
+    
+    roleCfg:{
+      L:"项目经理",
+      O:"投资人",
+      W:"普通成员"
+    },
+    
+    stageCfg:{
+      INIT:'初始',
+      START:'启动',
+      RUN:'进行中',
+      END:'完成',
+      CANC:'取消'
+    },
+    planSta:{
+      INIT:'未完成',
+      NORM:'正常完成',
+      ADVA:'提前完成',
+      DELA:'延迟完成',
+      CANC:'取消'
+    },
+    targetSta:{
+      INIT:'未完成',
+      DONE:'完成'
+    }
+  },
+  grp:{
+    title:'群组',
+    role:{
+        ADM:"经理",
+        HR:"人事",
+        SEC:"秘书",
+        NOR:"员工"
+    },
+    type:{D:"部门",V:"群组"},
+    struct:"组织结构",
+    clockExp:"考勤异常",
+    perf:"绩效",
+    perfCmt:"绩效说明",
+    mbrTitle:"职位",
+    mbrRole:"角色",
+    account:"帐号"
+  },
+
   errMsgs:{
-    6002:"没有获得授权执行此操作！"
-  },
-  failToCall:"调用失败"
+    6002:"没有获得授权执行此操作！",
+    6101:"存在未完成的计划，不可结束项目"
+  }
 }
 };
