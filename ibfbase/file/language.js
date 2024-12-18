@@ -29,6 +29,7 @@ cn:{
   cmt:"描述",
   detail:"详情",
   opr:"操作",
+  month:"月",
 
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
@@ -50,13 +51,44 @@ cn:{
   wt:{
     title:"工时申报"
   },
-
+  hr:{
+    cfmed:'已确认',
+    notCfm:'未确认',
+    salType:{
+      SUBSIDY:'补贴',
+      EXPENSE:'报销',
+      BONUS:'奖金',
+      SHARE:'分红',
+      TAX:'税额',
+      OVERTIME:'加班工资'
+    },
+    eventType:{
+      JOIN:'入职',
+      LEAV:'离职',
+      DIS:'开除',
+      ADDS:'加薪',
+      SUBS:'减薪',
+      ASTO:'加股票',
+      SSTO:'减股票',
+      PROM:'升职',
+      DEMO:'降职',
+      UPG:'升级',
+      DWG:'降级',
+      FINE:'罚款',
+      WARN:'警告',
+      ERR:'记过',
+      LAUD:'表扬',
+      PRJ:'项目经历',
+      OTH:'其他'
+    }
+  },
   my:{
     title:"我的",
     event:"关键事件",
     perm:"绩效",
     res:"资产",
-    salary:"工资"
+    salary:"工资",
+    grp:"部门"
   },
   
   prj:{

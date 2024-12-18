@@ -5,8 +5,7 @@ data() {return {
     days:[],
     cal:0, //当前日历id
     edt:{cal:{name:''}},
-    ctrl:{no:-2,tag:'',calDlg:false,years:[],
-         year:2000,month:1,
+    ctrl:{no:-2,tag:'',calDlg:false,year:2000,month:1,
          start:0,end:0,firstDay:0},
 }},
 created(){
@@ -14,9 +13,6 @@ created(){
     var dt=new Date();
     var year=dt.getFullYear();
     this.ctrl.year=year;
-    for(var i=year-5;i<year+5;i++) {
-        this.ctrl.years.push(i);
-    }
     this.ctrl.month=dt.getMonth()+1;
 },
 methods:{
@@ -145,12 +141,9 @@ remove_cal() {
         this.query_days();
     });
 },
-set_month(m) {
-    this.ctrl.month=m; //不减1
-    this.query_days();
-},
-set_year(y) {
-    this.ctrl.year=y;
+set_month(ym) {
+    this.ctrl.year=ym.year;
+    this.ctrl.month=ym.month; //不减1
     this.query_days();
 },
 init_cal(){
@@ -211,19 +204,14 @@ dense map-options emit-value ref="calSelect">
  </template>
 </q-select>
 </div>
-<div class="q-pa-none q-gutter">
-  <q-btn-dropdown color="primary" :label="ctrl.year" class="q-pl-lg q-pr-lg" flat>
-   <q-list dense>
-    <q-item v-for="n in ctrl.years" @click="set_year(n)" clickable v-close-popup>{{n}}</q-item>
-   </q-list>
-  </q-btn-dropdown>
-  <q-btn-dropdown color="primary" :label="ctrl.month" class="q-pl-lg q-pr-lg" flat>
-   <q-list dense>
-    <q-item v-for="n in 12" @click="set_month(n)" class="text-center"
-     clickable v-close-popup>{{n}}{{tags.cfg.month}}</q-item>
-   </q-list>
-  </q-btn-dropdown>
-  <q-btn flat dense color="teal" icon="event_repeat" @click="init_cal" class="q-pl-lg"></q-btn>
+<div class="row justify-start">
+  <div class="col self-center">
+   <month-input class="text-subtitle1" @update:modelValue="set_month"></month-input>
+  </div>
+  <div class="col self-center">
+   <q-btn flat dense color="teal" icon="event_repeat"
+   @click="init_cal" class="q-pl-lg" :label="tags.initCal"></q-btn>
+  </div>
 </div>
 <div class="q-pa-none">
 <q-markup-table separator="cell" flat bordered>

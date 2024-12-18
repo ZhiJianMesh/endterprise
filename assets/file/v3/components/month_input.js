@@ -5,18 +5,16 @@ data(){return {
     minMonth:0,
     year:'',
     month:'',
-    cls:'',
     startYear:0,
     years:[],
-    months:[]
+    months:[],
+    old:{y:0,m:0}
 }},
 props: {
     modelValue:{type:String},
     label:{type:String,required:true},
     min:{type:String,default:''}, //年份
     max:{type:String,default:''},
-    color:{type:String,default:''},
-    bgColor:{type:String,default:''},
     monthName:{type:String, default:"月"}
 },
 emits: ['update:modelValue'],
@@ -27,23 +25,21 @@ created(){
     this.minMonth=m.y*12+m.m-1;
     var dt=new Date();
     m=this.parse(this.modelValue,{y:dt.getFullYear(),m:dt.getMonth()+1})
+    this.old={year:m.y, month:m.m};
     this.year=m.y;
     this.month=m.m;
-    this.cls=this.color?'row text-'+this.color : 'row';
-    if(this.bgColor) {
-        this.cls+=' bg-'+this.bgColor;
-    }
     this.startYear=this.year-4;
     this.set_array();
 },
 methods:{
 set_array() {
-    var v=this.startYear;
     var month;
     var list=[];
     var chked=false;
-    var yMax=Math.ceil(this.maxMonth/12);
+    var v=this.startYear;
+    var yMax=Math.floor(this.maxMonth/12);
     var yMin=Math.floor(this.minMonth/12);
+
     for(var i=0;i<4;i++) {
         var yy=[];
         for(var j=0;j<3;j++) {
@@ -84,26 +80,33 @@ set_array() {
     }    
     this.months=list;
 },
-parse(cfg,def) {
-    if(!cfg) {
+parse(s,def) {
+    if(!s) {
         return def;
     }
-    var y,m;
+    var cfg=s.trim().toLowerCase();
+    var dt=new Date();
     if(cfg=="cur") {
-        var dt=Date.now();
-        y=dt.getFullYear();
-        m=dt.getMonth();
+        return {y:dt.getFullYear(),m:dt.getMonth()+1};
+    }
+    if(cfg.startsWith('-')) {
+        var v = parseInt(cfg.substring(1));
+        return {y:dt.getFullYear()-v, m:1};
+    }
+    if(cfg.startsWith('+')) {
+        var v = parseInt(cfg.substring(1));
+        return {y:dt.getFullYear()+v, m:1};
+    }
+    var y,m;
+    var p=cfg.indexOf('/');
+    if(p<0)p=cfg.indexOf('-');
+    if(p<0)p=cfg.indexOf('.');
+    if(p>0) {
+        y=parseInt(cfg.substring(0,p));
+        m=parseInt(cfg.substring(p+1));
     } else {
-        var p=cfg.indexOf('/');
-        if(p<0)p=cfg.indexOf('-');
-        if(p<0)p=cfg.indexOf('.');
-        if(p>0) {
-            y=parseInt(cfg.substring(0,p));
-            m=parseInt(cfg.substring(p+1));
-        } else {
-            y=parseInt(cfg);
-            m=1;
-        }
+        y=parseInt(cfg);
+        m=1;
     }
     return {y:y,m:m};
 },
@@ -124,7 +127,8 @@ fore(){
         this.year--;
         this.month=12;
     }
-    this.$emit('update:modelValue', {year:this.year, month:this.month});
+    this.old={year:this.year, month:this.month};
+    this.$emit('update:modelValue', this.old);
 },
 next(){
     var v=this.month-1+this.year*12;
@@ -135,7 +139,8 @@ next(){
         this.year++;
         this.month=1;
     }
-    this.$emit('update:modelValue', {year:this.year, month:this.month});
+    this.old={year:this.year, month:this.month};
+    this.$emit('update:modelValue', this.old);
 },
 set_year(v) {
     var yMax=Math.ceil(this.maxMonth/12);
@@ -143,12 +148,12 @@ set_year(v) {
     if(v>yMax||v<yMin) {
         return;
     }
-    this.month=1;
+    this.month=-1;
     this.year=v;
     this.set_array();
 },
 set_month(v) {
-    if(this.year<this.startYear||this.year>this.startYear+12) {
+    if(this.year<this.startYear||this.year>=this.startYear+12) {
         return;//未选择年份
     }
     var m=v-1+this.year*12;
@@ -156,7 +161,10 @@ set_month(v) {
         return; //不在有效范围内
     }
     this.month=v;
-    this.$emit('update:modelValue', {year:this.year, month:this.month});
+    if(v!=this.old.month||this.year!=this.old.year) {
+        this.old={year:this.year, month:this.month};
+        this.$emit('update:modelValue',this.old);
+    }
     this.$refs._my_dlg.hide();
 }
 },
@@ -171,8 +179,10 @@ computed: {
    }
 },
 template: `
-<div :class="cls">
- <div class="rol q-pr-lg"><q-icon name="navigate_before" @click="fore"></q-icon></div>
+<div class="row">
+ <div class="rol q-pr-lg">
+  <q-icon name="navigate_before" @click="fore"></q-icon>
+ </div>
  <div class="rol" style="cursor:pointer">
  {{year}} / {{month<10?('0'+month):month}}
  <q-popup-proxy cover @before-show="set_array" ref="_my_dlg">

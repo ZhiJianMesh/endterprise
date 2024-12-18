@@ -111,7 +111,7 @@ query_plans() {
             p.rmvable=this.editable&&p.stage!=Stages.start&&p.stage!=Stages.end;
             //阶段:内置了INIT、START,RUN(可以自定义)、END、CANC
             stage=this.tags.prj.stageCfg[p.stage];
-            p.stage=stage?stage:p.stage;
+            p.stage_s=stage?stage:p.stage;
             p.state=this.tags.prj.planSta[p.state];
             plans.push(p);
         }
@@ -384,7 +384,7 @@ template:`
 <q-list dense separator>
   <q-item v-for="(p,i) in plans" @click="show_plan(i)" :clickable="p.editable">
     <q-item-section>
-     <q-item-label>{{p.stage}}</q-item-label>
+     <q-item-label>{{p.stage_s}}</q-item-label>
      <q-item-label>{{p.state}}({{p.realEnd_s}})</q-item-label>
     </q-item-section>
     <q-item-section>

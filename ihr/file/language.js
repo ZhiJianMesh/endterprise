@@ -24,6 +24,7 @@ cn:{
   start:"开始",
   end:"结束",
   name:"名称",
+  initCal:"初始化",
 
   sex:{
     M:"先生",
@@ -62,6 +63,8 @@ cn:{
     LEAV:"离职",
     ADDS:"加薪",
     SUBS:"减薪",
+    ASTO:'加股票',
+    SSTO:'减股票',
     DEMO:"降职",
     PROM:"升职",
     UPG:"升级",

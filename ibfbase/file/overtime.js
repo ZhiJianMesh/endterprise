@@ -1,16 +1,14 @@
 export default {
+inject:["ibf"],
 data() {return {
 }},
 created(){
 },
 methods:{
-back() {
-    this.$router.back();
-}
 },
 
 template:`
-<div @click="back">back<div>
+<div @click="ibf.back">back<div>
 <div>overtime</div>
 `
 }

@@ -9,9 +9,9 @@ function formatTime(t) {
 export default {
 inject:['service', 'tags'],
 data() {return {
-    offices:[],
-    worktimes:[],
-    perfs:[],
+    offices:[], //办公区定义
+    worktimes:[], //作息制度定义
+    perfs:[], //绩效等级定义
     edt:{office:{},wt:{},perf:{}},
     ctrl:{no:-2,tag:'',officeDlg:false,wtDlg:false,perfDlg:false},
     zone:{cur:-1,opts:[]},

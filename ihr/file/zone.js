@@ -5,7 +5,7 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     zones:[],
-    secs:{},
+    secs:{}, //劳动保障定义
     secOpts:[],
     edt:{zone:{},security:{}},
     ctrl:{no:-2,tag:'',zoneDlg:false,secDlg:false}
@@ -75,7 +75,7 @@ zone_do() {
         this.ctrl.zoneDlg=false;
     });
 },
-remove_perf(i) {
+remove_zone(i) {
     var opts={method:"DELETE",url:"/config/removeZone?id="+this.zones[i].id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {

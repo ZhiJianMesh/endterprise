@@ -19,10 +19,9 @@ function registerIbf(app, router) { //注册ibfhome所需的路由
     router.addRoute({path:"/ibf/business", component:Business});
     router.addRoute({path:"/ibf/leave", component:Leave});
 
-    app.provide('ibf', {//不能独立一个const/var写在外面，未知原因
+    app.provide('ibf', {//如果定义一个const/var写在外面，再在此引用，路由会失败，原因未知
         tags:tags,
         prjs:[],
-        grps:[],
         ctrl:{cur:1,max:0},
         clockTm:{start:'00:00', end:'00:00'},
         SERVIVE_HR:SERVIVE_HR,
@@ -49,17 +48,11 @@ components: {
 },
 data() {return {
     tags:tags,
-    grps:[],
     prjs:[],
     clockTm:{start:'00:00', end:'00:00'},
     ctrl:{cur:1, max:0}
 }},
 created(){
-    if(this.ibf.grps.length==0) {
-        this.query_grps();
-    } else { //避免每次退回首页时都查询一次
-        this.grps=this.ibf.grps;
-    }
     if(this.ibf.prjs.length==0) {
         this.query_prjs(1);
     } else {
@@ -79,23 +72,6 @@ created(){
     }
 },
 methods:{
-query_grps() {
-    request({method:"GET",url:"/grp/mygrp"}, SERVIVE_HR).then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            Console.debug("Fail to get mygrp:" + resp.code + ",info:" + resp.info);
-            return;
-        }
-        var dta=resp.data;
-        var role=this.tags.grp.role[dta.role];
-        var grps=[{id:dta.id,type:dta.type,name:dta.name,path:dta.path,roleName:role,role:dta.role,title:dta.title}];
-        for(var l of dta.virtuals) {
-            role=this.tags.grp.role[l.role];
-            grps.push({id:l.id,type:l.type,name:l.name,path:l.path,roleName:role,role:l.role,title:l.title})
-        }
-        this.ibf.grps=grps;
-        this.grps=grps;
-    });    
-},
 query_prjs(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_SMPG;
     var url='/project/my?offset='+offset+'&num='+this.ibf.N_SMPG;
@@ -154,7 +130,6 @@ clock() { //上下班刷卡
     })
 }
 },
-
 template:`
 <div class="row">
  <div class="col self-center">
@@ -189,21 +164,7 @@ template:`
   </q-list>
  </div>
 </div>
-<q-separator spaced="md" color="teal"></q-separator>
-<q-list dense separator>
-  <q-item v-for="g in grps" @click="ibf.goto('/ibf/grp?id='+g.id)" clickable>
-   <q-item-section>
-    <q-item-label>{{g.name}}</q-item-label>
-    <q-item-label caption>{{g.roleName}}</q-item-label>
-   </q-item-section>
-   <q-item-section></q-item-section>
-   <q-item-section side>
-    <q-item-label>{{g.title}}</q-item-label>
-    <q-item-label caption>{{g.path}}</q-item-label>
-   </q-item-section>
-  </q-item>
-</q-list>
-<q-separator spaced="md" color="teal"></q-separator>
+<q-separator spaced="md"></q-separator>
 <q-list dense separator>
   <q-item v-for="p in prjs" @click="ibf.goto('/ibf/project?id='+p.id)" clickable>
    <q-item-section>

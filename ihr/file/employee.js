@@ -8,7 +8,7 @@ data() {return {
         office:0,worktime:0,stock:0,quali:'',post:'',attend:'',
         salary:'',dSalary:'',hSalary:'',subsidy:'',entryAt:'',
         account:'',addr:'',email:'',idno:'',state:'',holiday:0,weal:0,sickRatio:0},
-    ctrl:{ei:{},leave:false,grade:false,salary:false,weal:false,zone:false},
+    ctrl:{ei:{},leave:false,grade:false,salary:false,stock:false,weal:false,zone:false},
     opts:{zone:[],office:[],worktime:[]},
     leave:{disable:false, type:'LEAV', cmt:''}
 }},
@@ -155,8 +155,7 @@ modifySalary() {
         salary:this.empInfo.salary,
         dSalary:this.empInfo.dSalary,
         hSalary:this.empInfo.hSalary,
-        subsidy:this.empInfo.subsidy,
-        stock:this.empInfo.stock
+        subsidy:this.empInfo.subsidy
     };
     request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -164,6 +163,18 @@ modifySalary() {
             return;
         }
         this.ctrl.salary=false;
+    });
+    
+},
+modifyStock() {
+    var url="/api/employee/setStock";
+    var dta={uid:this.uid,stock:this.empInfo.stock};
+    request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.ctrl.stock=false;
     });
     
 },
@@ -301,7 +312,6 @@ template:`
     <q-item-label caption>{{tags.employee.dSalary}}:{{empInfo.dSalary}}</q-item-label>
     <q-item-label caption>{{tags.employee.hSalary}}:{{empInfo.hSalary}}</q-item-label>
     <q-item-label caption>{{tags.employee.subsidy}}:{{empInfo.subsidy}}</q-item-label>
-    <q-item-label caption>{{tags.employee.stock}}:{{empInfo.stock}}</q-item-label>
    </q-item-section>
    <q-item-section avatar>
     <q-icon name="edit" flat color="primary" @click="ctrl.salary=true"></q-btn>
@@ -316,11 +326,32 @@ template:`
     <q-input v-model.number="empInfo.dSalary" :label="tags.employee.dSalary"></q-input>
     <q-input v-model.number="empInfo.hSalary" :label="tags.employee.hSalary"></q-input>
     <q-input v-model.number="empInfo.subsidy" :label="tags.employee.subsidy"></q-input>
-    <q-input v-model.number="empInfo.stock" :label="tags.employee.stock"></q-input>
   </q-item-section>
   <q-item-section avatar>
    <q-btn icon="cancel" @click="ctrl.salary=false" flat color="primary"></q-btn>
    <q-btn icon="done" @click="modifySalary" flat color="primary"></q-btn>
+  </q-item-section>
+ </q-item>
+</q-list>
+<q-separator inset></q-separator>
+<q-list dense v-if="!ctrl.stock">
+  <q-item>
+   <q-item-section>
+    <q-item-label caption>{{tags.employee.stock}}:{{empInfo.stock}}</q-item-label>
+   </q-item-section>
+   <q-item-section avatar>
+    <q-icon name="edit" flat color="primary" @click="ctrl.stock=true"></q-btn>
+   </q-item-section>
+  </q-item>
+</q-list>
+<q-list dense v-else>
+ <q-item>
+  <q-item-section>
+    <q-input v-model.number="empInfo.stock" :label="tags.employee.stock"></q-input>
+  </q-item-section>
+  <q-item-section avatar>
+   <q-btn icon="cancel" @click="ctrl.stock=false" flat color="primary"></q-btn>
+   <q-btn icon="done" @click="modifyStock" flat color="primary"></q-btn>
   </q-item-section>
  </q-item>
 </q-list>
