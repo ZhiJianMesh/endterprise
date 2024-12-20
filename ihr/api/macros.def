@@ -15,7 +15,7 @@
         }
     },
 
-    "is_grp_leader" : {
+    "is_grp_leader" : { //可以是部门，也可以是虚拟群组
         "name" : "check_grp_admin",
         "type" : "dataexists",
         "db" : "hr",
@@ -26,16 +26,33 @@
             and uid=@{#tokenCaller} and role='ADM'"
     },
     
-    "is_his_leader" : {
-        "name" : "check_employee_admin",
+    "is_department_leader" : {
+        "name" : "check_department_admin",
         "type" : "dataexists",
         "db" : "hr",
         "expect" : true,
         "errorCode" : 6002,
         "errorInfo" : "no right",
-        "sql" : "select * from member
+        "sql" : "select * from member m,grp g where m.gid=#GID# 
+            and m.uid=@{#tokenCaller} and m.role='ADM'
+            and g.id=#GID# and g.type='D'"
+    },
+    
+    "is_his_leader" : {
+        "name" : "get_employee_grp",
+        "type" : "rdb",
+        "db" : "hr",
+        "convert" : {"code":"NOT_EXISTS","to":6002,"info":"no right"},
+        //在部门中不是领导，且调用接口的用户是领导，返回部门id
+        "sqls" :[{
+            "name":"get_grp_id",
+            "metas":"each",
+            "multi":false,
+            "merge":true,
+            "sql":"select gid from member
            where gid in(select m.gid from member m,grp g
-             where m.uid=#UID# and g.id=m.gid and g.type='D')
+             where m.uid=#UID# and m.role='NOR' and g.id=m.gid and g.type='D')
               and uid=@{#tokenCaller} and role='ADM'"
+        }]
     }
 }

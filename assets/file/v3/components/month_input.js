@@ -5,6 +5,7 @@ data(){return {
     minMonth:0,
     year:'',
     month:'',
+    num:0,//year*12+month-1
     startYear:0,
     years:[],
     months:[],
@@ -12,7 +13,6 @@ data(){return {
 }},
 props: {
     modelValue:{type:String},
-    label:{type:String,required:true},
     min:{type:String,default:''}, //年份
     max:{type:String,default:''},
     monthName:{type:String, default:"月"}
@@ -28,6 +28,7 @@ created(){
     this.old={year:m.y, month:m.m};
     this.year=m.y;
     this.month=m.m;
+    this.num=this.year*12+this.month-1;
     this.startYear=this.year-4;
     this.set_array();
 },
@@ -119,27 +120,26 @@ pageDn() {
     this.set_array();
 },
 fore(){
-    var v=this.month-1+this.year*12;
-    if(v<=this.minMonth)return;
+    if(this.num<=this.minMonth)return;
     
     this.month--;
     if(this.month==0) {
         this.year--;
         this.month=12;
     }
-    this.old={year:this.year, month:this.month};
+    this.num=this.year*12+this.month-1;
+    this.old={year:this.year, month:this.month,num:this.num};
     this.$emit('update:modelValue', this.old);
 },
 next(){
-    var v=this.month-1+this.year*12;
-    if(v>=this.maxMonth)return;
-    
+    if(this.num>=this.maxMonth)return;
     this.month++;
     if(this.month>12) {
         this.year++;
         this.month=1;
     }
-    this.old={year:this.year, month:this.month};
+    this.num=this.year*12+this.month-1;
+    this.old={year:this.year, month:this.month,num:this.num};
     this.$emit('update:modelValue', this.old);
 },
 set_year(v) {
@@ -162,7 +162,8 @@ set_month(v) {
     }
     this.month=v;
     if(v!=this.old.month||this.year!=this.old.year) {
-        this.old={year:this.year, month:this.month};
+        this.num=this.year*12+this.month-1;
+        this.old={year:this.year, month:this.month,num:this.num};
         this.$emit('update:modelValue',this.old);
     }
     this.$refs._my_dlg.hide();
@@ -170,18 +171,20 @@ set_month(v) {
 },
 computed: {
    value: {
-      get() {return this.modelValue},
+      get() {return this.year+'/'+(this.month>9?this.month:('0'+this.month))},
       set(v) {
           var ym=this.parse(v);
           this.year=ym.y;
           this.month=ym.m;
+          this.num=this.year*12+this.month-1;
       }
    }
 },
 template: `
 <div class="row">
  <div class="rol q-pr-lg">
-  <q-icon name="navigate_before" @click="fore"></q-icon>
+  <q-icon name="navigate_before" @click="fore"
+   :class="num<=minMonth?'text-grey':''"></q-icon>
  </div>
  <div class="rol" style="cursor:pointer">
  {{year}} / {{month<10?('0'+month):month}}
@@ -208,7 +211,8 @@ template: `
  </q-popup-proxy>
  </div>
  <div class="rol q-pl-lg">
-  <q-icon name="navigate_next" @click="next"></q-icon>
+  <q-icon name="navigate_next" @click="next"
+  :class="num>=maxMonth?'text-grey':''"></q-icon>
  </div> 
 </div>
 `

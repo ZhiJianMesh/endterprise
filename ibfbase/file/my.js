@@ -9,8 +9,7 @@ components:{
 },
 data() {return {
     tags:this.ibf.tags,
-    tab:'grp', //grp,event,salary,res,perf
-    grps:[],
+    tab:'salary', //event,salary,res,perf
     events:[],
     res:[],
     perfs:[],
@@ -21,33 +20,15 @@ data() {return {
 }},
 created(){
     var dt=new Date();
-    this.query_grp();
     this.query_salary({year:dt.getFullYear(),month:dt.getMonth()+1});
     this.query_event(1);
     this.query_res(1);
     this.query_perf(1);
 },
 methods:{
-query_grp() {
-    request({method:"GET",url:"/grp/mygrp"}, this.ibf.SERVIVE_HR).then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            Console.debug("Fail to get mygrp:" + resp.code + ",info:" + resp.info);
-            return;
-        }
-        var dta=resp.data;
-        var role=this.tags.grp.role[dta.role];
-        //第一个是实体部门，其他是虚拟组织
-        var grps=[{id:dta.id,type:dta.type,name:dta.name,path:dta.path,roleName:role,role:dta.role,title:dta.title}];
-        for(var l of dta.virtuals) {
-            role=this.tags.grp.role[l.role];
-            grps.push({id:l.id,type:l.type,name:l.name,path:l.path,roleName:role,role:l.role,title:l.title})
-        }
-        this.grps=grps;
-    })
-},
 query_salary(ym) {
     var mon=ym.year*12+ym.month-1;
-    request({method:"GET",url:"/salary/my?month="+mon}, this.ibf.SERVIVE_HR).then(resp=>{
+    request({method:"GET",url:"/salary/my?month="+mon}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -62,7 +43,7 @@ query_salary(ym) {
 query_event(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
     var url="/employee/myEvent?offset="+offset+'&num='+this.ibf.N_PAGE;
-    request({method:"GET",url:url}, this.ibf.SERVIVE_HR).then(resp=>{
+    request({method:"GET",url:url}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.evtPg.max=0;
             this.evtPg.cur=1;
@@ -85,7 +66,7 @@ query_event(pg) {
 query_res(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
     var url="/resource/my?offset="+offset+'&num='+this.ibf.N_PAGE;
-    request({method:"GET",url:url}, this.ibf.SERVIVE_HR).then(resp=>{
+    request({method:"GET",url:url}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.resPg.max=0;
             this.resPg.cur=1;
@@ -106,7 +87,7 @@ query_res(pg) {
 query_perf(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
     var url="/perf/my?offset="+offset+'&num='+this.ibf.N_PAGE;
-    request({method:"GET",url:url}, this.ibf.SERVIVE_HR).then(resp=>{
+    request({method:"GET",url:url}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.perfPg.max=0;
             this.perfPg.cur=1;
@@ -122,6 +103,13 @@ query_perf(pg) {
         });
         this.perfPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     });    
+},
+open_grp(id,type) {
+    if(type=='D') {//业务部门
+        this.ibf.goto('/ibf/department?id='+id);
+    } else { //虚拟组织
+        this.ibf.goto('/ibf/grp?id='+id);
+    }
 }
 },
 template:`
@@ -135,7 +123,6 @@ template:`
   <q-footer>
    <q-tabs v-model="tab" dense align="justify" switch-indicator inline-label
     class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
-    <q-tab name="grp" icon="account_tree" :label="tags.my.grp"></q-tab>
     <q-tab name="salary" icon="paid" :label="tags.my.salary"></q-tab>
     <q-tab name="perf" icon="autofps_select" :label="tags.my.perm"></q-tab>
     <q-tab name="res" icon="devices" :label="tags.my.res"></q-tab>
@@ -145,22 +132,6 @@ template:`
   <q-page-container>
     <q-page class="q-pa-sm">
 <q-tab-panels v-model="tab">
-
-<q-tab-panel name="grp">
-<q-list dense separator>
-  <q-item v-for="g in grps" @click="ibf.goto('/ibf/grp?id='+g.id)" clickable>
-   <q-item-section>
-    <q-item-label>{{g.name}}</q-item-label>
-    <q-item-label caption>{{g.roleName}}</q-item-label>
-   </q-item-section>
-   <q-item-section></q-item-section>
-   <q-item-section side>
-    <q-item-label>{{g.title}}</q-item-label>
-    <q-item-label caption>{{g.path}}</q-item-label>
-   </q-item-section>
-  </q-item>
-</q-list>
-</q-tab-panel>
 
 <q-tab-panel name="salary">
 <month-input class="justify-center text-primary" min="-5" max="cur"

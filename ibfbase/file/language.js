@@ -34,19 +34,37 @@ cn:{
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
   failToCall:"调用失败",
-
+  sex:{
+    M:"先生",
+    F:"女士",
+    O:"未知"
+  },
+    
   home:{
     attendance:"打卡"
   },
-  
-  ovt:{
-    title:'加班'
-  },
-  lev:{
-    title:"请假"
-  },
-  busi:{
-    title:"差旅"
+  atd:{
+    title:"考勤",
+    clockExp:"考勤异常",
+    leave:"请假",
+    ovt:"加班",
+    busi:"差旅",
+    type:{
+      WORK:'正常上下班',
+      WOW:'工作日延长工时',
+      OOW:'休息日加班',
+      FOW:'节假日加班',
+      BUSI:'出差',
+      AFFA:'事假',
+      SICK:'病假',
+      WEAL:'福利假',
+      HOLI:'年休假'
+    },
+    appSta:{
+      OK:'通过',
+      WAIT:'待确认',
+      REJ:'拒绝'
+    }
   },
   wt:{
     title:"工时申报"
@@ -152,16 +170,21 @@ cn:{
   },
   grp:{
     title:'群组',
+    department:'部门',
+    member:'成员',
+    contacts:'通讯录',
+    ovOrLv:'加班请假',
     role:{
         ADM:"经理",
         HR:"人事",
         SEC:"秘书",
-        NOR:"员工"
+        NOR:"员工", //NOR的工资才会由部门负担
+        OTH:"其他"
     },
     type:{D:"部门",V:"群组"},
     struct:"组织结构",
-    clockExp:"考勤异常",
-    perf:"绩效",
+    clockExp:"考勤异常申请",
+    perf:"绩效管理",
     perfCmt:"绩效说明",
     mbrTitle:"职位",
     mbrRole:"角色",
@@ -169,8 +192,9 @@ cn:{
   },
 
   errMsgs:{
-    6002:"没有获得授权执行此操作！",
-    6101:"存在未完成的计划，不可结束项目"
+    6002:"没有授权执行此操作！",
+    6101:"存在未完成的计划，不可结束项目",
+    6103:"超过最大忘刷卡次数"
   }
 }
 };

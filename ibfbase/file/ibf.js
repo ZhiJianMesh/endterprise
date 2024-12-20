@@ -1,30 +1,30 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import Language from "./language.js"
-import Grp from "./grp.js"
+import Department from "./department.js"
 import My from "./my.js"
+import Contacts from "./contacts.js"
 import Project from "./project.js"
-import Business from "./business.js"
-import Leave from "./leave.js"
-import Overtime from "./overtime.js"
+import Attendance from "./attendance.js"
 
-const SERVIVE_HR="ihr";
-const SERVICE_PRJ="iproject"
+const SERVICE_HR="ihr";
+const SERVICE_PRJ="iproject";
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
-function registerIbf(app, router) { //注册ibfhome所需的路由
-    router.addRoute({path:"/ibf/grp", component:Grp});
+function registerIbf(app, router) { //注册ibf所需的路由
+    router.addRoute({path:"/ibf/department", component:Department});
     router.addRoute({path:"/ibf/my", component:My});
-    router.addRoute({path:"/ibf/overtime", component:Overtime});
-    router.addRoute({path:"/ibf/project", component:Project});
-    router.addRoute({path:"/ibf/business", component:Business});
-    router.addRoute({path:"/ibf/leave", component:Leave});
+    router.addRoute({path:"/ibf/contacts", component:Contacts});
+    router.addRoute({path:"/ibf/project", component:Project}); //项目
+    router.addRoute({path:"/ibf/attendance", component:Attendance}); //考勤
 
     app.provide('ibf', {//如果定义一个const/var写在外面，再在此引用，路由会失败，原因未知
         tags:tags,
         prjs:[],
+        department:{}, //所属部门，作为普通员工，只能从属于一个部门
+        adminDpms:[], //管理的部门
         ctrl:{cur:1,max:0},
         clockTm:{start:'00:00', end:'00:00'},
-        SERVIVE_HR:SERVIVE_HR,
+        SERVICE_HR:SERVICE_HR,
         SERVICE_CRM:"icrm",
         SERVICE_FINANCE:"ifinance",
         SERVICE_BUSINESS:"ibusiness",
@@ -48,9 +48,10 @@ components: {
 },
 data() {return {
     tags:tags,
-    prjs:[],
-    clockTm:{start:'00:00', end:'00:00'},
-    ctrl:{cur:1, max:0}
+    ctrl:{cur:1, max:0},
+    prjs:[],//vue无法与inject的变量双向绑定，所以另外加以下三个字段
+    isAdmin:false,
+    clockTm:{start:'00:00', end:'00:00'}
 }},
 created(){
     if(this.ibf.prjs.length==0) {
@@ -60,7 +61,7 @@ created(){
         this.ctrl=this.ibf.ctrl;
     }
     if(this.ibf.clockTm.start=='00:00') {
-        request({method:"GET",url:"/attendance/clockAt"}, SERVIVE_HR).then(resp=>{
+        request({method:"GET",url:"/attendance/clockAt"}, SERVICE_HR).then(resp=>{
             if(resp.code!=RetCode.OK) {
                 Console.debug("Fail to get my clock time:" + resp.code + ",info:" + resp.info);
                 return;
@@ -69,6 +70,28 @@ created(){
         });
     } else {
         this.clockTm=this.ibf.clockTm;
+    }
+    if(!this.ibf.department.role&&this.ibf.adminDpms.length==0) {
+        var opts={method:"GET",url:"/grp/myDepartment"};
+        request(opts, this.ibf.SERVICE_HR).then(resp => {
+            var adms=[];
+            var dep={};
+            if(resp.code==RetCode.OK) {
+                for(var d of resp.data.list) {
+                    if(d.role=='ADM') {
+                        d.adm=true;
+                        adms.push(d);
+                    } else {
+                        dep=d;
+                    }
+                }
+            }
+            this.isAdmin=adms.length>0;
+            this.ibf.department=dep;
+            this.ibf.adminDpms=adms;
+        });
+    } else {
+        this.isAdmin=this.ibf.adminDpms.length>0;
     }
 },
 methods:{
@@ -121,7 +144,7 @@ set_clockTm(start, end) {
     this.ibf.clockTm=clkTm;
 },
 clock() { //上下班刷卡
-    request({method:"GET",url:"/attendance/clock"}, SERVIVE_HR).then(resp=>{
+    request({method:"GET",url:"/attendance/clock"}, SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -134,34 +157,42 @@ template:`
 <div class="row">
  <div class="col self-center">
   <q-btn color="deep-orange" no-caps @click="clock" style="min-width:30vw">
-  <div class="row items-center no-wrap">
-   <q-icon left name="event_available"></q-icon>
-   <div class="text-center">
+   <div class="row items-center no-wrap">
+    <q-icon left name="event_available"></q-icon>
+    <div class="text-center">
      <span class="text-h5">{{tags.home.attendance}}</span>
      <br>{{clockTm.start}}-{{clockTm.end}}
+    </div>
    </div>
-  </div>
   </q-btn>
  </div>
- <div class="col text-center">
-  <q-list dense>
-   <q-item dense>
-    <q-item-section>
-     <q-btn flat color="primary" :label="tags.ovt.title" @click="ibf.goto('/ibf/overtime')"></q-btn>
-    </q-item-section>
-    <q-item-section>
-     <q-btn flat dense color="primary" :label="tags.lev.title" @click="ibf.goto('/ibf/leave')"></q-btn>
-    </q-item-section>
-   </q-item>
-   <q-item dense>
-    <q-item-section>
-     <q-btn flat dense color="primary" :label="tags.busi.title" @click="ibf.goto('/ibf/business')"></q-btn>
-    </q-item-section>
-    <q-item-section>
-     <q-btn flat dense color="primary" :label="tags.my.title" @click="ibf.goto('/ibf/my')"></q-btn>
-    </q-item-section>
-   </q-item>
-  </q-list>
+ <div class="col self-center">
+  <div class="q-gutter-lg">
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/my')">
+    <div class="text-center">
+     <q-icon name="sensor_occupied"></q-icon><br>
+     {{tags.my.title}}
+    </div>
+   </q-btn>
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/attendance')">
+    <div class="text-center">
+     <q-icon name="work_history"></q-icon><br>
+     {{tags.atd.title}}
+    </div>
+   </q-btn>
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/contacts')">
+    <div class="text-center">
+     <q-icon name="person_search"></q-icon><br>
+     {{tags.grp.contacts}}
+    </div>
+   </q-btn>
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/department')" v-if="isAdmin">
+    <div class="text-center">
+     <q-icon name="group"></q-icon><br>
+     {{tags.grp.department}}
+    </div>
+   </q-btn>
+  </div>
  </div>
 </div>
 <q-separator spaced="md"></q-separator>

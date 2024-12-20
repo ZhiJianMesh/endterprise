@@ -68,7 +68,7 @@ query(pg) {
         this.ctrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
-search() {
+doSearch() {
     if(this.search=='') {
         this.query(this.service.getRt('pg'));
         return;
@@ -113,10 +113,10 @@ template:`
   </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-pa-md">
-    <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="search">
+    <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="doSearch">
      <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="query(1)" class="cursor-pointer"></q-icon>
-      <q-icon name="search" @click="search"></q-icon>
+      <q-icon name="search" @click="doSearch"></q-icon>
      </template>
      <template v-slot:after>
       <q-btn round color="primary" icon="add_circle" @click="showCreate"></q-btn>

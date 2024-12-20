@@ -185,7 +185,7 @@ cn:{
     type:"性质"
   },
   grp:{
-    title:"部门",
+    title:"组织管理",
     role:"角色",
     create:"新建",
     name:"名称",

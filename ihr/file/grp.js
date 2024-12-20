@@ -5,7 +5,7 @@ data() {return {
     members:[],
     grps:[],
     errMsgs:{},
-    newMbr:{dlg:false,uid:[],title:'',role:''},
+    newMbr:{dlg:false,uid:[],title:'',role:'NOR'},
     newGrp:{dlg:false,name:'',type:'',descr:'',admin:''},
     edtGrp:{dlg:false,id:0,name:'',descr:''},
     paths:[],

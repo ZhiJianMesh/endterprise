@@ -229,7 +229,7 @@ template:`
    <q-input :label="tags.cfg.subsidy" v-model.number="edt.zone.subsidy" dense></q-input>
    <q-input :label="tags.cfg.timeOff" v-model.number="edt.zone.timeOff" dense></q-input>
    <q-input :label="tags.cfg.taxFunc" v-model="edt.zone.taxFunc" dense type="textarea"></q-input>
-   <q-input :label="tags.cmt" v-model="edt.zone.cmt" dense type="textarea"></q-input>
+   <q-input :label="tags.cmt" v-model="edt.zone.cmt" dense type="textarea" rows="2"></q-input>
   </q-card-section>
   <q-card-actions align="right">
    <q-btn :label="tags.ok" color="primary" @click="zone_do"></q-btn>

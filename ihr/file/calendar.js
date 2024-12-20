@@ -206,7 +206,7 @@ dense map-options emit-value ref="calSelect">
 </div>
 <div class="row justify-start">
   <div class="col self-center">
-   <month-input class="text-subtitle1" @update:modelValue="set_month"></month-input>
+   <month-input class="text-subtitle1" @update:modelValue="set_month" min="-10" max="+5"></month-input>
   </div>
   <div class="col self-center">
    <q-btn flat dense color="teal" icon="event_repeat"
