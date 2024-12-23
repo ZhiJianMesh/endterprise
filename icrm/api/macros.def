@@ -3,7 +3,7 @@
         "name" : "get_right_info",
         "type" : "rdb",
         "db": "crm",
-        "convert" : {"code":2001,"to":111,"info":"no right"},
+        "convert" : {"code":"NOT_EXISTS","to":"NO_RIGHT","info":"no right"},
         "sqls" : [{
             "comment":"确认对数据有owner权限",
             "multi":false,
@@ -16,7 +16,7 @@
     
     "has_right":{
         "name" : "get_right_info",
-        "convert" : {"code":2001,"to":111,"info":"no right"},
+        "convert" : {"code":"NOT_EXISTS","to":"NO_RIGHT","info":"no right"},
         "type" : "rdb",
         "db": "crm",
         "sqls" : [{
@@ -31,7 +31,7 @@
     
     "is_contact_owner":{
         "name" : "get_right_info",
-        "convert" : {"code":2001,"to":111,"info":"no right"},
+        "convert" : {"code":"NOT_EXISTS","to":"NO_RIGHT","info":"no right"},
         "type" : "rdb",
         "db": "crm",
         "sqls" : [{

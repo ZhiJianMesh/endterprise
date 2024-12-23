@@ -3,7 +3,7 @@
         "name" : "get_right_info",
         "type" : "dataexists",
         "db": "document",
-        "errorCode" : 111,
+        "errorCode" : "NO_RIGHT",
         "errorInfo":"no right",
         "sql" :"select * from authority
          where doc='#DOC#' and account='@{#tokenAcc}'
