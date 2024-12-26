@@ -142,8 +142,8 @@ template: `
      </div> 
     </q-card-section>
     <q-card-actions align="right" class="q-pr-md">
-     <q-btn :label="ok" color="primary" @click="confirm"></q-btn>
      <q-btn flat :label="close" color="primary" v-close-popup></q-btn>
+     <q-btn :label="ok" color="primary" @click="confirm"></q-btn>
     </q-card-actions>
  </q-card>
 </q-dialog>

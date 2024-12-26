@@ -57,8 +57,8 @@ template: `
     </q-card-section>
     <q-separator></q-separator>
     <q-card-actions align="right">
-      <q-btn :label="ok" color="primary" @click="doAction" v-show="state==0"></q-btn>
       <q-btn flat :label="close" color="primary" v-close-popup :disable="state==1"></q-btn>
+      <q-btn :label="ok" color="primary" @click="doAction" v-show="state==0"></q-btn>
     </q-card-actions>
 </q-card>
 </q-dialog>

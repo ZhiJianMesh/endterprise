@@ -87,28 +87,22 @@ parse(s,def) {
     }
     var cfg=s.trim().toLowerCase();
     var dt=new Date();
+    var y=dt.getFullYear();
+    var m=dt.getMonth()+1;
     if(cfg=="cur") {
-        return {y:dt.getFullYear(),m:dt.getMonth()+1};
+        return {y:y,m:m};
     }
     if(cfg.startsWith('-')) {
         var v = parseInt(cfg.substring(1));
-        return {y:dt.getFullYear()-v, m:1};
+        return {y:y-v, m:m};
     }
     if(cfg.startsWith('+')) {
         var v = parseInt(cfg.substring(1));
-        return {y:dt.getFullYear()+v, m:1};
+        return {y:y+v, m:m};
     }
-    var y,m;
-    var p=cfg.indexOf('/');
-    if(p<0)p=cfg.indexOf('-');
-    if(p<0)p=cfg.indexOf('.');
-    if(p>0) {
-        y=parseInt(cfg.substring(0,p));
-        m=parseInt(cfg.substring(p+1));
-    } else {
-        y=parseInt(cfg);
-        m=1;
-    }
+    var ss=cfg.split(/[\/,-,.]+/)
+    if(ss.length>0) y=parseInt(ss[0]);
+    if(ss.length>1) m=parseInt(ss[1]);
     return {y:y,m:m};
 },
 pageUp() {

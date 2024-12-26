@@ -30,8 +30,22 @@ const __err_infos={
 'unknown':"未知错误"
 };
 
+//toString().padStart(2,'0')要慢30%
 function date2str(dt) { //yyyy/MM/dd
   return dt.getFullYear()
-   + '/' + (dt.getMonth()+1).toString().padStart(2,'0')
-   + '/' + dt.getDate().toString().padStart(2,'0');
+   + '/' + ((v=dt.getMonth()+1)<9?'0'+v:v)
+   + '/' + ((v=dt.getDate())<9?'0'+v:v);
+}
+
+function datetime2str(dt,withSec) { //yyyy/MM/dd HH:mm
+  var v;
+  var s=dt.getFullYear()
+   + '/' + ((v=dt.getMonth()+1)<9?'0'+v:v)
+   + '/' + ((v=dt.getDate())<9?'0'+v:v)
+   + ' ' + ((v=dt.getHours())<9?'0'+v:v)
+   + ':' + ((v=dt.getMinutes())<9?'0'+v:v);
+   if(withSec) {
+     s+=':'+((v=dt.getSeconds())<9?'0'+v:v);
+   }
+   return s;
 }

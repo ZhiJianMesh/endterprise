@@ -61,8 +61,8 @@ template: `
       </q-input>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn color="primary" :label="label" @click="actLogin" :disable="logining"></q-btn>
       <q-btn color="primary" flat :label="cancel" v-close-popup :disable="logining"></q-btn>
+      <q-btn color="primary" :label="label" @click="actLogin" :disable="logining"></q-btn>
     </q-card-actions>
     <q-linear-progress indeterminate rounded color="pink"
     class="q-mt-sm" v-show="logining"></q-linear-progress>
