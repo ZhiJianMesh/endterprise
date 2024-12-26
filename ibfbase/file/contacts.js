@@ -81,7 +81,7 @@ template:`
     <q-toolbar-title>{{tags.grp.contacts}}</q-toolbar-title>
   </q-toolbar>
   </q-header>
-  <q-footer class="bg-white q-pa-md">
+  <q-footer class="bg-white q-pa-sm">
     <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="doSearch">
      <template v-slot:append>
       <q-icon v-if="search!==''" name="close" @click="query(1)" class="cursor-pointer"></q-icon>

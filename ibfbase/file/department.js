@@ -1,6 +1,6 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import MonthInput from "/assets/v3/components/month_input.js"
-
+const STORAGE_DPMNO="dpmNo";
 export default {
 inject:["ibf"],
 components:{
@@ -36,8 +36,12 @@ created(){
         }
     });
     if(this.ibf.adminDpms.length>0){
-        this.gid=this.ibf.adminDpms[0].id;
-        this.gname=this.ibf.adminDpms[0].name;
+        var dpmNo=storageGet(STORAGE_DPMNO,0);
+        if(dpmNo>=this.ibf.adminDpms.length) {
+            dpmNo=0;
+        }
+        this.gid=this.ibf.adminDpms[dpmNo].id;
+        this.gname=this.ibf.adminDpms[dpmNo].name;
         this.query_exps(1);
         for(var dp of this.ibf.adminDpms) {
             this.grpOpts.push({value:dp.id,label:dp.path});
@@ -72,6 +76,7 @@ query_applies(pg) {
         this.applies=resp.data.list.map(a=>{
             dt.setTime(a.at);
             a.at=date2str(dt);
+            a.type=this.tags.atd.aplType[a.type];
             return a;
         });
         this.appPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
@@ -190,10 +195,12 @@ save_perf() {
     });
 },
 change_grp(v){
-    for(var dp of this.ibf.adminDpms) {
+    for(var i in this.ibf.adminDpms) {
+        var dp=this.ibf.adminDpms[i];
         if(v==dp.id) {
             this.gid=dp.id;
             this.gname=dp.name;
+            storageSet(STORAGE_DPMNO, i);
             break;
         }
     }
@@ -210,7 +217,7 @@ template:`
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.grp.department}}-{{gname}}</q-toolbar-title>
-     <q-btn flat icon="group" dense>
+     <q-btn flat icon="bookmarks" dense>
       <q-popup-proxy class="q-pa-md" ref="grpSelect">
        <q-option-group :options="grpOpts" type="radio" v-model="gid"
         @update:model-value="change_grp"></q-option-group>
@@ -234,6 +241,7 @@ template:`
 <q-list>
   <q-item v-for="a in applies">
     <q-item-section>{{a.account}}</q-item-section>
+    <q-item-section>{{a.type}}</q-item-section>
     <q-item-section>{{a.at}}</q-item-section>
   </q-item>
 </q-list>
@@ -261,7 +269,7 @@ template:`
 <div class="row justify-start bg-grey-3 text-primary">
   <div class="col-5 self-center">
    <month-input class="text-subtitle1 q-pl-sm"
-    @update:modelValue="set_month" min="3" max="cur"></month-input>
+    @update:modelValue="set_month" min="-3" max="cur"></month-input>
   </div>
   <div class="col self-center">
    <q-btn @click="init_perf" flat :label="tags.init"></q-btn>

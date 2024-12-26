@@ -166,7 +166,7 @@ template:`
    </div>
   </q-btn>
  </div>
- <div class="col self-center">
+ <div class="col self-center text-right">
   <div class="q-gutter-lg">
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/my')">
     <div class="text-center">
@@ -202,7 +202,7 @@ template:`
     <q-item-label>{{p.name}}</q-item-label>
     <q-item-label caption>{{p.role}}</q-item-label>
    </q-item-section>
-   <q-item-section>
+   <q-item-section side>
     <q-item-label>{{p.stage}}</q-item-label>
     <q-item-label caption>{{p.time}}</q-item-label>
    </q-item-section>
