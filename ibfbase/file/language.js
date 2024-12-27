@@ -38,6 +38,7 @@ cn:{
   onlyOneType:"一次申请中，只能填写同类的申请",
   invalidInterval:"无效的时间段",
   hasOverlap:"时间段有重叠",
+  dateFmt:"YYYY/MM/DD HH:mm",
   
   sex:{
     M:"先生",

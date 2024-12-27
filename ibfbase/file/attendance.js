@@ -147,6 +147,8 @@ show_atd(no) {
         copyObjTo(EMPTY_TM, this.newTime);
         this.get_apply_dtl(this.atds[no].id,no);
     } else {
+        this.atdAct.no=-1;
+        this.atdAct.tms=[];
         this.atdAct.dlg=true;
         this.atdAct.editable=true;
     }
@@ -176,10 +178,10 @@ add_atd_tm() {
         }
     }
     tm.start=parseInt(dt.getTime()/60000);
-    tm.start_s=datetimeToStr(this.newTime.start);
+    tm.start_s=datetimeToStr(this.newTime.start,this.tags.dateFmt);
     dt=datetimeToDate(this.newTime.end);
     tm.end=parseInt(dt.getTime()/60000);
-    tm.end_s=datetimeToStr(this.newTime.end);
+    tm.end_s=datetimeToStr(this.newTime.end,this.tags.dateFmt);
     if(tm.start>=tm.end) {
         this.$refs.alertDlg.show(this.tags.invalidInterval);
         return;
@@ -214,6 +216,19 @@ atd_do() { //加班、请假或工作日在途
     }
     request({method:"POST", url:url, data:dta}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.atdAct.dlg=false;
+        this.atdAct.no=-1;
+        this.query_atds(this.atdPg.cur);
+    });
+},
+remove_atd() {
+    if(this.atdAct.no<0) return;
+    var opts={method:"DELETE",url:"/attendance/cancel?id="+this.atdAct.dta.id};
+    request(opts, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
@@ -337,13 +352,15 @@ template:`
    </div>
    <div class="row">
     <div class="col">
-     <datetime-input v-model="newTime.start" :label="tags.atd.start" :showMinute="false"></datetime-input>
+     <datetime-input v-model="newTime.start" :label="tags.atd.start"
+      :format="tags.dateFmt" :showMinute="false"></datetime-input>
     </div>
     <div class="col-2 self-center text-center">
      <q-icon name="arrow_right_alt" size="2em"></q-icon>
     </div>
     <div class="col">
-     <datetime-input v-model="newTime.end" :label="tags.atd.end" :showMinute="false"></datetime-input>
+     <datetime-input v-model="newTime.end" :label="tags.atd.end"
+     :format="tags.dateFmt" :showMinute="false"></datetime-input>
     </div>
    </div>
    <div class="row">
@@ -358,6 +375,8 @@ template:`
   </q-card-section>
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-btn flat :label="tags.remove" color="red" @click="remove_atd"
+    v-if="atdAct.no>-1&&atdAct.dta.state!='OK'"></q-btn>
     <q-btn :label="tags.ok" color="primary" @click="atd_do"></q-btn>
   </q-card-actions>
  </q-card>

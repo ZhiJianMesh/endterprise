@@ -1,23 +1,31 @@
 //日期选择组件component-date-input
 function datetimeToDate(v) {
     var dt=new Date();
-    if(v) {
-        dt.setYear(v.year);
-        dt.setMonth(v.month-1);
-        dt.setDate(v.day);
-        dt.setHours(v.hour);
-        dt.setMinutes(v.minute);
-        dt.setSeconds(0);
-    }
+    dt.setYear(v.year);
+    dt.setMonth(v.month-1);
+    dt.setDate(v.day);
+    dt.setHours(v.hour);
+    dt.setMinutes(v.minute);
+    dt.setSeconds(0);
     return dt;
 }
 
-function datetimeToStr(v,showMinute) {
+function datetimeToStr(v,fmt) {
     var dt=datetimeToDate(v);
-    if(!showMinute)dt.setMinutes(0);
-    return datetime2str(dt,false);
+    return sysDateToStr(dt,fmt);
 }
-export { datetimeToDate, datetimeToStr };
+
+function sysDateToStr(dt,fmt) {
+    var v;
+    return fmt
+       .replace('YYYY', dt.getFullYear())
+       .replace('MM', (v=(dt.getMonth() + 1))>9?v:'0'+v)
+       .replace('DD', (v=dt.getDate())>9?v:'0'+v)
+       .replace('HH', (v=dt.getHours())>9?v:'0'+v)
+       .replace('mm', (v=dt.getMinutes())>9?v:'0'+v)
+       .replace('ss', (v=dt.getSeconds())>9?v:'0'+v);
+}
+export {datetimeToDate, datetimeToStr, sysDateToStr};
 
 export default{
 data(){return {
@@ -32,7 +40,8 @@ props: {
     label:{type:String,required:true},
     min:{type:String,default:''},
     max:{type:String,default:''},
-    dateFormat:{type:String, default:"YYYY/MM/DD HH:mm"},
+    format:{type:String, default:"YYYY/MM/DD HH:mm"},
+    showMinute:{type:Boolean, default:false},
     weekDays:{type:Array, default:["日","一","二","三","四","五","六"]},
     months:{type:Array, default:["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"]},
     cancel:{type:String, default:'取消'},
@@ -51,7 +60,7 @@ created(){
         dt=this.parse(this.min);
         this.start=dt.getTime();
     }
-    if(typeof this.modelValue==='string') {
+    if(!this.modelValue || typeof this.modelValue==='string') {
         dt=this.parse(this.modelValue);
     } else {
         dt=datetimeToDate(this.modelValue);
@@ -104,14 +113,14 @@ confirm() {
 },
 computed: {
    value: {
-      get() {return datetimeToStr(this.val,this.showMinute)},
+      get() {return datetimeToStr(this.val,this.format)},
       set(v) {
         var dt=this.parse(v);
         this.val=this.fromDate(dt);
       }
    },
    oldVal:{
-     get() {return datetimeToStr(this.old,this.showMinute)}
+     get() {return datetimeToStr(this.old,this.format)}
    }
 },
 template: `<q-input dense :label="label" v-model="oldVal" readonly :disable="disable">
@@ -121,7 +130,7 @@ template: `<q-input dense :label="label" v-model="oldVal" readonly :disable="dis
  <q-card>
   <q-card-section><div class="text-h6">{{value}}</div></q-card-section>
   <q-card-section>
-   <q-date minimal flat v-model="dateStr" :mask="dateFormat" emit-immediately
+   <q-date minimal flat v-model="dateStr" :mask="format" emit-immediately
    :locale="{daysShort:weekDays,months:months,monthsShort:months}"
    :options="rangeFilter" @update:model-value="date_changed">
    </q-date>

@@ -31,20 +31,20 @@ const __err_infos={
 };
 
 function date2str(dt) {//MM-dd-yyyy
-  return ((v=dt.getMonth()+1)<9?'0'+v:v)
-   + '/' + ((v=dt.getDate())<9?'0'+v:v)
+  return ((v=dt.getMonth()+1)>9?v:'0'+v)
+   + '/' + ((v=dt.getDate())>9?v:'0'+v)
    + '/' + dt.getFullYear();
 }
 
 function datetime2str(dt,withSec) { //MM/dd/yyyy HH:mm
   var v;
-  var s = ((v=dt.getMonth()+1)<9?'0'+v:v)
-   + '/' + ((v=dt.getDate())<9?'0'+v:v)
+  var s = ((v=dt.getMonth()+1)>9?v:'0'+v)
+   + '/' + ((v=dt.getDate())>9?v:'0'+v)
    + '/' + dt.getFullYear()
-   + ' ' + ((v=dt.getHours())<9?'0'+v:v)
-   + ':' + ((v=dt.getMinutes())<9?'0'+v:v);
+   + ' ' + ((v=dt.getHours())>9?v:'0'+v)
+   + ':' + ((v=dt.getMinutes())>9?v:'0'+v);
   if(withSec) {
-    s+=':'+((v=dt.getSeconds())<9?'0'+v:v);
+    s+=':'+((v=dt.getSeconds())>9?v:'0'+v);
   }
   return s;
 }

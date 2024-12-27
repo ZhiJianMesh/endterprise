@@ -33,19 +33,19 @@ const __err_infos={
 //toString().padStart(2,'0')要慢30%
 function date2str(dt) { //yyyy/MM/dd
   return dt.getFullYear()
-   + '/' + ((v=dt.getMonth()+1)<9?'0'+v:v)
-   + '/' + ((v=dt.getDate())<9?'0'+v:v);
+   + '/' + ((v=dt.getMonth()+1)>9?v:'0'+v)
+   + '/' + ((v=dt.getDate())>9?v:'0'+v);
 }
 
 function datetime2str(dt,withSec) { //yyyy/MM/dd HH:mm
   var v;
   var s=dt.getFullYear()
-   + '/' + ((v=dt.getMonth()+1)<9?'0'+v:v)
-   + '/' + ((v=dt.getDate())<9?'0'+v:v)
-   + ' ' + ((v=dt.getHours())<9?'0'+v:v)
-   + ':' + ((v=dt.getMinutes())<9?'0'+v:v);
+   + '/' + ((v=dt.getMonth()+1)>9?v:'0'+v)
+   + '/' + ((v=dt.getDate())>9?v:'0'+v)
+   + ' ' + ((v=dt.getHours())>9?v:'0'+v)
+   + ':' + ((v=dt.getMinutes())>9?v:'0'+v);
    if(withSec) {
-     s+=':'+((v=dt.getSeconds())<9?'0'+v:v);
+     s+=':'+((v=dt.getSeconds())>9?v:'0'+v);
    }
    return s;
 }
