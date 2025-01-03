@@ -235,7 +235,7 @@ template:`
    </q-tabs>
   </q-footer>
   <q-page-container>
-    <q-page class="q-pa-none">
+    <q-page class="q-pa-sm">
 <q-tab-panels v-model="tab" class="q-pa-none q-ma-none">
 <q-tab-panel name="ovOrLv">
 <q-list>

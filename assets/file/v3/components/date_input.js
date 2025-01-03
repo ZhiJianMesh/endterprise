@@ -1,6 +1,6 @@
 //日期选择组件component-date-input
 export default{
-data(){return {end:253234080000000/*10000AC*/,start:-377485920000000/*10000BC*/}},
+data(){return {end:0,start:0}},
 props: {
     modelValue:{type:String},
     label:{type:String,required:true},
@@ -14,25 +14,20 @@ props: {
 },
 emits: ['update:modelValue'],
 created(){
-    if(this.max) {
-        if(this.max=="today") {
-            this.end=Date.now();
-        } else {
-            this.end=Date.parse(this.max);
-        }
-    }
-    if(this.min) {
-        if(this.min=="today") {
-            this.start=Date.now();
-        } else {
-            this.start=Date.parse(this.min);
-        }
-    }
+    this.end=this.parse(this.max,253234080000000/*10000AC*/);
+    this.start=this.parse(this.max,-377485920000000/*10000BC*/);
 },
 methods:{
 rangeFilter(dt) {
     var t=Date.parse(dt);
     return t>this.start&&t<this.end
+},
+parse(s,def) {
+    if(!s)return def;
+    if(s=="today") {
+        return Date.now();
+    }
+    return Date.parse(s);
 }
 },
 computed: {

@@ -90,7 +90,7 @@ template:`
     </q-input>
   </q-footer>
   <q-page-container>
-    <q-page class="q-pa-md">
+    <q-page class="q-pa-sm">
 <div class="q-pa-sm flex flex-center" v-show="ctrl.max>1">
  <q-pagination v-model="ctrl.cur" color="primary" :max="ctrl.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query"></q-pagination>

@@ -142,7 +142,7 @@ set_year(v) {
     if(v>yMax||v<yMin) {
         return;
     }
-    this.month=-1;
+    this.month=1;
     this.year=v;
     this.set_array();
 },
@@ -177,11 +177,9 @@ computed: {
 template: `
 <div class="row">
  <div class="rol q-pr-lg">
-  <q-icon name="navigate_before" @click="fore"
-   :class="num<=minMonth?'text-grey':''"></q-icon>
+  <q-icon name="navigate_before" @click="fore" :class="num<=minMonth?'text-grey':''"></q-icon>
  </div>
- <div class="rol" style="cursor:pointer">
- {{year}} / {{month<10?('0'+month):month}}
+ <div class="rol" style="cursor:pointer">{{value}} 
  <q-popup-proxy cover @before-show="set_array" ref="_my_dlg">
   <div class="row q-pa-sm" style="min-width:20em;">
    <div class="col self-center">

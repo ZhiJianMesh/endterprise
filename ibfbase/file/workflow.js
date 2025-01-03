@@ -1,9 +1,48 @@
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
+import AlertDialog from "/assets/v3/components/alert_dialog.js";
+const SERVICE_WF="workflow";
+const Workflows={
+    flowsteps:{},
+    flowDef:(id,refresh) => {
+        if(!refresh && Workflows.flowsteps[id]) {
+            return new Promise(resolve=>{resolve(Workflows.flowsteps[id])});
+        }
+
+        var url="/api/flow/info?flowid="+id
+        return request({method:"GET",url:url}, SERVICE_WF).then(resp=>{
+            if(resp.code!=0) {
+                reject(url + ",code:"+resp.code+",info:"+resp.info);
+                return {};
+            }
+            var sd={name:resp.data.dispName,maxStep:0,steps:[]};//steps definition
+            //step,type,name,ext,comment
+            resp.data.steps.forEach(s=> {
+                sd.steps[s.step]={step:s.step,type:s.type,title:s.name+'('+s.comment+')',ext:s.ext,comment:s.comment};
+                if(s.step>sd.maxStep){
+                    sd.maxStep=s.step;
+                }
+            });
+            Workflows.flowsteps[id]=sd;
+            return sd;
+        });
+    }
+}
+export {Workflows};
+
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['ibf'],
+components:{
+    "alert-dialog":AlertDialog,
+    "confirm-dialog":ConfirmDialog
+},
 data() {return {
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
-    flName:this.$route.query.flName, //customer客户、order订单、service服务、payment回款
+    flName:this.$route.query.flName,
+    service:this.$route.query.service,
+    dtlApi:this.$route.query.dtlApi,
+    dtlPage:this.$route.query.dtlPage,
+    tags:this.ibf.tags,
     flow:{},//流程定义信息{name,maxStep,steps}
     base:{creator:'',createAt:0,step:0},
     dtl:{}, //数据详情
@@ -17,34 +56,43 @@ created(){
     //此处有约定:1)type为customer、order、payment、service等；
     // 2）languages中必须由对应名称的tag集合；
     // 3)必须由对应的detail接口，并且接口中响应中segs字段指定了要显示的字段名；
-    var dtlUrl="/api/"+this.flName+"/detail";
-    var segNames=this.tags[this.flName];
-    request({method:"GET",url:dtlUrl+"?id="+this.did}, this.service.name).then(function(resp){
-        if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS
+    var dtlUrl="/api" + this.dtlApi
+        +(this.dtlApi.indexOf('?')>0?'&':'?')
+        +"id="+this.did;
+    var segNames=this.tags[this.flName]['wfSegs'];
+    request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
+        if(resp.code!=RetCode.OK) {
             return;
         }
         var dtl=[];
-        resp.data.segs.forEach(function(s) {
-            if(s!='createAt') {
-                dtl.push({k:segNames[s], v:resp.data[s]});
-            } else {
-                dtl.push({k:segNames[s], v:new Date(parseInt(resp.data[s])).toLocaleString()});
+        var dt=new Date();
+        for(var s of segNames) {
+            var v;
+            if(s.t=='dt') {
+                dt.setTime(resp.data[s.n]);
+                v=datetime2str(dt);
+            } else if(s.t=='d') {
+                dt.setTime(resp.data[s.n]);
+                v=date2str(dt);
+            } else {/*(s.t=='s'||s.t=='n')*/
+                v=resp.data[s.n];
             }
-        });
+            dtl.push({k:s.s,v:v});
+        }
         this.dtl=dtl;
-    }.bind(this));
+    });
     
-    this.service.flowDef(this.flowid).then(function(sd){
+    Workflows.flowDef(this.flowid).then(sd=>{
         this.flow=sd;
         this.query_opinions();
-    }.bind(this));
+    });
 },
 methods:{
 query_opinions() {
     this.opinion='';
     this.nextSigners=[];
     var url="/api/opinions?flowid="+this.flowid+"&did="+this.did;
-    request({method:"GET",url:url}, this.service.WF).then(function(resp){
+    request({method:"GET",url:url}, SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -102,7 +150,7 @@ query_opinions() {
         }
         this.allProced=allProced;
         this.steps=steps;
-    }.bind(this));
+    });
 },
 confirm() {
     if(this.base.step>this.flow.maxStep) {
@@ -112,26 +160,26 @@ confirm() {
     var url="/api/confirm";
     var data={flowid:this.flowid, did:this.did,
         opinion:this.opinion, nextSigners:this.nextSigners};
-    request({method:"POST",url:url,data:data}, this.service.WF).then(function(resp){
+    request({method:"POST",url:url, data:data}, SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.base.step=resp.data.nextStep;
         this.query_opinions();
-    }.bind(this));
+    });
 },
 counterSign(agree) {
     var url="/api/counterSign";
     var data={flowid:this.flowid, did:this.did,
         opinion:this.opinion, result:agree?'P':'R'};
-    request({method:"POST",url:url,data:data}, this.service.WF).then(function(resp){
+    request({method:"POST",url:url,data:data}, SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.query_opinions();
-    }.bind(this));
+    });
 },
 reject() {
     if(this.base.step<=0) {
@@ -139,49 +187,52 @@ reject() {
     }
     var url="/api/reject";
     var data={flowid:this.flowid, did:this.did, opinion:this.opinion};
-    request({method:"POST",url:url, data:data}, this.service.WF).then(function(resp){
+    request({method:"POST",url:url, data:data}, SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.base.step=resp.data.foreStep;
         this.query_opinions();
-    }.bind(this));
+    });
 },
 removeWf() { //工作流数据错乱的情况下，删除工作流记录
-    var url="/api/"+this.flName+"/exists?id="+this.did;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    var dtlUrl="/api" + this.dtlApi
+            +(this.dtlApi.indexOf('?')>0?'&':'?')
+            +"id="+this.did;
+    request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
         if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS
             return;
         }
-        this.$refs.confirmDlg.show(this.tags.wrongFlowState, function(){
+        this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
             var opts={method:"DELETE",url:"/api/proxy/removeBrokenWf?flowid="+this.flowid+"&did="+this.did};
-            request(opts, this.service.WF).then(function(resp){
+            request(opts, SERVICE_WF).then(resp=>{
                 if(resp.code!=RetCode.OK) {
                     this.$refs.errMsg.showErr(resp.code, resp.info);
                 }else{
-                    this.service.go_back();
+                    this.ibf.back();
                 }
-            }.bind(this))
-        }.bind(this));
-    }.bind(this));
+            })
+        });
+    });
 },
 showDtl() {
-    this.service.jumpTo('/'+this.flName+'?id='+this.did)    
+    var url=this.dtlPage+(this.dtlPage.indexOf('?')>0?'&':'?')+'id='+this.did;
+    this.ibf.goto(url)    
 }
 },
 
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+    <q-btn flat round icon="arrow_back" dense @click="ibf.back"></q-btn>
     <q-toolbar-title>{{flow.name}}</q-toolbar-title>
-    <q-avatar :icon="icons[flName]" color="primary" size="2em" @click="showDtl"></q-avatar>
+    <q-btn flat icon="info" @click="showDtl"></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-md">
+    <q-page class="q-pa-sm">
 <q-list dense>
   <q-item v-for="d in dtl" dense>
     <q-item-section>{{d.k}}</q-item-section>
@@ -242,7 +293,7 @@ template:`
     </q-page>
   </q-page-container>
 </q-layout>
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
-<component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></alert-dialog>
+<confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
 `
 }

@@ -298,7 +298,8 @@ template:`
      <q-input v-model="contact.cmt" :label="tags.cmt" type="textarea"></q-input>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn :label="tags.remove" color="indigo" @click="doContactAct('rmv')" flat></q-btn>
+      <q-btn :label="tags.remove" color="red" v-if="contact.act!='add'"
+       @click="doContactAct('rmv')" flat></q-btn>
       <q-space></q-space>
       <q-btn :label="tags.ok" color="primary" @click="doContactAct(contact.act)"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>

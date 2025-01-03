@@ -5,7 +5,6 @@
         "method" : "GET",
         "tokenSign" : "APP",
         "cache" : "@{pid}",
-        "nameSpace" : "prj",
         "comment" : "查询项目基本信息，返回name、leader、owner等",
         "service" : "iproject",
         "url" : "/get?id=#PID#"
@@ -25,5 +24,16 @@
             "errorInfo":"not stakeholder",
             "condition":"@{CONDITION|!role,'s.!=','L'}&&@{CONDITION|!role,'s.!=','O'}"
         }
+    },
+    
+    "check_accounts":{
+        "name":"check_accounts",
+        "comment":"检查帐号是否都存在",
+        "type" : "call",
+        "service": "user",
+        "method":"POST",
+        "url":"/user/userid",
+        "tokenSign":"APP",
+        "parameters":"{\"accounts\":#ACCLIST#}"
     }
 }

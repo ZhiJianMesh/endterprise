@@ -1,10 +1,9 @@
 //一边输入名称，一边过滤群组的组件
 export default {
-data() {return {grpOpts:[]}},//选择项，调用search获得
+data() {return {grpOpts:[],grp:0}},//选择项，调用search获得
 props: {
-    grp:{type:Number,required:true}, //复杂对象，可以直接在组件中修改
     label:{type:String,required:true},
-    useid:{type:Boolean,required:false,default:false} //是否返回id
+    useid:{type:Boolean,required:false,default:true} //是否返回id
 },
 methods:{
 search_grps(val,update) {
@@ -25,7 +24,7 @@ search_grps(val,update) {
         var gl=resp.data.groups;
         var val;
         for(var i in gl) {
-            val=this.useid ? gl[i].id : gl[i].name
+            val=this.useid ? gl[i].id : gl[i].name;
             opts.push({value:val, label:gl[i].name});
         }
         this.grpOpts=opts;

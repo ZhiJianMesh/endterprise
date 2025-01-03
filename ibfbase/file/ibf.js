@@ -5,6 +5,9 @@ import My from "./my.js"
 import Contacts from "./contacts.js"
 import Project from "./project.js"
 import Attendance from "./attendance.js"
+import Business from "./business.js"
+import BusiDtl from "./busidtl.js"
+import Workflow from "./workflow.js"
 
 const SERVICE_HR="ihr";
 const SERVICE_PRJ="iproject";
@@ -16,7 +19,10 @@ function registerIbf(app, router) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/contacts", component:Contacts});
     router.addRoute({path:"/ibf/project", component:Project}); //项目
     router.addRoute({path:"/ibf/attendance", component:Attendance}); //考勤
-
+    router.addRoute({path:"/ibf/business", component:Business}); //差旅列表
+    router.addRoute({path:"/ibf/busidtl", component:BusiDtl}); //差旅详情
+    router.addRoute({path:"/ibf/workflow", component:Workflow}); //工作流
+    
     app.provide('ibf', {//如果定义一个const/var写在外面，再在此引用，路由会失败，原因未知
         tags:tags,
         prjs:[],
@@ -155,7 +161,7 @@ clock() { //上下班刷卡
 },
 template:`
 <div class="row">
- <div class="col self-center">
+ <div class="col-1 self-center">
   <q-btn color="deep-orange" no-caps @click="clock" style="min-width:30vw">
    <div class="row items-center no-wrap">
     <q-icon left name="event_available"></q-icon>
@@ -180,6 +186,12 @@ template:`
      {{tags.atd.title}}
     </div>
    </q-btn>
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/business')">
+    <div class="text-center">
+     <q-icon name="flight_takeoff"></q-icon><br>
+     {{tags.busi.title}}
+    </div>
+   </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/contacts')">
     <div class="text-center">
      <q-icon name="person_search"></q-icon><br>
@@ -197,8 +209,8 @@ template:`
 </div>
 <q-separator spaced="md"></q-separator>
 <q-list dense separator>
-  <q-item v-for="p in prjs" @click="ibf.goto('/ibf/project?id='+p.id)" clickable>
-   <q-item-section>
+  <q-item v-for="p in prjs">
+   <q-item-section @click="ibf.goto('/ibf/project?id='+p.id)">
     <q-item-label>{{p.name}}</q-item-label>
     <q-item-label caption>{{p.role}}</q-item-label>
    </q-item-section>

@@ -31,14 +31,19 @@ cn:{
   opr:"操作",
   month:"月",
   apply:'申请',
+  attention:'注意',
 
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
   failToCall:"调用失败",
   onlyOneType:"一次申请中，只能填写同类的申请",
+  wrongWfDef:"工作流定义存在错误",
   invalidInterval:"无效的时间段",
+  notInBusiTime:"不在差旅的时间段内",
   hasOverlap:"时间段有重叠",
   dateFmt:"YYYY/MM/DD HH:mm",
+  start:'开始时间',
+  end:'结束时间',
   
   sex:{
     M:"先生",
@@ -54,10 +59,8 @@ cn:{
     clockExp:"考勤异常",
     leave:"请假",
     ovt:"加班",
-    busi:"差旅",
+    worktime:"工时申报",
     ovOrLv:'请假或加班',
-    start:'开始时间',
-    end:'结束时间',
     
     aplType:{
       OTW:'加班',
@@ -114,6 +117,37 @@ cn:{
       PRJ:'项目经历',
       OTH:'其他'
     }
+  },
+  busi:{
+    title:'差旅',
+    prj:'所属项目',
+    reason:'事由',
+    dest:'目的地',
+    subsidy:'补助',
+    expense:'报销',
+    invoice:'发票号',
+    overAt:'完成时间',
+    val:'金额(元)',
+    status:'审批状态',
+    states:{
+      INIT:'初始',
+      WAIT:'等待审核',
+      REJ:'被拒绝',
+      RUN:'进行中',
+      OVER:'结束'
+    },
+    cfmRmv:'确定删除该出差申请吗',
+    wfSegs:[
+      {t:'s',n:'prjName',s:'项目'},
+      {t:'s',n:'account',s:'申请人帐号'},
+      {t:'s',n:'dest',s:'目的地'},
+      {t:'s',n:'reason',s:'出差事由'},
+      {t:'n',n:'expense',s:'报销金额'},
+      {t:'n',n:'subsidy',s:'补助'},
+      {t:'dt',n:'start',s:'开始时间'}, 
+      {t:'dt',n:'end',s:'结束时间'},
+      {t:'s',n:'cmt',s:'说明'}
+    ]
   },
   my:{
     title:"我的",
@@ -206,6 +240,16 @@ cn:{
     account:"帐号"
   },
 
+  sta2icon:function(s){
+    if(s==0) {
+      return 'star_border';
+    }
+    if(s==100) {
+      return 'star';
+    }
+    return 'star_half';
+  },
+  
   errMsgs:{
     6001:"无效的开始结束时间段",
     6002:"必须按整小时请假",

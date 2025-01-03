@@ -1,4 +1,11 @@
 //一边输入地址，一边过滤地址的组件
+function addrToStr(v) {
+    var s=v.province;
+    if(v.city)s+='/'+v.city;
+    if(v.county)s+='/'+v.county;
+    return s;
+}
+export {addrToStr};
 export default {
 data() {return {
     addrOpts:[],
@@ -9,6 +16,16 @@ props: {
     label:{type:String,required:false,default:''}
 },
 emits: ['update:modelValue'],
+created(){
+    if(typeof(this.modelValue)==='string') {
+        var ss=this.modelValue.split(/[\/,-,., ]+/);
+        var a={};
+        if(ss.length>0)a.province=ss[0];
+        if(ss.length>1)a.city=ss[1];
+        if(ss.length>2)a.county=ss[2];
+        this.$emit('update:modelValue', a);
+    }
+},
 methods:{
 search_addrs(val,update) {
   if(val==='') {
@@ -47,14 +64,14 @@ value: {
     if(!m.province) {
         return null;
     }
-    return m.province+' '+m.city+' '+m.county;
+    return addrToStr(m);
   },
   set(v) {
     if(!v) {
         this.$emit('update:modelValue', {province:'',city:'',county:'',code:''});
     } else {
         var a=this.addrs[v];
-        var ss=a.fName.split(' ');
+        var ss=a.fName.split(/[\/,-,., ]+/);
         var addr={code:a.code,province:'',city:'',county:''}
         if(ss.length>0) {
             addr['province']=ss[0];

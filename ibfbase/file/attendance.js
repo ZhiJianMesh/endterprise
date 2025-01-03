@@ -13,37 +13,34 @@ components:{
 },
 data() {return {
     tags:this.ibf.tags,
-    tab:'atd',
+    tab:'atd', //exp(考勤异常),atd(加班请假),wt(worktime工时申报)
     atds:[], //请假或加班申请记录
-    busis:[], //差旅记录
     excs:[], //考勤异常记录
     atdPg:{max:0,cur:1},
-    busiPg:{max:0,cur:1},
     newTime:{},
     atdAct:{dlg:false,dta:{},tms:[],no:-1,editable:true},
-    busiAct:{dlg:false,dta:{},tms:[],no:-1},
-    opts:{tmTypes:[]}
+    tmTypes:[]
 }},
 created(){
     this.query_atds();
-    this.opts.tmTypes.push({value:'OTW',label:this.tags.atd.ovt});
+    this.tmTypes.push({value:'OTW',label:this.tags.atd.ovt});
     for(var i of ['BUSI','AFFA','SICK','WEAL','HOLI']) {
-        this.opts.tmTypes.push({value:i,label:this.tags.atd.aplTmType[i]});
+        this.tmTypes.push({value:i,label:this.tags.atd.aplTmType[i]});
     }
 },
 methods:{
 tab_changed(tab) {
-    if(tab=='ovOrLv') {
-        if(this.atds.length==0) {
-            this.query_atds(1);
-        }
-    } else if(tab=='busi') {
-        if(this.busis.length==0) {
-            this.query_busis(1);
-        }
-    } else {
+    if(tab=='exp') {
         if(this.excs.length==0) {
             this.query_excs();
+        }
+    } else if(tab=='wt') {
+        if(this.excs.length==0) {
+            this.query_excs();
+        }
+    } else {
+        if(this.atds.length==0) {
+            this.query_atds(1);
         }
     }
 },
@@ -63,29 +60,6 @@ query_excs() {
             e.end_s=datetime2str(dt);
             return e;
         });
-    })
-},
-query_busis(pg) {
-    var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
-    var url="/business/my?offset="+offset+"&num="+this.ibf.N_PAGE;
-    request({method:"GET", url:url}, this.ibf.SERVICE_BUSINESS).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            return;
-        }
-        //pid,state,prjName,start,end,cfmAcc,cfmAt,cmt
-        var dt=new Date();
-        this.exps=resp.data.list.map(b=>{
-            if(b.cfmAt>0) {
-                dt.setTime(b.cfmAt);
-                b.cfmAt=date2str(dt);
-            }
-            dt.setTime(b.start*60000);
-            b.start_s=datetime2str(dt);
-            dt.setTime(b.end*60000);
-            b.end_s=datetime2str(dt);
-            return b;
-        });
-        this.busiPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     })
 },
 query_atds(pg) {
@@ -136,15 +110,14 @@ get_apply_dtl(aid,no) {
 },
 show_add() {
     if(this.tab=='atd') {
-        copyObjTo(EMPTY_TM, this.newTime);
         this.show_atd(-1);
-    } else if(this.tab=='busi') {
-        this.show_busi(-1);
+    } else {
+        this.show_wt(-1);
     }
 },
 show_atd(no) {
+    copyObjTo(EMPTY_TM, this.newTime);
     if(no>-1) {
-        copyObjTo(EMPTY_TM, this.newTime);
         this.get_apply_dtl(this.atds[no].id,no);
     } else {
         this.atdAct.no=-1;
@@ -245,6 +218,9 @@ hasOverlap(intervals) {
         }
     }
     return false;
+},
+show_wt(no) {
+    
 }
 },
 template:`
@@ -253,16 +229,16 @@ template:`
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.atd.title}}</q-toolbar-title>
-     <q-btn flat icon="add_circle" dense @click="show_add" v-show="tab!='exps'"></q-btn>
+     <q-btn flat icon="add_circle" dense @click="show_add()" v-show="tab!='exp'"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer>
    <q-tabs v-model="tab" @update:model-value="tab_changed"
    dense align="justify" switch-indicator inline-label
    class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
-    <q-tab name="atd" icon="work_history" :label="tags.atd.ovOrLv"></q-tab>
-    <q-tab name="busi" icon="flight_takeoff" :label="tags.atd.busi"></q-tab>
-    <q-tab name="exps" icon="running_with_errors" :label="tags.atd.clockExp"></q-tab>
+    <q-tab name="atd" icon="pending_actions" :label="tags.atd.ovOrLv"></q-tab>
+    <q-tab name="wt" icon="work_history" :label="tags.atd.worktime"></q-tab>
+    <q-tab name="exp" icon="running_with_errors" :label="tags.atd.clockExp"></q-tab>
    </q-tabs>
   </q-footer>
   <q-page-container>
@@ -283,28 +259,26 @@ template:`
 </div>
 </q-tab-panel>
 
-<q-tab-panel name="busi">
-<q-list>
-  <q-item v-for="b in busis">
-    <q-item-section side>
-     <q-item-label>{{b.start_s}}-{{b.end_s}}</q-item-label>
-     <q-item-label caption>{{b.cmt}}</q-item-label>
-    </q-item-section>
-    <q-item-section>{{b.prjName}}</q-item-section>
-    <q-item-section>{{b.state_s}}</q-item-section>
-    <q-item-section side>
-     <q-item-label>{{b.cfmAt}}</q-item-label>
-     <q-item-label>{{b.opinion}}</q-item-label>
-    </q-item-section>
+<q-tab-panel name="wt" class="q-pa-none q-ma-none">
+<q-list dense>
+  <q-item v-for="e in exps">
+   <q-item-section side>
+    <q-item-label>{{e.day_s}}</q-item-label>
+    <q-item-label>{{e.start_s}}-{{e.end_s}}</q-item-label>
+   </q-item-section>
+   <q-item-section side>
+    <q-item-label>{{e.descr}}</q-item-label>
+    <q-item-label>{{e.cfmAcc}}</q-item-label>
+   </q-item-section>
   </q-item>
 </q-list>
-<div class="q-pa-sm flex flex-center" v-show="busiPg.max>1">
- <q-pagination v-model="busiPg.cur" color="primary" :max="busiPg.max" max-pages="10"
-  boundary-numbers="false" @update:model-value="query_busis"></q-pagination>
-</div>
 </q-tab-panel>
+</q-tab-panels>
+    </q-page>
+  </q-page-container>
+</q-layout>
 
-<q-tab-panel name="exps" class="q-pa-none q-ma-none">
+<q-tab-panel name="exp" class="q-pa-none q-ma-none">
 <q-list dense>
   <q-item v-for="e in exps">
    <q-item-section side>
@@ -326,7 +300,7 @@ template:`
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="alertDlg"></alert-dialog>
 
-<q-dialog v-model="atdAct.dlg">
+<q-dialog v-model="atdAct.dlg" persistent no-shake>
  <q-card style="min-width:70vw">
   <q-card-section>
    <div class="text-h6">{{tags.apply}}</div>
@@ -352,20 +326,20 @@ template:`
    </div>
    <div class="row">
     <div class="col">
-     <datetime-input v-model="newTime.start" :label="tags.atd.start"
+     <datetime-input v-model="newTime.start" :label="tags.start"
       :format="tags.dateFmt" :showMinute="false"></datetime-input>
     </div>
     <div class="col-2 self-center text-center">
      <q-icon name="arrow_right_alt" size="2em"></q-icon>
     </div>
     <div class="col">
-     <datetime-input v-model="newTime.end" :label="tags.atd.end"
+     <datetime-input v-model="newTime.end" :label="tags.end"
      :format="tags.dateFmt" :showMinute="false"></datetime-input>
     </div>
    </div>
    <div class="row">
     <div class="col-3 self-end q-pr-md">
-     <q-select v-model="newTime.type" :options="opts.tmTypes"
+     <q-select v-model="newTime.type" :options="tmTypes"
       dense map-options emit-value dense></q-select>
     </div>
     <div class="col">

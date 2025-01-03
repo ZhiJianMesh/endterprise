@@ -41,7 +41,6 @@ props: {
     min:{type:String,default:''},
     max:{type:String,default:''},
     format:{type:String, default:"YYYY/MM/DD HH:mm"},
-    showMinute:{type:Boolean, default:false},
     weekDays:{type:Array, default:["日","一","二","三","四","五","六"]},
     months:{type:Array, default:["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"]},
     cancel:{type:String, default:'取消'},
@@ -92,7 +91,7 @@ parse(s) {
         var v = parseInt(cfg.substring(1));
         dt.setTime(dt.getTime()+v*3600000);
     } else if(cfg!='cur') {
-        dt = Date.parse(cfg);
+        dt.setTime(Date.parse(cfg));
     }
     return dt;
 },

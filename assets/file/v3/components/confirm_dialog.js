@@ -14,11 +14,23 @@ methods:{
 show(msg,callback) {
     this.message=msg;
     this.cfmDlg=true;
-    this.cb=callback;
+    this.cb=callback; //promise or function
 },
 confirm(){
-    if(this.cb&&typeof(this.cb)=='function'){
-        this.cb();
+    if(this.cb){
+        if(this.cb instanceof Function) {
+            this.cb();
+        } else if(this.cb instanceof Promise){
+            this.cb.resolve(true);
+        }
+    }
+    this.cfmDlg=false;
+},
+cancel() {
+    if(this.cb){
+        if(this.cb instanceof Promise){
+            this.cb.resolve(false);
+        }
     }
     this.cfmDlg=false;
 }
@@ -30,7 +42,7 @@ template: `
     <q-card-section class="q-pt-none">{{message}}</q-card-section>
     <q-card-actions align="right" class="q-pr-md">
      <q-btn :label="ok" color="primary" @click="confirm"></q-btn>
-     <q-btn flat :label="close" color="primary" v-close-popup></q-btn>
+     <q-btn flat :label="close" color="primary" @click='cancel'></q-btn>
     </q-card-actions>
   </q-card>
 </q-dialog>
