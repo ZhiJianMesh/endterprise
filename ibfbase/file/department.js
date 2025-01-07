@@ -9,20 +9,19 @@ components:{
 },
 data() {return {
     tags:this.ibf.tags,
-    tab:'exps',
+    tab:'applies',
     gid:0,
     gname:'',
     exps:[], //考勤异常列表申请
     perfs:[], //绩效查询
-    applies:[], //加班请假申请
-    business:[], //差旅申请
+    applies:[], //加班、请假、工作日在途、工时申报
     levels:[], //绩效等级
     grpOpts:[],
     month:{v:0,cur:0,e:false/*绩效中是否有可修改的行*/},
     perfDlg:{obj:{},no:-2,show:false},//待编辑绩效
     expPg:{max:0,cur:1},
     perfPg:{max:0,cur:1},
-    appPg:{max:0,cur:1}
+    aplPg:{max:0,cur:1}
 }},
 created(){
     var dt=new Date();
@@ -56,7 +55,7 @@ tab_changed(tab) {
         }
     } else if(tab=='applies') {
         if(this.applies.length==0) {
-            this.query_applies(this.mbrPg.cur);
+            this.query_applies(this.aplPg.cur);
         }
     } else {
         if(this.perfs.length==0) {
@@ -66,7 +65,7 @@ tab_changed(tab) {
 },
 query_applies(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
-    var url="/attendance/waitApplies?offset="+offset+'&num='+this.ibf.N_PAGE+"&gid="+this.gid;
+    var url="/apply/waitApplies?offset="+offset+'&num='+this.ibf.N_PAGE+"&gid="+this.gid;
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -79,7 +78,7 @@ query_applies(pg) {
             a.type=this.tags.atd.aplType[a.type];
             return a;
         });
-        this.appPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
+        this.aplPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     })
 },
 query_exps(pg) {
@@ -229,17 +228,31 @@ template:`
    <q-tabs v-model="tab" @update:model-value="tab_changed"
    dense align="justify" switch-indicator inline-label
     class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
+    <q-tab name="applies" icon="pending_actions" :label="tags.grp.atd"></q-tab>
     <q-tab name="exps" icon="running_with_errors" :label="tags.grp.clockExp"></q-tab>
-    <q-tab name="attendance" icon="work_history" :label="tags.grp.ovOrLv"></q-tab>
     <q-tab name="perfs" icon="abc" :label="tags.grp.perf"></q-tab>
    </q-tabs>
   </q-footer>
   <q-page-container>
-    <q-page class="q-pa-sm">
-<q-tab-panels v-model="tab" class="q-pa-none q-ma-none">
-<q-tab-panel name="ovOrLv">
+    <q-page class="q-pa-none">
+<q-tab-panels v-model="tab">
+<q-tab-panel name="applies">
 <q-list>
   <q-item v-for="a in applies">
+    <q-item-section>{{a.account}}</q-item-section>
+    <q-item-section>{{a.type}}</q-item-section>
+    <q-item-section>{{a.at}}</q-item-section>
+  </q-item>
+</q-list>
+<div class="q-pa-sm flex flex-center" v-show="aplPg.max>1">
+ <q-pagination v-model="aplPg.cur" color="primary" :max="aplPg.max" max-pages="10"
+  boundary-numbers="false" @update:model-value="query_applies"></q-pagination>
+</div>
+</q-tab-panel>
+
+<q-tab-panel name="busi">
+<q-list>
+  <q-item v-for="b in business">
     <q-item-section>{{a.account}}</q-item-section>
     <q-item-section>{{a.type}}</q-item-section>
     <q-item-section>{{a.at}}</q-item-section>
@@ -251,8 +264,8 @@ template:`
 </div>
 </q-tab-panel>
 
-<q-tab-panel name="exps" class="q-pa-none q-ma-none">
-<q-list dense>
+<q-tab-panel name="exps">
+<q-list>
   <q-item v-for="e in exps">
    <q-item-section>{{e.account}}</q-item-section>
    <q-item-section>{{e.date}}</q-item-section>
@@ -265,8 +278,8 @@ template:`
 </q-list>
 </q-tab-panel>
 
-<q-tab-panel name="perfs" class="q-pa-none q-ma-none">
-<div class="row justify-start bg-grey-3 text-primary">
+<q-tab-panel name="perfs" class="q-pa-none">
+<div class="row justify-start bg-grey-3 text-primary q-pa-none">
   <div class="col-5 self-center">
    <month-input class="text-subtitle1 q-pl-sm"
     @update:modelValue="set_month" min="-3" max="cur"></month-input>

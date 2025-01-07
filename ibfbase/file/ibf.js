@@ -174,12 +174,6 @@ template:`
  </div>
  <div class="col self-center text-right">
   <div class="q-gutter-lg">
-   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/my')">
-    <div class="text-center">
-     <q-icon name="sensor_occupied"></q-icon><br>
-     {{tags.my.title}}
-    </div>
-   </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/attendance')">
     <div class="text-center">
      <q-icon name="work_history"></q-icon><br>
@@ -198,6 +192,12 @@ template:`
      {{tags.grp.contacts}}
     </div>
    </q-btn>
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/my')">
+    <div class="text-center">
+     <q-icon name="sensor_occupied"></q-icon><br>
+     {{tags.my.title}}
+    </div>
+   </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/department')" v-if="isAdmin">
     <div class="text-center">
      <q-icon name="group"></q-icon><br>
@@ -209,8 +209,8 @@ template:`
 </div>
 <q-separator spaced="md"></q-separator>
 <q-list dense separator>
-  <q-item v-for="p in prjs">
-   <q-item-section @click="ibf.goto('/ibf/project?id='+p.id)">
+  <q-item v-for="p in prjs" clickable @click="ibf.goto('/ibf/project?id='+p.id)">
+   <q-item-section>
     <q-item-label>{{p.name}}</q-item-label>
     <q-item-label caption>{{p.role}}</q-item-label>
    </q-item-section>

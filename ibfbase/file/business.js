@@ -81,7 +81,7 @@ template:`
    </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-sm">
+    <q-page class="q-pa-md">
 <q-list separator>
   <q-item v-for="b in busis" clickable @click="ibf.goto('/ibf/busidtl?id='+b.id)">
     <q-item-section>

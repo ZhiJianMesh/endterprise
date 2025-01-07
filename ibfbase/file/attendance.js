@@ -1,24 +1,29 @@
-import AlertDialog from "/assets/v3/components/alert_dialog.js"
-import DatetimeInput from "/assets/v3/components/datetime_input.js"
+import AlertDialog from "/assets/v3/components/alert_dialog.js";
+import DatetimeInput from "/assets/v3/components/datetime_input.js";
+import PrjInput from "./components/prj_selector.js";
 import {datetimeToStr, datetimeToDate} from '/assets/v3/components/datetime_input.js';
 const HOLIDIES=['AFFA','SICK','WEAL','HOLI'];
 const OTWS=['WOW','OOW','FOW','OTW'];
 const EMPTY_TM={type:'OTW',start:'',end:'',cmt:''};
+const EMPTY_WT={prj:{},ratio:'',cmt:'',editable:true};
 
 export default {
 inject:["ibf"],
 components:{
     "alert-dialog" : AlertDialog,
-    "datetime-input":DatetimeInput
+    "datetime-input":DatetimeInput,
+    "prj-input":PrjInput
 },
 data() {return {
     tags:this.ibf.tags,
     tab:'atd', //exp(考勤异常),atd(加班请假),wt(worktime工时申报)
     atds:[], //请假或加班申请记录
     excs:[], //考勤异常记录
+    wts:[], //工时申报
     atdPg:{max:0,cur:1},
-    newTime:{},
-    atdAct:{dlg:false,dta:{},tms:[],no:-1,editable:true},
+    wtPg:{max:0,cur:1},
+    atdAct:{dlg:false,dta:{},tms:[],tm:{},no:-1,editable:true},
+    wtAct:{dlg:false,dta:{},no:-1,items:[],wt:{}, month:''},
     tmTypes:[]
 }},
 created(){
@@ -35,8 +40,11 @@ tab_changed(tab) {
             this.query_excs();
         }
     } else if(tab=='wt') {
-        if(this.excs.length==0) {
-            this.query_excs();
+        if(this.wts.length==0) {
+            var mon;
+            if(this.wtAct.month) mon=this.wtAct.month.num;
+            else {var dt=new Date();mon=dt.getFullYear()*12+dt.getMonth();}
+            this.query_wts({num:mon});
         }
     } else {
         if(this.atds.length==0) {
@@ -62,9 +70,27 @@ query_excs() {
         });
     })
 },
+query_wts() {
+    var url="/apply/myTasktimeApplies";
+    request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.wts=[];
+            return;
+        }
+        //id,type,state,cfmAcc,opinion,at
+        var dt=new Date();
+        this.wts=resp.data.list.map(a=>{
+            a.state_s=this.tags.atd.aplSta[a.state];
+            a.editable=a.state!='OK';
+            dt.setTime(a.at);
+            a.at=datetime2str(dt,true);
+            return a;
+        });
+    })    
+},
 query_atds(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
-    var url="/attendance/myApplies?offset="+offset+'&num='+this.ibf.N_PAGE;
+    var url="/apply/myAtdApplies?offset="+offset+'&num='+this.ibf.N_PAGE;
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.atds=[];
@@ -74,7 +100,8 @@ query_atds(pg) {
         //id,uid,type,state,opinion,at
         this.atds=resp.data.list.map(a=>{
             a.type_s=this.tags.atd.aplType[a.type];
-            a.state_s=this.tags.atd.appSta[a.state];
+            a.state_s=this.tags.atd.aplSta[a.state];
+            a.editable=a.state!='OK';
             dt.setTime(a.at);
             a.at=datetime2str(dt,true);
             return a;
@@ -82,7 +109,7 @@ query_atds(pg) {
         this.atdPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     })
 },
-get_apply_dtl(aid,no) {
+get_atd_dtl(aid,no) {
     var url="/attendance/getApply?id="+aid;
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
@@ -99,11 +126,12 @@ get_apply_dtl(aid,no) {
             a.start_s=datetime2str(dt);
             dt.setTime(a.end*60000);
             a.end_s=datetime2str(dt);
+            a.state_s=this.tags.atd.aplSta[a.state];
             return a;
         });
         this.atdAct.dta=resp.data;
         this.atdAct.dta.id=aid;
-        this.atdAct.editable=this.atdAct.no<0||this.atdAct.dta.state!='OK';
+        this.atdAct.editable=this.atdAct.dta.state!='OK';
         this.atdAct.no=no;
         this.atdAct.dlg=true;
     });
@@ -116,9 +144,9 @@ show_add() {
     }
 },
 show_atd(no) {
-    copyObjTo(EMPTY_TM, this.newTime);
+    copyObjTo(EMPTY_TM, this.atdAct.tm);
     if(no>-1) {
-        this.get_apply_dtl(this.atds[no].id,no);
+        this.get_atd_dtl(this.atds[no].id,no);
     } else {
         this.atdAct.no=-1;
         this.atdAct.tms=[];
@@ -127,8 +155,8 @@ show_atd(no) {
     }
 },
 add_atd_tm() {
-    var tm=copyObj(this.newTime,['type','cmt']);
-    var dt=datetimeToDate(this.newTime.start);
+    var tm=copyObj(this.atdAct.tm, ['type','cmt']);
+    var dt=datetimeToDate(this.atdAct.tm.start);
     if(tm.type=='OTW') {
         tm.type_s=this.tags.atd.ovt;
     } else {
@@ -151,10 +179,10 @@ add_atd_tm() {
         }
     }
     tm.start=parseInt(dt.getTime()/60000);
-    tm.start_s=datetimeToStr(this.newTime.start,this.tags.dateFmt);
-    dt=datetimeToDate(this.newTime.end);
+    tm.start_s=datetimeToStr(this.atdAct.tm.start,this.tags.dateFmt);
+    dt=datetimeToDate(this.atdAct.tm.end);
     tm.end=parseInt(dt.getTime()/60000);
-    tm.end_s=datetimeToStr(this.newTime.end,this.tags.dateFmt);
+    tm.end_s=datetimeToStr(this.atdAct.tm.end,this.tags.dateFmt);
     if(tm.start>=tm.end) {
         this.$refs.alertDlg.show(this.tags.invalidInterval);
         return;
@@ -163,6 +191,8 @@ add_atd_tm() {
     if(this.hasOverlap(this.atdAct.tms)) {
         this.atdAct.tms.pop();
         this.$refs.alertDlg.show(this.tags.hasOverlap);
+    } else {
+        copyObjTo(EMPTY_TM, this.atdAct.tm);
     }
 },
 rmv_atd_tm(i) {
@@ -219,8 +249,112 @@ hasOverlap(intervals) {
     }
     return false;
 },
+get_wt_dtl(aid,no) {
+    var url="/tasktime/getApply?id="+aid;
+    request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.wtAct.items=[];
+            this.wtAct.dta={};
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return
+        }
+        //month,ratio,state,pid,prjName,cfmAcc,cmt
+        if(resp.data.items.length>0) {
+            var mon=resp.data.items[0].month;
+            this.wtAct.month=parseInt(mon/12) + '/';
+            mon %= 12;
+            mon++;
+            this.wtAct.month += mon<10?('0'+mon):mon;
+            this.wtAct.items=resp.data.items.map(a=>{
+                a.editable=a.state!='OK';
+                a.state_s=a.state_s=this.tags.atd.aplSta[a.state];
+                return a;
+            })
+        } else {
+            this.wtAct.items=[];
+        }
+        this.wtAct.dta=resp.data;//uid,account,type,state
+        this.wtAct.dta.id=aid;
+        this.wtAct.editable=this.wtAct.dta.state!='OK';
+        this.wtAct.no=no;
+        this.wtAct.dlg=true;
+    });
+},
 show_wt(no) {
+    copyObjTo(EMPTY_WT, this.wtAct.wt);
+    if(no>-1) {
+        this.get_wt_dtl(this.wts[no].id,no);
+    } else {
+        this.wtAct.no=-1;
+        this.wtAct.items=[];
+        this.wtAct.dlg=true;
+        this.wtAct.editable=true;
+        var dt=new Date();
+        var mon=dt.getMonth()+1;
+        this.wtAct.month=dt.getFullYear() + '/'+ (mon<10?('0'+mon):mon);
+    }
+},
+add_wt_item() {
+    if(!this.wtAct.wt.prj.id) {
+        this.$refs.alertDlg.show(this.tags.plsInputPrj);
+        return;
+    }
+    if(this.wtAct.wt.ratio<=0||this.wtAct.wt.ratio>100) {
+        this.$refs.alertDlg.show(this.tags.invalidRatio);
+        return;
+    }
+    var wt=copyObj(this.wtAct.wt, ['ratio','cmt']);
+    wt.pid=this.wtAct.wt.prj.id;
+    wt.prjName=this.wtAct.wt.prj.name;
+    wt.editable=true;
+    this.wtAct.items.push(wt);
+    copyObjTo(EMPTY_WT, this.wtAct.wt);
+},
+rmv_wt_item(i) {
+    this.wtAct.items.splice(i,1);
+},
+wt_declare() { //工时申报
+    if(this.wtAct.items.length==0) {
+        return;
+    }
+    var total=0;
+    for(var item of this.wtAct.items) {
+        total+=item.ratio;
+    }
+    if(total != 100) {
+        this.$refs.alertDlg.show(this.tags.invalidRatio);
+        return;        
+    }
     
+    //[{pid,prjName,ratio,cmt},...]
+    var dt=new Date();
+    var dta={list:this.wtAct.items, month:dt.getFullYear()*12 + dt.getMonth()};
+    if(this.wtAct.no>-1) { //修改
+        dta.id=this.wtAct.dta.id;
+    }
+    var opts={method:"POST", url:"/tasktime/declare", data:dta}
+    request(opts, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.wtAct.dlg=false;
+        this.wtAct.no=-1;
+        this.query_wts(this.wtAct.cur);
+    });
+},
+remove_wt() {
+    if(this.wtAct.no<0) return;
+    var opts={method:"DELETE",url:"/tasktime/cancel?id="+this.wtAct.dta.id};
+    request(opts, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.wtAct.dlg=false;
+        this.wtAct.no=-1;
+        this.query_wts(this.wtAct.cur);
+    });
 }
 },
 template:`
@@ -247,10 +381,15 @@ template:`
 <q-tab-panel name="atd">
 <q-list>
   <q-item v-for="(a,i) in atds" clickable @click="show_atd(i)">
-    <q-item-section side>{{a.type_s}}</q-item-section>
-    <q-item-section>{{a.state_s}}</q-item-section>
-    <q-item-section>{{a.opinion}}</q-item-section>
-    <q-item-section side>{{a.at}}</q-item-section>
+    <q-item-section side>
+     <q-item-label>{{a.type_s}}</q-item-label>
+     <q-item-label caption>{{a.at}}</q-item-label>
+    </q-item-section>
+    <q-item-section>
+     <q-item-label>{{a.opinion}}</q-item-label>
+     <q-item-label caption>{{a.cfmAcc}}</q-item-label>
+    </q-item-section>
+    <q-item-section side>{{a.state_s}}</q-item-section>
   </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-show="atdPg.max>1">
@@ -259,27 +398,31 @@ template:`
 </div>
 </q-tab-panel>
 
-<q-tab-panel name="wt" class="q-pa-none q-ma-none">
-<q-list dense>
-  <q-item v-for="e in exps">
-   <q-item-section side>
-    <q-item-label>{{e.day_s}}</q-item-label>
-    <q-item-label>{{e.start_s}}-{{e.end_s}}</q-item-label>
+<q-tab-panel name="wt">
+<q-list>
+ <q-item v-for="(w,i) in wts" clickable @click="show_wt(i)">
+   <q-item-section>
+    <q-item-label>{{w.state_s}}</q-item-label>
+    <q-item-label caption>{{w.at}}</q-item-label>
    </q-item-section>
-   <q-item-section side>
-    <q-item-label>{{e.descr}}</q-item-label>
-    <q-item-label>{{e.cfmAcc}}</q-item-label>
+   <q-item-section>
+    <q-item-label>{{w.opinion}}</q-item-label>
+    <q-item-label caption>{{w.cfmAcc}}</q-item-label>
    </q-item-section>
-  </q-item>
+ </q-item>
 </q-list>
+<div class="q-pa-sm flex flex-center" v-show="wtPg.max>1">
+ <q-pagination v-model="wtPg.cur" color="primary" :max="wtPg.max" max-pages="10"
+  boundary-numbers="false" @update:model-value="query_wts"></q-pagination>
+</div>
 </q-tab-panel>
 </q-tab-panels>
     </q-page>
   </q-page-container>
 </q-layout>
 
-<q-tab-panel name="exp" class="q-pa-none q-ma-none">
-<q-list dense>
+<q-tab-panel name="exp">
+<q-list>
   <q-item v-for="e in exps">
    <q-item-section side>
     <q-item-label>{{e.day_s}}</q-item-label>
@@ -303,21 +446,22 @@ template:`
 <q-dialog v-model="atdAct.dlg" persistent no-shake>
  <q-card style="min-width:70vw">
   <q-card-section>
-   <div class="text-h6">{{tags.apply}}</div>
+   <div class="text-h6">{{tags.apply}} {{tags.atd.ovOrLv}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   <q-list>
+  <q-list>
     <q-item clickable v-for="(t,i) in atdAct.tms">
      <q-item-section>
       <q-item-label>{{t.type_s}}
-       <q-icon color="red" name="clear" @click="rmv_atd_tm(i)" class="q-pl-lg"><q-icon>
+       <q-icon color="red" name="clear" @click="rmv_atd_tm(i)" class="q-pl-md" v-if="atdAct.editable"><q-icon>
       </q-item-label>
       <q-item-label caption>{{t.start_s}}</q-item-label>
       <q-item-label caption>{{t.end_s}}</q-item-label>
      </q-item-section>
      <q-item-section side>{{t.cmt}}<q-item-section>
     </q-item>
-   </q-list>
+  </q-list>
+  <div v-if="atdAct.editable">
    <div class="row">
     <div class="col self-center"><q-separator></q-separator></div>
     <div class="col-1 text-right">
@@ -326,32 +470,78 @@ template:`
    </div>
    <div class="row">
     <div class="col">
-     <datetime-input v-model="newTime.start" :label="tags.start"
+     <datetime-input v-model="atdAct.tm.start" :label="tags.start"
       :format="tags.dateFmt" :showMinute="false"></datetime-input>
     </div>
     <div class="col-2 self-center text-center">
      <q-icon name="arrow_right_alt" size="2em"></q-icon>
     </div>
     <div class="col">
-     <datetime-input v-model="newTime.end" :label="tags.end"
+     <datetime-input v-model="atdAct.tm.end" :label="tags.end"
      :format="tags.dateFmt" :showMinute="false"></datetime-input>
     </div>
    </div>
    <div class="row">
     <div class="col-3 self-end q-pr-md">
-     <q-select v-model="newTime.type" :options="tmTypes"
+     <q-select v-model="atdAct.tm.type" :options="tmTypes"
       dense map-options emit-value dense></q-select>
     </div>
     <div class="col">
-     <q-input v-model="newTime.cmt" :label="tags.cmt"></q-input>
+     <q-input v-model="atdAct.tm.cmt" :label="tags.cmt"></q-input>
     </div>
    </div>
+  </div>
   </q-card-section>
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     <q-btn flat :label="tags.remove" color="red" @click="remove_atd"
-    v-if="atdAct.no>-1&&atdAct.dta.state!='OK'"></q-btn>
-    <q-btn :label="tags.ok" color="primary" @click="atd_do"></q-btn>
+     v-if="atdAct.editable&&atdAct.no>-1"></q-btn>
+    <q-btn :label="tags.ok" color="primary" @click="atd_do" v-if="atdAct.editable"></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="wtAct.dlg" persistent no-shake>
+ <q-card style="min-width:70vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.add}} {{tags.atd.worktime}} - {{wtAct.month}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+  <q-list>
+   <q-item clickable v-for="(t,i) in wtAct.items">
+     <q-item-section>
+      <q-item-label>{{t.prjName}}
+       <q-icon color="red" name="clear" @click="rmv_wt_item(i)" class="q-pl-md" v-if="t.editable"><q-icon>
+      </q-item-label>
+      <q-item-label caption>{{t.ratio}}%</q-item-label>
+     </q-item-section>
+     <q-item-section>
+      <q-item-label>{{t.state_s}}</q-item-label>
+      <q-item-label caption>{{t.cmt}}</q-item-label>
+     <q-item-section>
+   </q-item>
+  </q-list>
+  <div v-if="wtAct.editable">
+   <div class="row">
+    <div class="col self-center"><q-separator></q-separator></div>
+    <div class="col-1 text-right">
+     <q-icon name="add_circle" color="orange" size="1.5em" @click="add_wt_item"></q-icon>
+    </div>
+   </div>
+   <prj-input v-model="wtAct.wt.prj" :label="tags.atd.prj"></prj-input>
+   <q-input v-model.number="wtAct.wt.ratio" :label="tags.atd.ratio">
+    <template v-slot:append>
+     <q-icon name="percent" color="primary"></q-icon>
+    </template>
+   </q-input>
+   <q-input v-model="wtAct.wt.cmt" :label="tags.cmt" type="textarea" rows="2"></q-input>
+  </div>
+  </q-card-section>
+  <q-card-actions align="right">
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-btn flat :label="tags.remove" color="red" @click="remove_wt"
+     v-if="wtAct.editable&&wtAct.no>-1"></q-btn>
+    <q-btn :label="tags.ok" color="primary" @click="wt_declare" v-if="wtAct.editable"></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>

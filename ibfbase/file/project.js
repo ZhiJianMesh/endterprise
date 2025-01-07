@@ -377,7 +377,7 @@ template:`
    </q-tabs>
   </q-footer>
   <q-page-container>
-    <q-page class="q-pa-sm">
+    <q-page class="q-pa-none">
 <q-tab-panels v-model="tab">
 
 <q-tab-panel name="plan">

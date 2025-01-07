@@ -39,6 +39,8 @@ cn:{
   onlyOneType:"一次申请中，只能填写同类的申请",
   wrongWfDef:"工作流定义存在错误",
   invalidInterval:"无效的时间段",
+  invalidRatio:"请输入正确的分摊比率",
+  plsInputPrj:'请选择项目',
   notInBusiTime:"不在差旅的时间段内",
   hasOverlap:"时间段有重叠",
   dateFmt:"YYYY/MM/DD HH:mm",
@@ -61,11 +63,14 @@ cn:{
     ovt:"加班",
     worktime:"工时申报",
     ovOrLv:'请假或加班',
+    ratio:'分摊比率',
+    prj:'项目',
     
     aplType:{
       OTW:'加班',
       LEAV:'请假',
-      BUSI:'工作日在途'
+      BUSI:'工作日在途',
+      TASK:'工时申报'
     },
     aplTmType:{ //时段的类型
       //WORK:'正常上下班',
@@ -78,15 +83,14 @@ cn:{
       WEAL:'福利假',
       HOLI:'年休假'
     },
-    appSta:{
-      OK:'通过',
+    aplSta:{
+      INIT:"初始",
       WAIT:'待确认',
+      OK:'通过',
       REJ:'拒绝'
     }
   },
-  wt:{
-    title:"工时申报"
-  },
+
   hr:{
     cfmed:'已确认',
     notCfm:'未确认',
@@ -222,7 +226,7 @@ cn:{
     department:'部门',
     member:'成员',
     contacts:'通讯录',
-    ovOrLv:'加班请假申请',
+    atd:'考勤申请',
     role:{
         ADM:"经理",
         HR:"人事",
@@ -232,7 +236,7 @@ cn:{
     },
     type:{D:"部门",V:"群组"},
     struct:"组织结构",
-    clockExp:"考勤异常申请",
+    clockExp:"考勤异常确认",
     perf:"绩效管理",
     perfCmt:"绩效说明",
     mbrTitle:"职位",
@@ -251,6 +255,7 @@ cn:{
   },
   
   errMsgs:{
+    4100:'工时未完全申报',
     6001:"无效的开始结束时间段",
     6002:"必须按整小时请假",
     6003:"年休假，必须按天请请假",
@@ -263,7 +268,8 @@ cn:{
     6010:"存在重复的申请",
     
     6101:"存在未完成的计划，不可结束项目",
-    6103:"超过最大忘刷卡次数"
+    6103:"超过最大忘刷卡次数",
+    6107:'无有效的工时记录'
   }
 }
 };

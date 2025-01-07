@@ -20,15 +20,14 @@ data() {return {
 }},
 created(){
     var dt=new Date();
-    this.query_salary({year:dt.getFullYear(),month:dt.getMonth()+1});
+    this.query_salary({num:dt.getFullYear()*12+dt.getMonth()});
     this.query_event(1);
     this.query_res(1);
     this.query_perf(1);
 },
 methods:{
 query_salary(ym) {
-    var mon=ym.year*12+ym.month-1;
-    request({method:"GET",url:"/salary/my?month="+mon}, this.ibf.SERVICE_HR).then(resp=>{
+    request({method:"GET",url:"/salary/my?month="+ym.num}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -130,13 +129,13 @@ template:`
    </q-tabs>
   </q-footer>
   <q-page-container>
-    <q-page class="q-pa-sm">
+    <q-page class="q-pa-none">
 <q-tab-panels v-model="tab">
 
 <q-tab-panel name="salary">
 <month-input class="justify-center text-primary" min="-5" max="cur"
 @update:modelValue="query_salary"></month-input>
-<q-list dense separator>
+<q-list separator>
  <q-item v-for="s in salaries"">
   <q-item-section>{{s.type}}</q-item-section>
   <q-item-section>{{s.val}}</q-item-section>
@@ -145,7 +144,7 @@ template:`
 </q-tab-panel>
 
 <q-tab-panel name="perf">
- <q-list dense separator>
+ <q-list separator>
   <q-item v-for="p in perfs">
    <q-item-section>{{p.month}}</q-item-section>
    <q-item-section>{{p.level}}-</q-item-section>
@@ -159,7 +158,7 @@ template:`
 </q-tab-panel>
 
 <q-tab-panel name="res">
- <q-list dense separator>
+ <q-list separator>
   <q-item v-for="r in res">
    <q-item-section>
     <q-item-label>{{r.no}}</q-item-label>
@@ -178,7 +177,7 @@ template:`
 </q-tab-panel>
 
 <q-tab-panel name="event">
- <q-list dense separator>
+ <q-list separator>
   <q-item v-for="e in events">
    <q-item-section>{{e.at}}</q-item-section>
    <q-item-section>{{e.type}}</q-item-section>

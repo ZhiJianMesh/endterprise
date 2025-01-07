@@ -186,7 +186,7 @@ set_day(d) {
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="service.back()"></q-btn>
      <q-toolbar-title>{{tags.cfg.calendar}}</q-toolbar-title>

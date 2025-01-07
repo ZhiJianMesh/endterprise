@@ -90,7 +90,7 @@ add_prj() {
 },
 template:`
 <q-layout view="HHH lpr FFF" container style="height:99.9vh">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.prj.title}}</q-toolbar-title>

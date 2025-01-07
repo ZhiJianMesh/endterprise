@@ -76,7 +76,7 @@ detail(id) {
 },
 template:`
 <q-layout view="hhh lpr fff" container style="height:99vh">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.employee.title}}</q-toolbar-title>
