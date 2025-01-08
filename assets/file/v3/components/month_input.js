@@ -25,12 +25,13 @@ created(){
     this.minMonth=m.y*12+m.m-1;
     var dt=new Date();
     m=this.parse(this.modelValue,{y:dt.getFullYear(),m:dt.getMonth()+1})
-    this.old={year:m.y, month:m.m};
     this.year=m.y;
     this.month=m.m;
     this.num=this.year*12+this.month-1;
     this.startYear=this.year-4;
+    this.old={year:m.y, month:m.m, num:m.y*12+m.m-1};
     this.set_array();
+    this.$emit('update:modelValue', this.old);
 },
 methods:{
 set_array() {
@@ -85,22 +86,29 @@ parse(s,def) {
     if(!s) {
         return def;
     }
+    if(s.y&&s.m) return s; //解析过
     var cfg=s.trim().toLowerCase();
     var dt=new Date();
-    var y=dt.getFullYear();
-    var m=dt.getMonth()+1;
     if(cfg=="cur") {
-        return {y:y,m:m};
+        return {y:dt.getFullYear(),m:(dt.getMonth()+1)};
     }
-    if(cfg.startsWith('-')) {
-        var v = parseInt(cfg.substring(1));
-        return {y:y-v, m:m};
+    if(cfg.startsWith('-')||cfg.startsWith('+')) {
+        var n=dt.getFullYear()*12+dt.getMonth();
+        var v=cfg.startsWith('-')?-1:1;
+        if(cfg.endsWith('m')) {
+            v*=parseInt(cfg.substring(1,cfg.length-1));
+        } else if(cfg.endsWith('y')) {
+            v*=12*parseInt(cfg.substring(1,cfg.length-1));
+        } else {
+            v*=12*parseInt(cfg.substring(1)); 
+        }
+        n+=v;
+        return {y:parseInt(n/12), m:(n%12+1)};
     }
-    if(cfg.startsWith('+')) {
-        var v = parseInt(cfg.substring(1));
-        return {y:y+v, m:m};
-    }
-    var ss=cfg.split(/[\/,-,.]+/)
+
+    var ss=cfg.split(/[\/,-,.]+/);
+    var y=dt.getFullYear();
+    var m=dt.getMonth();
     if(ss.length>0) y=parseInt(ss[0]);
     if(ss.length>1) m=parseInt(ss[1]);
     return {y:y,m:m};

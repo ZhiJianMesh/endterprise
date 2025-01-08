@@ -23,7 +23,7 @@ data() {return {
     atdPg:{max:0,cur:1},
     wtPg:{max:0,cur:1},
     atdAct:{dlg:false,dta:{},tms:[],tm:{},no:-1,editable:true},
-    wtAct:{dlg:false,dta:{},no:-1,items:[],wt:{}, month:''},
+    wtAct:{dlg:false,no:-1,items:[],wt:{}, month:''},
     tmTypes:[]
 }},
 created(){
@@ -41,10 +41,7 @@ tab_changed(tab) {
         }
     } else if(tab=='wt') {
         if(this.wts.length==0) {
-            var mon;
-            if(this.wtAct.month) mon=this.wtAct.month.num;
-            else {var dt=new Date();mon=dt.getFullYear()*12+dt.getMonth();}
-            this.query_wts({num:mon});
+            this.query_wts(this.wtPg.cur);
         }
     } else {
         if(this.atds.length==0) {
@@ -70,23 +67,27 @@ query_excs() {
         });
     })
 },
-query_wts() {
-    var url="/apply/myTasktimeApplies";
+query_wts(pg) {
+    var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
+    var url="/tasktime/my?offset="+offset+'&num='+this.ibf.N_PAGE;
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.wts=[];
             return;
         }
-        //id,type,state,cfmAcc,opinion,at
+        //month,pid,prjName,cfmAcc,cmt,state,ratio,at
         var dt=new Date();
         this.wts=resp.data.list.map(a=>{
             a.state_s=this.tags.atd.aplSta[a.state];
             a.editable=a.state!='OK';
             dt.setTime(a.at);
             a.at=datetime2str(dt,true);
+            var mon=(a.month%12) + 1;
+            a.month_s=parseInt(a.month/12)+'/'+(mon>10?mon:'0'+mon);
             return a;
         });
-    })    
+        this.wtPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
+    })
 },
 query_atds(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
@@ -249,33 +250,35 @@ hasOverlap(intervals) {
     }
     return false;
 },
-get_wt_dtl(aid,no) {
-    var url="/tasktime/getApply?id="+aid;
+get_wt_dtl(month,no) {
+    var url="/tasktime/getApply?month="+month;
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.wtAct.items=[];
-            this.wtAct.dta={};
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return
         }
+        
+        var editableNum=0;
         //month,ratio,state,pid,prjName,cfmAcc,cmt
         if(resp.data.items.length>0) {
-            var mon=resp.data.items[0].month;
-            this.wtAct.month=parseInt(mon/12) + '/';
-            mon %= 12;
-            mon++;
-            this.wtAct.month += mon<10?('0'+mon):mon;
+            var mon = (month%12) + 1;
+            this.wtAct.month=parseInt(month/12)+'/'+(mon<10?('0'+mon):mon);
             this.wtAct.items=resp.data.items.map(a=>{
-                a.editable=a.state!='OK';
+                if(a.state!='OK') {
+                    a.editable=true;
+                    editableNum++;
+                } else {
+                    a.editable=false;
+                }
                 a.state_s=a.state_s=this.tags.atd.aplSta[a.state];
                 return a;
             })
         } else {
+            editableNum=1;
             this.wtAct.items=[];
         }
-        this.wtAct.dta=resp.data;//uid,account,type,state
-        this.wtAct.dta.id=aid;
-        this.wtAct.editable=this.wtAct.dta.state!='OK';
+        this.wtAct.editable=editableNum>0;
         this.wtAct.no=no;
         this.wtAct.dlg=true;
     });
@@ -283,15 +286,16 @@ get_wt_dtl(aid,no) {
 show_wt(no) {
     copyObjTo(EMPTY_WT, this.wtAct.wt);
     if(no>-1) {
-        this.get_wt_dtl(this.wts[no].id,no);
+        this.get_wt_dtl(this.wts[no].month,no);
     } else {
         this.wtAct.no=-1;
         this.wtAct.items=[];
         this.wtAct.dlg=true;
         this.wtAct.editable=true;
         var dt=new Date();
-        var mon=dt.getMonth()+1;
-        this.wtAct.month=dt.getFullYear() + '/'+ (mon<10?('0'+mon):mon);
+        var n=dt.getMonth() + dt.getFullYear() * 12 - 1; //上月的
+        var mon=(n%12)+1;
+        this.wtAct.month=parseInt(n/12)+'/'+(mon<10?('0'+mon):mon);
     }
 },
 add_wt_item() {
@@ -323,15 +327,11 @@ wt_declare() { //工时申报
     }
     if(total != 100) {
         this.$refs.alertDlg.show(this.tags.invalidRatio);
-        return;        
+        return;
     }
     
     //[{pid,prjName,ratio,cmt},...]
-    var dt=new Date();
-    var dta={list:this.wtAct.items, month:dt.getFullYear()*12 + dt.getMonth()};
-    if(this.wtAct.no>-1) { //修改
-        dta.id=this.wtAct.dta.id;
-    }
+    var dta={list:this.wtAct.items, month:this.wtAct.month.num};
     var opts={method:"POST", url:"/tasktime/declare", data:dta}
     request(opts, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -340,20 +340,7 @@ wt_declare() { //工时申报
         }
         this.wtAct.dlg=false;
         this.wtAct.no=-1;
-        this.query_wts(this.wtAct.cur);
-    });
-},
-remove_wt() {
-    if(this.wtAct.no<0) return;
-    var opts={method:"DELETE",url:"/tasktime/cancel?id="+this.wtAct.dta.id};
-    request(opts, this.ibf.SERVICE_HR).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.alertDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.wtAct.dlg=false;
-        this.wtAct.no=-1;
-        this.query_wts(this.wtAct.cur);
+        this.query_wts(this.wtPg.cur);
     });
 }
 },
@@ -381,7 +368,7 @@ template:`
 <q-tab-panel name="atd">
 <q-list>
   <q-item v-for="(a,i) in atds" clickable @click="show_atd(i)">
-    <q-item-section side>
+    <q-item-section>
      <q-item-label>{{a.type_s}}</q-item-label>
      <q-item-label caption>{{a.at}}</q-item-label>
     </q-item-section>
@@ -402,12 +389,15 @@ template:`
 <q-list>
  <q-item v-for="(w,i) in wts" clickable @click="show_wt(i)">
    <q-item-section>
-    <q-item-label>{{w.state_s}}</q-item-label>
-    <q-item-label caption>{{w.at}}</q-item-label>
+    <q-item-label>{{w.prjName}}</q-item-label>
+    <q-item-label caption>{{w.month_s}}</q-item-label>
+   </q-item-section>
+   <q-item-section>{{w.state_s}}</q-item-label>
+    <q-item-label caption>{{w.cmt}}</q-item-label>
    </q-item-section>
    <q-item-section>
-    <q-item-label>{{w.opinion}}</q-item-label>
-    <q-item-label caption>{{w.cfmAcc}}</q-item-label>
+    <q-item-label>{{w.cfmAcc}}</q-item-label>
+    <q-item-label caption>{{w.at}}</q-item-label>
    </q-item-section>
  </q-item>
 </q-list>
@@ -504,7 +494,13 @@ template:`
 <q-dialog v-model="wtAct.dlg" persistent no-shake>
  <q-card style="min-width:70vw">
   <q-card-section>
-   <div class="text-h6">{{tags.add}} {{tags.atd.worktime}} - {{wtAct.month}}</div>
+   <div class="row">
+    <div class="text-h6 col">{{tags.atd.worktime}}</div>
+    <div class="col">
+     <month-input class="text-subtitle1 q-pl-sm text-primary" :disable="wtAct.no<0"
+       v-model="wtAct.month" max="-1m"></month-input>
+    </div>
+   </div>
   </q-card-section>
   <q-card-section class="q-pt-none">
   <q-list>
@@ -539,8 +535,6 @@ template:`
   </q-card-section>
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
-    <q-btn flat :label="tags.remove" color="red" @click="remove_wt"
-     v-if="wtAct.editable&&wtAct.no>-1"></q-btn>
     <q-btn :label="tags.ok" color="primary" @click="wt_declare" v-if="wtAct.editable"></q-btn>
   </q-card-actions>
  </q-card>
