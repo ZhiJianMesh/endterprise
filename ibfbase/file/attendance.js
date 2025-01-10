@@ -18,12 +18,13 @@ data() {return {
     tags:this.ibf.tags,
     tab:'atd', //exp(考勤异常),atd(加班请假),wt(worktime工时申报)
     atds:[], //请假或加班申请记录
-    excs:[], //考勤异常记录
+    exps:[], //考勤异常记录
     wts:[], //工时申报
     atdPg:{max:0,cur:1},
     wtPg:{max:0,cur:1},
-    atdAct:{dlg:false,dta:{},tms:[],tm:{},no:-1,editable:true},
-    wtAct:{dlg:false,no:-1,items:[],wt:{}, month:''},
+    atdAct:{dlg:false,no:-1,dta:{},tms:[],tm:{},editable:true},
+    wtAct:{dlg:false,no:-1,items:[],wt:{}, month:'',editable:true},
+    expAct:{dlg:false,no:-1,dta:{}},
     tmTypes:[]
 }},
 created(){
@@ -36,8 +37,8 @@ created(){
 methods:{
 tab_changed(tab) {
     if(tab=='exp') {
-        if(this.excs.length==0) {
-            this.query_excs();
+        if(this.exps.length==0) {
+            this.query_exps();
         }
     } else if(tab=='wt') {
         if(this.wts.length==0) {
@@ -49,20 +50,25 @@ tab_changed(tab) {
         }
     }
 },
-query_excs() {
+query_exps() {
     request({method:"GET", url:"/exception/my"}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
+            this.exps=[];
             return;
         }
-        //day,state,start,end,cfmAcc,descr
+        //day,state,start,end,realStart,realEnd,cfmAcc,descr
         var dt=new Date();
         this.exps=resp.data.list.map(e=>{
             dt.setTime(e.day*86400000);
-            e.day_s=date2str(dt);
-            dt.setTime(e.start*60000);
-            e.start_s=datetime2str(dt);
-            dt.setTime(e.end*60000);
-            e.end_s=datetime2str(dt);
+            var d=e.day%10000;
+            var m=parseInt(d/100);
+            d=d%100;
+            e.day_s=parseInt(e.day/10000)+'/'+(m<10?('0'+m):m)+'/'+(d<10?('0'+d):d);
+            e.start_s=this.expdt2str(e.start,dt);
+            e.end_s=this.expdt2str(e.end,dt);
+            e.realStart_s=this.expdt2str(e.realStart,dt);
+            e.realEnd_s=this.expdt2str(e.realEnd,dt);
+            e.state_s=this.tags.atd.aplSta[e.state];
             return e;
         });
     })
@@ -79,7 +85,6 @@ query_wts(pg) {
         var dt=new Date();
         this.wts=resp.data.list.map(a=>{
             a.state_s=this.tags.atd.aplSta[a.state];
-            a.editable=a.state!='OK';
             dt.setTime(a.at);
             a.at=datetime2str(dt,true);
             var mon=(a.month%12) + 1;
@@ -241,15 +246,6 @@ remove_atd() {
         this.query_atds(this.atdPg.cur);
     });
 },
-hasOverlap(intervals) {
-    intervals.sort((a,b) => a.start-b.start);
-    for(let i=0; i<intervals.length-1; i++) {
-        if(intervals[i].end>intervals[i+1].start) {
-            return true;
-        }
-    }
-    return false;
-},
 get_wt_dtl(month,no) {
     var url="/tasktime/getApply?month="+month;
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
@@ -266,10 +262,7 @@ get_wt_dtl(month,no) {
             this.wtAct.month=parseInt(month/12)+'/'+(mon<10?('0'+mon):mon);
             this.wtAct.items=resp.data.items.map(a=>{
                 if(a.state!='OK') {
-                    a.editable=true;
                     editableNum++;
-                } else {
-                    a.editable=false;
                 }
                 a.state_s=a.state_s=this.tags.atd.aplSta[a.state];
                 return a;
@@ -293,7 +286,7 @@ show_wt(no) {
         this.wtAct.dlg=true;
         this.wtAct.editable=true;
         var dt=new Date();
-        var n=dt.getMonth() + dt.getFullYear() * 12 - 1; //上月的
+        var n=dt.getMonth() + dt.getFullYear()*12 - 1; //增加上月的
         var mon=(n%12)+1;
         this.wtAct.month=parseInt(n/12)+'/'+(mon<10?('0'+mon):mon);
     }
@@ -342,6 +335,54 @@ wt_declare() { //工时申报
         this.wtAct.no=-1;
         this.query_wts(this.wtPg.cur);
     });
+},
+show_exp(no) {
+    var dt=new Date();
+    copyObjTo(this.exps[no], this.expAct.dta);
+    if(this.expAct.dta.realStart<=0) {
+        this.expAct.dta.realStart_s=this.expAct.dta.day_s;
+    } else {
+        dt.setTime(this.expAct.dta.realStart*60000);
+        this.expAct.dta.realStart_s=datetime2str(dt);
+    }
+    if(this.expAct.dta.realEnd<=0) {
+        this.expAct.dta.realEnd_s=this.expAct.dta.day_s;
+    } else {
+        dt.setTime(this.expAct.dta.realEnd*60000);
+        this.expAct.dta.realEnd_s=datetime2str(dt);
+    }
+    this.expAct.dlg=true;
+    this.expAct.no=no;
+},
+exp_do() {
+    var start=parseInt(datetimeToDate(this.expAct.dta.realStart_s).getTime()/60000);
+    var end=parseInt(datetimeToDate(this.expAct.dta.realEnd_s).getTime()/60000);
+    var dta={day:this.expAct.dta.day, start:start, end:end};
+    request({method:"PUT", url:"/exception/commit", data:dta}, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.expAct.dlg=false;
+        this.expAct.no=-1;
+        this.query_exps();
+    });
+},
+hasOverlap(intervals) {
+    intervals.sort((a,b) => a.start-b.start);
+    for(let i=0; i<intervals.length-1; i++) {
+        if(intervals[i].end>intervals[i+1].start) {
+            return true;
+        }
+    }
+    return false;
+},
+expdt2str(v,dt) {
+    if(v<=0) return '00:00';
+    dt.setTime(v*60000);
+    var h=dt.getHours();
+    var m=dt.getMinutes();
+    return (h<10?('0'+h):h)+':'+(m<10?('0'+m):m);
 }
 },
 template:`
@@ -375,7 +416,7 @@ template:`
     <q-item-section>
      <q-item-label>{{a.opinion}}</q-item-label>
      <q-item-label caption>{{a.cfmAcc}}</q-item-label>
-    </q-item-section>
+    </q-item-section side>
     <q-item-section side>{{a.state_s}}</q-item-section>
   </q-item>
 </q-list>
@@ -395,7 +436,7 @@ template:`
    <q-item-section>{{w.state_s}}</q-item-label>
     <q-item-label caption>{{w.cmt}}</q-item-label>
    </q-item-section>
-   <q-item-section>
+   <q-item-section side>
     <q-item-label>{{w.cfmAcc}}</q-item-label>
     <q-item-label caption>{{w.at}}</q-item-label>
    </q-item-section>
@@ -406,22 +447,19 @@ template:`
   boundary-numbers="false" @update:model-value="query_wts"></q-pagination>
 </div>
 </q-tab-panel>
-</q-tab-panels>
-    </q-page>
-  </q-page-container>
-</q-layout>
 
 <q-tab-panel name="exp">
 <q-list>
-  <q-item v-for="e in exps">
-   <q-item-section side>
-    <q-item-label>{{e.day_s}}</q-item-label>
-    <q-item-label>{{e.start_s}}-{{e.end_s}}</q-item-label>
+  <q-item v-for="(e,i) in exps" clickable @click="show_exp(i)">
+   <q-item-section>
+    <q-item-label>{{e.day_s}}({{e.state_s}})</q-item-label>
+    <q-item-label caption>{{e.start_s}} - {{e.end_s}}</q-item-label>
    </q-item-section>
-   <q-item-section side>
+   <q-item-section>
     <q-item-label>{{e.descr}}</q-item-label>
-    <q-item-label>{{e.cfmAcc}}</q-item-label>
+    <q-item-label caption>{{e.realStart_s}} - {{e.realEnd_s}}</q-item-label>
    </q-item-section>
+   <q-item-section side>{{e.cfmAcc}}</q-item-section>
   </q-item>
 </q-list>
 </q-tab-panel>
@@ -507,7 +545,7 @@ template:`
    <q-item clickable v-for="(t,i) in wtAct.items">
      <q-item-section>
       <q-item-label>{{t.prjName}}
-       <q-icon color="red" name="clear" @click="rmv_wt_item(i)" class="q-pl-md" v-if="t.editable"><q-icon>
+       <q-icon color="red" name="clear" @click="rmv_wt_item(i)" class="q-pl-md" v-if="wtAct.editable"><q-icon>
       </q-item-label>
       <q-item-label caption>{{t.ratio}}%</q-item-label>
      </q-item-section>
@@ -536,6 +574,27 @@ template:`
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     <q-btn :label="tags.ok" color="primary" @click="wt_declare" v-if="wtAct.editable"></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="expAct.dlg" persistent no-shake>
+ <q-card style="min-width:70vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.atd.clockExp}}</div>
+   <div class="text-caption">{{expAct.dta.start_s}}-{{expAct.dta.end_s}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   
+   <datetime-input v-model="expAct.dta.realStart_s" :label="tags.start"
+    :format="tags.dateFmt" :showMinute="false"></datetime-input>
+   <datetime-input v-model="expAct.dta.realEnd_s" :label="tags.end"
+    :format="tags.dateFmt" :showMinute="false"></datetime-input>
+   <q-input v-model="expAct.dta.descr" :label="tags.cmt" type="textarea" rows=2></q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-btn :label="tags.ok" color="primary" @click="exp_do"></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>
