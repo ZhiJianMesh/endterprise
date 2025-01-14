@@ -31,6 +31,10 @@ cn:{
     F:"女士",
     O:"未知"
   },
+  yesNo:{
+    Y:'是',
+    N:'否'
+  },
   edu:{
     E0:"无",
     E1:"小学",
@@ -206,6 +210,7 @@ cn:{
     workDay:"工作日",
     festival:"节假日",
     offDay:"休息日",
+    midClock:'午休需打卡',
     
     subsidy:'补贴系数',
     salary:'工资系数',

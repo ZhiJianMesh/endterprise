@@ -29,7 +29,7 @@ function registerIbf(app, router) { //注册ibf所需的路由
         department:{}, //所属部门，作为普通员工，只能从属于一个部门
         adminDpms:[], //管理的部门
         ctrl:{cur:1,max:0},
-        clockTm:{start:'00:00', end:'00:00'},
+        clockTms:[],
         SERVICE_HR:SERVICE_HR,
         SERVICE_CRM:"icrm",
         SERVICE_FINANCE:"ifinance",
@@ -57,7 +57,7 @@ data() {return {
     ctrl:{cur:1, max:0},
     prjs:[],//vue无法与inject的变量双向绑定，所以另外加以下三个字段
     isAdmin:false,
-    clockTm:{start:'00:00', end:'00:00'}
+    clockTms:[]
 }},
 created(){
     if(this.ibf.prjs.length==0) {
@@ -66,16 +66,17 @@ created(){
         this.prjs=this.ibf.prjs;
         this.ctrl=this.ibf.ctrl;
     }
-    if(this.ibf.clockTm.start=='00:00') {
+    if(this.ibf.clockTms.length==0) {
         request({method:"GET",url:"/attendance/clockAt"}, SERVICE_HR).then(resp=>{
             if(resp.code!=RetCode.OK) {
-                Console.debug("Fail to get my clock time:" + resp.code + ",info:" + resp.info);
+                this.set_clockTms([{start:0,end:0}]);
+                Console.debug("Fail to get clock time:" + resp.code + ",info:" + resp.info);
                 return;
             }
-            this.set_clockTm(resp.data.start, resp.data.end);
+            this.set_clockTms(resp.data.clockTimes);
         });
     } else {
-        this.clockTm=this.ibf.clockTm;
+        this.clockTms=this.ibf.clockTms;
     }
     if(!this.ibf.department.role&&this.ibf.adminDpms.length==0) {
         var opts={method:"GET",url:"/grp/myDepartment"};
@@ -133,21 +134,28 @@ query_prjs(pg) {
         this.prjs=prjs;
     });
 },
-set_clockTm(start, end) {
+set_clockTms(tms) {
     var dt=new Date();
-    var clkTm={start:'00:00',end:'00:00'};
-    if(start>0) {
-        dt.setTime(start*60000);
-        clkTm.start=dt.getHours().toString().padStart(2,'0')
-         + ":" + dt.getMinutes().toString().padStart(2,'0');
+    var clkTms=[];
+    var start,end;
+    var m, h;
+    for(var tm of tms) {
+        if(tm.start>0) {
+            dt.setTime(tm.start*60000);
+            h=dt.getHours();
+            m=dt.getMinutes();
+            start=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
+        }
+        if(tm.end>0) {
+            dt.setTime(tm.end*60000);
+            h=dt.getHours();
+            m=dt.getMinutes();
+            end=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
+        }
+        clkTms.push({start:start,end:end});
     }
-    if(end>0) {
-        dt.setTime(end*60000);
-        clkTm.end=dt.getHours().toString().padStart(2,'0')
-         + ":" + dt.getMinutes().toString().padStart(2,'0');
-    }
-    this.clockTm=clkTm;
-    this.ibf.clockTm=clkTm;
+    this.clockTms=clkTms;
+    this.ibf.clockTms=clkTms;
 },
 clock() { //上下班刷卡
     request({method:"GET",url:"/attendance/clock"}, SERVICE_HR).then(resp=>{
@@ -155,7 +163,7 @@ clock() { //上下班刷卡
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.set_clockTm(resp.data.start, resp.data.end);
+        this.set_clockTms([{start:resp.data.start, end:resp.data.end}]);
     })
 }
 },
@@ -166,8 +174,8 @@ template:`
    <div class="row items-center no-wrap">
     <q-icon left name="event_available"></q-icon>
     <div class="text-center">
-     <span class="text-h5">{{tags.home.attendance}}</span>
-     <br>{{clockTm.start}}-{{clockTm.end}}
+     <div class="text-h5">{{tags.home.attendance}}</div>
+     <div v-for="c in clockTms">{{c.start}}-{{c.end}}</div>
     </div>
    </div>
   </q-btn>

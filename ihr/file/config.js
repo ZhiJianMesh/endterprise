@@ -1,10 +1,12 @@
 const EMPTY_OFF={name:'',cmt:''};
 const EMPTY_PERF={level:'',name:'',cmt:''};
-const EMPTY_WT={calendar:0,first:0,second:0,third:0,forth:0,leadTime:0,maxEdit:0,name:''};
+const EMPTY_WT={calendar:0,first:0,second:0,third:0,
+    forth:0,leadTime:0,maxEdit:0,name:'',midClock:'N'};
 function formatTime(t) {
     var v=t>1440?(t-1440):t;
-    return parseInt(v/60).toString().padStart(2,'0')
-      +':'+(v%60).toString().padStart(2,'0');
+    var h=parseInt(v/60);
+    var m=v%60;
+    return (h<10?('0'+h):h) + ':' + (m<10?('0'+m):m);
 }
 export default {
 inject:['service', 'tags'],
@@ -76,6 +78,7 @@ query_worktimes(){
             w.second_s=formatTime(w.second);
             w.third_s=formatTime(w.third);
             w.forth_s=formatTime(w.forth);
+            w.midClock_s=this.tags.yesNo[w.midClock];
             return w;
         });
         this.worktimes=wt;
@@ -368,6 +371,13 @@ template:`
    <q-input :label="tags.cfg.maxEdit" v-model.number="edt.wt.maxEdit" dense></q-input>
    <q-select :label="tags.cfg.calendar" v-model="edt.wt.calendar" :options="calOpts"
    dense map-options emit-value dense></q-select>
+   <div class="row items-center">
+    <div class="col">{{tags.cfg.midClock}}</div>
+    <div class="col q-gutter-sm">
+     <q-radio v-model="edt.wt.midClock" val="Y" :label="tags.yesNo.Y"></q-radio>
+     <q-radio v-model="edt.wt.midClock" val="N" :label="tags.yesNo.N"></q-radio>
+    </div>
+   </div>
   </q-card-section>
   <q-card-actions align="right">
    <q-btn :label="tags.ok" color="primary" @click="worktime_do"></q-btn>
