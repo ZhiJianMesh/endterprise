@@ -9,7 +9,8 @@
             "pool":"*",
             "resource":"*",
             "employee":"*",
-            "resume":"*"
+            "resume":"*",
+            "salary":"*"
         }
     },
     "hr":{
@@ -19,7 +20,8 @@
             "employee":"*",
             "resume":"*",
             "resource":"*",
-            "attendance":"*"
+            "attendance":"*",
+            "salary":"*"
         }
     }
 }

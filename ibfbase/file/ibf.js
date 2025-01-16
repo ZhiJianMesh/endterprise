@@ -69,8 +69,7 @@ created(){
     if(this.ibf.clockTms.length==0) {
         request({method:"GET",url:"/attendance/clockAt"}, SERVICE_HR).then(resp=>{
             if(resp.code!=RetCode.OK) {
-                this.set_clockTms([{start:0,end:0}]);
-                Console.debug("Fail to get clock time:" + resp.code + ",info:" + resp.info);
+                this.set_clockTms([]);
                 return;
             }
             this.set_clockTms(resp.data.clockTimes);
@@ -140,19 +139,19 @@ set_clockTms(tms) {
     var start,end;
     var m, h;
     for(var tm of tms) {
-        if(tm.start>0) {
-            dt.setTime(tm.start*60000);
-            h=dt.getHours();
-            m=dt.getMinutes();
-            start=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
-        }
-        if(tm.end>0) {
-            dt.setTime(tm.end*60000);
-            h=dt.getHours();
-            m=dt.getMinutes();
-            end=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
-        }
+        dt.setTime(tm.start*60000);
+        h=dt.getHours();
+        m=dt.getMinutes();
+        start=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
+
+        dt.setTime(tm.end*60000);
+        h=dt.getHours();
+        m=dt.getMinutes();
+        end=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
         clkTms.push({start:start,end:end});
+    }
+    if(clkTms.length==0) {
+        clkTms=[{start:'00:00',end:'00:00'}]
     }
     this.clockTms=clkTms;
     this.ibf.clockTms=clkTms;

@@ -11,6 +11,36 @@
 </head>
 <body style="overflow:hidden">
 <div id="app" v-cloak><router-view></router-view></div>
+
+<template id="tpl_home">
+<q-layout view="HHH LpR FFF" container style="height:99vh">
+<q-header>
+  <q-toolbar>
+     <q-avatar square><img src="./favicon.png"></q-avatar>
+     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+  </q-toolbar>
+  <div class="text-right bg-white">
+    <q-btn :label="tags.pool.title" @click="goto('/pool')"
+     icon="group" color="primary" padding="xs" flat></q-btn>
+    <q-btn :label="tags.employee.title" @click="goto('/employees')" 
+     icon="badge" color="primary" flat></q-btn>
+    <q-btn :label="tags.grp.title" @click="goto('/grp?id=0')"
+     icon="account_tree" color="orange" flat padding="xs"></q-btn>
+    <q-btn :label="tags.cfg.title" @click="goto('/config')"
+     icon="settings" color="accent" flat></q-btn>
+    <q-btn :label="tags.salary.title" @click="goto('/salary')"
+     icon="attach_money" color="primary" flat></q-btn>
+  </div>
+</q-header>
+<q-page-container>
+ <q-page class="q-pa-sm">
+  <q-separator spaced="sm"></q-separator>
+  <ibf></ibf>
+ </q-page>
+</q-page-container>
+</q-layout>
+</template>
+
 </body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/vue-router.js"></script>
@@ -22,7 +52,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
 import MonthInput from "/assets/v3/components/month_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
-import Home from "./home.js"
+import IBF from '/ibfbase/ibf.js'
 import Config from "./config.js"
 import Zone from "./zone.js"
 import Calendar from "./calendar.js"
@@ -37,6 +67,17 @@ import Person from "./person.js"
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
 
+const homeTpl=document.getElementById('tpl_home');
+const Home = {
+inject:['service', 'tags'],
+methods:{
+  goto(url) {
+    this.$router.push(url);
+  }
+},
+template:homeTpl.innerHTML
+}
+
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 //router定义
@@ -47,7 +88,7 @@ routes:[
   {path:'/config', component:Config},
   {path:'/zone', component:Zone}, //大区管理
   {path:'/calendar', component:Calendar},
-  {path:'/slary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
+  {path:'/salary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
   {path:'/employees', component:Employees}, //雇员列表
   {path:'/employee', component:Employee}, //雇员详情、关键事件
   {path:'/resume', component:Resume}, //简历
@@ -164,6 +205,7 @@ sysGoBack() {
 
 app.use(Quasar);
 app.use(router);
+app.component('ibf', IBF);
 app.component('alert-dialog', AlertDialog);
 app.component('date-input', DateInput);
 app.component('month-input', MonthInput);

@@ -62,6 +62,10 @@ cn:{
     PCREATION:'生育保险',
     HOUSE:'住房公积金'
   },
+  sponTp:{
+    P:"个人交",
+    C:"公司交"
+  },
   evtType:{
     JOIN:"入职",
     LEAV:"离职",
