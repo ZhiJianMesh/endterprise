@@ -68,7 +68,7 @@ query_exps() {
             e.end_s=this.expdt2str(e.end,dt);
             e.realStart_s=this.expdt2str(e.realStart,dt);
             e.realEnd_s=this.expdt2str(e.realEnd,dt);
-            e.state_s=this.tags.atd.aplSta[e.state];
+            e.state_s=this.tags.aplSta[e.state];
             return e;
         });
     })
@@ -84,7 +84,7 @@ query_wts(pg) {
         //month,pid,prjName,cfmAcc,cmt,state,ratio,at
         var dt=new Date();
         this.wts=resp.data.list.map(a=>{
-            a.state_s=this.tags.atd.aplSta[a.state];
+            a.state_s=this.tags.aplSta[a.state];
             dt.setTime(a.at);
             a.at=datetime2str(dt,true);
             var mon=(a.month%12) + 1;
@@ -106,7 +106,7 @@ query_atds(pg) {
         //id,uid,type,state,opinion,at
         this.atds=resp.data.list.map(a=>{
             a.type_s=this.tags.atd.aplType[a.type];
-            a.state_s=this.tags.atd.aplSta[a.state];
+            a.state_s=this.tags.aplSta[a.state];
             a.editable=a.state!='OK';
             dt.setTime(a.at);
             a.at=datetime2str(dt,true);
@@ -132,7 +132,7 @@ get_atd_dtl(aid,no) {
             a.start_s=datetime2str(dt);
             dt.setTime(a.end*60000);
             a.end_s=datetime2str(dt);
-            a.state_s=this.tags.atd.aplSta[a.state];
+            a.state_s=this.tags.aplSta[a.state];
             return a;
         });
         this.atdAct.dta=resp.data;
@@ -264,7 +264,7 @@ get_wt_dtl(month,no) {
                 if(a.state!='OK') {
                     editableNum++;
                 }
-                a.state_s=a.state_s=this.tags.atd.aplSta[a.state];
+                a.state_s=a.state_s=this.tags.aplSta[a.state];
                 return a;
             })
         } else {

@@ -20,7 +20,7 @@ data() {return {
     month:{v:0,cur:0,e:false/*绩效中是否有可修改的行*/},
     perfDlg:{obj:{},no:-2,show:false},//待编辑绩效
     expPg:{max:0,cur:1},
-    perfPg:{max:0,cur:1},
+    perfPg:{max:0,cur:1,month:'-1m'},
     aplPg:{max:0,cur:1}
 }},
 created(){
@@ -108,6 +108,7 @@ query_perfs(pg) {
         this.month.e=false;
         if(resp.code!=RetCode.OK) {
             this.perfs=[];
+            this.perfPg.max=0;
             return;
         }
         var mbrs=resp.data.members;
@@ -281,8 +282,8 @@ template:`
 <q-tab-panel name="perfs" class="q-pa-none">
 <div class="row justify-start bg-grey-3 text-primary q-pa-none">
   <div class="col-5 self-center">
-   <month-input class="text-subtitle1 q-pl-sm"
-    @update:modelValue="set_month" min="-3" max="cur"></month-input>
+   <month-input class="text-subtitle1 q-pl-sm" v-model="perfPg.month"
+    @update:modelValue="set_month" min="-3" max="-1m"></month-input>
   </div>
   <div class="col self-center">
    <q-btn @click="init_perf" flat :label="tags.init"></q-btn>

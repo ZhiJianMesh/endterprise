@@ -9,7 +9,7 @@ data() {return {
     salaries:{}, //发薪申请uid,post,account,name,phone,val
     salPg:{max:0,cur:1},
     salAct:{dlg:false,dtl:{},sal:{}},
-    month:''
+    month:'-1m'
 }},
 created(){
     this.query(1);
@@ -59,6 +59,8 @@ query_sals() {
             var sal=this.salaries[l[0]];
             sal.val=l[1];
             dt.setTime(l[2]);
+            sal.state_s=this.tags.aplSta[l[3]];
+            sal.state=l[3];
             sal.cfmAt=datetime2str(dt);
         }
     })
@@ -82,7 +84,7 @@ show_dtl(uid) {
             o.val=o.val.toFixed(2);
         }
         this.salAct.dtl=resp.data;
-        this.salAct.sal=this.salaries[uid]
+        this.salAct.sal=this.salaries[uid];
         this.salAct.dlg=true;
     })
 },
@@ -108,7 +110,7 @@ template:`
      <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>
      <q-toolbar-title>{{tags.salary.title}}</q-toolbar-title>
      <month-input class="text-subtitle1 q-pl-sm" v-model="month"
-      @update:modelValue="set_month" min="-3" max="cur"></month-input>
+      @update:modelValue="set_month" min="-3" max="-1m"></month-input>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -120,7 +122,7 @@ template:`
      <q-item-label caption>{{s.name}}</q-item-label>
     </q-item-section>
     <q-item-section side>
-     <q-item-label>{{s.val}}</q-item-label>
+     <q-item-label>{{s.val}}({{s.state_s}})</q-item-label>
      <q-item-label caption>{{s.cfmAt}}</q-item-label>
     </q-item-section>
   </q-item>

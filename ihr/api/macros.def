@@ -4,14 +4,14 @@
         "type" : "call",
         "method" : "GET",
         "tokenSign" : "APP",
-        "cache" : "#PID#",
+        "cache" : "#PID#_@{#tokenAcc}",
         "comment" : "查询帐号在项目中的角色",
         "service" : "iproject",
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
             "errorInfo":"not a leader",
-            "condition":"@{CONDITION|!role,'s.!=','L'}}"
+            "condition":"@{CONDITION|!role,'s.==','L'}"
         }
     },
 

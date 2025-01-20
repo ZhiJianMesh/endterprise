@@ -24,18 +24,28 @@ query_subs(){//查询子群组及成员
         if(resp.code!=RetCode.OK) {
             return;
         }
+
         var dt=new Date();
-        this.members=resp.data.members.map(m=>{
-            dt.setTime(m.update_time);
-            m.role=this.tags.roleTp[m.role];
-            m.createAt=date2str(dt);
-            return m;
-        });
-        this.grps=resp.data.grps.map(g=>{
-            dt.setTime(g.update_time);
-            g.createAt=date2str(dt);
-            return g;
-        });
+        if(resp.data.members) {
+            this.members=resp.data.members.map(m=>{
+                dt.setTime(m.update_time);
+                m.role=this.tags.roleTp[m.role];
+                m.createAt=date2str(dt);
+                return m;
+            });
+        } else {
+            this.members=[];
+        }
+        
+        if(resp.data.grps) {
+            this.grps=resp.data.grps.map(g=>{
+                dt.setTime(g.update_time);
+                g.createAt=date2str(dt);
+                return g;
+            });
+        } else {
+            this.grps=[];
+        }
     })  
 },
 create_grp() {

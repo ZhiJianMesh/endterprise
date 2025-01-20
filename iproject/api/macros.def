@@ -3,6 +3,7 @@
         "name":"judge_prj_leader",
         "db":"project",
         "type":"dataexists",
+        "cache":"#PID#_@{#tokenAcc}",
         "expect" : true, //如果不存在，则返回NOT_EXISTS，否则返回OK
         "errorCode":"NO_RIGHT",
         "errorInfo":"no right",

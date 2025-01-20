@@ -52,7 +52,12 @@ cn:{
     F:"女士",
     O:"未知"
   },
-    
+  aplSta:{ //申请状态
+    INIT:"初始",
+    WAIT:'待确认',
+    OK:'通过',
+    REJ:'拒绝'
+  }, 
   home:{
     attendance:"打卡"
   },
@@ -81,25 +86,29 @@ cn:{
       SICK:'病假',
       WEAL:'福利假',
       HOLI:'年休假'
-    },
-    aplSta:{
-      INIT:"初始",
-      WAIT:'待确认',
-      OK:'通过',
-      REJ:'拒绝'
     }
   },
 
   hr:{
     cfmed:'已确认',
     notCfm:'未确认',
+    sponTp:{
+      P:"个人交",
+      C:"公司交"
+    },
     salType:{
+      SALARY:'工资',
       SUBSIDY:'补贴',
       EXPENSE:'报销',
       BONUS:'奖金',
       SHARE:'分红',
-      TAX:'税额',
-      OVERTIME:'加班工资'
+      TAX:'个人所得税',
+      OLD:'养老保险',
+      MEDICARE:'医疗保险',
+      JOB:'失业保险',
+      INJURY:'工伤保险',
+      PCREATION:'生育保险',
+      HOUSE:'住房公积金'
     },
     eventType:{
       JOIN:'入职',
@@ -167,6 +176,7 @@ cn:{
     plan:"计划",
     target:"目标",
     subPrj:'子项目',
+    worktime:'工时',
     stage:"阶段",
     base:'达标值',
     challenge:'挑战值',

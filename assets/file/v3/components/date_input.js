@@ -15,7 +15,7 @@ props: {
 emits: ['update:modelValue'],
 created(){
     this.end=this.parse(this.max,253234080000000/*10000AC*/);
-    this.start=this.parse(this.max,-377485920000000/*10000BC*/);
+    this.start=this.parse(this.min,-377485920000000/*10000BC*/);
 },
 methods:{
 rangeFilter(dt) {

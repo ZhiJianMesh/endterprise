@@ -14,9 +14,11 @@ data() {return {
     prj:{}, //项目详情
     editable:false, //项目是否可编辑
     showAdd:false,
+    isLeader:false,
     tags:this.ibf.tags,
     tab:'plan', //plan,target,member,subs
     members:[],//计划
+    wt:{list:[],month:'-1m',cur:1,max:0,dlg:false,no:-1}, //按月查询工时申请
     mbrEvents:[], //成员事件
     plans:[],//计划
     targets:[], //目标
@@ -42,14 +44,15 @@ created(){
         this.prj.start_s=date2str(dt); //用于输入计划时限制时间范围
         dt.setTime(this.prj.end*60000);
         this.prj.end_s=date2str(dt);
-        
-        this.editable=this.prj.stage==this.ibf.PrjStage.init
-            &&(this.prj.role=='O'||this.prj.role=='L');
+        this.isLeader=this.prj.role=='L';
+        this.editable=this.isLeader&&this.prj.stage==this.ibf.PrjStage.init;
+        this.showAdd=this.editable;
         this.query_plans(); //依赖this.editable
     })
 },
 methods:{
 tab_changed(tab) {
+    this.showAdd=this.editable;
     if(tab=='plan') {
         if(this.plans.length==0) {
             this.query_plans();
@@ -59,8 +62,14 @@ tab_changed(tab) {
             this.query_targets();
         }
     } else if(tab=='member'){
+        this.showAdd=this.isLeader;
         if(this.members.length==0) {
             this.query_members();
+        }
+    } else if(tab=='worktime'){
+        this.showAdd=false;
+        if(this.wt.list.length==0) {
+            this.query_wts(this.wt.cur);
         }
     } else {
         if(this.subs.length==0) {
@@ -70,16 +79,12 @@ tab_changed(tab) {
 },
 show_add() {
     if(this.tab=='plan') {
-        this.showAdd=this.editable;
         this.show_plan(-2);
     } else if(this.tab=='target') {
-        this.showAdd=this.editable;
         this.show_target(-2);
     } else if(this.tab=='member'){
-        this.showAdd=true;
         this.show_member(-2);
     } else {
-        this.showAdd=this.editable;
         this.show_prj(-2); //创建子项目
     }
 },
@@ -148,6 +153,25 @@ query_members() {
             mbrs.push(m);
         }
         this.members=mbrs;
+    })
+},
+query_wts(pg) {
+    if(!this.wt.month.num)return;//第一次切换到此tab，month还没准备好
+    var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
+    var url="/tasktime/wait?pid="+this.pid
+            +"&offset="+offset+'&num='+this.ibf.N_PAGE
+            +"&month="+this.wt.month.num
+    request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.wt.list=[];
+            this.wt.max=0;
+            return;
+        }
+        this.wt.list=resp.data.list.map(l=>{
+            l.state_s=this.tags.aplSta[l.state];
+            return l;
+        });
+        this.wt.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     })
 },
 query_subs() {
@@ -355,6 +379,28 @@ prj_do(act) {
         this.ctrl.no=-2;
         this.ctrl.prjDlg=false;
     });
+},
+month_changed() {
+    this.wt.cur=1;
+    this.query_wts(1);
+},
+show_wt(no) {
+    this.wt.no=no;
+    this.wt.dlg=true;
+},
+wt_do(state) {
+    if(this.wt.no<0)return;
+    var uid=this.wt.list[this.wt.no].uid;
+    var dta={pid:this.pid,uid:uid,month:this.wt.month.num,state:state};
+    request({method:'POST',url:'/tasktime/confirm', data:dta}, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.query_wts(this.wt.cur);
+        this.wt.no=-1;
+        this.wt.dlg=false;
+    });
 }
 },
 template:`
@@ -363,7 +409,9 @@ template:`
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.prj.title}}-{{prj.name}}</q-toolbar-title>
-     <q-btn flat round icon="add_circle" dense @click="show_add()" v-if="showAdd"></q-btn>
+     <month-input v-model="wt.month" v-if="tab=='worktime'"
+      @update:modelValue="month_changed" min="-3" max="-1m"></month-input>
+     <q-btn flat round icon="add_circle" dense @click="show_add()" v-show="showAdd"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer>
@@ -373,7 +421,8 @@ template:`
     <q-tab name="plan" icon="assignment" :label="tags.prj.plan"></q-tab>
     <q-tab name="target" icon="flag" :label="tags.prj.target"></q-tab>
     <q-tab name="member" icon="group" :label="tags.prj.member"></q-tab>
-    <q-tab name="subs" icon="account_tree" :label="tags.prj.subPrj"></q-tab>
+    <q-tab name="worktime" icon="work_history" :label="tags.prj.worktime" v-if="isLeader"></q-tab>
+    <q-tab name="subs" icon="account_tree" :label="tags.prj.subPrj" v-if="isLeader"></q-tab>
    </q-tabs>
   </q-footer>
   <q-page-container>
@@ -417,6 +466,22 @@ template:`
    <q-item-section>{{m.role_s}}</q-item-section>
   </q-item>
  </q-list>
+</q-tab-panel>
+
+<q-tab-panel name="worktime">
+ <q-list dense separator>
+  <q-item v-for="(l,i) in wt.list" @click="show_wt(i)" clickable>
+   <q-item-section>{{l.account}}</q-item-section>
+   <q-item-section>
+    <q-item-label>{{l.ratio}}%({{l.state_s}})</q-item-label>
+    <q-item-label caption>{{l.cmt}}</q-item-label>
+   </q-item-section>
+  </q-item>
+ </q-list>
+ <div class="q-pa-sm flex flex-center" v-show="wt.max>1">
+  <q-pagination v-model="wt.cur" color="primary" :max="wt.max" max-pages="10"
+   boundary-numbers="false" @update:model-value="query_wts"></q-pagination>
+ </div>
 </q-tab-panel>
 
 <q-tab-panel name="subs">
@@ -565,20 +630,20 @@ template:`
    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
    <q-btn v-if="ctrl.no<0" :label="tags.ok" color="primary" @click="member_do"></q-btn>
    <q-btn-dropdown v-else :label="tags.opr" color="primary" split disable-main-btn dense>
-       <q-list dense>
-        <q-item clickable v-close-popup @click="member_do('appraise')">
-         <q-item-section avatar>
-           <q-icon name="add_comment" color="primary"></q-icon>
-         </q-item-section>
-         <q-item-section>{{tags.prj.appraise}}</q-item-section>
-        </q-item>
-        <q-item clickable v-close-popup @click="member_do('remove')">
-         <q-item-section avatar>
-           <q-icon name="delete" color="red"></q-icon>
-         </q-item-section>
-         <q-item-section>{{tags.remove}}</q-item-section>
-        </q-item>
-       </q-list>
+    <q-list dense>
+     <q-item clickable v-close-popup @click="member_do('appraise')">
+      <q-item-section avatar>
+       <q-icon name="add_comment" color="primary"></q-icon>
+      </q-item-section>
+      <q-item-section>{{tags.prj.appraise}}</q-item-section>
+     </q-item>
+     <q-item clickable v-close-popup @click="member_do('remove')">
+      <q-item-section avatar>
+       <q-icon name="delete" color="red"></q-icon>
+      </q-item-section>
+      <q-item-section>{{tags.remove}}</q-item-section>
+     </q-item>
+    </q-list>
    </q-btn-dropdown>
   </q-card-actions>
  </q-card>
@@ -628,6 +693,21 @@ template:`
    </q-btn-dropdown>
   </q-card-actions>
  </q-card>
+</q-dialog>
+
+<q-dialog v-model="wt.dlg" position="right">
+<q-card style="width:6em;">
+ <q-card-section class="text-center">
+  <div class="q-pb-lg">
+   <q-btn icon="thumb_up" :label="Stacked" stack flat color="primary"
+   @click="wt_do('OK')"></q-btn>
+  </div>
+  <div>
+   <q-btn icon="thumb_down" :label="Stacked" stack flat color="red"
+   @click="wt_do('REJ')"></q-btn>
+  </div>
+ </q-card-section>
+</q-card>
 </q-dialog>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>

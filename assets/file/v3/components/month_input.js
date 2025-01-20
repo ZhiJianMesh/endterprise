@@ -19,17 +19,17 @@ props: {
 },
 emits: ['update:modelValue'],
 created(){
-    var m=this.parse(this.max,{y:9999,m:1});
-    this.maxMonth=m.y*12+m.m-1;
-    m=this.parse(this.min,{y:0,m:1});
-    this.minMonth=m.y*12+m.m-1;
+    var m=this.parse(this.max,{year:9999,month:1});
+    this.maxMonth=m.year*12+m.month-1;
+    m=this.parse(this.min,{year:0,month:1});
+    this.minMonth=m.year*12+m.month-1;
     var dt=new Date();
-    m=this.parse(this.modelValue,{y:dt.getFullYear(),m:dt.getMonth()+1})
-    this.year=m.y;
-    this.month=m.m;
+    m=this.parse(this.modelValue,{year:dt.getFullYear(),month:dt.getMonth()+1})
+    this.year=m.year;
+    this.month=m.month;
     this.num=this.year*12+this.month-1;
     this.startYear=this.year-4;
-    this.old={year:m.y, month:m.m, num:m.y*12+m.m-1};
+    this.old={year:m.year, month:m.month, num:m.year*12+m.month-1};
     this.set_array();
     this.$emit('update:modelValue', this.old);
 },
@@ -86,11 +86,11 @@ parse(s,def) {
     if(!s) {
         return def;
     }
-    if(s.y&&s.m) return s; //解析过
+    if(s.year&&s.month) return s; //解析过
     var cfg=s.trim().toLowerCase();
     var dt=new Date();
     if(cfg=="cur") {
-        return {y:dt.getFullYear(),m:(dt.getMonth()+1)};
+        return {year:dt.getFullYear(),month:(dt.getMonth()+1)};
     }
     if(cfg.startsWith('-')||cfg.startsWith('+')) {
         var n=dt.getFullYear()*12+dt.getMonth();
@@ -103,7 +103,7 @@ parse(s,def) {
             v*=12*parseInt(cfg.substring(1)); 
         }
         n+=v;
-        return {y:parseInt(n/12), m:(n%12+1)};
+        return {year:parseInt(n/12), month:(n%12+1)};
     }
 
     var ss=cfg.split(/[\/,-,.]+/);
@@ -111,7 +111,7 @@ parse(s,def) {
     var m=dt.getMonth();
     if(ss.length>0) y=parseInt(ss[0]);
     if(ss.length>1) m=parseInt(ss[1]);
-    return {y:y,m:m};
+    return {year:y,month:m};
 },
 pageUp() {
     this.startYear-=12;
@@ -176,8 +176,8 @@ computed: {
       get() {return this.year+'/'+(this.month>9?this.month:('0'+this.month))},
       set(v) {
           var ym=this.parse(v);
-          this.year=ym.y;
-          this.month=ym.m;
+          this.year=ym.year;
+          this.month=ym.month;
           this.num=this.year*12+this.month-1;
       }
    }

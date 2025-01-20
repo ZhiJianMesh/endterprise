@@ -14,6 +14,7 @@ data() {return {
     res:[],
     perfs:[],
     salaries:[],
+    salMonth:"-1m",
     evtPg:{cur:1,max:0},
     resPg:{cur:1,max:0},
     perfPg:{cur:1,max:0}
@@ -29,14 +30,22 @@ methods:{
 query_salary(ym) {
     request({method:"GET",url:"/salary/my?month="+ym.num}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
+            this.salaries=[];
             return;
         }
         var salTps=this.tags.hr.salType;
+        var sponTps=this.tags.hr.sponTp;
         this.salaries=resp.data.list.map(s => {
-            var type=salTps[s.type];
-            type=type?type:s.type;
-            return {val:s.val,type:type};
-        });
+            var pos=s.type.indexOf('-');
+            var type;
+            if(pos>0) {
+                type=salTps[s.type.substring(0,pos)]
+                  + '('+sponTps[s.type.substring(pos+1)]+')';
+            } else {
+                type=salTps[s.type];
+            }
+            return {val:s.val.toFixed(2),type:type};
+        })
     });    
 },
 query_event(pg) {
@@ -95,8 +104,8 @@ query_perf(pg) {
         }
         //month,level,cmt,cfmed
         this.perfs=resp.data.list.map(p => {
-            var m=p.month;
-            p.month=Math.floor(m/12)+'/'+(1+m%12);
+            var m=p.month%12+1;
+            p.month=parseInt(p.month/12)+'/'+(m<10?'0'+m:m);
             p.state=p.cfmed=='Y'?this.tags.hr.cfmed:this.tags.hr.notCfm;
             return p;
         });
@@ -133,10 +142,10 @@ template:`
 <q-tab-panels v-model="tab">
 
 <q-tab-panel name="salary">
-<month-input class="justify-center text-primary" min="-5" max="cur"
-@update:modelValue="query_salary"></month-input>
+<month-input class="justify-center text-primary" min="-3" max="cur"
+v-model="salMonth" @update:modelValue="query_salary"></month-input>
 <q-list separator>
- <q-item v-for="s in salaries"">
+ <q-item v-for="s in salaries">
   <q-item-section>{{s.type}}</q-item-section>
   <q-item-section>{{s.val}}</q-item-section>
  </q-item>
