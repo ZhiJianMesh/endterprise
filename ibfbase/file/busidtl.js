@@ -183,7 +183,7 @@ template:`
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
-     <q-toolbar-title>{{tags.busi.title}}-{{dtl.prjName}}({{dtl.state_s}})</q-toolbar-title>
+     <q-toolbar-title>{{tags.busi.title}}-{{dtl.prjName}}</q-toolbar-title>
      <q-btn flat icon="clear" @click="remove_busi()" v-if="editable" dense></q-btn>
      <q-btn flat icon="edit" @click="show_edit" v-if="editable&&!editing" dense></q-btn>
    </q-toolbar>
@@ -260,11 +260,11 @@ template:`
   <q-item v-for="(e,i) in expList" :clickable="editable" @click="show_exp(i)">
     <q-item-section>
      <q-item-label>{{e.invoice}}</q-item-label>
-     <q-item-label caption>{{e.start_s}}-{{e.end_s}}</q-item-label>
-    </q-item-section>
-    <q-item-section>
-     <q-item-label>{{e.val}}</q-item-label>
      <q-item-label caption>{{e.cmt}}</q-item-label>
+    </q-item-section>
+    <q-item-section side>
+     <q-item-label>{{e.val}}</q-item-label>
+     <q-item-label caption>{{e.start_s}}-&gt;{{e.end_s}}</q-item-label>
     </q-item-section>
   </q-item>
 </q-list>

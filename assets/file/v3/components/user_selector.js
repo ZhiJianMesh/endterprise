@@ -68,6 +68,7 @@ changed() {
             this.accounts.push(c.value);
         }
     } else if(this.values){ //单选时，values不是数组
+        this.accounts.pop();//先删除，再添加
         this.accounts.push(this.values.value);
     }
 }
@@ -75,7 +76,7 @@ changed() {
 template: `
 <q-select v-model="values" :label="label" :options="accOptions"
   use-input use-chips :multiple="multi"
-  hide-dropdown-icon input-debounce=200 dense
+  hide-dropdown-icon input-debounce=200
   @new-value="input_user" @filter="search_users"
   @update:model-value="changed">
  <template v-slot:selected-item="scope">

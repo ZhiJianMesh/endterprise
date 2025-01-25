@@ -44,7 +44,7 @@ query_opinions() {
     this.opinion='';
     this.nextSigners=[];
     var url="/api/opinions?flowid="+this.flowid+"&did="+this.did;
-    request({method:"GET",url:url}, this.service.WF).then(function(resp){
+    request({method:"GET",url:url}, this.service.WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -56,7 +56,7 @@ query_opinions() {
         var signer=resp.data.signer;//当前查看人
 
         var steps=[]; //预填充步骤的数据
-        this.flow.steps.forEach(function(o){
+        this.flow.steps.forEach(o=>{
             steps[o.step]={step:o.step,title:o.title,
                 type:o.type/*类型：O-ne单签，M-ulti会签*/,
                 t:0/*时间戳*/, ts:''/*时间*/,
@@ -102,7 +102,7 @@ query_opinions() {
         }
         this.allProced=allProced;
         this.steps=steps;
-    }.bind(this));
+    });
 },
 confirm() {
     if(this.base.step>this.flow.maxStep) {
