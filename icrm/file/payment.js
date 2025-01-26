@@ -42,7 +42,7 @@ save_base() {
     }.bind(this))
 },
 payment_flow(){
-    this.$router.push('/task?flow='+this.dtl.flowid+"&did="+this.id+"&flName=payment&step="+this.dtl.status);
+    this.$router.push('/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=payment&step="+this.dtl.status);
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.payment.title+' "'+this.dtl.cname+'-'+this.dtl.skuName+'"';

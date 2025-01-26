@@ -18,6 +18,7 @@ cn:{
   remove:"删除",
   add:"增加",
   save:"保存",
+  alert:'注意',
   search:"搜索",
   confirm:"确定",
   submit:"提交",
@@ -32,12 +33,14 @@ cn:{
   month:"月",
   apply:'申请',
   attention:'注意',
+  signers:'权签人',
 
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
   failToCall:"调用失败",
   onlyOneType:"一次申请中，只能填写同类的申请",
   wrongWfDef:"工作流定义存在错误",
+  wrongFlowState:"工作流状态错乱，请确认是否清除？",
   invalidInterval:"无效的时间段",
   invalidRatio:"请输入正确的分摊比率",
   plsInputPrj:'请选择项目',
@@ -46,7 +49,7 @@ cn:{
   dateFmt:"YYYY/MM/DD HH:mm",
   start:'开始时间',
   end:'结束时间',
-  
+
   sex:{
     M:"先生",
     F:"女士",
@@ -252,7 +255,14 @@ cn:{
     mbrRole:"角色",
     account:"帐号"
   },
-
+  flow:{
+    opinion:"意见",
+    agree:'同意',
+    disAgree:'不同意',
+    finish:"完成",
+    reject:"返回",
+    nextStep:"下一步"
+  },
   sta2icon:function(s){
     if(s==0) {
       return 'star_border';
@@ -282,7 +292,13 @@ cn:{
     
     6101:"存在未完成的计划，不可结束项目",
     6103:"超过最大忘刷卡次数",
-    6107:'无有效的工时记录'
+    6107:'无有效的工时记录',
+    
+    10104:"会签仍未结束",
+    10106:"输入的帐号不符合要求",
+    10108:"下一步会签，参与会签的人不可以有自己",
+    10109:"下一步只可指定一个责任人",
+    10110:"必须指定下一步责任人"
   }
 }
 };

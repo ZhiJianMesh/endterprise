@@ -41,7 +41,7 @@ save_base() {
     })
 },
 service_flow(){
-    var url='/task?flow='+this.dtl.flowid+"&did="+this.id+"&flName=service&step="+this.dtl.status;
+    var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=service&step="+this.dtl.status;
     this.$router.push(url);
 },
 menu_remove(){

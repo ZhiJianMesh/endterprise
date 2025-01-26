@@ -3,45 +3,86 @@ import Language from "./language.js"
 import Department from "./department.js"
 import My from "./my.js"
 import Contacts from "./contacts.js"
-import Project from "./project.js"
+import PrjProc from "./prjproc.js"
+import PrjInfo from "./prjinfo.js"
 import Attendance from "./attendance.js"
 import Business from "./business.js"
 import BusiDtl from "./busidtl.js"
 import Workflow from "./workflow.js"
 
-const SERVICE_HR="ihr";
-const SERVICE_PRJ="iproject";
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 function registerIbf(app, router) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/department", component:Department});
     router.addRoute({path:"/ibf/my", component:My});
     router.addRoute({path:"/ibf/contacts", component:Contacts});
-    router.addRoute({path:"/ibf/project", component:Project}); //项目
+    router.addRoute({path:"/ibf/prjproc", component:PrjProc}); //项目事务流程
+    router.addRoute({path:"/ibf/prjinfo", component:PrjInfo}); //项目状态信息
     router.addRoute({path:"/ibf/attendance", component:Attendance}); //考勤
     router.addRoute({path:"/ibf/business", component:Business}); //差旅列表
     router.addRoute({path:"/ibf/busidtl", component:BusiDtl}); //差旅详情
     router.addRoute({path:"/ibf/workflow", component:Workflow}); //工作流
     
-    app.provide('ibf', {//如果定义一个const/var写在外面，再在此引用，路由会失败，原因未知
+    app.provide('ibf', {//如果定义一个const/var写在外面，在此引用，路由会失败，原因未知
         tags:tags,
         prjs:[],
         department:{}, //所属部门，作为普通员工，只能从属于一个部门
         adminDpms:[], //管理的部门
-        ctrl:{cur:1,max:0},
+        flowInfos:{},
         clockTms:[],
-        SERVICE_HR:SERVICE_HR,
+        SERVICE_HR:"ihr",
+        SERVICE_WF:"workflow",
         SERVICE_CRM:"icrm",
         SERVICE_FINANCE:"ifinance",
         SERVICE_BUSINESS:"ibusiness",
-        SERVICE_PRJ:SERVICE_PRJ,
+        SERVICE_PRJ:"iproject",
         SERVICE_RES:"iresource",
         N_PAGE:10,
         N_SMPG:5,
         PrjStage:{init:'INIT',start:'START',end:'END',cancel:'CANC'},
         PlanState:{init:'INIT',norm:'NORM',adv:'ADVA',delay:'DELA',cancel:'CANC'},
-        back:()=>{router.back()},
-        goto:(url)=>{router.push(url)}
+        back(){router.back()},
+        goto(url){router.push(url)},
+        flowDefs(ids){
+            var fids='';
+            for(var id of ids){
+                if(this.flowInfos[id]) continue;
+                if(fids!='')fids+=',';
+                fids+=id;
+            }
+            var url="/api/flow/infos?flowids="+fids
+            return request({method:"GET",url:url}, this.SERVICE_WF).then(resp=>{
+                if(resp.code!=0) {
+                    return false;
+                }
+                //flows:{flow,name,dispName,cmt,callback}
+                //steps:{flow,step,type,name,ext,cmt}
+                resp.data.flows.forEach(f=>{
+                    var sd={name:f.dispName,maxStep:0,steps:[]};
+                    this.flowInfos[f.id]=sd;
+                });
+                resp.data.steps.forEach(s=> {
+                    var sd=this.flowInfos[s.flow];
+                    sd.steps.push({step:s.step,type:s.type,title:s.name+'('+s.cmt+')',
+                        ext:s.ext,comment:s.cmt, signer:s.signer});
+                    if(s.step>sd.maxStep){
+                        sd.maxStep=s.step;
+                    }
+                });
+                return true;
+            });
+        },
+        flowDef(id,refresh){//不能用箭头函数，否则不能用this，箭头函数的this是在运行时所在的对象
+            if(!refresh && this.flowInfos[id]) {
+                return new Promise(resolve=>{resolve(this.flowInfos[id])});
+            }
+            return this.flowDefs([id]).then(r=>{
+                return this.flowInfos[id] ? this.flowInfos[id] : {};
+            });
+        },
+        getFlowDef(id) {
+            return this.flowInfos[id];
+        }
     })
     return new Promise((resolve) => {resolve(true)});
 }
@@ -67,7 +108,7 @@ created(){
         this.ctrl=this.ibf.ctrl;
     }
     if(this.ibf.clockTms.length==0) {
-        request({method:"GET",url:"/attendance/clockAt"}, SERVICE_HR).then(resp=>{
+        request({method:"GET",url:"/attendance/clockAt"}, this.ibf.SERVICE_HR).then(resp=>{
             if(resp.code!=RetCode.OK) {
                 this.set_clockTms([]);
                 return;
@@ -103,8 +144,8 @@ created(){
 methods:{
 query_prjs(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_SMPG;
-    var url='/project/my?offset='+offset+'&num='+this.ibf.N_SMPG;
-    request({method:"GET", url:url}, SERVICE_PRJ).then(resp=>{
+    var url='/project/my?offset='+offset+'&num='+this.ibf.N_PAGE;
+    request({method:"GET", url:url}, this.ibf.SERVICE_PRJ).then(resp=>{
         var prjs=[];
         if(resp.code!=RetCode.OK) {
             this.ctrl.max=0;
@@ -157,7 +198,7 @@ set_clockTms(tms) {
     this.ibf.clockTms=clkTms;
 },
 clock() { //上下班刷卡
-    request({method:"GET",url:"/attendance/clock"}, SERVICE_HR).then(resp=>{
+    request({method:"GET",url:"/attendance/clock"}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
@@ -216,14 +257,17 @@ template:`
 </div>
 <q-separator spaced="md"></q-separator>
 <q-list dense separator>
-  <q-item v-for="p in prjs" clickable @click="ibf.goto('/ibf/project?id='+p.id)">
+  <q-item v-for="p in prjs" clickable @click="ibf.goto('/ibf/prjproc?id='+p.id)">
    <q-item-section>
     <q-item-label>{{p.name}}</q-item-label>
     <q-item-label caption>{{p.role}}</q-item-label>
    </q-item-section>
-   <q-item-section side>
+   <q-item-section>
     <q-item-label>{{p.stage}}</q-item-label>
     <q-item-label caption>{{p.time}}</q-item-label>
+   </q-item-section>
+   <q-item-section side>
+    <q-icon name="info" color="primary" @click="ibf.goto('/ibf/prjinfo?id='+p.id)"></q-icon>
    </q-item-section>
   </q-item>
 </q-list>

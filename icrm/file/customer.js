@@ -184,7 +184,7 @@ opr_touchlog(opr){
     })
 },
 customer_flow(){
-    var url='/task?flow='+this.dtl.flowid+"&did="+this.id+"&flName=customer&step="+this.dtl.status;
+    var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=customer&step="+this.dtl.status;
     this.$router.push(url);
 },
 save_base() {

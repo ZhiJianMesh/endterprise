@@ -139,7 +139,7 @@ add_payment() {
     }.bind(this))
 },
 order_flow(){
-    var url='/task?flow='+this.dtl.flowid+"&did="+this.id+"&flName=order&step="+this.dtl.status;
+    var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=order&step="+this.dtl.status;
     this.$router.push(url);
 },
 menu_remove(){

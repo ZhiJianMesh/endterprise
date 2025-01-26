@@ -101,7 +101,6 @@ cn:{
   checkFailed:"您输入的密码有误，或您的订单被篡改过！",
   exceedsDayNum:"报表周期不可超过31天！",
   invalidRange:"报表周期至少1个月，最多12个月",
-  wrongFlowState:"工作流状态错乱，请确认是否清除？",
   noSkuDef:"无商品定义，不可以创建订单",
   unHandled:"未处理",
   onlyMine:"只看我的",
@@ -251,14 +250,6 @@ cn:{
     lowest:"最低售价",
     highest:"最高售价",
     comment:"描述"
-  },
-  flow:{
-    opinion:"意见",
-    agree:'同意',
-    disAgree:'不同意',
-    finish:"完成",
-    reject:"返回",
-    nextStep:"下一步"
   }
 },
 calClose:'关闭'

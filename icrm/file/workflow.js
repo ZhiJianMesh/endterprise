@@ -1,6 +1,7 @@
 export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
+    service:this.$route.query.service,
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     flName:this.$route.query.flName, //customer客户、order订单、service服务、payment回款
@@ -10,7 +11,7 @@ data() {return {
     steps:[],
     opinion:'',//处理意见
     nextSigners:[],//下一步处理人
-    allProced:true,
+    allDone:true,
     oIcons:{P:'thumb_up',R:'thumb_down'}
 }},
 created(){
@@ -24,7 +25,7 @@ created(){
             return;
         }
         var dtl=[];
-        resp.data.segs.forEach(function(s) {
+        resp.data.segs.forEach(s => {
             if(s!='createAt') {
                 dtl.push({k:segNames[s], v:resp.data[s]});
             } else {
@@ -32,19 +33,20 @@ created(){
             }
         });
         this.dtl=dtl;
-    }.bind(this));
+    });
     
-    this.service.flowDef(this.flowid).then(function(sd){
+    this.service.flowDef(this.flowid).then(sd=>{
         this.flow=sd;
         this.query_opinions();
-    }.bind(this));
+    });
 },
 methods:{
 query_opinions() {
     this.opinion='';
     this.nextSigners=[];
-    var url="/api/opinions?flowid="+this.flowid+"&did="+this.did;
-    request({method:"GET",url:url}, this.service.WF).then(function(resp){
+    var url="/api/opinions?flowid="+this.flowid+"&did="+this.did
+        +"&service="+this.service;
+    request({method:"GET",url:url}, this.service.WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
         }
@@ -56,7 +58,7 @@ query_opinions() {
         var signer=resp.data.signer;//当前查看人
 
         var steps=[]; //预填充步骤的数据
-        this.flow.steps.forEach(function(o){
+        this.flow.steps.forEach(o=>{
             steps[o.step]={step:o.step,title:o.title,
                 type:o.type/*类型：O-ne单签，M-ulti会签*/,
                 t:0/*时间戳*/, ts:''/*时间*/,
@@ -66,7 +68,7 @@ query_opinions() {
         
         var cols=resp.data.cols;
         var s, opt, ts;
-        var allProced=true;
+        var allDone=true;
         var opts=resp.data.opinions;//step,opinion,result,type,signer,turn,update_time
         for(var i=0;i<opts.length;i++) {
             opt=opts[i];
@@ -76,7 +78,7 @@ query_opinions() {
                 o[cols[c]]=opt[j++];
             }
             dt.setTime(o.update_time);
-            ts=dt.toLocaleString();
+            ts=datetime2str(dt);
             s=steps[o.step];
             if(!s){
                 continue;
@@ -95,14 +97,14 @@ query_opinions() {
                 result:o.result,turn:o.turn,type:o.type,step:o.step});
                 if(curStep==o.step && s.type=='M') {//会签中，所有从签人都处理完毕才能向下走
                     if(o.result=='I') {
-                        allProced=false;
+                        allDone=false;
                     }
                 }
             }            
         }
-        this.allProced=allProced;
+        this.allDone=allDone;
         this.steps=steps;
-    }.bind(this));
+    });
 },
 confirm() {
     if(this.base.step>this.flow.maxStep) {
@@ -110,61 +112,61 @@ confirm() {
         return;
     }
     var url="/api/confirm";
-    var data={flowid:this.flowid, did:this.did,
+    var data={flowid:this.flowid, did:this.did,service:this.service,
         opinion:this.opinion, nextSigners:this.nextSigners};
-    request({method:"POST",url:url,data:data}, this.service.WF).then(function(resp){
+    request({method:"POST",url:url,data:data}, this.service.WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.base.step=resp.data.nextStep;
         this.query_opinions();
-    }.bind(this));
+    });
 },
 counterSign(agree) {
     var url="/api/counterSign";
-    var data={flowid:this.flowid, did:this.did,
+    var data={flowid:this.flowid, did:this.did,service:this.service,
         opinion:this.opinion, result:agree?'P':'R'};
-    request({method:"POST",url:url,data:data}, this.service.WF).then(function(resp){
+    request({method:"POST",url:url,data:data}, this.service.WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.query_opinions();
-    }.bind(this));
+    });
 },
 reject() {
     if(this.base.step<=0) {
         return;
     }
     var url="/api/reject";
-    var data={flowid:this.flowid, did:this.did, opinion:this.opinion};
-    request({method:"POST",url:url, data:data}, this.service.WF).then(function(resp){
+    var data={flowid:this.flowid, did:this.did,service:this.service,opinion:this.opinion};
+    request({method:"POST",url:url, data:data}, this.service.WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.base.step=resp.data.foreStep;
         this.query_opinions();
-    }.bind(this));
+    });
 },
-removeWf() { //工作流数据错乱的情况下，删除工作流记录
-    var url="/api/"+this.flName+"/exists?id="+this.did;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+removeWf() { //判断数据是否存在，工作流数据错乱的情况下，删除工作流记录
+    var opts={method:"GET",url:"/api/"+this.flName+"/exists?id="+this.did};
+    request(opts, this.service.name).then(resp=>{
         if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS
             return;
         }
-        this.$refs.confirmDlg.show(this.tags.wrongFlowState, function(){
-            var opts={method:"DELETE",url:"/api/proxy/removeBrokenWf?flowid="+this.flowid+"&did="+this.did};
-            request(opts, this.service.WF).then(function(resp){
+        this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
+            var url="/api/proxy/removeBrokenWf?flowid="+this.flowid+"&did="+this.did;
+            request({method:"DELETE",url:url}, this.service.WF).then(resp=>{
                 if(resp.code!=RetCode.OK) {
                     this.$refs.errMsg.showErr(resp.code, resp.info);
                 }else{
                     this.service.go_back();
                 }
-            }.bind(this))
-        }.bind(this));
-    }.bind(this));
+            })
+        });
+    });
 },
 showDtl() {
     this.service.jumpTo('/'+this.flName+'?id='+this.did)    
@@ -203,7 +205,7 @@ template:`
         <component-user-selector :label="tags.signers" :multi="true"
          :accounts="nextSigners" v-if="s.step!=flow.maxStep"></component-user-selector>
         <div class="row justify-end q-mt-lg">
-         <q-btn @click="confirm" color="primary" :disable="!allProced"
+         <q-btn @click="confirm" color="primary" :disable="!allDone"
           :label="s.step!=flow.maxStep?tags.flow.nextStep:tags.flow.finish" dense></q-btn>
          <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="tags.flow.reject" class="q-ml-sm" dense></q-btn>
         </div>

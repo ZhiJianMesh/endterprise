@@ -1,45 +1,20 @@
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
 import AlertDialog from "/assets/v3/components/alert_dialog.js";
-const SERVICE_WF="workflow";
-const Workflows={
-    flowsteps:{},
-    flowDef:(id,refresh) => {
-        if(!refresh && Workflows.flowsteps[id]) {
-            return new Promise(resolve=>{resolve(Workflows.flowsteps[id])});
-        }
-
-        var url="/api/flow/info?flowid="+id
-        return request({method:"GET",url:url}, SERVICE_WF).then(resp=>{
-            if(resp.code!=0) {
-                reject(url + ",code:"+resp.code+",info:"+resp.info);
-                return {};
-            }
-            var sd={name:resp.data.dispName,maxStep:0,steps:[]};//steps definition
-            //step,type,name,ext,comment
-            resp.data.steps.forEach(s=> {
-                sd.steps[s.step]={step:s.step,type:s.type,title:s.name+'('+s.comment+')',ext:s.ext,comment:s.comment};
-                if(s.step>sd.maxStep){
-                    sd.maxStep=s.step;
-                }
-            });
-            Workflows.flowsteps[id]=sd;
-            return sd;
-        });
-    }
-}
-export {Workflows};
+import UserSelector from "/assets/v3/components/user_selector.js"
 
 export default {
 inject:['ibf'],
 components:{
     "alert-dialog":AlertDialog,
-    "confirm-dialog":ConfirmDialog
+    "confirm-dialog":ConfirmDialog,
+    "user-selector":UserSelector
 },
 data() {return {
+    service:this.$route.query.service,
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     flName:this.$route.query.flName,
-    service:this.$route.query.service,
+    rmvBroken:this.$route.query.rmvBroken,
     dtlApi:this.$route.query.dtlApi,
     dtlPage:this.$route.query.dtlPage,
     tags:this.ibf.tags,
@@ -49,14 +24,14 @@ data() {return {
     steps:[],
     opinion:'',//处理意见
     nextSigners:[],//下一步处理人
-    allProced:true,
+    allDone:true,
     oIcons:{P:'thumb_up',R:'thumb_down'}
 }},
 created(){
     //此处有约定:1)type为customer、order、payment、service等；
     // 2）languages中必须由对应名称的tag集合；
     // 3)必须由对应的detail接口，并且接口中响应中segs字段指定了要显示的字段名；
-    var dtlUrl="/api" + this.dtlApi
+    var dtlUrl=this.dtlApi
         +(this.dtlApi.indexOf('?')>0?'&':'?')
         +"id="+this.did;
     var segNames=this.tags[this.flName]['wfSegs'];
@@ -66,7 +41,7 @@ created(){
         }
         var dtl=[];
         var dt=new Date();
-        for(var s of segNames) {
+        segNames.forEach(s => {
             var v;
             if(s.t=='dt') {
                 dt.setTime(resp.data[s.n]);
@@ -78,11 +53,11 @@ created(){
                 v=resp.data[s.n];
             }
             dtl.push({k:s.s,v:v});
-        }
+        });
         this.dtl=dtl;
     });
     
-    Workflows.flowDef(this.flowid).then(sd=>{
+    this.ibf.flowDef(this.flowid).then(sd=>{
         this.flow=sd;
         this.query_opinions();
     });
@@ -91,65 +66,98 @@ methods:{
 query_opinions() {
     this.opinion='';
     this.nextSigners=[];
-    var url="/api/opinions?flowid="+this.flowid+"&did="+this.did;
-    request({method:"GET",url:url}, SERVICE_WF).then(resp=>{
+    var url="/api/opinions?flowid="+this.flowid+"&did="+this.did
+        +"&service="+this.service;
+    request({method:"GET",url:url}, this.ibf.SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
         }
-        var dt=new Date(resp.data.update_time);
         var curStep=resp.data.step;
         this.base.step=curStep; //待处理的步骤
+        this.base.nextStepType=resp.data.nextStepType; //下一步类型，用于决定帐号输入是单选还是多选
         this.base.creator=resp.data.creator;
-        this.base.createAt=dt.toLocaleString();
-        var signer=resp.data.signer;//当前查看人
-
-        var steps=[]; //预填充步骤的数据
-        this.flow.steps.forEach(function(o){
-            steps[o.step]={step:o.step,title:o.title,
-                type:o.type/*类型：O-ne单签，M-ulti会签*/,
-                t:0/*时间戳*/, ts:''/*时间*/,
-                list:[]/*当前步骤的意见列表*/,
-                olist:[]/*其他人的意见*/};
-        });
-        
-        var cols=resp.data.cols;
-        var s, opt, ts;
-        var allProced=true;
-        var opts=resp.data.opinions;//step,opinion,result,type,signer,turn,update_time
-        for(var i=0;i<opts.length;i++) {
-            opt=opts[i];
-            var o={};
-            var j=0;
-            for(var c in cols) {
-                o[cols[c]]=opt[j++];
-            }
-            dt.setTime(o.update_time);
-            ts=dt.toLocaleString();
-            s=steps[o.step];
-            if(!s){
-                continue;
-            }
-            if(s.t<o.update_time){//标题上只显示最后一次时间
-                s.t=o.update_time;
-                s.ts=ts;
-            }
-            
-            if(o.signer==signer) {//当前处理人的意见
-                s.list.push({signer:o.signer,time:ts,opinion:o.opinion,
-                result:o.result,turn:o.turn,type:o.type,step:o.step});
-            } else {
-                s.olist.push({signer:o.signer,time:ts,
-                opinion:o.result=='I'?this.tags.unHandled:o.opinion,
-                result:o.result,turn:o.turn,type:o.type,step:o.step});
-                if(curStep==o.step && s.type=='M') {//会签中，所有从签人都处理完毕才能向下走
-                    if(o.result=='I') {
-                        allProced=false;
-                    }
-                }
-            }            
+        var dt=new Date();
+        dt.setTime(resp.data.update_time);
+        this.base.createAt=datetime2str(dt);
+        if(curStep<this.flow.maxStep) {
+            var nextSigner=this.flow.steps[resp.data.nextStep].signer;
+            this.get_next_signers(nextSigner,this.flowid, this.did, curStep).then(r=>{
+                this.init_steps(resp, curStep);
+            });
+        } else {
+            this.init_steps(resp, curStep);
         }
-        this.allProced=allProced;
-        this.steps=steps;
+    });
+},
+init_steps(resp, curStep) {
+    var signer=resp.data.signer;//当前查看人
+    var steps=[]; //预填充步骤的数据
+    this.flow.steps.forEach(o=>{
+        steps[o.step]={step:o.step,title:o.title,
+            type:o.type/*类型：O-ne单签，M-ulti会签*/,
+            t:0/*时间戳*/, ts:''/*时间*/,
+            list:[]/*当前步骤的意见列表*/,
+            olist:[]/*其他人的意见*/};
+    });
+
+    var dt=new Date();
+    var cols=resp.data.cols;
+    var s, opt, ts;
+    var allDone=true;
+    var opts=resp.data.opinions;//step,opinion,result,type,signer,turn,update_time
+    for(var i=0;i<opts.length;i++) {
+        opt=opts[i];
+        var o={};
+        var j=0;
+        for(var c in cols) {
+            o[cols[c]]=opt[j++];
+        }
+        dt.setTime(o.update_time);
+        ts=datetime2str(dt);
+        s=steps[o.step];
+        if(!s){
+            continue;
+        }
+        if(s.t<o.update_time){//标题上只显示最后一次时间
+            s.t=o.update_time;
+            s.ts=ts;
+        }
+        
+        if(o.signer==signer) {//当前处理人的意见
+            s.list.push({signer:o.signer,time:ts,opinion:o.opinion,
+            result:o.result,turn:o.turn,type:o.type,step:o.step});
+        } else {
+            s.olist.push({signer:o.signer,time:ts,
+            opinion:o.result=='I'?this.tags.unHandled:o.opinion,
+            result:o.result,turn:o.turn,type:o.type,step:o.step});
+            if(curStep==o.step && s.type=='M') {//会签中，所有从签人都处理完毕才能向下走
+                if(o.result=='I') {
+                    allDone=false;
+                }
+            }
+        }            
+    }
+    this.allDone=allDone;
+    this.steps=steps;    
+},
+get_next_signers(signer,flowid,did,step) {
+    var url,service;
+    if(/^\d+$/.test(signer)) {//步骤号
+        service=this.ibf.SERVICE_WF;
+        url="/stepSigners?flowid="+flowid+"&did="+did
+            +"&service="+this.service+"&step="+signer;
+    } else if(/^\/.+/.test(signer)){
+        service=this.service;
+        url=signer+(signer.indexOf('?')>0?'&':'?')
+            +"flowid="+flowid+"&did="+did+"&step="+step;
+    } else {
+        return new Promise(resolve=>resolve(true));
+    }
+    return request({method:"GET", url:url}, service).then(resp=>{
+        if(resp.code==RetCode.OK) {
+            this.nextSigners=resp.data.signers
+        }
+        return true;
     });
 },
 confirm() {
@@ -158,9 +166,9 @@ confirm() {
         return;
     }
     var url="/api/confirm";
-    var data={flowid:this.flowid, did:this.did,
+    var data={flowid:this.flowid, did:this.did,service:this.service,
         opinion:this.opinion, nextSigners:this.nextSigners};
-    request({method:"POST",url:url, data:data}, SERVICE_WF).then(resp=>{
+    request({method:"POST",url:url, data:data}, this.ibf.SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -171,9 +179,9 @@ confirm() {
 },
 counterSign(agree) {
     var url="/api/counterSign";
-    var data={flowid:this.flowid, did:this.did,
+    var data={flowid:this.flowid, did:this.did,service:this.service,
         opinion:this.opinion, result:agree?'P':'R'};
-    request({method:"POST",url:url,data:data}, SERVICE_WF).then(resp=>{
+    request({method:"POST",url:url,data:data}, this.ibf.SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -186,8 +194,8 @@ reject() {
         return;
     }
     var url="/api/reject";
-    var data={flowid:this.flowid, did:this.did, opinion:this.opinion};
-    request({method:"POST",url:url, data:data}, SERVICE_WF).then(resp=>{
+    var data={flowid:this.flowid, did:this.did, opinion:this.opinion, service:this.service};
+    request({method:"POST",url:url, data:data}, this.ibf.SERVICE_WF).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -196,17 +204,18 @@ reject() {
         this.query_opinions();
     });
 },
-removeWf() { //工作流数据错乱的情况下，删除工作流记录
-    var dtlUrl="/api" + this.dtlApi
-            +(this.dtlApi.indexOf('?')>0?'&':'?')
-            +"id="+this.did;
+removeWf() { //判断数据是否存在，工作流数据错乱的情况下，删除工作流记录
+    var dtlUrl=this.dtlApi;
+    dtlUrl += (dtlUrl.indexOf('?')>0?'&':'?')+"id="+this.did;
     request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
         if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS
             return;
         }
         this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
-            var opts={method:"DELETE",url:"/api/proxy/removeBrokenWf?flowid="+this.flowid+"&did="+this.did};
-            request(opts, SERVICE_WF).then(resp=>{
+            var rmvUrl = this.rmvBroken
+                + this.rmvBroken.indexOf('?')>0?'&':'?'
+                + "flowid="+this.flowid+"&did="+this.did;
+            request({method:"DELETE",url:rmvUrl}, this.ibf.SERVICE_WF).then(resp=>{
                 if(resp.code!=RetCode.OK) {
                     this.$refs.errMsg.showErr(resp.code, resp.info);
                 }else{
@@ -217,7 +226,8 @@ removeWf() { //工作流数据错乱的情况下，删除工作流记录
     });
 },
 showDtl() {
-    var url=this.dtlPage+(this.dtlPage.indexOf('?')>0?'&':'?')+'id='+this.did;
+    var url=this.dtlPage;
+    url+=(url.indexOf('?')>0?'&':'?')+'id='+this.did;
     this.ibf.goto(url)    
 }
 },
@@ -250,16 +260,17 @@ template:`
     <q-item-label caption>
      <div v-if="o.result=='I' && o.step==base.step">
        <q-input v-model="opinion" :label="tags.flow.opinion" outlined dense maxlength=100></q-input>
-       <div v-if="o.type!='S'">
-        <component-user-selector :label="tags.signers" :multi="true"
-         :accounts="nextSigners" v-if="s.step!=flow.maxStep"></component-user-selector>
+       <div v-if="o.type!='S'"><!-- 会签时的从签不必设置下一步责任人,O/S/M -->
+        <user-selector :label="tags.signers" :multi="base.nextStepType=='M'"
+         :accounts="nextSigners"
+         v-if="s.step!=flow.maxStep && nextSigners.length==0"></user-selector>
         <div class="row justify-end q-mt-lg">
-         <q-btn @click="confirm" color="primary" :disable="!allProced"
+         <q-btn @click="confirm" color="primary" :disable="!allDone"
           :label="s.step!=flow.maxStep?tags.flow.nextStep:tags.flow.finish" dense></q-btn>
          <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="tags.flow.reject" class="q-ml-sm" dense></q-btn>
         </div>
        </div>
-       <div v-else class="row justify-end q-mt-lg">
+       <div v-else class="row justify-end q-mt-lg"> <!-- 会签时从签人确定后，不会向下一步走 -->
         <q-btn @click="counterSign(true)" color="primary" :label="tags.flow.agree" dense></q-btn>
         <q-btn flat @click="counterSign(false)" color="primary" :label="tags.flow.disAgree" class="q-ml-sm" dense></q-btn>
        </div>

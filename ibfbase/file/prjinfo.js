@@ -18,7 +18,6 @@ data() {return {
     tags:this.ibf.tags,
     tab:'plan', //plan,target,member,subs
     members:[],//计划
-    wt:{list:[],month:'-1m',cur:1,max:0,dlg:false,no:-1}, //按月查询工时申请
     mbrEvents:[], //成员事件
     plans:[],//计划
     targets:[], //目标
@@ -65,11 +64,6 @@ tab_changed(tab) {
         this.showAdd=this.isLeader;
         if(this.members.length==0) {
             this.query_members();
-        }
-    } else if(tab=='worktime'){
-        this.showAdd=false;
-        if(this.wt.list.length==0) {
-            this.query_wts(this.wt.cur);
         }
     } else {
         if(this.subs.length==0) {
@@ -153,25 +147,6 @@ query_members() {
             mbrs.push(m);
         }
         this.members=mbrs;
-    })
-},
-query_wts(pg) {
-    if(!this.wt.month.num)return;//第一次切换到此tab，month还没准备好
-    var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
-    var url="/tasktime/wait?pid="+this.pid
-            +"&offset="+offset+'&num='+this.ibf.N_PAGE
-            +"&month="+this.wt.month.num
-    request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.wt.list=[];
-            this.wt.max=0;
-            return;
-        }
-        this.wt.list=resp.data.list.map(l=>{
-            l.state_s=this.tags.aplSta[l.state];
-            return l;
-        });
-        this.wt.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     })
 },
 query_subs() {
@@ -379,28 +354,6 @@ prj_do(act) {
         this.ctrl.no=-2;
         this.ctrl.prjDlg=false;
     });
-},
-month_changed() {
-    this.wt.cur=1;
-    this.query_wts(1);
-},
-show_wt(no) {
-    this.wt.no=no;
-    this.wt.dlg=true;
-},
-wt_do(state) {
-    if(this.wt.no<0)return;
-    var uid=this.wt.list[this.wt.no].uid;
-    var dta={pid:this.pid,uid:uid,month:this.wt.month.num,state:state};
-    request({method:'POST',url:'/tasktime/confirm', data:dta}, this.ibf.SERVICE_HR).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.alertDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.query_wts(this.wt.cur);
-        this.wt.no=-1;
-        this.wt.dlg=false;
-    });
 }
 },
 template:`
@@ -409,8 +362,6 @@ template:`
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.prj.title}}-{{prj.name}}</q-toolbar-title>
-     <month-input v-model="wt.month" v-if="tab=='worktime'"
-      @update:modelValue="month_changed" min="-3" max="-1m"></month-input>
      <q-btn flat round icon="add_circle" dense @click="show_add()" v-show="showAdd"></q-btn>
    </q-toolbar>
   </q-header>
@@ -421,7 +372,6 @@ template:`
     <q-tab name="plan" icon="assignment" :label="tags.prj.plan"></q-tab>
     <q-tab name="target" icon="flag" :label="tags.prj.target"></q-tab>
     <q-tab name="member" icon="group" :label="tags.prj.member"></q-tab>
-    <q-tab name="worktime" icon="work_history" :label="tags.prj.worktime" v-if="isLeader"></q-tab>
     <q-tab name="subs" icon="account_tree" :label="tags.prj.subPrj" v-if="isLeader"></q-tab>
    </q-tabs>
   </q-footer>
@@ -466,22 +416,6 @@ template:`
    <q-item-section>{{m.role_s}}</q-item-section>
   </q-item>
  </q-list>
-</q-tab-panel>
-
-<q-tab-panel name="worktime">
- <q-list dense separator>
-  <q-item v-for="(l,i) in wt.list" @click="show_wt(i)" clickable>
-   <q-item-section>{{l.account}}</q-item-section>
-   <q-item-section>
-    <q-item-label>{{l.ratio}}%({{l.state_s}})</q-item-label>
-    <q-item-label caption>{{l.cmt}}</q-item-label>
-   </q-item-section>
-  </q-item>
- </q-list>
- <div class="q-pa-sm flex flex-center" v-show="wt.max>1">
-  <q-pagination v-model="wt.cur" color="primary" :max="wt.max" max-pages="10"
-   boundary-numbers="false" @update:model-value="query_wts"></q-pagination>
- </div>
 </q-tab-panel>
 
 <q-tab-panel name="subs">
@@ -693,21 +627,6 @@ template:`
    </q-btn-dropdown>
   </q-card-actions>
  </q-card>
-</q-dialog>
-
-<q-dialog v-model="wt.dlg" position="right">
-<q-card style="width:6em;">
- <q-card-section class="text-center">
-  <div class="q-pb-lg">
-   <q-btn icon="thumb_up" :label="Stacked" stack flat color="primary"
-   @click="wt_do('OK')"></q-btn>
-  </div>
-  <div>
-   <q-btn icon="thumb_down" :label="Stacked" stack flat color="red"
-   @click="wt_do('REJ')"></q-btn>
-  </div>
- </q-card-section>
-</q-card>
 </q-dialog>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
