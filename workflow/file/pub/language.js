@@ -16,17 +16,28 @@ cn:{
     modify:"修改",
     save:"保存",
     comment:"工作流描述",
+    wrongWfDef:"工作流定义错误",
+    wrongFlowState:"工作流状态错乱，请确认是否清除？",
     failToCall:"调用失败",
     changeNotSaved:"修改的内容尚未保存，请确认是否放弃？",
+    callback:"回调接口",
     step:{
         step:"序号",
         name:"名称",
         type:"签名",
-        callback:"回调接口",
         ext:"扩展",
+        signer:"默认权签人",
         comment:"描述"
     },
-    errMsgs:{},
-    flowTypes:{O:'单人签字',M:'多人会签'}
+    flowTypes:{S:'单人签字',M:'多人会签'},
+    
+    errMsgs:{
+      '10104':"会签仍未结束",
+      '10106':"输入的帐号不符合要求",
+      '10108':"下一步会签，参与会签的人不可以有自己",
+      '10109':"下一步只可指定一个责任人",
+      '10110':"必须指定下一步责任人",
+      'unknown':"未知错误"
+    }
 }
 };

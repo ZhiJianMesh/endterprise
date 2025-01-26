@@ -5,10 +5,10 @@ import Language from "./language.js"
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 
-const URL_CREATE="/flow/create";
 const URL_SAVESTEPS="/flow/saveSteps";
 const URL_INFO="/flow/getInfoByName";
 const SERVICE_WF="workflow";
+const EMPTY_STEP={step:'',type:'S',name:'',ext:'{}',cmt:'',signer:''};
 
 //简易的用户&群组管理
 export default {
@@ -18,7 +18,7 @@ data() {return {
     tags:tags,
     
     curFlow:'',
-    comment:'',
+    cmt:'',
     steps:[],
     changed:false,
     
@@ -62,9 +62,6 @@ proxy_req(req){
     }
     return request({method:"POST", url:this.proxyUrl, data:dta}, this.service);
 },
-null_step() {
-    return {step:'',type:'O',name:'',ext:'{}',comment:'',signer:''};
-},
 show_step_detail(i) {
     this.newStep=this.steps[i];
     this.flowDlg={show:true,state:0};
@@ -82,7 +79,7 @@ remove_step(n){
 confirm_step(){
     if(this.flowDlg.state==2) {//add
         this.steps.push(this.newStep);
-        this.newStep=this.null_step();
+        copyObjTo(EMPTY_STEP, this.newStep);
         this.steps.sort(function(a,b){
             return a.step-b.step;
         });
@@ -97,7 +94,7 @@ confirm_step(){
     
     this.changed=true;
     this.flowDlg.show=false;
-    this.newStep=this.null_step();
+    copyObjTo(EMPTY_STEP, this.newStep);
 },
 open_add_step(){
     var max=-1;
@@ -107,38 +104,38 @@ open_add_step(){
             max = v;
         }
     }
-    this.newStep=this.null_step();
+    copyObjTo(EMPTY_STEP, this.newStep);
     this.newStep.step=max+1;
     this.newStep.type=this.typeOpts[0].value;
     this.flowDlg={show:true,state:2};
 },
 save_flow(){
-    var opts={method:"POST",url:URL_SAVESTEPS, data:{comment:this.comment,
+    var opts={method:"POST",url:URL_SAVESTEPS, data:{cmt:this.cmt,
         service:this.service, name:this.curFlow, steps:this.steps}};
-    this.proxy_req(opts).then(function(resp){
+    this.proxy_req(opts).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.changed=false;
-    }.bind(this));
+    });
 },
 get_flow_info(flow) {
     var opts={method:"GET",url:URL_INFO+"?name="+flow+"&service="+this.service};
-    request(opts, SERVICE_WF).then(function(resp){
+    request(opts, SERVICE_WF).then(resp=>{
         if(resp.code != 0) {
             return;
         }
-        this.comment=resp.data.comment;
+        this.cmt=resp.data.cmt;
         this.steps=resp.data.steps;
         this.changed=false;
-    }.bind(this));
+    });
 },
 flow_changed() {
     if(this.changed) {
-        this.$refs.confirmDlg.show(this.tags.changeNotSaved, function(){
+        this.$refs.confirmDlg.show(this.tags.changeNotSaved, ()=>{
             this.get_flow_info(this.curFlow);
-        }.bind(this));
+        });
     } else {
         this.get_flow_info(this.curFlow);
     }
@@ -161,7 +158,7 @@ template:`
 
 <q-select v-model="curFlow" :options="flowOpts" outlined dense
  @update:model-value="flow_changed" emit-value map-options></q-select>
-<q-input :label="tags.comment" v-model="comment" maxlength=120
+<q-input :label="tags.comment" v-model="cmt" maxlength=120
  @update:model-value="changed=true"></q-input>
 <q-list>
 <q-item>
@@ -208,11 +205,14 @@ template:`
         <q-input :label="tags.step.name" v-model="newStep.name" maxlength=80 dense :disable="flowDlg.state==0"></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
+        <q-input :label="tags.step.signer" v-model="newStep.signer" maxlength=80 dense :disable="flowDlg.state==0"></q-input>
+      </q-item-section></q-item>
+      <q-item><q-item-section>
         <q-select v-model="newStep.type" :options="typeOpts" :label="tags.step.type"
          emit-value map-options :disable="flowDlg.state==0"></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <q-input :label="tags.step.comment" v-model="newStep.comment" type="text" autogrow maxlength=100 dense :disable="flowDlg.state==0"></q-input>
+        <q-input :label="tags.step.comment" v-model="newStep.cmt" type="text" autogrow maxlength=100 dense :disable="flowDlg.state==0"></q-input>
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
