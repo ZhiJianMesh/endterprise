@@ -4,7 +4,7 @@
         "name":"超级管理员",
         "rights":{
             "sku":"*",
-            "warehouse":"*",
+            "factory":"*",
             "supplier":"*",
             "contact":"*",
             "inbound":"*"

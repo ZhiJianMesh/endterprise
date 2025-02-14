@@ -10,7 +10,7 @@ en:{
   search:"Search"
 },
 cn:{
-  app_name:"人力资源管理",
+  app_name:"资源管理",
   ok:"确定",
   cancel:"取消",
   close:"关闭",
