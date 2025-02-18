@@ -29,5 +29,16 @@
             "errorInfo":"not a member",
             "condition":"@{CONDITION|!role,'s.==',''}"
         }
+    },
+    
+    "judge_factory_right" : {
+        "name" : "judge_factory_right",
+        "type" : "dataexists",
+        "db":"common",
+        "expect" : true,
+        "errorCode":"NO_RIGHT",
+        "errorInfo":"not a valid member",
+        "sql":"select * from factoryAdm where factory=#FACTORY#
+            and acc=@{#tokenAcc} and type in(#TYPE#)"
     }
 }

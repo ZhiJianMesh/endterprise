@@ -7,26 +7,21 @@
             "factory":"*",
             "supplier":"*",
             "contact":"*",
-            "inbound":"*"
+            "inbound":"*",
+            "outbound":"*",
+            "resource":"*",
+            "purchase":"*"
         }
     },
-    "buyer":{
-        "name":"采购员",
+    "normal":{
+        "name":"普通管理员",
         "rights":{
-            "sku":"*",
-            "supplier":"*",
-            "contact":"*"
-        }
-    },
-    "whadmin":{
-        "name":"仓库管理员",
-        "rights":{
-            "sku":"*",
             "supplier":"*",
             "contact":"*",
+            "inbound":"*",
+            "outbound":"*",
             "resource":"*",
-            "inbound":"whadmin",
-            "outbound":"whadmin"
+            "purchase":"*"
         }
     }
 }
