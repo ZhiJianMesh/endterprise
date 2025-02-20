@@ -23,11 +23,23 @@ cn:{
   name:'名称',
   detail:'详情',
   
+  sex:{
+    F:'男',
+    M:'女',
+    U:'未知'
+  },
+  
   skuType:{
     WHL:'整机',
     PART:'零件',
     SOFT:'软件',
     VIRT:'虚拟物品'
+  },
+  fbLevel:{
+    L:'低',
+    M:'中',
+    H:'高',
+    F:'致命'
   },
   factory:{
     title:'工厂',
@@ -41,7 +53,9 @@ cn:{
     type:'类型',
     noHead:'编号头',
     speci:'规格',
-    createAt:'创建时间'
+    createAt:'创建时间',
+    price:'报价',
+    feedback:'反馈'
   },
   supplier:{
     title:'供应商',
@@ -50,6 +64,12 @@ cn:{
     addr:'地址',
     business:'主营业务',
     taxid:'税号'
+  },
+  contact:{
+    title:'联系人',
+    name:'姓名',
+    post:'职位',
+    phone:'联系电话'
   },
   storge:{
     title:'仓储管理'

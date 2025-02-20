@@ -100,7 +100,7 @@ template:`
   <q-item-section><q-item-label caption>{{tags.supplier.creator}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
  </q-item>
- <q-item v-for="(s,i) in suppliers" clickable @click="goto('/supdetail?id='+s.id)">
+ <q-item v-for="(s,i) in suppliers" clickable @click="service.goto('/supdetail?id='+s.id)">
   <q-item-section>
    <q-item-label>{{s.name}}</q-item-label>
    <q-item-label caption>{{s.addr}}</q-item-label>

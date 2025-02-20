@@ -81,6 +81,13 @@ remove_sku(i) {
         }
         this.skus.splice(i,1);
     });
+},
+monDeprChanged() {
+    if(this.edt.sku.yearDepr!='') {
+        return; //已设置了，不自动变化
+    }
+    var yd=this.edt.sku.monthDepr*12;
+    this.edt.sku.yearDepr=yd.toFixed(2);
 }
 },
 template:`
@@ -105,11 +112,19 @@ template:`
   <q-item-section><q-item-label caption>{{tags.sku.createAt}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
  </q-item>
- <q-item v-for="(s,i) in skus" clickable @click="goto('/skudetail?id='+s.id)">
-  <q-item-section>{{s.name}}</q-item-section>
+ <q-item v-for="(s,i) in skus" clickable @click="service.goto('/skudetail?id='+s.id)">
+  <q-item-section>
+   <q-item-label>{{s.name}}</q-item-label>
+   <q-item-label caption>{{s.speci}}</q-item-label>
+  </q-item-section>
   <q-item-section>{{s.type_s}}</q-item-section>
   <q-item-section>{{s.createAt_s}}</q-item-section>
-  <q-item-section>{{s.cmt}}</q-item-section>
+  <q-item-section>
+   <q-item-label>{{s.cmt}}</q-item-label>
+   <q-item-label caption>
+    {{s.noHead}}/{{s.monthDepr}}/{{s.yearDepr}}
+   </q-item-label>
+  </q-item-section>
   <q-menu touch-position context-menu>
     <q-list dense style="min-width:100px">
       <q-item clickable v-close-popup @click="show_sku(i)">
@@ -137,9 +152,9 @@ template:`
    <q-input :label="tags.name" v-model="edt.sku.name" dense></q-input>
    <q-select :label="tags.sku.type" v-model="edt.sku.type" :options="skuTypes" emit-value map-options></q-select>
    <q-input :label="tags.sku.noHead" v-model="edt.sku.noHead" dense></q-input>
-   <q-input :label="tags.sku.monthDepr" v-model="edt.sku.monthDepr" dense
-   @update:model-value="edt.sku.yearDepr=edt.sku.monthDepr*12"></q-input>
-   <q-input :label="tags.sku.yearDepr" v-model="edt.sku.yearDepr" dense></q-input>
+   <q-input :label="tags.sku.monthDepr" v-model.number="edt.sku.monthDepr" dense
+   @update:model-value="monDeprChanged"></q-input>
+   <q-input :label="tags.sku.yearDepr" v-model.number="edt.sku.yearDepr" dense></q-input>
    <q-input :label="tags.sku.speci" v-model="edt.sku.speci" dense></q-input>
    <q-input :label="tags.cmt" v-model="edt.sku.cmt" dense></q-input>
   </q-card-section>

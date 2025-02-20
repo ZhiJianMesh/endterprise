@@ -16,7 +16,7 @@ get_opts(val,update) {
   }
   update(() => {
     var opts={method:"GET",url:"/api/supplier/search?limit=10&s="+val};
-    request(opts, "iproject").then(resp => {
+    request(opts, "iresource").then(resp => {
         if(resp.code!=RetCode.OK) {
             this.opts=[]
             return;

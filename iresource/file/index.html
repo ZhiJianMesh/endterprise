@@ -54,9 +54,9 @@ import IBF from '/ibfbase/ibf.js'
 import Factory from "./factory.js"
 import Sku from "./sku.js"
 import SkuDetail from "./skudetail.js"
-import Supplier from "./supplier.js" //入口在sku，包括contact
+import Supplier from "./supplier.js"
+import SupDetail from "./supdetail.js"
 import Storage from "./storage.js" //仓储，包括查看采购申请、执行出入库
-import Resource from "./resource.js" //资产管理，包括查看、清点
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -82,8 +82,8 @@ routes:[
   {path:'/sku', component:Sku},
   {path:'/skudetail', component:SkuDetail},
   {path:'/supplier', component:Supplier},
-  {path:'/storage', component:Storage},
-  {path:'/resource', component:Resource}
+  {path:'/supdetail', component:SupDetail},
+  {path:'/storage', component:Storage}
 ]});
 
 //service定义

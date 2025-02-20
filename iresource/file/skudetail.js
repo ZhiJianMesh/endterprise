@@ -1,38 +1,19 @@
+import SupplierInput from "./components/supplier_selector.js";
 export default {
 inject:['service', 'tags'],
+components:{
+    "supplier-input":SupplierInput
+},
 data() {return {
     id:this.$route.query.id,
     skuInfo:{}, //sku信息
     suppliers:[], //供应商
-    empInfo:{id:this.$route.query.id,
-        office:'',worktime:0,quali:'',post:'',
-        salary:'',dSalary:'',hSalary:'',subsidy:'',entryAt:'',
-        account:'',addr:'',email:'',idno:''},
-    ctrl:{fun:'',pi:{},entryDlg:false,cntDlg:false},
-    contact:{dlg:false, act:'',cmt:'',at:'',uid:this.$route.query.uid,tag:''},
-    opts:{edu:[],state:[],zone:[],office:[],worktime:[]}
+    feedbacks:[], //使用反馈
+    edtSup:{show:false,supplier:'',price:''}
 }},
 created(){
     this.get();
-    var eOpts=[];
-    for(var i in this.tags.edu) {
-        eOpts.push({value:i,label:this.tags.edu[i]});
-    }
-    this.opts.edu=eOpts;
-    
-    var sOpts=[];
-    for(var i in this.tags.perState) {
-        if(i=='JOIN') continue;
-        sOpts.push({value:i,label:this.tags.perState[i]});
-    }
-    this.opts.state=sOpts;
-    this.service.worktimeList().then(opts=>{
-        this.opts.worktime=opts;
-    });
-    this.service.zoneList().then(opts=>{
-        this.opts.zone=opts;
-    });
-    this.getContacts();
+    this.getFeedbacks();
 },
 methods:{
 get() {
@@ -41,130 +22,82 @@ get() {
         if(resp.code!=RetCode.OK) {
             return;
         }
-        this.skuInfo=this.convert(resp.data);
+        var dt=new Date();
+        dt.setTime(resp.data.createAt*60000);
+        resp.data.createAt_s=date2str(dt);
+        resp.data.type_s=this.tags.skuType[resp.data.type];
+        this.skuInfo=resp.data;
+        if(resp.data.suppliers) {
+            this.suppliers=resp.data.suppliers;
+        } else {
+            this.suppliers==[];
+        }
     })
 },
-convert(src) {
-    var dt=new Date();
-    var year=dt.getFullYear();
-    var p={};
-    copyObjTo(src, p);
-    p.uid=this.uid;
-    p.sex_s=this.tags.sex[p.sex];
-    p.state_s=this.tags.perState[p.state];
-    p.maxEdu_s=this.tags.edu[p.maxEdu];
-    p.firstEdu_s=this.tags.edu[p.firstEdu];
-    dt.setTime(p.birth*60000);
-    p.age=year-dt.getFullYear();
-    p.birth_s=date2str(dt);
-    dt.setTime(p.createAt*60000);
-    p.createAt_s=date2str(dt);
-    dt.setTime(p.update_time);
-    p.updateAt=date2str(dt);
-    return p;
-},
-showModify() {
-    copyObjTo(this.skuInfo, this.ctrl.pi);
-    this.ctrl.fun='modify';
-},
-remove() {
-    request({method:"DELETE",url:"/api/pool/remove?uid="+this.skuInfo.uid}, this.service.name).then(resp => {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.service.back();
-    });
-},
-modify() {
-    var url="/api/pool/update";
-    this.ctrl.pi.birth=parseInt(new Date(this.ctrl.pi.birth_s).getTime()/60000);
-    var dta=copyObjExc(this.ctrl.pi,[]);
-
-    request({method:"PUT",url:url,data:dta}, this.service.name).then(resp => {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.skuInfo=this.convert(this.ctrl.pi);
-        this.ctrl.fun='';
-    });
-},
-entry() {
-    var url="/api/employee/add";
-    var dta=copyObjExc(this.empInfo,['entryAt']);
-    dta.entryAt=parseInt(new Date(this.empInfo.entryAt).getTime()/60000);
-    request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
-        if(resp.code != RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.ctrl.entryDlg=false;
-        this.get();
-    });
-},
-changeOffice(zone) {
-    this.service.officeList(zone).then(opts=>{
-        this.opts.office=opts;
-    });
-},
-salaryChange(v) {
-    this.empInfo.dSalary=parseInt(v/22);
-    this.empInfo.hSalary=parseInt(v/(22*8));
-},
-//联系记录操作
-getContacts() {
-    var url = "/api/pool/listContact?uid="+this.uid;
+//反馈记录操作
+getFeedbacks() {
+    var url = "/api/sku/listFeedback?id="+this.id;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
             return;
         }
         var dt=new Date();
-        var list=[];
         for(var e of resp.data.list) {
-            dt.setTime(e.at*60000);
-            e.at_s=date2str(dt);
-            list.push(e);
+            dt.setTime(e.createAt*60000);
+            e.createAt_s=date2str(dt);
+            e.level_s=this.tags.fbLevel[e.level];
         }
-        this.contacts=list;
-    })
+        this.feedbacks=resp.data.list;
+    });
 },
-showCntDlg(act,i) {
-    if(act=='add') {
-        this.contact.tag=this.tags.add;
-        this.contact.cmt='';
-        this.contact.at_s=date2str(new Date());
-    } else {
-        this.contact.tag=this.tags.modify;
-        this.contact.cmt=this.contacts[i].cmt;
-        this.contact.at_s=this.contacts[i].at_s;
-    }
-    this.contact.act=act;
-    this.contact.dlg=true;
+//供应商操作
+getSuppliers() {
+    var url = "/api/sku/listSupplier?id="+this.id;
+    request({method:"GET",url:url}, this.service.name).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            return;
+        }
+        var dt=new Date();
+        for(var e of resp.data.list) {
+            dt.setTime(e.createAt*60000);
+            e.createAt_s=date2str(dt);
+        }
+        this.feedbacks=resp.data.list;
+    });
 },
-doContactAct(act) {
-    var vPromize;
-    var dta={uid:this.uid, cmt:this.contact.cmt};
-    dta.at=parseInt(new Date(this.contact.at_s).getTime()/60000);
-    if(act=='add') {
-        vPromize = request({method:"POST",url:"/api/pool/addContact",data:dta}, this.service.name);
-    } else if(act=='rmv') {
-        vPromize = request({method:"DELETE",url:"/api/pool/removeContact?uid="+dta.uid+"&at="+dta.at}, this.service.name);
-    } else {
-        vPromize = request({method:"PUT",url:"/api/pool/updateContact",data:dta}, this.service.name);
-    }
-    vPromize.then(resp => {
-        if(resp.code != RetCode.OK) {
+showAddSup() {
+    this.edtSup.supplier='';
+    this.edtSup.price='';
+    this.edtSup.show=true;
+},
+addSupplier() {
+    var url = "/api/sku/addSupplier";
+    var dta={id:this.id,supplier:this.edtSup.supplier.id,price:this.edtSup.price};
+    request({method:"POST",url:url,data:dta}, this.service.name).then(resp =>{
+        if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.contact.dlg=false;
-        this.getContacts();
+        dta.createAt_s=date2str(new Date());
+        dta.name=this.edtSup.supplier.name;
+        this.suppliers.push(dta);
+        this.edtSup.show=false;
     });
+},
+rmvSupplier(i) {
+    var url = "/api/sku/removeSupplier?id="+this.id
+        +"&supplier="+this.suppliers[i].supplier;
+    request({method:"DELETE",url:url}, this.service.name).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.suppliers.splice(i,1);
+    })
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="lHh lpr lFf" container style="height:99vh">
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
@@ -175,39 +108,19 @@ template:`
     <q-page class="q-pa-md">
 <q-list dense>
   <q-item>
-   <q-item-section>{{tags.sku.name}}</q-item-section>
-   <q-item-section>{{skuInfo.maxEdu_s}}</q-item-section>
+   <q-item-section>{{tags.name}}</q-item-section>
+   <q-item-section>{{skuInfo.name}}</q-item-section>
   </q-item>
   <q-item>
-   <q-item-section>{{tags.pool.firstEdu}}</q-item-section>
-   <q-item-section>{{skuInfo.firstEdu_s}}</q-item-section>
+   <q-item-section>{{tags.sku.type}}</q-item-section>
+   <q-item-section>{{skuInfo.type_s}}</q-item-section>
   </q-item>
   <q-item>
-   <q-item-section>{{tags.pub.quali}}</q-item-section>
-   <q-item-section>{{skuInfo.quali}}</q-item-section>
+   <q-item-section>{{tags.sku.createAt}}</q-item-section>
+   <q-item-section>{{skuInfo.createAt_s}}</q-item-section>
   </q-item>
   <q-item>
-   <q-item-section>{{tags.pool.expSalary}}</q-item-section>
-   <q-item-section>{{skuInfo.expSalary}}</q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.pub.phone}}</q-item-section>
-   <q-item-section>{{skuInfo.phone}}</q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.pub.email}}</q-item-section>
-   <q-item-section>{{skuInfo.email}}</q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.pub.birth}}</q-item-section>
-   <q-item-section>{{skuInfo.birth_s}}</q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.pool.state}}</q-item-section>
-   <q-item-section>{{skuInfo.state_s}}</q-item-section>
-  </q-item>
-  <q-item>
-   <q-item-section>{{tags.pool.cmt}}</q-item-section>
+   <q-item-section>{{tags.cmt}}</q-item-section>
    <q-item-section>{{skuInfo.cmt}}</q-item-section>
   </q-item>
 </q-list>
@@ -215,7 +128,7 @@ template:`
 <q-banner inline-actions class="bg-indigo-1 q-ma-sm" dense>
   {{tags.supplier.title}}
   <template v-slot:action>
-   <q-icon flat color="primary" name="add_circle" @click.stop="show_supplier('add')"></q-icon>
+   <q-icon flat color="primary" name="add_circle" @click.stop="showAddSup"></q-icon>
   </template>
 </q-banner>
 <q-list dense>
@@ -223,115 +136,36 @@ template:`
    <q-item-section>{{s.name}}</q-item-section>
    <q-item-section>{{s.price}}</q-item-section>
    <q-item-section side>
-    <q-btn icon="cancel" color="red" @click="remove_supplier(i)" flat></q-btn>
+    <q-btn icon="cancel" color="red" @click="rmvSupplier(i)" flat></q-btn>
+   </q-item-section>
+  </q-item>
+  <q-item v-show="edtSup.show">
+   <q-item-section>
+    <supplier-input v-model="edtSup.supplier" :label="tags.supplier.title"></supplier-input>
+   </q-item-section>
+   <q-item-section>
+    <q-input v-model.number="edtSup.price" :label="tags.sku.price" dense></q-input>
+   </q-item-section>
+   <q-item-section side>
+   <q-btn :label="tags.ok" color="primary" @click="addSupplier" flat></q-btn>
+    <q-btn :label="tags.cancel" color="primary" @click="edtSup.show=false" flat></q-btn>
    </q-item-section>
   </q-item>
 </q-list>
 
 <q-banner inline-actions class="bg-indigo-1 q-ma-sm" dense>
   {{tags.sku.feedback}}
-  <template v-slot:action>
-   <q-icon flat color="primary" name="add_circle" @click.stop="show_supplier('add')"></q-icon>
-  </template>
 </q-banner>
 <q-list dense>
-  <q-item v-for="(s,i) in suppliers">
-   <q-item-section>{{s.name}}</q-item-section>
-   <q-item-section>{{s.price}}</q-item-section>
-   <q-item-section side>
-    <q-btn icon="cancel" color="red" @click="remove_supplier(i)" flat></q-btn>
-   </q-item-section>
+  <q-item v-for="f in feedbacks">
+   <q-item-section>{{f.level_s}}</q-item-section>
+   <q-item-section>{{f.creator}}</q-item-section>
+   <q-item-section side>{{f.createAt_s}}</q-item-section>
   </q-item>
 </q-list>
     </q-page>
   </q-page-container>
 </q-layout>
-
-<q-dialog v-model="contact.dlg" persistent>
-  <q-card style="min-width:70vw">
-    <q-card-section>
-      <div class="text-h6">{{contact.tag}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-     <div v-if="contact.act=='edit'">{{contact.at_s}}</div>
-     <date-input v-else :close="tags.ok" :label="tags.pool.at" v-model="contact.at_s" max="today"></date-input>
-     <q-input v-model="contact.cmt" :label="tags.cmt" type="textarea"></q-input>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn :label="tags.remove" color="red" v-if="contact.act!='add'"
-       @click="doContactAct('rmv')" flat></q-btn>
-      <q-space></q-space>
-      <q-btn :label="tags.ok" color="primary" @click="doContactAct(contact.act)"></q-btn>
-      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
-    </q-card-actions>
-  </q-card>
-</q-dialog>
-
-<q-dialog v-model="ctrl.entryDlg" persistent>
-  <q-card style="min-width:70vw">
-    <q-card-section>
-      <div class="text-h6">{{tags.employee.entry}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-     <q-list>
-      <q-item><q-item-section>{{skuInfo.name}}</q-item-section></q-item>
-      <q-item><q-item-section>{{skuInfo.phone}}</q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.account" :label="tags.pub.account" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.quali" :label="tags.employee.quali" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.post" :label="tags.employee.post" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-select v-model="empInfo.zone" :options="opts.zone" emit-value
-       @update:model-value="changeOffice"
-       :label="tags.employee.zone" dense map-options></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-select v-model="empInfo.office" :options="opts.office" emit-value
-       :label="tags.employee.office" dense map-options></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-select v-model="empInfo.worktime" :options="opts.worktime" emit-value
-       :label="tags.employee.worktime" dense map-options></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.salary" :label="tags.employee.salary"
-       @update:model-value="salaryChange" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.dSalary" :label="tags.employee.dSalary" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.hSalary" :label="tags.employee.hSalary" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model.number="empInfo.subsidy" :label="tags.employee.subsidy" dense></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="empInfo.idno" :label="tags.employee.idno" dense maxlength=18></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="empInfo.email" :label="tags.employee.email" dense maxlength=80></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <q-input v-model="empInfo.addr" :label="tags.employee.addr" dense maxlength=80></q-input>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-       <date-input v-model="empInfo.entryAt" :label="tags.employee.entryAt"
-        :close="tags.ok"></date-input>
-      </q-item-section></q-item>
-     </q-list>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn :label="tags.ok" color="primary" @click="entry"></q-btn>
-      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
-    </q-card-actions>
-  </q-card>
-</q-dialog>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="errMsg"></alert-dialog>
