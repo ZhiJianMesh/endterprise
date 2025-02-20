@@ -11,6 +11,30 @@
 </head>
 <body style="overflow:hidden">
 <div id="app" v-cloak><router-view></router-view></div>
+
+<template id="tpl_home">
+<q-layout view="HHH LpR FFF" container style="height:99vh">
+  <q-header>
+   <q-toolbar>
+     <q-avatar square><img src="./favicon.png"></q-avatar>
+     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+   </q-toolbar>
+   <div class="text-right bg-white">
+    <q-btn :label="tags.projects" @click="goto('/projects')"
+     icon="location_city" color="primary" padding="xs" flat></q-btn>
+    <q-btn :label="tags.report" @click="goto('/report')" 
+     icon="bar_chart" color="accent" flat></q-btn>
+   </div>
+  </q-header>
+  <q-page-container>
+    <q-page class="q-pa-sm">
+<q-separator spaced="sm" color="teal"></q-separator>
+<ibf-home></ibf-home>
+    </q-page>
+  </q-page-container>
+</q-layout>
+</template>
+
 </body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/vue-router.js"></script>
@@ -22,13 +46,23 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import IBFHome from '/ibfbase/ibf.js'
-import Home from "./home.js"
 import Projects from "./projects.js"
 import Project from "./project.js"
 import Report from "./report.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
+
+const homeTpl=document.getElementById('tpl_home');
+const Home = {
+inject:['tags'],
+methods:{
+  goto(url) {
+    this.$router.push(url);
+  }
+},
+template:homeTpl.innerHTML
+}
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;

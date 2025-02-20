@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/ico;base64,aWNv">
 <link href="/assets/v3/quasar_font.css" rel="stylesheet" type="text/css">
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
-<title>iHr</title>
+<title>iResource</title>
 </head>
 <body style="overflow:hidden">
 <div id="app" v-cloak><router-view></router-view></div>
@@ -20,16 +20,14 @@
      <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
   </q-toolbar>
   <div class="text-right bg-white">
-    <q-btn :label="tags.pool.title" @click="goto('/pool')"
-     icon="group" color="primary" padding="xs" flat></q-btn>
-    <q-btn :label="tags.employee.title" @click="goto('/employees')" 
-     icon="badge" color="primary" flat></q-btn>
-    <q-btn :label="tags.grp.title" @click="goto('/grp?id=0')"
-     icon="account_tree" color="orange" flat padding="xs"></q-btn>
-    <q-btn :label="tags.cfg.title" @click="goto('/config')"
-     icon="settings" color="accent" flat></q-btn>
-    <q-btn :label="tags.salary.title" @click="goto('/salary')"
-     icon="attach_money" color="primary" flat></q-btn>
+    <q-btn :label="tags.factory.title" @click="goto('/factory')"
+     icon="factory" color="secondary" padding="xs" flat></q-btn>
+    <q-btn :label="tags.sku.title" @click="goto('/sku')" 
+     icon="list" color="primary" flat></q-btn>
+    <q-btn :label="tags.supplier.title" @click="goto('/supplier')" 
+     icon="shop" color="primary" flat></q-btn>
+    <q-btn :label="tags.storge.title" @click="goto('/storge')"
+     icon="warehouse" color="accent" flat></q-btn>
   </div>
 </q-header>
 <q-page-container>
@@ -53,17 +51,19 @@ import DateInput from "/assets/v3/components/date_input.js"
 import MonthInput from "/assets/v3/components/month_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import IBF from '/ibfbase/ibf.js'
-import factory from "./factory.js"
+import Factory from "./factory.js"
 import Sku from "./sku.js"
-import Supplier from "./supplier.js"
-
+import SkuDetail from "./skudetail.js"
+import Supplier from "./supplier.js" //入口在sku，包括contact
+import Storage from "./storage.js" //仓储，包括查看采购申请、执行出入库
+import Resource from "./resource.js" //资产管理，包括查看、清点
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
 
 const homeTpl=document.getElementById('tpl_home');
 const Home = {
-inject:['service', 'tags'],
+inject:['tags'],
 methods:{
   goto(url) {
     this.$router.push(url);
@@ -78,86 +78,51 @@ const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
   {path:'/home', component:Home},
-  {path:'/grp', component:Grp}, //群组、成员管理
-  {path:'/config', component:Config},
-  {path:'/zone', component:Zone}, //大区管理
-  {path:'/calendar', component:Calendar},
-  {path:'/salary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
-  {path:'/employees', component:Employees}, //雇员列表
-  {path:'/employee', component:Employee}, //雇员详情、关键事件
-  {path:'/resume', component:Resume}, //简历
-  {path:'/pool', component:Pool}, //人才库
-  {path:'/person', component:Person} //人才详情
+  {path:'/factory', component:Factory},
+  {path:'/sku', component:Sku},
+  {path:'/skudetail', component:SkuDetail},
+  {path:'/supplier', component:Supplier},
+  {path:'/storage', component:Storage},
+  {path:'/resource', component:Resource}
 ]});
 
 //service定义
-const service = {name:"ihr",N_PAGE:10,N_SMPG:5,
+const service = {name:"iresource",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
-zones:[],offices:[],officeMap:{},worktimes:[],worktimeMap:{},
-zoneList() {
-    if(this.zones.length>0){
-        return new Promise(resolve=>{ resolve(this.zones) });
+factories:[],skus:[],
+factoryList() {
+    if(this.factories.length>0){
+        return new Promise(resolve=>{ resolve(this.factories) });
     }
-    var url="/api/config/queryZone";
+    var url="/api/factory/list";
     return request({method:"GET",url:url}, this.name).then(resp=>{
         if(resp.code != 0) {
             return [];
         }
-        var opts=[];
+        var dt=new Date();
         for(var l of resp.data.list) {
-            opts.push({label:l.name,value:l.id});
+            dt.setTime(l.createAt*60000);
+            l.createAt=datetime2str(dt);
         }
-        this.zones=opts;
-        return opts;
+        this.factories=resp.data.list;
+        return this.factories;
     });
 },
-officeList(zone) {
-    if(this.offices.length>0){
-        return new Promise(resolve=>{ resolve(this.formOfficeList(zone)) });
+skuList(pg) {
+    if(pg==1&&this.skus.length>0){ //只缓存第一页
+        return new Promise(resolve=>{ resolve(this.skus) });
     }
-    var url="/api/config/queryOffice";
+	var offset=(pg-1)*this.N_PAGE;
+    var url="/api/sku/list?offset="+offset+"&num="+this.N_PAGE;
     return request({method:"GET",url:url}, this.name).then(resp=>{
         if(resp.code != 0) {
             return [];
         }
-        var opts=[];
-        var map={};
         for(var l of resp.data.list) {
-            opts.push({label:l.name,value:l.id,z:l.zone});
-            map[l.id]=l.name;
+            l.type_s=tags[l.type];
         }
-        this.offices=opts;
-        this.officeMap=map;
-        return zone ? this.formOfficeList(zone) : [];
-    });
-},
-formOfficeList(z) {
-    var opts=[];
-    for(var o of this.offices) {
-        if(o.z == z) {
-            opts.push(o)
-        }
-    }
-    return opts;
-},
-worktimeList() {
-    if(this.worktimes.length>0){
-        return new Promise(resolve=>{ resolve(this.worktimes) });
-    }
-    var url="/api/config/queryWorktime";
-    return request({method:"GET",url:url}, this.name).then(resp=>{
-        if(resp.code != 0) {
-            return [];
-        }
-        var opts=[];
-        var map={};
-        for(var l of resp.data.list) {
-            opts.push({label:l.name,value:l.id});
-            map[l.id]=l.name;
-        }
-        this.worktimes=opts;
-        this.worktimeMap=map;
-        return opts;
+        if(pg==1) this.skus=resp.data.list;
+        return resp.data.list;
     });
 },
 setRt(k, v) {

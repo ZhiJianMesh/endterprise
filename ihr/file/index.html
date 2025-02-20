@@ -69,7 +69,7 @@ import { registerIbf } from '/ibfbase/ibf.js';
 
 const homeTpl=document.getElementById('tpl_home');
 const Home = {
-inject:['service', 'tags'],
+inject:['tags'],
 methods:{
   goto(url) {
     this.$router.push(url);

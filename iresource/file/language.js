@@ -19,6 +19,41 @@ cn:{
   add:"增加",
   save:"保存",
   search:"搜索",
+  cmt:'备注',
+  name:'名称',
+  detail:'详情',
+  
+  skuType:{
+    WHL:'整机',
+    PART:'零件',
+    SOFT:'软件',
+    VIRT:'虚拟物品'
+  },
+  factory:{
+    title:'工厂',
+    addr:'地址',
+    createAt:'创建时间'
+  },
+  sku:{
+    title:'SKU',
+    yearDepr:'年度折旧率',
+    monthDepr:'月度折旧率',
+    type:'类型',
+    noHead:'编号头',
+    speci:'规格',
+    createAt:'创建时间'
+  },
+  supplier:{
+    title:'供应商',
+    createAt:'创建时间',
+    creator:'创建人',
+    addr:'地址',
+    business:'主营业务',
+    taxid:'税号'
+  },
+  storge:{
+    title:'仓储管理'
+  },
   errMsgs:{
     '6001':'存在SKU关联了供应商',
     '6002':'供应商联系人不为空',
@@ -27,30 +62,8 @@ cn:{
     '6005':'出库单不存在，或未启动',
     '6006':'要发货的资产已添加，或不在发货列表中',
     '6007':'入库资源与申请的资源不一致',
+    '6008':'入库请求已完成，不可删除入库详单',
     'unknown':'未知错误'
   },
-  date2str:function(dt) {
-    var s=dt.getFullYear()+'/';
-    var v=dt.getMonth()+1;
-    if(v<10) {
-        s+='0';
-    }
-    s+=v+'/';
-    v=dt.getDate();
-    if(v<10) {
-        s+='0';
-    }
-    s+=v;
-    return s;
-  },
-  sta2icon:function(s){
-    if(s==0) {
-      return 'star_border';
-    }
-    if(s==100) {
-      return 'star';
-    }
-    return 'star_half';
-  }
 }
 };
