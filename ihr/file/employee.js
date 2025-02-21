@@ -164,7 +164,6 @@ modifySalary() {
         }
         this.ctrl.salary=false;
     });
-    
 },
 modifyStock() {
     var url="/api/employee/setStock";

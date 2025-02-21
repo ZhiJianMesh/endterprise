@@ -50,7 +50,9 @@ query_busi(pg) {
         +this.pid+"&offset="+offset+'&num='+this.ibf.N_PAGE}
     request(opts, this.ibf.SERVICE_BUSINESS).then(resp => {
         if(resp.code!=RetCode.OK) {
-            this.busi=[];
+            this.busi.list=[];
+            this.busi.max=0;
+            this.busi.cur=1;
             return;
         }
         //id,prjName,flowid,status,start,end,
@@ -69,11 +71,12 @@ query_busi(pg) {
             b.end_s=date2str(dt);
             busi.push(b);
         }
-        this.busi=busi;
+        this.busi.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
+        this.busi.list=busi;
     })
 },
 busi_flow(i) {
-    var busi = this.busi[i];
+    var busi = this.busi.list[i];
     
     var url='/ibf/workflow?flow='+busi.flowid+"&did="+busi.id
         +"&flName=busi&service="+this.ibf.SERVICE_BUSINESS+"&step="+busi.status
@@ -148,7 +151,7 @@ template:`
 
 <q-tab-panel name="busi">
  <q-list dense separator>
-  <q-item v-for="(b,i) in busi" @click="busi_flow(i)" clickable>
+  <q-item v-for="(b,i) in busi.list" @click="busi_flow(i)" clickable>
    <q-item-section>
     <q-item-label>{{b.account}}</q-item-label>
     <q-item-label caption>{{b.dest}}</q-item-label>

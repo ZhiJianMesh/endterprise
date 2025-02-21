@@ -40,5 +40,16 @@
         "errorInfo":"not a valid member",
         "sql":"select * from factoryAdm where factory=#FACTORY#
             and acc=@{#tokenAcc} and type in(#TYPE#)"
+    },
+
+    "check_accounts":{
+        "name":"check_accounts",
+        "comment":"检查帐号是否都存在",
+        "type" : "call",
+        "service": "user",
+        "method":"POST",
+        "url":"/user/userid",
+        "tokenSign":"APP",
+        "parameters":"{\"accounts\":#ACCLIST#}"
     }
 }

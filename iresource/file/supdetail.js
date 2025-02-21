@@ -5,6 +5,7 @@ data() {return {
     id:this.$route.query.id,
     supInfo:{}, //供应商信息
     contacts:[], //供应商联系人
+    ctrl:{fun:'',dta:{}},
     edtContact:{show:false,no:-2,dta:{}}
 }},
 created(){
@@ -23,6 +24,32 @@ get() {
         resp.data.createAt_s=date2str(dt);
         this.supInfo=resp.data;
     })
+},
+remove() {
+    var opts={method:"DELETE",url:"/supplier/remove?id="+this.id};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.service.back();
+    });
+},
+update() {
+    var opts={method:"PUT",url:"/supplier/update",data:this.ctrl.dta};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        copyObjTo(this.ctrl.dta, this.supInfo);
+        this.ctrl.fun='';
+    });
+},
+show_edit() {
+    copyObjTo(this.supInfo, this.ctrl.dta);
+    this.ctrl.dta.id=this.id;
+    this.ctrl.fun='edit';
 },
 //联系人
 getContacts() {
@@ -43,6 +70,7 @@ getContacts() {
 show_contact(no) {
     if(no>-1) {
         copyObjTo(this.contacts[no], this.edtContact.dta);
+        this.edtContact.id=this.contacts[no].id;
     } else {
         copyObjTo(EMPTY_CONTACT, this.edtContact.dta);
     }
@@ -66,7 +94,8 @@ contact_do() {
         if(this.edtContact.no>-1) {
             copyObjTo(this.edtContact.dta, this.contacts[this.edtContact.no]);
         } else {
-            var o = {id:resp.data.id, createAt_s:date2str(new Date())};
+            var sex=this.tags.sex[this.edtContact.dta.sex];
+            var o = {id:resp.data.id, createAt_s:date2str(new Date()), sex_s:sex};
             copyObjTo(this.edtContact.dta, o);
             this.contacts.push(o);
         }
@@ -74,14 +103,15 @@ contact_do() {
         this.edtContact.show=false;
     });
 },
-rmv_contact(id) {
-    var url = "/api/contact/remove?id="+id;
+rmv_contact(i) {
+    var url = "/api/contact/remove?id="+this.contacts[i].id;
     request({method:"DELETE",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.contacts.splice(i,1);
+        this.edtContact.show=false;
     })
 }
 },
@@ -91,11 +121,14 @@ template:`
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.detail}}-{{supInfo.name}}</q-toolbar-title>
+    <q-btn icon="delete_forever" @click="remove" flat dense></q-btn>
+    <q-btn icon="edit" @click="show_edit" flat dense></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
-<q-list dense>
+<div v-if="ctrl.fun==''">
+ <q-list dense>
   <q-item>
    <q-item-section>{{tags.name}}</q-item-section>
    <q-item-section>{{supInfo.name}}</q-item-section>
@@ -113,15 +146,47 @@ template:`
    <q-item-section>{{supInfo.business}}</q-item-section>
   </q-item>
   <q-item>
-   <q-item-section>{{tags.supplier.createAt}}</q-item-section>
-   <q-item-section>{{supInfo.createAt_s}}</q-item-section>
-  </q-item>
-  <q-item>
    <q-item-section>{{tags.cmt}}</q-item-section>
    <q-item-section>{{supInfo.cmt}}</q-item-section>
   </q-item>
-</q-list>
-
+  <q-item>
+   <q-item-section>{{tags.createAt}}</q-item-section>
+   <q-item-section>{{supInfo.createAt_s}}</q-item-section>
+  </q-item>
+ </q-list>
+</div>
+<div v-else>
+ <q-list dense>
+ <q-item>
+  <q-item-section>{{tags.name}}</q-item-section>
+  <q-item-section><q-input v-model="ctrl.dta.name" dense></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.supplier.taxid}}</q-item-section>
+  <q-item-section><q-input v-model="ctrl.dta.taxid" dense></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.supplier.addr}}</q-item-section>
+  <q-item-section><q-input v-model="ctrl.dta.addr" dense></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.supplier.business}}</q-item-section>
+  <q-item-section><q-input v-model="ctrl.dta.business" dense></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.cmt}}</q-item-section>
+  <q-item-section><q-input v-model="ctrl.dta.cmt" dense></q-input></q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>{{tags.createAt}}</q-item-section>
+  <q-item-section>{{supInfo.createAt_s}}</q-item-section>
+ </q-item>
+ </q-list>
+ <div class="text-right">
+  <q-btn flat :label="tags.cancel" color="primary" @click="ctrl.fun=''"></q-btn>
+  <q-btn icon="done" :label="tags.ok" color="primary" @click="update"></q-btn>
+ </div>
+</div>
 <q-separator inset></q-separator>
 <q-banner inline-actions class="bg-indigo-1 q-ma-sm" dense>
   {{tags.contact.title}}
@@ -163,7 +228,7 @@ template:`
    <q-input :label="tags.cmt" v-model="edtContact.dta.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
-   <q-btn icon="cancel" color="red" @click="rmv_contact(edtContact.id)" flat v-show="edtContact.no>-1"></q-btn>
+   <q-btn flat :label="tags.remove" color="red" @click="rmv_contact(edtContact.no)" flat v-show="edtContact.no>-1"></q-btn>
    <q-btn :label="tags.ok" color="primary" @click="contact_do"></q-btn>
    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
   </q-card-actions>

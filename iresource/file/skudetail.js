@@ -7,19 +7,25 @@ components:{
 data() {return {
     id:this.$route.query.id,
     skuInfo:{}, //sku信息
+    ctrl:{fun:'',dta:{},skuTypes:[]},
     suppliers:[], //供应商
     feedbacks:[], //使用反馈
     edtSup:{show:false,supplier:'',price:''}
 }},
 created(){
     this.get();
+    this.getSuppliers();
     this.getFeedbacks();
+    for(var i in this.tags.skuType) {
+        this.ctrl.skuTypes.push({label:this.tags.skuType[i],value:i});
+    }
 },
 methods:{
 get() {
     var url = "/api/sku/get?id="+this.id;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         var dt=new Date();
@@ -27,18 +33,35 @@ get() {
         resp.data.createAt_s=date2str(dt);
         resp.data.type_s=this.tags.skuType[resp.data.type];
         this.skuInfo=resp.data;
-        if(resp.data.suppliers) {
-            this.suppliers=resp.data.suppliers;
-        } else {
-            this.suppliers==[];
-        }
     })
+},
+update() {
+    var opts={method:"PUT",url:"/sku/update",data:this.ctrl.dta};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        copyObjTo(this.ctrl.dta, this.skuInfo);
+        this.ctrl.fun='';
+    });
+},
+remove() {
+    var opts={method:"DELETE",url:"/sku/remove?id="+this.id};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.service.back();
+    });
 },
 //反馈记录操作
 getFeedbacks() {
     var url = "/api/sku/listFeedback?id="+this.id;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
+            this.feedbacks=[];
             return;
         }
         var dt=new Date();
@@ -50,11 +73,17 @@ getFeedbacks() {
         this.feedbacks=resp.data.list;
     });
 },
+show_edit() {
+    copyObjTo(this.skuInfo, this.ctrl.dta);
+    this.ctrl.dta.id=this.id;
+    this.ctrl.fun='edit';
+},
 //供应商操作
 getSuppliers() {
     var url = "/api/sku/listSupplier?id="+this.id;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
+            this.suppliers=[];
             return;
         }
         var dt=new Date();
@@ -62,7 +91,7 @@ getSuppliers() {
             dt.setTime(e.createAt*60000);
             e.createAt_s=date2str(dt);
         }
-        this.feedbacks=resp.data.list;
+        this.suppliers=resp.data.list;
     });
 },
 showAddSup() {
@@ -102,11 +131,14 @@ template:`
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.detail}}-{{skuInfo.name}}</q-toolbar-title>
+    <q-btn icon="delete_forever" @click="remove" flat dense></q-btn>
+    <q-btn icon="edit" @click="show_edit" flat dense></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
-<q-list dense>
+<div v-if="ctrl.fun==''">
+ <q-list dense>
   <q-item>
    <q-item-section>{{tags.name}}</q-item-section>
    <q-item-section>{{skuInfo.name}}</q-item-section>
@@ -116,14 +148,71 @@ template:`
    <q-item-section>{{skuInfo.type_s}}</q-item-section>
   </q-item>
   <q-item>
-   <q-item-section>{{tags.sku.createAt}}</q-item-section>
-   <q-item-section>{{skuInfo.createAt_s}}</q-item-section>
+   <q-item-section>{{tags.sku.noHead}}</q-item-section>
+   <q-item-section>{{skuInfo.noHead}}</q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.monthDepr}}</q-item-section>
+   <q-item-section>{{skuInfo.monthDepr}}</q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.yearDepr}}</q-item-section>
+   <q-item-section>{{skuInfo.yearDepr}}</q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.speci}}</q-item-section>
+   <q-item-section>{{skuInfo.speci}}</q-item-section>
   </q-item>
   <q-item>
    <q-item-section>{{tags.cmt}}</q-item-section>
    <q-item-section>{{skuInfo.cmt}}</q-item-section>
   </q-item>
-</q-list>
+  <q-item>
+   <q-item-section>{{tags.createAt}}</q-item-section>
+   <q-item-section>{{skuInfo.createAt_s}}</q-item-section>
+  </q-item>
+ </q-list>
+</div>
+<div v-else>
+ <q-list dense>
+  <q-item>
+   <q-item-section>{{tags.name}}</q-item-section>
+   <q-item-section><q-input v-model="ctrl.dta.name" dense></q-input></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.type}}</q-item-section>
+   <q-item-section><q-select v-model="ctrl.dta.type" :options="ctrl.skuTypes" emit-value map-options></q-select></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.noHead}}</q-item-section>
+   <q-item-section><q-input v-model="ctrl.dta.noHead" dense></q-input></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.monthDepr}}</q-item-section>
+   <q-item-section><q-input v-model.number="ctrl.dta.monthDepr" dense></q-input></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.yearDepr}}</q-item-section>
+   <q-item-section><q-input v-model.number="ctrl.dta.yearDepr" dense></q-input></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.sku.speci}}</q-item-section>
+   <q-item-section><q-input v-model="ctrl.dta.speci" dense></q-input></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.cmt}}</q-item-section>
+   <q-item-section><q-input v-model="ctrl.dta.cmt" dense></q-input></q-item-section>
+  </q-item>
+  <q-item>
+   <q-item-section>{{tags.createAt}}</q-item-section>
+   <q-item-section>{{skuInfo.createAt_s}}</q-item-section>
+  </q-item>
+ </q-list>
+ <div class="text-right">
+  <q-btn flat :label="tags.cancel" color="primary" @click="ctrl.fun=''"></q-btn>
+  <q-btn icon="done" :label="tags.ok" color="primary" @click="update"></q-btn>
+ </div>
+</div>
 <q-separator inset></q-separator>
 <q-banner inline-actions class="bg-indigo-1 q-ma-sm" dense>
   {{tags.supplier.title}}

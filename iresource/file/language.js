@@ -21,8 +21,12 @@ cn:{
   search:"搜索",
   cmt:'备注',
   name:'名称',
+  no:'资产编号',
+  state:'状态',
   detail:'详情',
-  
+  createAt:'创建时间',
+  sku:'存货单位',
+
   sex:{
     F:'男',
     M:'女',
@@ -35,6 +39,10 @@ cn:{
     SOFT:'软件',
     VIRT:'虚拟物品'
   },
+  admType:{
+    I:'入库',
+    O:'出&入库'
+  },
   fbLevel:{
     L:'低',
     M:'中',
@@ -44,22 +52,22 @@ cn:{
   factory:{
     title:'工厂',
     addr:'地址',
-    createAt:'创建时间'
+    admType:'管理员类型',
+    account:'管理员帐号',
+    admin:'仓库管理员'
   },
   sku:{
-    title:'SKU',
+    title:'存货单位',
     yearDepr:'年度折旧率',
     monthDepr:'月度折旧率',
     type:'类型',
     noHead:'编号头',
     speci:'规格',
-    createAt:'创建时间',
     price:'报价',
     feedback:'反馈'
   },
   supplier:{
     title:'供应商',
-    createAt:'创建时间',
     creator:'创建人',
     addr:'地址',
     business:'主营业务',
@@ -72,7 +80,25 @@ cn:{
     phone:'联系电话'
   },
   storge:{
-    title:'仓储管理'
+    title:'仓储管理',
+    in:'入库',
+    out:'出库',
+    list:'资产清单',
+    check:'清点',
+    inDate:'入库日期',
+    outDate:'发货日期',
+    expDate:'期望日期',
+    cfmDate:'确认日期',
+    execAcc:'执行人',
+    tranNo:'运单号',
+    applicant:'申请人',
+    receiver:'收货人',
+    checkAt:'清点日期'
+  },
+  purchase:{
+    title:'采购',
+    price:'单价',
+    cost:'成本'
   },
   errMsgs:{
     '6001':'存在SKU关联了供应商',
