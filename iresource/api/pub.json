@@ -7,8 +7,8 @@
             "factory":"*",
             "supplier":"*",
             "contact":"*",
-            "inbound":"*",
-            "outbound":"*",
+            "grn":"*",
+            "gdn":"*",
             "resource":"*",
             "purchase":"*"
         }
@@ -18,8 +18,8 @@
         "rights":{
             "supplier":"*",
             "contact":"*",
-            "inbound":"*",
-            "outbound":"*",
+            "grn":"*",
+            "gdn":"*",
             "resource":"*",
             "purchase":"*"
         }

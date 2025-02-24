@@ -91,12 +91,13 @@ routes:[
 //service定义
 const service = {name:"iresource",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
-factories:[],skus:[],
-factoryList() {
+factories:[], //我管理的工厂列表
+skus:[],
+myFactories() {
     if(this.factories.length>0){
         return new Promise(resolve=>{ resolve(this.factories) });
     }
-    var url="/api/factory/list";
+    var url="/api/factory/my";
     return request({method:"GET",url:url}, this.name).then(resp=>{
         if(resp.code != 0) {
             return [];
