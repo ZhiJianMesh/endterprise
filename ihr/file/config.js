@@ -252,7 +252,7 @@ template:`
   {{tags.cfg.office}}
   <template v-slot:action>
    <q-select v-model="zone.cur" :options="zone.opts" @update:model-value="query_offices"
-   dense map-options emit-value dense>
+   dense map-options emit-value>
     <template v-slot:after>
      <q-btn flat dense color="primary" icon="add_circle" @click="show_office(-1)"></q-btn>
      <q-btn flat dense color="teal" icon="info" @click.stop="service.goto('/zone')"></q-btn>
@@ -370,7 +370,7 @@ template:`
    <q-input :label="tags.cfg.leadTime" v-model.number="edt.wt.leadTime" dense></q-input>
    <q-input :label="tags.cfg.maxEdit" v-model.number="edt.wt.maxEdit" dense></q-input>
    <q-select :label="tags.cfg.calendar" v-model="edt.wt.calendar" :options="calOpts"
-   dense map-options emit-value dense></q-select>
+   dense map-options emit-value></q-select>
    <div class="row items-center">
     <div class="col">{{tags.cfg.midClock}}</div>
     <div class="col q-gutter-sm">

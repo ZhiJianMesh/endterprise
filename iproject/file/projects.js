@@ -138,7 +138,7 @@ template:`
   <q-card-section class="q-pt-none">
    <q-input :label="tags.name" v-model="prj.name" dense></q-input>
    <q-select :label="tags.prj.type" v-model="prj.type" :options="typeOpts"
-    dense map-options emit-value dense></q-select>
+    dense map-options emit-value></q-select>
    <date-input :close="tags.ok" :label="tags.prj.start" v-model="prj.start_s"></date-input>
    <date-input :close="tags.ok" :label="tags.prj.end" v-model="prj.end_s" min="today"></date-input>
    <user-selector :label="tags.prj.owner" :accounts="prj.owner" :multi="false"></user-selector>

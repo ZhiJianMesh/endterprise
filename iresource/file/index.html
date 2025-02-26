@@ -26,7 +26,7 @@
      icon="list" color="primary" flat></q-btn>
     <q-btn :label="tags.supplier.title" @click="goto('/supplier')" 
      icon="shop" color="primary" flat></q-btn>
-    <q-btn :label="tags.storge.title" @click="goto('/storge')"
+    <q-btn :label="tags.storage.title" @click="goto('/storage')"
      icon="warehouse" color="accent" flat></q-btn>
   </div>
 </q-header>
@@ -57,7 +57,10 @@ import Sku from "./sku.js"
 import SkuDetail from "./skudetail.js"
 import Supplier from "./supplier.js"
 import SupDetail from "./supdetail.js"
-import Storage from "./storage.js" //仓储，包括查看采购申请、执行出入库
+import Storage from "./storage.js" //仓储，包括查看资产清单、执行出入库
+import ResDetail from "./resdetail.js" //资源详情，在Storage中使用
+import GrnDetail from "./grndetail.js"
+import GdnDetail from "./gdndetail.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -85,7 +88,10 @@ routes:[
   {path:'/skudetail', component:SkuDetail},
   {path:'/supplier', component:Supplier},
   {path:'/supdetail', component:SupDetail},
-  {path:'/storage', component:Storage}
+  {path:'/storage', component:Storage},
+  {path:'/resdetail', component:ResDetail},
+  {path:'/grndetail', component:GrnDetail},
+  {path:'/gdndetail', component:GdnDetail}
 ]});
 
 //service定义

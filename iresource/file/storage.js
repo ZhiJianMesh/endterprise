@@ -1,404 +1,516 @@
-const EMPTY_OFF={name:'',cmt:''};
-const EMPTY_PERF={level:'',name:'',cmt:''};
-const EMPTY_WT={calendar:0,first:0,second:0,third:0,
-    forth:0,leadTime:0,maxEdit:0,name:'',midClock:'N'};
-function formatTime(t) {
-    var v=t>1440?(t-1440):t;
-    var h=parseInt(v/60);
-    var m=v%60;
-    return (h<10?('0'+h):h) + ':' + (m<10?('0'+m):m);
-}
+const EMPTY_GRN={purId:'',tranNo:'',outDate:'',cmt:''};
+const EMPTY_GDN={purId:'',tranNo:''};
+const EMPTY_IN={cmt:'',price:'',num:'',sku:''};
+
+import PurSelect from "./components/purchase_selector.js";
+import SkuSelect from "/ibfbase/components/sku_selector.js";
 export default {
+components:{
+    "pur-select":PurSelect,
+    "sku-select":SkuSelect
+},
 inject:['service', 'tags'],
 data() {return {
-    offices:[], //办公区定义
-    worktimes:[], //作息制度定义
-    perfs:[], //绩效等级定义
-    edt:{office:{},wt:{},perf:{}},
-    ctrl:{no:-2,tag:'',officeDlg:false,wtDlg:false,perfDlg:false},
-    zone:{cur:-1,opts:[]},
-    calOpts:[]
+    res:[], //工厂中的资产清单
+    grns:[], //入库单
+    gdns:[], //出库单
+    outlogs:[],
+    
+    resCtrl:{cur:1,max:0,inDlg:false,in:{},order:'',ordIcon:'swap_vert'},
+    grnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
+    gdnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
+    olCtrl:{cur:1,max:0},
+    
+    factory:{opts:[],cur:-1,name:''},//工厂选项
+    purchase:{},
+    sku:{},
+    tab:'res' //res,gdn,grn,out
 }},
 created(){
-    this.query_zones();
-    this.query_perfs();
-    this.query_worktimes();
-    
-    var opts={method:"GET", url:"/config/listCalendar"}
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            return;
+    this.service.myFactories().then(ll=>{
+        if(ll.length>0) {
+            this.factory.opts=ll;
+            this.factory.cur=ll[0].id;
+            this.factory.name=ll[0].name;
+            this.query_res(1);
         }
-        var opts=[];
-        for(var z of resp.data.list) {
-            opts.push({label:z.name, value:z.id});
-        }
-        this.calOpts=opts;
-    })  
+    });
+    for(var i in this.tags.grnState) {
+        this.grnCtrl.stateOpts.push({value:i,label:this.tags.grnState[i]});
+    }
+    for(var i in this.tags.gdnState) {
+        this.gdnCtrl.stateOpts.push({value:i,label:this.tags.gdnState[i]});
+    }
 },
 methods:{
-query_zones(){//查询区域
-    var opts={method:"GET", url:"/config/listZone"}
+query_res(pg) {
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
+    var opts={method:"GET", url:"/resource/listByFac?factory="
+        +this.factory.cur+"&order="+this.resCtrl.order
+        +"&num="+this.service.N_PAGE+"&offset="+offset}
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
+            this.res=[];
+            this.resCtrl.max=0;
+            this.resCtrl.cur=1;
             return;
         }
-        var opts=[];
-        if(resp.data.list.length>0) {
-            for(var z of resp.data.list) {
-                opts.push({label:z.name, value:z.id});
-            }
-            if(this.zone.cur<0) {
-                this.zone.cur=resp.data.list[0].id;
-                this.query_offices(this.zone.cur);
-            }
+        var dt=new Date();
+        for(var l of resp.data.list) {
+            dt.setTime(l.inDate*60000);
+            l.inDate=datetime2str(dt);
+            dt.setTime(l.checkAt*60000);
+            l.checkAt=datetime2str(dt);
         }
-        this.zone.opts=opts;
-    })  
+        this.res = resp.data.list;
+        this.resCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+    })
 },
-query_offices(zone){
-    this.edt.office.zone=zone;
-    var opts={method:"GET", url:"/config/queryOffice?zone="+zone}
+query_grn(pg) {
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
+    var opts={method:"GET", url:"/grn/listByFac?factory="
+        +this.factory.cur+"&state="+this.grnCtrl.state
+        +"&num="+this.service.N_PAGE+"&offset="+offset}
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
-            this.offices=[];
+            this.grns=[];
+            this.grnCtrl.max=0;
+            this.grnCtrl.cur=1;
             return;
         }
-        this.offices = resp.data.list;
-    })  
+        var dt=new Date();
+        for(var l of resp.data.list) {
+            dt.setTime(l.outDate*60000);
+            l.outDate=datetime2str(dt);
+            dt.setTime(l.inDate*60000);
+            l.inDate=datetime2str(dt);
+            dt.setTime(l.cfmDate*60000);
+            l.cfmDate=datetime2str(dt);
+            l.type=this.tags.grnType[l.type];
+            l.state=this.tags.grnState[l.state];
+        }
+        this.grns = resp.data.list;
+        this.grnCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+    })
 },
-query_worktimes(){
-    var opts={method:"GET", url:"/config/queryWorktime"}
+query_gdn(pg) {
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
+    var opts={method:"GET", url:"/gdn/listByFac?factory="
+        +this.factory.cur+"&state="+this.gdnCtrl.state
+        +"&num="+this.service.N_PAGE+"&offset="+offset}
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
+            this.gdns=[];
+            this.gdnCtrl.max=0;
+            this.gdnCtrl.cur=1;
             return;
         }
-        var wt = resp.data.list.map(w=>{
-            w.first_s=formatTime(w.first);
-            w.second_s=formatTime(w.second);
-            w.third_s=formatTime(w.third);
-            w.forth_s=formatTime(w.forth);
-            w.midClock_s=this.tags.yesNo[w.midClock];
-            return w;
-        });
-        this.worktimes=wt;
-    })  
+        var dt=new Date();
+        for(var l of resp.data.list) {
+            dt.setTime(l.outDate*60000);
+            l.outDate=datetime2str(dt);
+            dt.setTime(l.cfmDate*60000);
+            l.cfmDate=datetime2str(dt);
+            l.type=this.tags.gdnType[l.type];
+            l.state=this.tags.gdnState[l.state];
+        }
+        this.gdns = resp.data.list;
+        this.gdnCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+    })
 },
-query_perfs(){
-    var opts={method:"GET", url:"/config/listPerfLevel"}
+query_outlog(pg) {
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
+    var opts={method:"GET", url:"/resource/outlog?factory="
+        +this.factory.cur+"&num="+this.service.N_PAGE+"&offset="+offset}
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
+            this.outlogs=[];
+            this.olCtrl.max=0;
+            this.olCtrl.cur=1;
             return;
         }
-        this.perfs=resp.data.list;
-    })  
+        var dt=new Date();
+        for(var l of resp.data.list) {
+            dt.setTime(l.createAt);
+            l.createAt=datetime2str(dt);
+            l.type=this.tags.outType[l.type];
+        }
+        this.outlogs=resp.data.list;
+        this.olCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+    })
 },
-show_office(i) {
-    this.edt.zone=this.zone.cur;
+tab_changed(tab) {
+    this.showAdd=this.editable;
+    if(tab=='grn') {
+        if(this.res.length==0) {
+            this.query_res(this.resCtrl.cur);
+        }
+        if(this.grns.length==0) {
+            this.query_grn(this.grnCtrl.cur);
+        }
+    } else if(tab=='gdn') {
+        if(this.gdns.length==0) {
+            this.query_gdn(this.gdnCtrl.cur);
+        }
+    } else if(tab=='out'){
+        if(this.outlogs.length==0) {
+            this.query_outlog(this.olCtrl.cur);
+        }
+    }
+},
+factory_changed(i) {
+    if(i==this.factory.cur)return;
+    this.res=[];
+    this.grns=[];
+    this.gdns=[];
+    this.factory.cur=i;
+    this.factory.name=this.factory.opts[i].name;
+    this.tab_changed(this.tab);
+},
+grn_sta_changed() {
+    this.query_grn(this.grnCtrl.cur);
+},
+gdn_sta_changed() {
+    this.query_gdn(this.gdnCtrl.cur);
+},
+changed_res_ord() {
+    if(this.resCtrl.order=='') {
+        this.resCtrl.order='asc';
+        this.resCtrl.ordIcon='vertical_align_top';
+    } else if(this.resCtrl.order=='asc') {
+        this.resCtrl.order='desc';
+        this.resCtrl.ordIcon='vertical_align_bottom';
+    } else {
+        this.resCtrl.order='';
+        this.resCtrl.ordIcon='swap_vert';
+    }
+    this.query_res(this.resCtrl.cur);
+},
+show_grn(i) {
     if(i>-1) {
-        this.ctrl.tag=this.tags.modify;
-        this.edt.office.id=this.offices[i].id;
-        copyObjTo(this.offices[i], this.edt.office);
+        this.grnCtrl.tag=this.tags.modify;
+        copyObjTo(this.grns[i], this.grnCtrl.dta);
     } else {
-        this.ctrl.tag=this.tags.add;
-        copyObjTo(EMPTY_OFF, this.edt.office);
+        this.grnCtrl.tag=this.tags.add;
+        copyObjTo(EMPTY_GRN, this.grnCtrl.dta);
     }
-    this.ctrl.tag+=this.tags.cfg.office;
-    this.ctrl.no=i;
-    this.ctrl.officeDlg=true;
+    this.grnCtrl.dta.factory=this.factory.cur;
+    this.grnCtrl.tag+=this.tags.storage.in;
+    this.grnCtrl.no=i;
+    this.grnCtrl.dlg=true;
 },
-office_do() {
+grn_do() {
     var opts;
-    if(this.ctrl.no>-1) {
-        opts={method:"PUT",url:"/config/updateOffice",data:this.edt.office};
+    if(this.grnCtrl.no>-1) {
+        opts={method:"PUT",url:"/grn/update",data:this.grnCtrl.dta};
     } else {
-        opts={method:"POST",url:"/config/addOffice",data:this.edt.office};
+        this.gdnCtrl.dta.purId=this.purchase.id;
+        opts={method:"POST",url:"/grn/start",data:this.grnCtrl.dta};
     }
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        if(this.ctrl.no>-1) {
-            copyObjTo(this.edt.office, this.offices[this.ctrl.no]);
-        } else {
-            var o = {id:resp.data.id};
-            copyObjTo(this.edt.office, o);
-            this.offices.push(o);
-        }
-        this.ctrl.no=-2;
-        this.ctrl.officeDlg=false;
+        this.grnCtrl.no=-2;
+        this.grnCtrl.dlg=false;
+        this.query_grn(this.grnCtrl.cur);
     });
 },
-show_perf(i) {
+remove_grn() {
+    var opts={method:"DELETE",url:"/grn/remove?purId="
+        +this.grnCtrl.dta.purId+"&factory="+this.factory.cur};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.grnCtrl.no=-2;
+        this.grnCtrl.dlg=false;
+        this.query_grn(this.grnCtrl.cur);
+    });
+},
+show_gdn(i) {
     if(i>-1) {
-        this.ctrl.tag=this.tags.modify;
-        copyObjTo(this.perfs[i], this.edt.perf);
+        this.gdnCtrl.tag=this.tags.modify;
+        copyObjTo(this.gdns[i], this.gdnCtrl.dta);
     } else {
-        this.ctrl.tag=this.tags.add;
-        copyObjTo(EMPTY_PERF, this.edt.perf);
+        this.gdnCtrl.tag=this.tags.add;
+        copyObjTo(EMPTY_GDN, this.gdnCtrl.dta);
     }
-    this.ctrl.tag+=this.tags.cfg.perf;
-    this.ctrl.no=i;
-    this.ctrl.perfDlg=true;
+    this.gdnCtrl.dta.factory=this.factory.cur;
+    this.gdnCtrl.tag+=this.tags.storage.out;
+    this.gdnCtrl.no=i;
+    this.gdnCtrl.dlg=true;
 },
-perf_do() {
+gdn_do() {
     var opts;
-    if(this.ctrl.no>-1) {
-        opts={method:"PUT",url:"/config/updatePerfLevel",data:this.edt.perf};
+    if(this.gdnCtrl.no>-1) {
+        opts={method:"PUT",url:"/gdn/update",data:this.gdnCtrl.dta};
     } else {
-        opts={method:"POST",url:"/config/addPerfLevel",data:this.edt.perf};
+        this.gdnCtrl.dta.purId=this.purchase.id;
+        opts={method:"POST",url:"/gdn/start",data:this.gdnCtrl.dta};
     }
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        if(this.ctrl.no>-1) {
-            copyObjTo(this.edt.perf, this.perfs[this.ctrl.no]);
-        } else {
-            var o = {};
-            copyObjTo(this.edt.perf, o);
-            this.perfs.push(o);
-        }
-        this.ctrl.no=-2;
-        this.ctrl.perfDlg=false;
+        this.gdnCtrl.no=-2;
+        this.gdnCtrl.dlg=false;
+        this.query_gdn(this.gdnCtrl.cur);
     });
 },
-show_worktime(i) {
-    if(i>-1) {
-        this.ctrl.tag=this.tags.modify;
-        this.edt.wt.id=this.worktimes[i].id;
-        copyObjTo(this.worktimes[i], this.edt.wt);
-    } else {
-        this.ctrl.tag=this.tags.add;
-        copyObjTo(EMPTY_WT, this.edt.wt);
-        this.edt.wt.calendar=this.calOpts[0].value;
-    }
-    this.ctrl.tag+=this.tags.cfg.worktime;
-    this.ctrl.no=i;
-    this.ctrl.wtDlg=true;
-},
-worktime_do() {
-    var opts;
-    if(this.ctrl.no>-1) {
-        opts={method:"PUT",url:"/config/updateWorktime",data:this.edt.wt};
-    } else {
-        opts={method:"POST",url:"/config/addWorktime",data:this.edt.wt};
-    }
+remove_gdn() {
+    var opts={method:"DELETE",url:"/gdn/remove?purId="
+        +this.gdnCtrl.dta.purId+"&factory="+this.factory.cur};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        var w=this.edt.wt;
-        w.first_s=formatTime(w.first);
-        w.second_s=formatTime(w.second);
-        w.third_s=formatTime(w.third);
-        w.forth_s=formatTime(w.forth);
-        if(this.ctrl.no>-1) {
-            copyObjTo(w, this.worktimes[this.ctrl.no]);
-        } else {
-            var o = {id:resp.data.id};
-            copyObjTo(w, o);
-            this.worktimes.push(o);
-        }
-        this.ctrl.no=-2;
-        this.ctrl.wtDlg=false;
+        this.gdnCtrl.no=-2;
+        this.gdnCtrl.dlg=false;
+        this.query_gdn(this.gdnCtrl.cur);
     });
 },
-remove_perf(i) {
-    var opts={method:"DELETE",url:"/config/removePerfLevel?level="+this.perfs[i].level};
+show_dir_in() {
+    this.resCtrl.tag=this.tags.storage.dir_in;
+    copyObjTo(EMPTY_IN, this.resCtrl.in);
+    this.resCtrl.in.factory=this.factory.cur;
+    this.resCtrl.inDlg=true;
+},
+dir_in_do() {
+    this.resCtrl.in.sku=this.sku.id;
+    var opts={method:"POST",url:"/grn/dir_in",data:this.resCtrl.in};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.perfs.splice(i,1);
-    });
-},
-remove_worktime(i) {
-    var opts={method:"DELETE",url:"/config/removeWorktime?id="+this.worktimes[i].id};
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.worktimes.splice(i,1);
-    });
-},
-remove_office(i) {
-    var opts={method:"DELETE",url:"/config/removeOffice?id="+this.offices[i].id};
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.offices.splice(i,1);
-    });
+        this.resCtrl.inDlg=false;
+        this.query_res(this.resCtrl.cur);
+    }); 
 }
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header>
    <q-toolbar>
-     <q-btn flat round icon="arrow_back" dense @click="service.back()"></q-btn>
-     <q-toolbar-title>{{tags.cfg.title}}</q-toolbar-title>
+     <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>
+     <q-toolbar-title>{{tags.storage.title}}</q-toolbar-title>
+     <q-btn flat dense icon-right="factory" :label="factory.name">
+       <q-menu>
+        <q-list style="min-width:100px">
+         <q-item clickable v-close-popup v-for="(f,i) in factory.opts" @click="factory_changed(i)">
+           <q-item-section>{{f.name}}</q-item-section>
+         </q-item>
+        </q-list>
+       </q-menu>
+     </q-btn>
    </q-toolbar>
   </q-header>
+  <q-footer>
+   <q-tabs v-model="tab" @update:model-value="tab_changed"
+    dense align="justify" switch-indicator inline-label
+    class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
+    <q-tab name="res" icon="list" :label="tags.storage.list"></q-tab>
+    <q-tab name="grn" icon="exit_to_app" :label="tags.storage.in"></q-tab>
+    <q-tab name="gdn" icon="output" :label="tags.storage.out"></q-tab>
+    <q-tab name="out" icon="bus_alert" :label="tags.storage.out_log"></q-tab>
+   </q-tabs>
+  </q-footer>
   <q-page-container>
     <q-page class="q-pa-none">
-<q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
-  {{tags.cfg.office}}
-  <template v-slot:action>
-   <q-select v-model="zone.cur" :options="zone.opts" @update:model-value="query_offices"
-   dense map-options emit-value dense>
-    <template v-slot:after>
-     <q-btn flat dense color="primary" icon="add_circle" @click="show_office(-1)"></q-btn>
-     <q-btn flat dense color="teal" icon="info" @click.stop="service.goto('/zone')"></q-btn>
-    </template>
-   </q-select>
-  </template>
-</q-banner>
-<q-list dense>
- <q-item v-for="(o,i) in offices">
-  <q-item-section>{{o.name}}</q-item-section>
-  <q-item-section>{{o.cmt}}</q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_office(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_office(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
- </q-item>
-</q-list>
+<q-tab-panels v-model="tab">
 
-<q-banner inline-actions class="bg-indigo-1 q-mt-none" dense>
-  {{tags.cfg.worktime}}
-  <template v-slot:action>
-   <q-btn icon="add_circle" @click="show_worktime(-1)" color="primary" flat dense></q-btn>
-   <q-btn icon="calendar_month" @click.stop="service.goto('/calendar')" color="teal" flat dense></q-btn>
-  </template>
-</q-banner>
-<q-list>
- <q-item v-for="(w,i) in worktimes">
-  <q-item-section>
-   <q-item-label>{{w.name}}</q-item-label>
-   <q-item-label caption>{{w.calName}}</q-item-label>
-  </q-item-section>
-  <q-item-section>
-   <q-item-label>{{w.first_s}}-{{w.second_s}},{{w.third_s}}-{{w.forth_s}}</q-item-label>
-   <q-item-label>{{tags.cfg.maxEdit}}:{{w.maxEdit}}<q-item-label>
-   <q-item-label>{{tags.cfg.leadTime}}:{{w.leadTime}}<q-item-label>
-  </q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_worktime(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_worktime(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
- </q-item>
-</q-list>
+<q-tab-panel name="res" class="q-pa-none">
+ <div class="text-right bg-grey-3 q-pa-sm">
+  <q-btn color="secondary" icon="rule" @click="show_dir_in"
+   :label="tags.storage.check" flat dense></q-btn>
+  <q-btn color="primary" @click="show_dir_in"
+  :label="tags.storage.dir_in" icon="login" flat dense></q-btn>
+ </div>
+ <div class="q-pa-sm flex flex-center" v-show="resCtrl.max>1">
+  <q-pagination v-model="resCtrl.cur" color="primary" :max="resCtrl.max" max-pages="10"
+   boundary-numbers="false" @update:model-value="query_res"></q-pagination>
+ </div>
+ <q-list dense separator>
+  <q-item>
+   <q-item-section><q-item-label caption>{{tags.storage.no}}</q-item-label></q-item-section>
+   <q-item-section>
+    <q-item-label caption>
+    {{tags.storage.checkAt}}
+    <q-icon :name="resCtrl.ordIcon" @click="changed_res_ord" size="1.5em" color="primary"></q-icon>
+    </q-item-label>
+   </q-item-section>
+   <q-item-section side><q-item-label caption>{{tags.storage.inDate}}</q-item-label></q-item-section>
+  </q-item>
+  <q-item v-for="(r,i) in res" clickable
+   @click="service.goto('/resdetail?no='+r.no+'&factory='+this.factory.cur)">
+    <q-item-section>
+     <q-item-label>{{r.no}}</q-item-label>
+     <q-item-label caption>{{r.skuName}}/{{r.num}}</q-item-label>
+    </q-item-section>
+    <q-item-section>{{r.checkAt}}</q-item-section>
+    <q-item-section side>{{r.inDate}}</q-item-section>
+  </q-item>
+ </q-list>
+</q-tab-panel>
 
-<q-banner inline-actions class="bg-indigo-1 q-mt-none" dense>
-  {{tags.cfg.perf}}
-  <template v-slot:action>
-   <q-btn icon="add_circle" @click="show_perf(-1)" color="primary" flat dense></q-btn>
-  </template>
-</q-banner>
-<q-list dense>
- <q-item v-for="(p,i) in perfs">
-  <q-item-section>{{p.level}}/{{p.name}}</q-item-section>
-  <q-item-section>{{p.cmt}}</q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_perf(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_perf(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
- </q-item>
-</q-list>
+<q-tab-panel name="grn" class="q-pa-none">
+<div class="row bg-grey-3 q-pa-sm q-pa-sm">
+ <div class="col-2">
+  <q-select v-model="grnCtrl.state" :options="grnCtrl.stateOpts"
+   @update:model-value="grn_sta_changed"
+   emit-value map-options dense></q-select>
+ </div>
+ <div class="col self-center">
+  <div class="text-right">
+   <q-btn color="primary" @click="show_grn(-1)"
+    icon="exit_to_app" :label="tags.storage.in" flat dense></q-btn>
+  </div>
+ </div>
+</div>
+<div class="q-pa-sm flex flex-center" v-show="grnCtrl.max>1">
+ <q-pagination v-model="grnCtrl.cur" color="primary" :max="grnCtrl.max" max-pages="10"
+  boundary-numbers="false" @update:model-value="query_grn"></q-pagination>
+</div>
+ <q-list dense separator>
+  <q-item v-for="(g,i) in grns" @click="service.goto('/grndtl?id='+g.purId)" clickable>
+    <q-item-section>
+     <q-item-label>{{g.tranNo}}({{g.type}})</q-item-label>
+     <q-item-label>{{g.state}}</q-item-label>
+    </q-item-section>
+    <q-item-section>
+     <q-item-label>{{g.inDate}}</q-item-label>
+     <q-item-label caption>{{g.outDate}}</q-item-label>
+    </q-item-section>
+  </q-item>
+ </q-list>
+</q-tab-panel>
+
+<q-tab-panel name="gdn" class="q-pa-none">
+<div class="row bg-grey-3 q-pa-sm">
+ <div class="col-2">
+  <q-select v-model="gdnCtrl.state" :options="gdnCtrl.stateOpts"
+   @update:model-value="gdn_sta_changed"
+   emit-value map-options dense></q-select>
+ </div>
+ <div class="col self-center">
+  <div class="text-right">
+   <q-btn color="primary" @click="show_gdn(-1)"
+    icon="output" :label="tags.storage.out" flat dense></q-btn>
+  </div>
+ </div>
+</div>
+<div class="q-pa-sm flex flex-center" v-show="gdnCtrl.max>1">
+ <q-pagination v-model="gdnCtrl.cur" color="primary" :max="gdnCtrl.max" max-pages="10"
+  boundary-numbers="false" @update:model-value="query_gdn"></q-pagination>
+</div>
+ <q-list dense separator>
+  <q-item v-for="(g,i) in gdns" @click="service.goto('/gdndtl?id='+g.purId)" clickable>
+    <q-item-section>
+     <q-item-label>{{g.tranNo}}({{g.type}})</q-item-label>
+     <q-item-label>{{g.state}}</q-item-label>
+    </q-item-section>
+    <q-item-section>
+     <q-item-label>{{g.cmt}}</q-item-label>
+     <q-item-label caption>{{g.applyCmt}}<br>{{g.applicant}}</q-item-label>
+    </q-item-section>
+    <q-item-section side>
+     <q-item-label>{{g.inDate}}</q-item-label>
+     <q-item-label caption>{{g.cfmDate}}</q-item-label>
+    </q-item-section>
+  </q-item>
+ </q-list>
+</q-tab-panel>
+
+<q-tab-panel name="out" class="q-pa-none">
+ <div class="q-pa-sm flex flex-center" v-show="olCtrl.max>1">
+  <q-pagination v-model="olCtrl.cur" color="primary" :max="olCtrl.max" max-pages="10"
+   boundary-numbers="false" @update:model-value="query_outlog"></q-pagination>
+ </div>
+ <q-list dense separator class="q-pa-sm">
+  <q-item>
+   <q-item-section><q-item-label caption>{{tags.storage.no}}</q-item-label></q-item-section>
+   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
+   <q-item-section side><q-item-label caption>{{tags.createAt}}</q-item-label></q-item-section>
+  </q-item>
+  <q-item v-for="(o,i) in outlogs">
+    <q-item-section>
+     <q-item-label>{{o.no}}</q-item-label>
+     <q-item-label caption>{{o.skuName}}/{{o.num}}</q-item-label>
+    </q-item-section>
+    <q-item-section>
+     <q-item-label>{{o.type}}</q-item-label>
+     <q-item-label caption>{{o.cmt}}</q-item-label>
+    </q-item-section>
+    <q-item-section side>
+     <q-item-label>{{o.execAcc}}</q-item-label>
+     <q-item-label caption>{{o.createAt}}</q-item-label>
+    </q-item-section>
+  </q-item>
+ </q-list>
+</q-tab-panel>
+
+</q-tab-panels>
+
     </q-page>
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="ctrl.officeDlg">
+<q-dialog v-model="grnCtrl.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-    <div class="text-h6">{{ctrl.tag}}</div>
+    <div class="text-h6">{{grnCtrl.tag}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   <q-input :label="tags.name" v-model="edt.office.name" dense></q-input>
-   <q-input :label="tags.cmt" v-model="edt.office.cmt" dense></q-input>
+   <pur-select v-model="purchase" :label="tags.storage.purchase" v-show="grnCtrl.no<0"></pur-select>
+   <q-input v-model="grnCtrl.dta.tranNo" :label="tags.storage.tranNo" dense></q-input>
+   <date-input v-model="grnCtrl.dta.outDate" :close="tags.ok" :label="tags.storage.outDate"></date-input>
+   <q-input :label="tags.cmt" v-model="grnCtrl.dta.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="office_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   <q-btn :label="tags.remove" color="red" @click="remove_grn" flat v-show="grnCtrl.no>-1"></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="grn_do"></q-btn>
+   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>
 
-<q-dialog v-model="ctrl.wtDlg">
+<q-dialog v-model="gdnCtrl.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-    <div class="text-h6">{{ctrl.tag}}</div>
+    <div class="text-h6">{{gdnCtrl.tag}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   <q-input :label="tags.name" v-model="edt.wt.name" dense></q-input>
-   <q-input :label="tags.cfg.first" v-model.number="edt.wt.first" dense></q-input>
-   <q-input :label="tags.cfg.second" v-model.number="edt.wt.second" dense></q-input>
-   <q-input :label="tags.cfg.third" v-model.number="edt.wt.third" dense></q-input>
-   <q-input :label="tags.cfg.forth" v-model.number="edt.wt.forth" dense></q-input>
-   <q-input :label="tags.cfg.leadTime" v-model.number="edt.wt.leadTime" dense></q-input>
-   <q-input :label="tags.cfg.maxEdit" v-model.number="edt.wt.maxEdit" dense></q-input>
-   <q-select :label="tags.cfg.calendar" v-model="edt.wt.calendar" :options="calOpts"
-   dense map-options emit-value dense></q-select>
-   <div class="row items-center">
-    <div class="col">{{tags.cfg.midClock}}</div>
-    <div class="col q-gutter-sm">
-     <q-radio v-model="edt.wt.midClock" val="Y" :label="tags.yesNo.Y"></q-radio>
-     <q-radio v-model="edt.wt.midClock" val="N" :label="tags.yesNo.N"></q-radio>
-    </div>
-   </div>
+   <pur-select v-model="purchase" :label="tags.storage.purchase" v-show="gdnCtrl.no<0"></pur-select>
+   <q-input v-model="gdnCtrl.dta.tranNo" :label="tags.storage.tranNo" dense></q-input>
+   <q-input :label="tags.cmt" v-model="gdnCtrl.dta.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="worktime_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   <q-btn :label="tags.remove" color="red" @click="remove_gdn" flat v-show="gdnCtrl.no>-1"></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="gdn_do"></q-btn>
+   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>
 
-<q-dialog v-model="ctrl.perfDlg">
+<q-dialog v-model="resCtrl.inDlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-    <div class="text-h6">{{ctrl.tag}}</div>
+    <div class="text-h6">{{resCtrl.tag}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   <q-input :label="tags.cfg.level" v-model="edt.perf.level" dense></q-input>
-   <q-input :label="tags.name" v-model="edt.perf.name" dense></q-input>
-   <q-input :label="tags.cmt" v-model="edt.perf.cmt" dense></q-input>
+   <sku-select v-model="sku" :label="tags.sku.title"></sku-select>
+   <q-input v-model.number="resCtrl.in.price" :label="tags.sku.price" dense></q-input>
+   <q-input v-model.number="resCtrl.in.num" :label="tags.num"></q-input>
+   <q-input v-model="resCtrl.in.cmt" :label="tags.cmt"></q-input>
   </q-card-section>
   <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="perf_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="dir_in_do"></q-btn>
+   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>

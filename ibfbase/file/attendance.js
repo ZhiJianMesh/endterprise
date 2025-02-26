@@ -512,7 +512,7 @@ template:`
    <div class="row">
     <div class="col-3 self-end q-pr-md">
      <q-select v-model="atdAct.tm.type" :options="tmTypes"
-      dense map-options emit-value dense></q-select>
+      dense map-options emit-value></q-select>
     </div>
     <div class="col">
      <q-input v-model="atdAct.tm.cmt" :label="tags.cmt"></q-input>

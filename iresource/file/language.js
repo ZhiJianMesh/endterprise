@@ -21,27 +21,59 @@ cn:{
   search:"搜索",
   cmt:'备注',
   name:'名称',
-  no:'资产编号',
   state:'状态',
   detail:'详情',
   createAt:'创建时间',
   sku:'存货单位',
+  num:'数量',
+  execAcc:'执行人',
 
   sex:{
     F:'男',
     M:'女',
     U:'未知'
   },
-  
+  resState:{
+    IDLE:'闲置在仓库中',
+    USE:'使用中',
+    DISC:'报废',
+    BAD:'损坏了',
+    NONE:'用完'
+  },
   skuType:{
     WHL:'整机',
     PART:'零件',
     SOFT:'软件',
     VIRT:'虚拟物品'
   },
+  outType:{
+    OUT:'直接出库',
+    DISC:'报废'
+  },
   admType:{
     I:'入库',
     O:'出&入库'
+  },
+  grnType:{
+    INN:'内部发货',
+    EXT:'外部发货'
+  },
+  gdnType:{
+    INN:'向内发货',
+    EXT:'向外发货'
+  },
+  grnState:{
+    WAIT:'等待发货',
+    CHK:'正在入库',
+    OVER:'已完成'
+  },
+  gdnState:{
+    WAIT:'等待发货',
+    CHK:'正在出库',
+    TRAN:'运输中',
+    OVER:'已完成',
+    LOST:'丢失',
+    BACK:'退货'
   },
   fbLevel:{
     L:'低',
@@ -79,21 +111,31 @@ cn:{
     post:'职位',
     phone:'联系电话'
   },
-  storge:{
+  storage:{
     title:'仓储管理',
     in:'入库',
     out:'出库',
     list:'资产清单',
+    out_log:'异常出库记录',
+    dir_in:'直接入库',
+    dir_out:'直接出库',
+    purchase:'采购单',
+    attach:'资产挂账',
+    unattach:'资产解挂',
     check:'清点',
-    inDate:'入库日期',
-    outDate:'发货日期',
-    expDate:'期望日期',
-    cfmDate:'确认日期',
+    discard:'报废',
+    inDate:'入库时间',
+    outDate:'发货时间',
+    expDate:'期望时间',
+    cfmDate:'确认时间',
     execAcc:'执行人',
     tranNo:'运单号',
     applicant:'申请人',
     receiver:'收货人',
-    checkAt:'清点日期'
+    checkAt:'清点时间',
+    chkOk:'正常',
+    chkBad:'异常',
+    no:'资产编号'
   },
   purchase:{
     title:'采购',
@@ -109,6 +151,7 @@ cn:{
     '6006':'要发货的资产已添加，或不在发货列表中',
     '6007':'入库资源与申请的资源不一致',
     '6008':'入库请求已完成，不可删除入库详单',
+    '6009':'数量不足',
     'unknown':'未知错误'
   },
 }

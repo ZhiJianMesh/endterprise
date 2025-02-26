@@ -38,8 +38,9 @@
         "expect" : true,
         "errorCode":"NO_RIGHT",
         "errorInfo":"not a valid member",
-        "sql":"select * from factoryAdm where factory=#FACTORY#
-            and acc=@{#tokenAcc} and type in(#TYPE#)"
+        "sql":"select * from factoryAdm 
+            where acc='@{#tokenAcc}' and factory=#FACTORY#
+            and type in(#TYPE#)"
     },
 
     "check_accounts":{

@@ -118,7 +118,7 @@ template:`
         </q-item>
        </q-list>
       </q-menu>
-    </q-btn>    
+    </q-btn>
   </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-pa-md">
