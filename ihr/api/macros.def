@@ -22,7 +22,7 @@
         "expect" : true,
         "errorCode" : "NO_RIGHT",
         "errorInfo" : "no right",
-        "sql" : "select * from member where gid=#GID# 
+        "sql" : "select 1 from member where gid=#GID# 
             and uid=@{#tokenCaller} and role='ADM'"
     },
     
@@ -33,7 +33,7 @@
         "expect" : true,
         "errorCode" : "NO_RIGHT",
         "errorInfo" : "no right",
-        "sql" : "select * from member m,grp g where m.gid=#GID# 
+        "sql" : "select 1 from member m,grp g where m.gid=#GID# 
             and m.uid=@{#tokenCaller} and m.role='ADM'
             and g.id=#GID# and g.type='D'"
     },

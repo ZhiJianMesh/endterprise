@@ -38,7 +38,7 @@
         "expect" : true,
         "errorCode":"NO_RIGHT",
         "errorInfo":"not a valid member",
-        "sql":"select * from factoryAdm 
+        "sql":"select 1 from factoryAdm 
             where acc='@{#tokenAcc}' and factory=#FACTORY#
             and type in(#TYPE#)"
     },
@@ -52,5 +52,16 @@
         "url":"/user/userid",
         "tokenSign":"APP",
         "parameters":"{\"accounts\":#ACCLIST#}"
+    },
+
+    "is_purchase_owner":{
+        "name" : "judge_power",
+        "type" : "dataexists",
+        "db": "purchase",
+        "expect":true,
+        "errorCode":"NO_RIGHT",
+        "errorInfo":"no right",
+        "sql" : "select 1 from power where account='@{#tokenAcc}'
+             and did=#PURID# and power='O'"
     }
 }
