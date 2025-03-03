@@ -5,6 +5,8 @@ import My from "./my.js"
 import Contacts from "./contacts.js"
 import PrjProc from "./prjproc.js"
 import PrjInfo from "./prjinfo.js"
+import PurchaseDtl from "./purchasedtl.js"
+import SetPrice from "./setprice.js"
 import Attendance from "./attendance.js"
 import Business from "./business.js"
 import BusiDtl from "./busidtl.js"
@@ -17,6 +19,8 @@ function registerIbf(app, router) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/my", component:My});
     router.addRoute({path:"/ibf/contacts", component:Contacts});
     router.addRoute({path:"/ibf/prjproc", component:PrjProc}); //项目事务流程
+    router.addRoute({path:"/ibf/purchasedtl", component:PurchaseDtl}); //项目采购申请，接口在iresource中实现
+    router.addRoute({path:"/ibf/setprice", component:SetPrice}); //采购员设置采购单价
     router.addRoute({path:"/ibf/prjinfo", component:PrjInfo}); //项目状态信息
     router.addRoute({path:"/ibf/attendance", component:Attendance}); //考勤
     router.addRoute({path:"/ibf/business", component:Business}); //差旅列表
@@ -26,9 +30,9 @@ function registerIbf(app, router) { //注册ibf所需的路由
     app.provide('ibf', {//如果定义一个const/var写在外面，在此引用，路由会失败，原因未知
         tags:tags,
         prjs:[],
+        runtime:{}, //运行时
         department:{}, //所属部门，作为普通员工，只能从属于一个部门
         adminDpms:[], //管理的部门
-        flowInfos:{},
         clockTms:[],
         SERVICE_HR:"ihr",
         SERVICE_WF:"workflow",
@@ -43,45 +47,11 @@ function registerIbf(app, router) { //注册ibf所需的路由
         PlanState:{init:'INIT',norm:'NORM',adv:'ADVA',delay:'DELA',cancel:'CANC'},
         back(){router.back()},
         goto(url){router.push(url)},
-        flowDefs(ids){
-            var fids='';
-            for(var id of ids){
-                if(this.flowInfos[id]) continue;
-                if(fids!='')fids+=',';
-                fids+=id;
-            }
-            var url="/api/flow/infos?flowids="+fids
-            return request({method:"GET",url:url}, this.SERVICE_WF).then(resp=>{
-                if(resp.code!=0) {
-                    return false;
-                }
-                //flows:{flow,name,dispName,cmt,callback}
-                //steps:{flow,step,type,name,ext,cmt}
-                resp.data.flows.forEach(f=>{
-                    var sd={name:f.dispName,maxStep:0,steps:[]};
-                    this.flowInfos[f.id]=sd;
-                });
-                resp.data.steps.forEach(s=> {
-                    var sd=this.flowInfos[s.flow];
-                    sd.steps.push({step:s.step,type:s.type,title:s.name+'('+s.cmt+')',
-                        ext:s.ext,comment:s.cmt, signer:s.signer});
-                    if(s.step>sd.maxStep){
-                        sd.maxStep=s.step;
-                    }
-                });
-                return true;
-            });
+        setRt(k, v) {
+            this.runtime[router.currentRoute.value.path+':'+k]=v;
         },
-        flowDef(id,refresh){//不能用箭头函数，否则不能用this，箭头函数的this是在运行时所在的对象
-            if(!refresh && this.flowInfos[id]) {
-                return new Promise(resolve=>{resolve(this.flowInfos[id])});
-            }
-            return this.flowDefs([id]).then(r=>{
-                return this.flowInfos[id] ? this.flowInfos[id] : {};
-            });
-        },
-        getFlowDef(id) {
-            return this.flowInfos[id];
+        getRt(k) {
+            return this.runtime[router.currentRoute.value.path+':'+k];
         }
     })
     return new Promise((resolve) => {resolve(true)});
@@ -153,24 +123,26 @@ query_prjs(pg) {
         } else {
             var tm,stage;
             var dt=new Date();
+            var prjTags=this.tags.prj;
             for(var l of resp.data.list) {
                 dt.setTime(l.start*60000);
                 tm=date2str(dt);
                 dt.setTime(l.end*60000);
                 tm+='--'+date2str(dt);
                 l.time=tm;
-                stage=this.tags.prj.stageCfg[l.stage];
+                stage=prjTags.stageCfg[l.stage];
                 if(stage) {
                     l.stage=stage;
                 }
-                l.role=this.tags.prj.roleCfg[l.role];
+                l.role=prjTags.roleCfg[l.role];
+                l.type=prjTags.typeCfg[l.type];
                 prjs.push(l);
             }
             this.ibf.prjNum=resp.data.total;
             this.ctrl.max=Math.ceil(resp.data.total/this.ibf.N_SMPG);
         }
         this.ibf.prjs=prjs;
-        this.ibf.ctrl=this.ctrl;
+        this.ibf.ctrl=this.ctrl; //回退时使用历史记录
         this.prjs=prjs;
     });
 },
@@ -266,9 +238,7 @@ template:`
     <q-item-label>{{p.stage}}</q-item-label>
     <q-item-label caption>{{p.time}}</q-item-label>
    </q-item-section>
-   <q-item-section side>
-    <q-icon name="info" color="primary" @click="ibf.goto('/ibf/prjinfo?id='+p.id)"></q-icon>
-   </q-item-section>
+   <q-item-section side>{{p.type}}</q-item-section>
   </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-show="ctrl.max>1">

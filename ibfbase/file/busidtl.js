@@ -23,7 +23,7 @@ data() {return {
     editing:false,
     dtl:{},
     edtDtl:{},
-    expList:[],
+    expList:[], //报销列表
     expAct:{dlg:false,dta:{},no:-1}
 }},
 created(){
@@ -159,7 +159,7 @@ update_busi() {
     });
 },
 remove_busi() {
-    this.$refs.cfmDlg.show(this.tags.busi.cfmRmv, ()=>{
+    this.$refs.cfmDlg.show(this.tags.cfmRmv, ()=>{
         var opts={method:"DELETE",url:"/business/remove?id="+this.id};
         request(opts, this.ibf.SERVICE_BUSINESS).then(resp => {
             if(resp.code!=RetCode.OK) {
@@ -173,8 +173,7 @@ remove_busi() {
 busi_flow() {
     var url='/ibf/workflow?flow='+this.dtl.flowid+"&did="+this.id
         +"&flName=busi&service="+this.ibf.SERVICE_BUSINESS+"&step="+this.dtl.status
-        +"&dtlApi=" + encodeURI('/business/detail')
-        +"&dtlPage=" + encodeURI('/ibf/busidtl');
+        +"&dtlApi=" + encodeURI('/business/detail');
     this.ibf.goto(url);
 }
 },
@@ -253,7 +252,7 @@ template:`
 <q-banner inline-actions dense class="bg-indigo-3 text-white">
   {{tags.busi.expense}}
   <template v-slot:action>
-    <q-icon name="add_circle" @click="show_exp(-1)"></q-btn>
+    <q-btn icon="add_circle" @click="show_exp(-1)" flat dense></q-btn>
   </template>
 </q-banner>
 <q-list dense separator>

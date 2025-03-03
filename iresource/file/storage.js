@@ -1,6 +1,7 @@
 const EMPTY_GRN={purId:'',tranNo:'',outDate:'',cmt:''};
 const EMPTY_GDN={purId:'',tranNo:''};
 const EMPTY_IN={cmt:'',price:'',num:'',sku:''};
+const RT_TAB="storage_tab";
 
 import PurSelect from "./components/purchase_selector.js";
 import SkuSelect from "/ibfbase/components/sku_selector.js";
@@ -24,16 +25,18 @@ data() {return {
     factory:{opts:[],cur:-1,name:''},//工厂选项
     purchase:{},
     sku:{},
-    tab:'res' //res,gdn,grn,out
+    tab:'' //res,gdn,grn,out
 }},
 created(){
     this.service.myFactories().then(ll=>{
-        if(ll.length>0) {
-            this.factory.opts=ll;
-            this.factory.cur=ll[0].id;
-            this.factory.name=ll[0].name;
-            this.query_res(1);
-        }
+        if(ll.length==0) return;
+        this.factory.opts=ll;
+        this.factory.cur=ll[0].id;
+        this.factory.name=ll[0].name;
+        
+        var tab=this.service.getRt(RT_TAB);
+        this.tab=tab?tab:'res';
+        this.tab_changed(this.tab);
     });
     for(var i in this.tags.grnState) {
         this.grnCtrl.stateOpts.push({value:i,label:this.tags.grnState[i]});
@@ -78,16 +81,17 @@ query_grn(pg) {
             this.grnCtrl.cur=1;
             return;
         }
+        var purs=resp.data.purs;
         var dt=new Date();
         for(var l of resp.data.list) {
             dt.setTime(l.outDate*60000);
             l.outDate=datetime2str(dt);
             dt.setTime(l.inDate*60000);
             l.inDate=datetime2str(dt);
-            dt.setTime(l.cfmDate*60000);
-            l.cfmDate=datetime2str(dt);
             l.type=this.tags.grnType[l.type];
-            l.state=this.tags.grnState[l.state];
+            var pur=purs[l.purId];
+            l.prjName=pur[0];
+            l.applicant=pur[1];
         }
         this.grns = resp.data.list;
         this.grnCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
@@ -105,14 +109,23 @@ query_gdn(pg) {
             this.gdnCtrl.cur=1;
             return;
         }
+
+        var purs=resp.data.purs;
         var dt=new Date();
         for(var l of resp.data.list) {
             dt.setTime(l.outDate*60000);
             l.outDate=datetime2str(dt);
-            dt.setTime(l.cfmDate*60000);
-            l.cfmDate=datetime2str(dt);
+            if(l.cfmDate!=0) {
+                dt.setTime(l.cfmDate*60000);
+                l.cfmDate=datetime2str(dt);
+            } else {
+                l.cfmDate=this.tags.gdn.unCfmed;
+            }
             l.type=this.tags.gdnType[l.type];
             l.state=this.tags.gdnState[l.state];
+            var pur=purs[l.purId];
+            l.prjName=pur[0];
+            l.applicant=pur[1];
         }
         this.gdns = resp.data.list;
         this.gdnCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
@@ -140,11 +153,12 @@ query_outlog(pg) {
     })
 },
 tab_changed(tab) {
-    this.showAdd=this.editable;
-    if(tab=='grn') {
+    this.service.setRt(RT_TAB, tab);
+    if(tab=='res') {
         if(this.res.length==0) {
             this.query_res(this.resCtrl.cur);
         }
+    } if(tab=='grn') {
         if(this.grns.length==0) {
             this.query_grn(this.grnCtrl.cur);
         }
@@ -204,7 +218,9 @@ grn_do() {
     if(this.grnCtrl.no>-1) {
         opts={method:"PUT",url:"/grn/update",data:this.grnCtrl.dta};
     } else {
-        this.gdnCtrl.dta.purId=this.purchase.id;
+        this.grnCtrl.dta.purId=this.purchase.id;
+        var outDate=Date.parse(this.grnCtrl.dta.outDate);//ms
+        this.grnCtrl.dta.outDate=parseInt(outDate/60000);
         opts={method:"POST",url:"/grn/start",data:this.grnCtrl.dta};
     }
     request(opts, this.service.name).then(resp => {
@@ -290,7 +306,7 @@ dir_in_do() {
         }
         this.resCtrl.inDlg=false;
         this.query_res(this.resCtrl.cur);
-    }); 
+    });
 }
 },
 template:`
@@ -367,8 +383,7 @@ template:`
  </div>
  <div class="col self-center">
   <div class="text-right">
-   <q-btn color="primary" @click="show_grn(-1)"
-    icon="exit_to_app" :label="tags.storage.in" flat dense></q-btn>
+   <q-btn color="primary" @click="show_grn(-1)" icon="add" flat dense></q-btn>
   </div>
  </div>
 </div>
@@ -376,15 +391,24 @@ template:`
  <q-pagination v-model="grnCtrl.cur" color="primary" :max="grnCtrl.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query_grn"></q-pagination>
 </div>
- <q-list dense separator>
-  <q-item v-for="(g,i) in grns" @click="service.goto('/grndtl?id='+g.purId)" clickable>
+ <q-list dense separator class="q-pa-sm">
+  <q-item>
+   <q-item-section><q-item-label caption>{{tags.storage.tranNo}}</q-item-label></q-item-section>
+   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
+   <q-item-section side><q-item-label caption>{{tags.storage.applicant}}</q-item-label></q-item-section>
+  </q-item>
+  <q-item v-for="(g,i) in grns" @click="service.goto('/grndetail?id='+g.purId+'&factory='+factory.cur)" clickable>
     <q-item-section>
-     <q-item-label>{{g.tranNo}}({{g.type}})</q-item-label>
-     <q-item-label>{{g.state}}</q-item-label>
+     <q-item-label>{{g.type}}</q-item-label>
+     <q-item-label caption>{{g.tranNo}}</q-item-label>
     </q-item-section>
     <q-item-section>
-     <q-item-label>{{g.inDate}}</q-item-label>
-     <q-item-label caption>{{g.outDate}}</q-item-label>
+     <q-item-label>{{g.cmt}}</q-item-label>
+     <q-item-label caption>{{g.outDate}} / {{g.inDate}}</q-item-label>
+    </q-item-section>
+    <q-item-section side>
+     <q-item-label>{{g.applicant}}</q-item-label>
+     <q-item-label caption>{{g.prjName}}</q-item-label>
     </q-item-section>
   </q-item>
  </q-list>
@@ -399,8 +423,7 @@ template:`
  </div>
  <div class="col self-center">
   <div class="text-right">
-   <q-btn color="primary" @click="show_gdn(-1)"
-    icon="output" :label="tags.storage.out" flat dense></q-btn>
+   <q-btn color="primary" @click="show_gdn(-1)" icon="add" flat dense></q-btn>
   </div>
  </div>
 </div>
@@ -408,19 +431,25 @@ template:`
  <q-pagination v-model="gdnCtrl.cur" color="primary" :max="gdnCtrl.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query_gdn"></q-pagination>
 </div>
- <q-list dense separator>
-  <q-item v-for="(g,i) in gdns" @click="service.goto('/gdndtl?id='+g.purId)" clickable>
+ <q-list dense separator class="q-pa-sm">
+  <q-item>
+   <q-item-section><q-item-label caption>{{tags.storage.tranNo}}</q-item-label></q-item-section>
+   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
+   <q-item-section side><q-item-label caption>{{tags.storage.applicant}}</q-item-label></q-item-section>
+  </q-item>
+  <q-item v-for="(g,i) in gdns" @click="service.goto('/gdndetail?id='+g.purId+'&factory='+this.factory.cur)" clickable>
     <q-item-section>
-     <q-item-label>{{g.tranNo}}({{g.type}})</q-item-label>
-     <q-item-label>{{g.state}}</q-item-label>
+     <q-item-label>{{g.type}}</q-item-label>
+     <q-item-label caption>{{g.tranNo}}</q-item-label>
     </q-item-section>
     <q-item-section>
      <q-item-label>{{g.cmt}}</q-item-label>
-     <q-item-label caption>{{g.applyCmt}}<br>{{g.applicant}}</q-item-label>
+     <q-item-label>{{g.applyCmt}}</q-item-label>
+     <q-item-label caption>{{g.outDate}} - {{g.cfmDate}}</q-item-label>
     </q-item-section>
     <q-item-section side>
-     <q-item-label>{{g.inDate}}</q-item-label>
-     <q-item-label caption>{{g.cfmDate}}</q-item-label>
+     <q-item-label>{{g.applicant}}</q-item-label>
+     <q-item-label caption>{{g.priName}}</q-item-label>
     </q-item-section>
   </q-item>
  </q-list>
@@ -468,7 +497,7 @@ template:`
   <q-card-section class="q-pt-none">
    <pur-select v-model="purchase" :label="tags.storage.purchase" v-show="grnCtrl.no<0"></pur-select>
    <q-input v-model="grnCtrl.dta.tranNo" :label="tags.storage.tranNo" dense></q-input>
-   <date-input v-model="grnCtrl.dta.outDate" :close="tags.ok" :label="tags.storage.outDate"></date-input>
+   <date-input v-model="grnCtrl.dta.outDate" :close="tags.ok" :label="tags.storage.outDate" min="-5"></date-input>
    <q-input :label="tags.cmt" v-model="grnCtrl.dta.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">

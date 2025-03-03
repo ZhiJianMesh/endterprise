@@ -1,19 +1,36 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import MonthInput from "/assets/v3/components/month_input.js"
+import SkuSelector from "./components/sku_selector.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
+import DateInput from "/assets/v3/components/date_input.js"
+
+const EMPTY_PUR={expDate:'',descr:'',type:'SELF',receiver:'',buyer:[]};
+const RT_TAB="prjproc_tab";
 
 export default {
 inject:["ibf"],
 components:{
-    "alert_dlg" : AlertDialog
+    "alert_dlg":AlertDialog,
+    "month-input":MonthInput,
+    "date-input":DateInput,
+    "sku-select":SkuSelector,
+    "user-select":UserSelector
 },
 data() {return {
     pid:this.$route.query.id,
     prj:{}, //项目详情
+    wts:[],
+    purs:[],
+    busis:[],
     editable:false, //项目是否可编辑
     isLeader:false,
     tags:this.ibf.tags,
-    tab:'worktime', //worktime,busi
-    wt:{list:[],month:'-1m',cur:1,max:0,dlg:false,no:-1}, //按月查询工时申请
-    busi:{list:[],cur:1,max:0}
+    tab:'', //worktime,busi,purchase
+    
+    wt:{cur:1,max:0,dlg:false,month:'-1m',no:-1}, //按月查询工时申请
+    busi:{cur:1,max:0},
+    purchase:{cur:1,max:0,dlg:false,typeOpts:[],
+        dta:{},skus:[],sku:{sku:{},num:''}}
 }},
 created(){
     request({method:'GET',url:'/project/detail?id='+this.pid}, this.ibf.SERVICE_PRJ).then(resp => {
@@ -28,18 +45,28 @@ created(){
         this.prj.end_s=date2str(dt);
         this.isLeader=this.prj.role=='L';
         this.editable=this.isLeader&&this.prj.stage==this.ibf.PrjStage.init;
-        this.query_wts(1);
-    })
+        var tab=this.ibf.getRt(RT_TAB);
+        this.tab=tab ? tab : 'worktime';
+        this.tab_changed(this.tab);
+    });
+    var tps=this.tags.purchase.types;
+    for(var t in tps) {
+        this.purchase.typeOpts.push({value:t, label:tps[t]});
+    }
 },
 methods:{
 tab_changed(tab) {
+    this.ibf.setRt(RT_TAB, tab);
     if(tab=='worktime'){
-        this.showAdd=false;
-        if(this.wt.list.length==0) {
+        if(this.wts.length==0) {
             this.query_wts(this.wt.cur);
         }
+    } else if(tab=='purchase'){
+        if(this.purs.length==0) {
+            this.query_purchase(this.purchase.cur);
+        }
     } else {
-        if(this.busi.list.length==0) {
+        if(this.busis.length==0) {
             this.query_busi(this.busi.cur);
         }
     }
@@ -50,7 +77,7 @@ query_busi(pg) {
         +this.pid+"&offset="+offset+'&num='+this.ibf.N_PAGE}
     request(opts, this.ibf.SERVICE_BUSINESS).then(resp => {
         if(resp.code!=RetCode.OK) {
-            this.busi.list=[];
+            this.busis=[];
             this.busi.max=0;
             this.busi.cur=1;
             return;
@@ -72,16 +99,15 @@ query_busi(pg) {
             busi.push(b);
         }
         this.busi.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
-        this.busi.list=busi;
+        this.busis=busi;
     })
 },
 busi_flow(i) {
-    var busi = this.busi.list[i];
+    var busi = this.busis[i];
     
     var url='/ibf/workflow?flow='+busi.flowid+"&did="+busi.id
         +"&flName=busi&service="+this.ibf.SERVICE_BUSINESS+"&step="+busi.status
-        +"&dtlApi=" + encodeURI('/business/detail')
-        +"&dtlPage=" + encodeURI('/ibf/busidtl');
+        +"&dtlApi=" + encodeURI('/business/detail');
     this.ibf.goto(url);
 },
 query_wts(pg) {
@@ -92,16 +118,50 @@ query_wts(pg) {
             +"&month="+this.wt.month.num
     request({method:"GET", url:url}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
-            this.wt.list=[];
+            this.wts=[];
             this.wt.max=0;
             return;
         }
-        this.wt.list=resp.data.list.map(l=>{
+        this.wts=resp.data.list.map(l=>{
             l.state_s=this.tags.aplSta[l.state];
             return l;
         });
         this.wt.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     })
+},
+query_purchase(pg) {
+    var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
+    var opts={method:"GET", url:"/purchase/listByPid?pid="
+        +this.pid+"&offset="+offset+'&num='+this.ibf.N_PAGE}
+    request(opts, this.ibf.SERVICE_RES).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.purs=[];
+            this.purchase.max=0;
+            this.purchase.cur=1;
+            return;
+        }
+        //id,cost,expDate,status,flowid,applicant,
+        //receiver,descr,pid,prjName
+        var dt=new Date();
+        var list=[];
+        for(var l of resp.data.list) {
+            var b={};
+            var i=0;
+            for(var c of resp.data.cols) {
+                b[c]=l[i++];
+            }
+            dt.setTime(b.expDate*60000);
+            b.expDate=date2str(dt);
+            b.status=this.tags.sta2icon(b.status);
+            b.type=this.tags.purchase.types[b.type];
+            list.push(b);
+        }
+        this.purchase.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
+        this.purs=list;
+    })
+},
+purchase_sta_changed() {
+    this.query_purchase(this.purchase.cur);
 },
 month_changed() {
     this.wt.cur=1;
@@ -113,7 +173,7 @@ show_wt(no) {
 },
 wt_do(state) {
     if(this.wt.no<0)return;
-    var uid=this.wt.list[this.wt.no].uid;
+    var uid=this.wts[this.wt.no].uid;
     var dta={pid:this.pid,uid:uid,month:this.wt.month.num,state:state};
     request({method:'POST',url:'/tasktime/confirm', data:dta}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
@@ -124,6 +184,40 @@ wt_do(state) {
         this.wt.no=-1;
         this.wt.dlg=false;
     });
+},
+show_purchase() {
+    copyObjTo(EMPTY_PUR, this.purchase.dta);
+    this.purchase.skus=[];
+    this.purchase.sku={sku:{id:0,name:''},num:''};
+    this.purchase.dlg=true;
+},
+purchase_do() {
+    var pur=this.purchase.dta;
+    var dta=copyObj(pur, ['receiver','type','descr']);
+    dta.pid=this.pid;
+    dta.prjName=this.prj.name;
+    dta.expDate=parseInt(Date.parse(pur.expDate)/60000);
+    dta.buyer=pur.buyer[0];
+    dta.skus=this.purchase.skus;
+    request({method:"POST", url:"/purchase/apply", data:dta}, this.ibf.SERVICE_RES).then(resp=>{
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.purchase.dlg=false;
+        this.query_purchase(this.purchase.cur);
+    });
+},
+add_purchase_sku() {
+    var sku=this.purchase.sku.sku;
+    var num=this.purchase.sku.num;
+    if(sku.id==0 || !num)return;
+    this.purchase.skus.push({sku:sku.id,skuName:sku.name,num:num});
+    sku={id:0,name:''};
+    this.purchase.sku.num='';
+},
+rmv_purchase_sku(i){
+    this.purchase.skus.splice(i,1);
 }
 },
 template:`
@@ -132,9 +226,7 @@ template:`
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.prj.title}}-{{prj.name}}</q-toolbar-title>
-     <month-input v-model="wt.month" v-if="tab=='worktime'"
-      @update:modelValue="month_changed" min="-3" max="-1m"></month-input>
-     <q-btn flat round icon="add_circle" dense @click="show_add()" v-show="showAdd"></q-btn>
+     <q-btn flat dense icon="info" @click="ibf.goto('/ibf/prjinfo?id='+pid)"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer>
@@ -143,6 +235,7 @@ template:`
     class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
     <q-tab name="worktime" icon="work_history" :label="tags.prj.worktime"></q-tab>
     <q-tab name="busi" icon="business" :label="tags.busi.title"></q-tab>
+    <q-tab name="purchase" icon="shopping_cart" :label="tags.purchase.title"></q-tab>
    </q-tabs>
   </q-footer>
   <q-page-container>
@@ -151,7 +244,7 @@ template:`
 
 <q-tab-panel name="busi">
  <q-list dense separator>
-  <q-item v-for="(b,i) in busi.list" @click="busi_flow(i)" clickable>
+  <q-item v-for="(b,i) in busis" @click="busi_flow(i)" clickable>
    <q-item-section>
     <q-item-label>{{b.account}}</q-item-label>
     <q-item-label caption>{{b.dest}}</q-item-label>
@@ -173,8 +266,15 @@ template:`
 </q-tab-panel>
 
 <q-tab-panel name="worktime">
+ <month-input v-model="wt.month" min="-3" max="-1m"
+   class="justify-center text-primary"
+   @update:modelValue="month_changed"></month-input>
+ <div class="q-pa-sm flex flex-center" v-show="wt.max>1">
+  <q-pagination v-model="wt.cur" color="primary" :max="wt.max" max-pages="10"
+   boundary-numbers="false" @update:model-value="query_wts"></q-pagination>
+ </div>
  <q-list dense separator>
-  <q-item v-for="(l,i) in wt.list" @click="show_wt(i)" clickable>
+  <q-item v-for="(l,i) in wts" @click="show_wt(i)" clickable>
    <q-item-section>{{l.account}}</q-item-section>
    <q-item-section>
     <q-item-label>{{l.ratio}}%({{l.state_s}})</q-item-label>
@@ -182,10 +282,37 @@ template:`
    </q-item-section>
   </q-item>
  </q-list>
- <div class="q-pa-sm flex flex-center" v-show="wt.max>1">
-  <q-pagination v-model="wt.cur" color="primary" :max="wt.max" max-pages="10"
-   boundary-numbers="false" @update:model-value="query_wts"></q-pagination>
+</q-tab-panel>
+
+<q-tab-panel name="purchase" class="q-pa-none">
+ <div class="bg-grey-3 q-pa-sm text-right">
+   <q-btn color="primary" @click="show_purchase" icon="add_shopping_cart" flat dense></q-btn>
  </div>
+ <div class="q-pa-sm flex flex-center" v-show="purchase.max>1">
+  <q-pagination v-model="purchase.cur" color="primary" :max="purchase.max" max-pages="10"
+   boundary-numbers="false" @update:model-value="query_purchase"></q-pagination>
+ </div>
+ <q-list dense separator class="q-pa-sm">
+  <q-item>
+   <q-item-section><q-item-label caption>{{tags.purchase.applicant}}</q-item-label></q-item-section>
+   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
+   <q-item-section side><q-item-label caption>{{tags.purchase.cost}}</q-item-label></q-item-section>
+  </q-item>
+  <q-item v-for="(l,i) in purs" @click="ibf.goto('/ibf/purchasedtl?id='+l.id)" clickable>
+   <q-item-section>
+    <q-item-label>{{l.applicant}}</q-item-label>
+    <q-item-label caption>{{l.expDate}}</q-item-label>
+   </q-item-section>
+   <q-item-section>
+    <q-item-label>{{l.receiver}}</q-item-label>
+    <q-item-label caption>{{l.descr}}</q-item-label>
+   </q-item-section>
+   <q-item-section side>
+    <q-item-label>{{l.cost}} {{tags.currency}}</q-item-label>
+    <q-item-label caption>{{l.type}}</q-item-label>
+   </q-item-section>
+  </q-item>
+ </q-list>
 </q-tab-panel>
 
 </q-tab-panels>
@@ -205,6 +332,51 @@ template:`
    @click="wt_do('REJ')"></q-btn>
   </div>
  </q-card-section>
+</q-card>
+</q-dialog>
+
+<q-dialog v-model="purchase.dlg">
+<q-card style="min-width:70vw">
+ <q-card-section>
+  <div class="text-h6">{{tags.apply}}</div>
+ </q-card-section>
+ <q-card-section class="q-pt-none">
+  <q-select v-model="purchase.dta.type" :options="purchase.typeOpts"
+   dense map-options emit-value></q-select>
+  <q-input v-model="purchase.dta.receiver" dense
+   :label="tags.purchase.receiver"></q-input>
+  <date-input v-model="purchase.dta.expDate" :format="tags.dateFmt"
+  :label="tags.purchase.expDate" min="today"></date-input>
+  <user-select :accounts="purchase.dta.buyer" :label="tags.purchase.buyer"></user-select>
+  <q-input v-model="purchase.dta.descr" :label="tags.cmt" dense></q-input>
+  <q-banner inline-actions class="bg-indigo-1 q-mt-sm" dense>
+    {{tags.purchase.skuList}}
+    <template v-slot:action>
+     <q-icon name="add_circle" @click="add_purchase_sku" color="primary"></q-btn>
+    </template>
+  </q-banner>
+  <q-list>
+   <q-item clickable v-for="(s,i) in purchase.skus">
+    <q-item-section>{{s.skuName}}</q-item-section>
+    <q-item-section>{{s.num}}</q-item-section>
+    <q-item-section side>
+     <q-icon color="red" name="clear" @click="rmv_purchase_sku(i)" v-if="purchase.editable"><q-icon>
+    <q-item-section>
+   </q-item>
+  </q-list>
+  <div class="row">
+    <div class="col">
+     <sku-select v-model="purchase.sku.sku" :label="tags.purchase.sku"></sku-select>
+    </div>
+    <div class="col">
+     <q-input v-model.number="purchase.sku.num" :label="tags.num" dense></q-input>
+    </div>
+  </div>
+ </q-card-section>
+ <q-card-actions align="right">
+   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="purchase_do"></q-btn>
+ </q-card-actions>
 </q-card>
 </q-dialog>
 

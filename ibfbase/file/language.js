@@ -9,6 +9,9 @@ en:{
   save:"Save",
   search:"Search",
   more:"More",
+  
+  flow:{
+  }
 },
 cn:{
   ok:"确定",
@@ -34,6 +37,10 @@ cn:{
   apply:'申请',
   attention:'注意',
   signers:'权签人',
+  num:"数量",
+  price:'价格',
+  state:'状态',
+  execAcc:'执行人'
 
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
@@ -49,6 +56,11 @@ cn:{
   dateFmt:"YYYY/MM/DD HH:mm",
   start:'开始时间',
   end:'结束时间',
+  currency:'元',
+  setPrice:'设置采购价格',
+  chkPurchase:'检查采购情况',
+  wfClkSuccess:'执行成功!',
+  cfmRmv:'是否确定删除',
 
   sex:{
     M:"先生",
@@ -151,8 +163,8 @@ cn:{
       RUN:'进行中',
       OVER:'结束'
     },
-    cfmRmv:'确定删除该出差申请吗',
-    wfSegs:[
+    
+    wfSegs:[//在workflow中约定的名称
       {t:'s',n:'prjName',s:'项目'},
       {t:'s',n:'account',s:'申请人帐号'},
       {t:'s',n:'dest',s:'目的地'},
@@ -164,6 +176,55 @@ cn:{
       {t:'s',n:'cmt',s:'说明'}
     ]
   },
+  purchase:{
+    title:'采购',
+    prj:'项目',
+    buyer:'采购负责人',
+    receiver:'收件人',
+    applicant:'申请人',
+    expDate:'期望到货日期',
+    cost:'总成本(元)',
+    status:'审批状态',
+    sku:'存货单元',
+    skuList:'采购清单',
+    notCalcu:'尚未核算',
+    types:{
+      SELL:'向外销售',
+      BUY:'向外采购',
+      SELF:'内部采购'
+    },
+    wfSegs:[
+      {t:'s',n:'prjName',s:'项目'},
+      {t:'s',n:'receiver',s:'收件人'},
+      {t:'n',n:'cost',s:'总成本(元)'},
+      {t:'d',n:'expDate',s:'期望到货时间'},
+      {t:'s',n:'applicant',s:'申请人帐号'},
+      {t:'s',n:'descr',s:'附加描述'}
+    ]
+  },
+  grn:{ //收货
+    state:{
+        WAIT:'等待发货',
+        CHK:'正在入库',
+        OVER:'已完成'   
+    },
+    inDate:'入库时间',
+    outDate:'供货方发货时间'
+  },
+  gdn:{ //发货
+    state:{
+        WAIT:'等待发货',
+        CHK:'正在出库',
+        TRAN:'运输中',
+        OVER:'已完成',
+        LOST:'丢失',
+        BACK:'退货'
+    },
+    outDate:'出库时间',
+    cfmDate:'确认时间',
+    tranNo:'运单号'
+  },
+  
   my:{
     title:"我的",
     event:"关键事件",
@@ -255,14 +316,6 @@ cn:{
     mbrRole:"角色",
     account:"帐号"
   },
-  flow:{
-    opinion:"意见",
-    agree:'同意',
-    disAgree:'不同意',
-    finish:"完成",
-    reject:"返回",
-    nextStep:"下一步"
-  },
   sta2icon:function(s){
     if(s==0) {
       return 'star_border';
@@ -272,7 +325,9 @@ cn:{
     }
     return 'star_half';
   },
-  
+  flow:{
+    //中文使用默认的工作流标签
+  },
   errMsgs:{
     4100:'工时未完全申报',
     4101:'已确认的工时不可更改',
@@ -292,13 +347,7 @@ cn:{
     
     6101:"存在未完成的计划，不可结束项目",
     6103:"超过最大忘刷卡次数",
-    6107:'无有效的工时记录',
-    
-    10104:"会签仍未结束",
-    10106:"输入的帐号不符合要求",
-    10108:"下一步会签，参与会签的人不可以有自己",
-    10109:"下一步只可指定一个责任人",
-    10110:"必须指定下一步责任人"
+    6107:'无有效的工时记录'
   }
 }
 };

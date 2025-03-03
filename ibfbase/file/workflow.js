@@ -57,11 +57,11 @@ created(){
 methods:{
 showDtl() {
     var url=appendParas(this.dtlPage,{id:this.did,flowid:this.flowid,service:this.service});
-    this.ibf.goto(url)    
+    this.ibf.goto(url)
 },
 removeWf() { //判断数据是否存在，工作流数据错乱的情况下，删除工作流记录
     if(!this.rmvBroken)return;
-	
+
     var dtlUrl=appendParas(this.dtlApi, {id:this.did});
     request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
         if(resp.code!=RetCode.NOT_EXISTS) { //数据不存在返回NOT_EXISTS

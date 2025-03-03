@@ -14,6 +14,7 @@ const cn_flow_tags = {
     finish:"完成",
     reject:"返回",
     nextStep:"下一步",
+    signers:'权签人',
 
     errMsgs:{
       '10104':"会签仍未结束",
@@ -189,7 +190,7 @@ init_steps(resp, curStep) {
             result:o.result,turn:o.turn,type:o.type,step:o.step});
         } else {
             s.olist.push({signer:o.signer,time:ts,
-            opinion:o.result=='I'?this.flowTags.unHandled:o.opinion,
+            opinion:o.result=='I'?this.tags.unHandled:o.opinion,
             result:o.result,turn:o.turn,type:o.type,step:o.step});
             if(curStep==o.step && s.type=='M') {//会签中，所有从签人都处理完毕才能向下走
                 if(o.result=='I') {
@@ -221,7 +222,7 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
 },
 confirm() {
     if(this.base.step>this.flow.maxStep) {
-        this.$refs.wf_errMsg.show(this.flowTags.wrongWfDef);
+        this.$refs.wf_errMsg.show(this.tags.wrongWfDef);
         return;
     }
     var url="/api/confirm";
@@ -271,7 +272,7 @@ btn_clk(api) {//ext中的button点击事件
         if(resp.code!=RetCode.OK) {
             this.$refs.wf_errMsg.showErr(resp.code, resp.info);
         } else {
-            this.$refs.wf_errMsg.show(this.flowTags.wfClkSuccess);
+            this.$refs.wf_errMsg.show(this.tags.wfClkSuccess);
         }
     });
 },
@@ -295,20 +296,20 @@ template:`
     <q-item-label>{{o.signer}}</q-item-label>
     <q-item-label caption>
      <div v-if="o.result=='I' && o.step==base.step">
-       <q-input v-model="opinion" :label="flowTags.opinion" outlined dense maxlength=100></q-input>
+       <q-input v-model="opinion" :label="tags.opinion" outlined dense maxlength=100></q-input>
        <div v-if="o.type!='S'"><!-- 会签时的从签不必设置下一步责任人,O/S/M -->
-        <user-selector :label="flowTags.signers" :multi="base.nextStepType=='M'"
+        <user-selector :label="tags.signers" :multi="base.nextStepType=='M'"
          :accounts="nextSigners"
          v-if="s.step!=flow.maxStep && nextSigners.length==0"></user-selector>
         <div class="row justify-end q-mt-lg">
          <q-btn @click="confirm" color="primary" :disable="!allDone"
-          :label="s.step!=flow.maxStep?flowTags.nextStep:flowTags.finish" dense></q-btn>
-         <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="flowTags.reject" class="q-ml-sm" dense></q-btn>
+          :label="s.step!=flow.maxStep?tags.nextStep:tags.finish" dense></q-btn>
+         <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="tags.reject" class="q-ml-sm" dense></q-btn>
         </div>
        </div>
        <div v-else class="row justify-end q-mt-lg"> <!-- 会签时从签人发表意见后，不会向下一步走 -->
-        <q-btn @click="counterSign(true)" color="primary" :label="flowTags.agree" dense></q-btn>
-        <q-btn flat @click="counterSign(false)" color="primary" :label="flowTags.disAgree" class="q-ml-sm" dense></q-btn>
+        <q-btn @click="counterSign(true)" color="primary" :label="tags.agree" dense></q-btn>
+        <q-btn flat @click="counterSign(false)" color="primary" :label="tags.disAgree" class="q-ml-sm" dense></q-btn>
        </div>
      </div>
      <div v-else> <!-- o.result!='I' -->
@@ -338,6 +339,6 @@ template:`
 </q-timeline-entry>
 </q-timeline>
 
-<alert-dialog :title="flowTags.failToCall" :errMsgs="errMap" :close="flowTags.close" ref="wf_errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="errMap" :close="tags.close" ref="wf_errMsg"></alert-dialog>
 `
 }

@@ -50,6 +50,8 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
 import MonthInput from "/assets/v3/components/month_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
+import SkuSelector from "/ibfbase/components/sku_selector.js"
 import IBF from '/ibfbase/ibf.js'
 import Factory from "./factory.js"
 import FacDetail from "./facdetail.js"
@@ -61,6 +63,7 @@ import Storage from "./storage.js" //仓储，包括查看资产清单、执行�
 import ResDetail from "./resdetail.js" //资源详情，在Storage中使用
 import GrnDetail from "./grndetail.js"
 import GdnDetail from "./gdndetail.js"
+import Workflow from "./workflow.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -91,11 +94,12 @@ routes:[
   {path:'/storage', component:Storage},
   {path:'/resdetail', component:ResDetail},
   {path:'/grndetail', component:GrnDetail},
-  {path:'/gdndetail', component:GdnDetail}
+  {path:'/gdndetail', component:GdnDetail},
+  {path:'/workflow', component:Workflow}
 ]});
 
 //service定义
-const service = {name:"iresource",N_PAGE:10,N_SMPG:5,
+const _service = {name:"iresource",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
 factories:[], //我管理的工厂列表
 skus:[],
@@ -149,7 +153,7 @@ goto(url) {
 };
 //app主体定义
 const app = Vue.createApp({
-provide:{tags:tags, service:service},
+provide:{tags:tags, service:_service},
 created(){
     registerIbf(app,router).then((r)=> {
         this.$router.push('/home').catch(err => {err});
@@ -175,9 +179,11 @@ app.use(Quasar);
 app.use(router);
 app.component('ibf', IBF);
 app.component('alert-dialog', AlertDialog);
+app.component('confirm-dialog', ConfirmDialog);
 app.component('date-input', DateInput);
 app.component('month-input', MonthInput);
 app.component('user-selector', UserSelector);
+app.component('sku-select', SkuSelector);
 //启动APP
 app.mount('#app');
 </script>
