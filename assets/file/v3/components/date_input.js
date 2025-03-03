@@ -22,12 +22,23 @@ rangeFilter(dt) {
     var t=Date.parse(dt);
     return t>this.start&&t<this.end
 },
-parse(s,def) {
+parse(s,def) {//ms
     if(!s)return def;
     if(s=="today") {
         return Date.now();
     }
-    return Date.parse(s);
+    var cfg=s.trim().toLowerCase();
+    var dt=new Date();
+    if(cfg.startsWith('-')) { //days
+        var v = parseInt(cfg.substring(1));
+        dt.setTime(dt.getTime()-v*86400000);
+    } else if(cfg.startsWith('+')) {
+        var v = parseInt(cfg.substring(1));
+        dt.setTime(dt.getTime()+v*86400000);
+    } else {
+        dt.setTime(Date.parse(cfg));
+    }
+    return dt.getTime();
 }
 },
 computed: {

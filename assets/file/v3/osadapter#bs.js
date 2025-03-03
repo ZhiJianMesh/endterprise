@@ -288,6 +288,15 @@ function innerDownload(opts, service) {
     });
 }
 
+function appendParas(url, paras/*kv*/) {
+    var sep=url.indexOf('?')>=0?'&':'?';
+    var s=[url];
+    for(var i in paras) {
+        s.push(sep, i, '=', paras[i]);
+        sep = '&';
+    }
+    return s.join('');
+}
 //只拷贝在segs中的字段
 function copyObj(src,segs){
     if(segs && segs.length>0) {

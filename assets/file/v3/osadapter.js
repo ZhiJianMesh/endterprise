@@ -75,6 +75,16 @@ function upload(opts, service) {
     });
 }
 
+function appendParas(url, paras/*kv*/) {
+    var sep=url.indexOf('?')>=0?'&':'?';
+    var s=[url];
+    for(var i in paras) {
+        s.push(sep, i, '=', paras[i]);
+        sep = '&';
+    }
+    return s.join('');
+}
+
 function readText(txt){
     return new Promise(resolve=>{
         TTS.read(txt, _regsiterCallback(resp => {
