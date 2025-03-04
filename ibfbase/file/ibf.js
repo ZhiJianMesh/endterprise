@@ -26,7 +26,7 @@ function registerIbf(app, router) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/business", component:Business}); //差旅列表
     router.addRoute({path:"/ibf/busidtl", component:BusiDtl}); //差旅详情
     router.addRoute({path:"/ibf/workflow", component:Workflow}); //工作流
-    
+
     app.provide('ibf', {//如果定义一个const/var写在外面，在此引用，路由会失败，原因未知
         tags:tags,
         prjs:[],

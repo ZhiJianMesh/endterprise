@@ -1,26 +1,18 @@
-import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
-import AlertDialog from "/assets/v3/components/alert_dialog.js";
-import UserSelector from "/assets/v3/components/user_selector.js"
 import Workflow from "/assets/v3/components/workflow.js"
 import {_WF_} from "/assets/v3/components/workflow.js"
 
 export default {
-inject:['ibf'],
+inject:['service','tags'],
 components:{
-    "alert-dialog":AlertDialog,
-    "confirm-dialog":ConfirmDialog,
-    "user-selector":UserSelector,
-	"workflow":Workflow,
+	"workflow":Workflow
 },
 data() {return {
-    service:this.$route.query.service,
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     flName:this.$route.query.flName,
     rmvBroken:this.$route.query.rmvBroken,
     dtlApi:this.$route.query.dtlApi,
     dtlPage:this.$route.query.dtlPage,
-    tags:this.ibf.tags,
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
@@ -29,7 +21,7 @@ created(){
     // 3)必须由对应的detail接口，并且接口中响应中segs字段指定了要显示的字段名；
     var dtlUrl=appendParas(this.dtlApi,{id:this.did});
     var segments=this.tags[this.flName]['wfSegs'];
-    request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
+    request({method:"GET",url:dtlUrl}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             if(resp.code==RetCode.NOT_EXISTS&&this.rmvBroken) {
                 this.removeWf();
@@ -43,14 +35,10 @@ created(){
     });
 },
 methods:{
-showDtl() {
-    var url=appendParas(this.dtlPage,{id:this.did,flowid:this.flowid,service:this.service});
-    this.ibf.goto(url)
-},
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
     this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
         var rmvUrl = appendParas(this.rmvBroken,{flowid:this.flowid,did:this.did});
-        request({method:"DELETE",url:rmvUrl}, this.service).then(resp=>{
+        request({method:"DELETE",url:rmvUrl}, this.service.name).then(resp=>{
             if(resp.code!=RetCode.OK) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
@@ -64,9 +52,8 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header>
    <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="ibf.back"></q-btn>
+    <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{flow.name}}</q-toolbar-title>
-    <q-btn flat icon="info" @click="showDtl" v-if="dtlPage"></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>

@@ -16,7 +16,7 @@
         "db":"project",
         "type":"dataexists",
         "expect" : true, //如果不存在，则返回NOT_EXISTS，否则返回OK
-        "errorCode":111,
+        "errorCode":"NO_RIGHT",
         "errorInfo":"no right",
         "sql":"select 1 from member where pid=#PID#
              and account='@{#tokenAcc}' and role in('L','O')"

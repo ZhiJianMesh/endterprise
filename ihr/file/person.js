@@ -91,7 +91,7 @@ modify() {
     });
 },
 entry() {
-    var url="/api/employee/add";
+    var url="/api/entry/entry";
     var dta=copyObjExc(this.empInfo,['entryAt']);
     dta.entryAt=parseInt(new Date(this.empInfo.entryAt).getTime()/60000);
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {

@@ -63,7 +63,6 @@ import Storage from "./storage.js" //仓储，包括查看资产清单、执行�
 import ResDetail from "./resdetail.js" //资源详情，在Storage中使用
 import GrnDetail from "./grndetail.js"
 import GdnDetail from "./gdndetail.js"
-import Workflow from "./workflow.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -94,8 +93,7 @@ routes:[
   {path:'/storage', component:Storage},
   {path:'/resdetail', component:ResDetail},
   {path:'/grndetail', component:GrnDetail},
-  {path:'/gdndetail', component:GdnDetail},
-  {path:'/workflow', component:Workflow}
+  {path:'/gdndetail', component:GdnDetail}
 ]});
 
 //service定义

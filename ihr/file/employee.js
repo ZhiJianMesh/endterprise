@@ -71,7 +71,7 @@ getEvents() {
     })
 },
 doLeave() { //离职
-    var url="/api/employee/remove";
+    var url="/api/entry/leave";
     var dta={uid:this.uid,state:this.leave.type, cmt:this.leave.cmt};
     request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {

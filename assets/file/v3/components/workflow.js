@@ -1,7 +1,8 @@
-import AlertDialog from "/assets/v3/components/alert_dialog.js";
-import UserSelector from "/assets/v3/components/user_selector.js"
+import AlertDialog from "./alert_dialog.js";
+import UserSelector from "./user_selector.js"
 
-const cn_flow_tags = {
+const _WF_={
+defaultTags : {
     close:"关闭",
     failToCall:"调用失败",
     wrongWfDef:"工作流定义错误",
@@ -16,16 +17,17 @@ const cn_flow_tags = {
     nextStep:"下一步",
     signers:'权签人',
 
-    errMsgs:{
+    errMsgs:{ //工作流本身的错误码
       '10104':"会签仍未结束",
       '10106':"输入的帐号不符合要求",
       '10108':"下一步会签，参与会签的人不可以有自己",
       '10109':"下一步只可指定一个责任人",
       '10110':"必须指定下一步责任人",
+      '10111':'工作流未定义',
+      '10112':'工作流数据记录错误',
       'unknown':"未知错误"
     }
-};
-const _WF_={
+},
 flowInfos:{},
 service:"workflow",
 flowDefs:function(ids){
@@ -66,6 +68,24 @@ flowDef:function(id,refresh){//不能用箭头函数，否则不能用this，箭
 },
 getFlowDef:function(id) {
     return this.flowInfos[id];
+},
+formDtlData:function(dta, segments){
+    var dtl=[];
+    var dt=new Date();
+    segments.forEach(s => { //{t:type,n:segmentName,s:tag}
+        var v;
+        if(s.t=='dt') {
+            dt.setTime(dta[s.n]*60000); //时间都用分钟
+            v=datetime2str(dt);
+        } else if(s.t=='d') {
+            dt.setTime(dta[s.n]*60000);
+            v=date2str(dt);
+        } else {/*(s.t=='s'||s.t=='n')*/
+            v=dta[s.n];
+        }
+        dtl.push({k:s.s,v:v});
+    });
+    return dtl;
 }
 }
 export {_WF_};
@@ -84,7 +104,7 @@ data() {return {
     nextSigners:[],//下一步处理人
     allDone:true,
     oIcons:{P:'thumb_up',R:'thumb_down'},
-    errMap:{},
+    errMsgs:{},
     tags:{}
 }},
 props: {
@@ -103,10 +123,10 @@ created(){
     if(this.flowTags&&Object.keys(this.flowTags).length>0) {
         copyObjTo(this.flowTags, this.tags);
     } else {
-        this.tags=cn_flow_tags
+        this.tags=_WF_.defaultTags;
     }
-    copyObjTo(this.apiErrors, this.errMap);
-    copyObjTo(this.tags.errMsgs, this.errMap);
+    copyObjTo(this.apiErrors, this.errMsgs);
+    copyObjTo(this.tags.errMsgs, this.errMsgs);
 },
 methods:{
 query_opinions() {
@@ -127,17 +147,18 @@ query_opinions() {
         this.base.createAt=datetime2str(dt);
         if(curStep<this.flow.maxStep) {
             var nextSigner=this.flow.steps[resp.data.nextStep].signer;//工作流定义中指定的权签人
-            this.get_next_signers(nextSigner,curStep).then(r=>{
-                this.init_steps(resp, curStep);
+            this.get_next_signers(nextSigner,curStep).then(()=>{
+                this.init_steps(resp.data, curStep);
             });
         } else {
-            this.init_steps(resp, curStep);
+            this.init_steps(resp.data, curStep);
         }
     });
 },
-init_steps(resp, curStep) {
-    var signer=resp.data.signer;//当前查看人
+init_steps(data, curStep) {
+    var signer=data.signer;//当前查看人
     var steps=[]; //预填充步骤的数据
+    var isOver=curStep==this.flow.maxStep;
     this.flow.steps.forEach(o=>{
         var step={step:o.step,title:o.title,
             type:o.type/*类型：O-ne单签，M-ulti会签*/,
@@ -146,7 +167,7 @@ init_steps(resp, curStep) {
             olist:[]/*其他人的意见*/,
             ext:{}};
             
-        if(curStep==o.step && o.ext!='') {
+        if(!isOver && curStep==o.step && o.ext!='') {
             //附加参数解析{page:xxx,tag:yyy}，用于处理特殊功能。
             //比如采购中设置采购价，或者确认采购清单等，支持button、page两种
             //在过程初始化中需要设置好ext，并在language中添加相应的语言标签
@@ -163,10 +184,10 @@ init_steps(resp, curStep) {
     });
 
     var dt=new Date();
-    var cols=resp.data.cols;
+    var cols=data.cols;
     var s, opt, ts;
     var allDone=true;
-    var opts=resp.data.opinions;//step,opinion,result,type,signer,turn,update_time
+    var opts=data.opinions;//step,opinion,result,type,signer,turn,update_time
     for(var i=0;i<opts.length;i++) {
         opt=opts[i];
         var o={};
@@ -211,13 +232,12 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
         service=this.service;
         url=appendParas(signer,{flowid:this.flowid,did:this.did,step:step});
     } else {
-        return new Promise(resolve=>resolve(true));
+        return new Promise(resolve=>resolve());
     }
     return request({method:"GET", url:url}, service).then(resp=>{
         if(resp.code==RetCode.OK) {
             this.nextSigners=resp.data.signers
         }
-        return true;
     });
 },
 confirm() {
@@ -237,7 +257,7 @@ confirm() {
         this.query_opinions();
     });
 },
-counterSign(agree) {//多人会签，不会向下一步走，等待主签人决定(上一步的责任人)
+counterSign(agree) {//多人会签，不会向下一步走，等待主签人决定(上一步责任人)
     var url="/api/counterSign";
     var data={flowid:this.flowid, did:this.did,service:this.service,
         opinion:this.opinion, result:agree?'P':'R'};
@@ -339,6 +359,6 @@ template:`
 </q-timeline-entry>
 </q-timeline>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="errMap" :close="tags.close" ref="wf_errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="errMsgs" :close="tags.close" ref="wf_errMsg"></alert-dialog>
 `
 }
