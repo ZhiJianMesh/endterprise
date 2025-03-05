@@ -10,7 +10,8 @@ props: {
     multi:{type:Boolean,required:false,default:true}, //:multi="false"
     service:{type:String,required:false,default:''}, //不为空时，只查服务授权过的用户
     roles:{type:Array,required:false,default:[]}, //不为空时，只返回指定角色，需service配合
-    useid:{type:Boolean,required:false,default:false} //是否返回用户ID,:useid="true"
+    useid:{type:Boolean,required:false,default:false},//是否返回用户ID,:useid="true"
+    dense:{type:Boolean,required:false,default:false}
 },
 methods:{
 search_users(val,update) {
@@ -78,7 +79,7 @@ template: `
   use-input use-chips :multiple="multi"
   hide-dropdown-icon input-debounce=200
   @new-value="input_user" @filter="search_users"
-  @update:model-value="changed">
+  @update:model-value="changed" :dense="dense">
  <template v-slot:selected-item="scope">
   <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"
     :tabindex="scope.tabindex" class="q-ma-none">

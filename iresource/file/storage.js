@@ -21,6 +21,7 @@ data() {return {
     grnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
     gdnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
     olCtrl:{cur:1,max:0},
+    unattach:{no:'',user:[],cmt:'',dlg:false},
     
     factory:{opts:[],cur:-1,name:''},//工厂选项
     purchase:{},
@@ -307,6 +308,28 @@ dir_in_do() {
         this.resCtrl.inDlg=false;
         this.query_res(this.resCtrl.cur);
     });
+},
+show_unattach() {
+    this.unattach.no='';
+    this.unattach.user=[];
+    this.unattach.cmt='';
+    this.unattach.dlg=true;
+},
+unattach_do() {
+    var opts={method:"POST",url:"/resource/unattach",data:{
+        no:this.unattach.no,
+        uid:this.unattach.user[0],
+        cmt:this.unattach.cmt,
+        factory:this.factory.cur
+    }};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.unattach.dlg=false;
+        this.query_res(this.resCtrl.cur);
+    });
 }
 },
 template:`
@@ -342,6 +365,8 @@ template:`
 
 <q-tab-panel name="res" class="q-pa-none">
  <div class="text-right bg-grey-3 q-pa-sm">
+  <q-btn color="accent" icon="link_off" @click="show_unattach"
+  :label="tags.storage.unattach" flat dense></q-btn>
   <q-btn color="secondary" icon="rule" @click="show_dir_in"
    :label="tags.storage.check" flat dense></q-btn>
   <q-btn color="primary" @click="show_dir_in"
@@ -539,6 +564,23 @@ template:`
   </q-card-section>
   <q-card-actions align="right">
    <q-btn :label="tags.ok" color="primary" @click="dir_in_do"></q-btn>
+   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="unattach.dlg">
+ <q-card style="min-width:70vw">
+  <q-card-section>
+    <div class="text-h6">{{tags.storage.unattach}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <q-input v-model="unattach.no" :label="tags.storage.no" dense></q-input>
+   <user-selector :accounts="unattach.user" :label="tags.account" :useid="true" :multi="false"></user-selector>
+   <q-input v-model="unattach.cmt" :label="tags.cmt" dense></q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn :label="tags.ok" color="primary" @click="unattach_do"></q-btn>
    <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
  </q-card>

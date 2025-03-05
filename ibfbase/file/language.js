@@ -26,6 +26,7 @@ cn:{
   confirm:"确定",
   submit:"提交",
   reject:"拒绝",
+  accept:'接受',
   init:"初始化",
   clear:"清除",
   more:"更多",
@@ -231,7 +232,11 @@ cn:{
     perm:"绩效",
     res:"资产",
     salary:"工资",
-    grp:"部门"
+    grp:"部门",
+    startUse:'领用日期',
+    now:'现在',
+    moveFrom:'转自',
+    moveTo:'转给'
   },
   
   prj:{

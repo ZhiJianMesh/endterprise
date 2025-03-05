@@ -5,10 +5,9 @@ inject:['service', 'tags'],
 data() {return {
     no:this.$route.query.no,
     factory:this.$route.query.factory,
-    resInfo:{}, //res信息
+    resInfo:{}, //res信息，包括供应商
     skuInfo:{},
-    ctrl:{api:'',outDlg:false,outDta:{},tag:''},
-    suppliers:[] //供应商
+    ctrl:{api:'',tag:'',outDlg:false,outDta:{},attachDta:{},attachDlg:false}
 }},
 created(){
     this.get();
@@ -86,6 +85,24 @@ out_do() {
             this.ctrl.outDlg=false;
         }
     });
+},
+show_attach() {
+    this.ctrl.attachDta.user=[];
+    this.ctrl.attachDlg=true;
+},
+attach_do() {
+    var opts={method:"POST",url:"/resource/attach",data:{
+        no:this.no,
+        uid:this.ctrl.attachDta.user[0],
+        factory:this.factory
+    }};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.service.back();
+    });
 }
 },
 template:`
@@ -96,6 +113,7 @@ template:`
     <q-toolbar-title>{{tags.detail}}-{{resInfo.skuName}}</q-toolbar-title>
     <q-btn @click="show_out('DISC')" :label="tags.storage.discard" icon="delete_sweep" flat dense></q-btn>
     <q-btn @click="show_out('OUT')" :label="tags.storage.dir_out" icon="logout" flat dense></q-btn>
+    <q-btn @click="show_attach()" v-if="skuInfo.type!='PART'" :label="tags.storage.attach" icon="add_link" flat dense></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -173,6 +191,21 @@ template:`
   </q-card-section>
   <q-card-actions align="right">
    <q-btn :label="tags.ok" color="primary" @click="out_do"></q-btn>
+   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="ctrl.attachDlg">
+ <q-card style="min-width:70vw">
+  <q-card-section>
+    <div class="text-h6">{{tags.storage.attach}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <user-selector :accounts="ctrl.attachDta.user" :label="tags.account" :useid="true" :multi="false"></user-selector>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn :label="tags.ok" color="primary" @click="attach_do"></q-btn>
    <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
  </q-card>

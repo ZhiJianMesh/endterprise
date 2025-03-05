@@ -1,5 +1,6 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import MonthInput from "/assets/v3/components/month_input.js"
+const RT_TAB="mytab";
 
 export default {
 inject:["ibf"],
@@ -9,22 +10,22 @@ components:{
 },
 data() {return {
     tags:this.ibf.tags,
-    tab:'salary', //event,salary,res,perf
+    tab:'', //event,salary,res,perf
     events:[],
     res:[],
     perfs:[],
     salaries:[],
     salMonth:"-1m",
     evtPg:{cur:1,max:0},
-    resPg:{cur:1,max:0},
-    perfPg:{cur:1,max:0}
+    perfPg:{cur:1,max:0},
+    resCtrl:{cur:1,max:0,dlg:false,no:'',logs:[],move:'',user:[]}
 }},
 created(){
-    var dt=new Date();
-    this.query_salary({num:dt.getFullYear()*12+dt.getMonth()});
-    this.query_event(1);
-    this.query_res(1);
-    this.query_perf(1);
+    var tab=this.ibf.getRt(RT_TAB);
+    this.tab=tab?tab:'salary';
+    if(this.tab!='salary') { //salMonth会自动出发一次
+        this.tab_changed(this.tab);
+    }
 },
 methods:{
 query_salary(ym) {
@@ -76,8 +77,8 @@ query_res(pg) {
     var url="/resource/my?offset="+offset+'&num='+this.ibf.N_PAGE;
     request({method:"GET",url:url}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            this.resPg.max=0;
-            this.resPg.cur=1;
+            this.resCtrl.max=0;
+            this.resCtrl.cur=1;
             this.res=[];
             return;
         }
@@ -85,11 +86,11 @@ query_res(pg) {
         this.res=resp.data.list.map(r => {
             dt.setTime(r.start*60000);
             r.start=date2str(dt);
-            dt.setTime(r.cfmAt*60000);
-            r.cfmAt=date2str(dt);
+            dt.setTime(r.inDate*60000); //第一次入库日期
+            r.inDate=date2str(dt);
             return r;
         });
-        this.resPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
+        this.resCtrl.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     });    
 },
 query_perf(pg) {
@@ -112,12 +113,93 @@ query_perf(pg) {
         this.perfPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
     });    
 },
+tab_changed(tab) {
+    this.ibf.setRt(RT_TAB, tab);
+    if(tab=='res') {
+        if(this.salaries.length==0) {
+            this.query_res(this.resCtrl.cur);
+        }
+    } if(tab=='event') {
+        if(this.events.length==0) {
+            this.query_event(this.evtPg.cur);
+        }
+    } else if(tab=='salary') {
+        if(this.salaries.length==0) {
+            this.query_salary(this.salMonth);
+        }
+    } else if(tab=='perf'){
+        if(this.perfs.length==0) {
+            this.query_perf(this.perfPg.cur);
+        }
+    }
+},
 open_grp(id,type) {
     if(type=='D') {//业务部门
         this.ibf.goto('/ibf/department?id='+id);
     } else { //虚拟组织
         this.ibf.goto('/ibf/grp?id='+id);
     }
+},
+show_logs(no) {
+    this.query_logs(no).then(()=>{
+        this.resCtrl.dlg=true;
+        this.resCtrl.no=no;
+    }); 
+},
+query_logs(no) {
+    var url="/resource/logs?no="+no;
+    return request({method:"GET",url:url}, this.ibf.SERVICE_HR).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.resCtrl.logs=[];
+            return;
+        }
+        var dt=new Date();
+        this.resCtrl.logs=resp.data.list.map(l => {
+            dt.setTime(l.start*60000);
+            l.start=date2str(dt);
+            if(l.end==2147483647) {
+                l.end=this.tags.my.now;
+            } else {
+                dt.setTime(l.end*60000);
+                l.end=date2str(dt);
+            }
+            return l;
+        });
+        this.resCtrl.move=resp.data.moveFrom;
+    });    
+},
+move_to(){
+    var opts={method:"PUT",url:"/resource/moveto",
+        data:{no:this.resCtrl.no,receiver:this.resCtrl.user[0]}};
+    request(opts, this.ibf.SERVICE_HR).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.resCtrl.dlg=false;
+        this.query_res(this.resCtrl.cur);
+    });    
+},
+accept_move() {
+    var opts={method:"PUT",url:"/resource/accept", data:{no:this.resCtrl.no}};
+    request(opts, this.ibf.SERVICE_HR).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.query_logs(this.resCtrl.no);
+    });    
+},
+reject_move() {
+    var opts={method:"PUT",url:"/resource/reject", data:{no:this.resCtrl.no}};
+    request(opts, this.ibf.SERVICE_HR).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.resCtrl.dlg=false;
+        this.query_res(this.resCtrl.cur);
+    });    
 }
 },
 template:`
@@ -129,7 +211,7 @@ template:`
    </q-toolbar>
   </q-header>
   <q-footer>
-   <q-tabs v-model="tab" dense align="justify" switch-indicator inline-label
+   <q-tabs v-model="tab" @update:model-value="tab_changed" dense align="justify" switch-indicator inline-label
     class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
     <q-tab name="salary" icon="paid" :label="tags.my.salary"></q-tab>
     <q-tab name="perf" icon="autofps_select" :label="tags.my.perm"></q-tab>
@@ -168,19 +250,19 @@ v-model="salMonth" @update:modelValue="query_salary"></month-input>
 
 <q-tab-panel name="res">
  <q-list separator>
-  <q-item v-for="r in res">
-   <q-item-section>
-    <q-item-label>{{r.no}}</q-item-label>
-    <q-item-label caption>{{r.start}}</q-item-label>
-   </q-item-section>
+  <q-item v-for="r in res" @click="show_logs(r.no)" clickable>
    <q-item-section>
     <q-item-label>{{r.skuName}}</q-item-label>
-    <q-item-label caption>{{r.cfmAt}}</q-item-label>
+    <q-item-label caption>{{tags.my.startUse}}:{{r.start}}</q-item-label>
+   </q-item-section>
+   <q-item-section side>
+    <q-item-label>{{r.no}}</q-item-label>
+    <q-item-label caption>{{r.inDate}}</q-item-label>
    </q-item-section>
   </q-item>
  </q-list>
- <div class="q-pa-sm flex flex-center" v-show="resPg.max>1">
-  <q-pagination v-model="resPg.cur" color="primary" :max="resPg.max" max-pages="10"
+ <div class="q-pa-sm flex flex-center" v-show="resCtrl.max>1">
+  <q-pagination v-model="resCtrl.cur" color="primary" :max="resCtrl.max" max-pages="10"
    boundary-numbers="false" @update:model-value="query_res"></q-pagination>
  </div>
 </q-tab-panel>
@@ -206,6 +288,43 @@ v-model="salMonth" @update:modelValue="query_salary"></month-input>
     </q-page>
   </q-page-container>
 </q-layout>
+
+<q-dialog v-model="resCtrl.dlg" seamless position="bottom">
+ <q-card style="min-width:70vw">
+  <q-card-section class="q-pt-none">
+  <q-list dense>
+   <q-item v-for="l in resCtrl.logs">
+    <q-item-section>{{l.start}} -> {{l.end}}</q-item-section>
+    <q-item-section side>{{l.account}}</q-item-section>
+   </q-item>
+  </q-list>
+  <div v-if="resCtrl.move" class="row items-center">
+   <div class="col-3">{{tags.my.moveFrom}}:{{resCtrl.move}}</div>
+   <div class="col-2">
+    <q-btn :label="tags.accept" @click="accept_move" color="primary" flat dense></q-btn>
+   </div>
+   <div class="col-2">
+    <q-btn :label="tags.reject"@click="reject_move" color="secondary" flat dense></q-btn>
+   </div>
+   <div class="col-2">
+    <q-btn :label="tags.close" color="primary" v-close-popup flat dense></q-btn>
+   </div>
+  </div>
+  <div v-else class="row items-center">
+   <div class="col-8">
+    <user-selector :accounts="resCtrl.user" :label="tags.account"
+     :useid="true" :multi="false" :dense="true"></user-selector>
+   </div>
+   <div class="col-2">
+    <q-btn :label="tags.my.moveTo" @click="move_to" color="primary" flat dense></q-btn>
+   </div>
+   <div class="col-2">
+    <q-btn :label="tags.close" color="primary" v-close-popup flat dense></q-btn>
+   </div>
+  </div>
+  </q-card-section>
+ </q-card>
+</q-dialog>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
 `
