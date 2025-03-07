@@ -51,7 +51,7 @@ query_salary(ym) {
 },
 query_event(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
-    var url="/employee/myEvent?offset="+offset+'&num='+this.ibf.N_PAGE;
+    var url="/event/my?offset="+offset+'&num='+this.ibf.N_PAGE;
     request({method:"GET",url:url}, this.ibf.SERVICE_HR).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.evtPg.max=0;
@@ -306,7 +306,7 @@ v-model="salMonth" @update:modelValue="query_salary"></month-input>
    <div class="col-2">
     <q-btn :label="tags.reject"@click="reject_move" color="secondary" flat dense></q-btn>
    </div>
-   <div class="col-2">
+   <div class="col-2 text-right">
     <q-btn :label="tags.close" color="primary" v-close-popup flat dense></q-btn>
    </div>
   </div>
@@ -318,7 +318,7 @@ v-model="salMonth" @update:modelValue="query_salary"></month-input>
    <div class="col-2">
     <q-btn :label="tags.my.moveTo" @click="move_to" color="primary" flat dense></q-btn>
    </div>
-   <div class="col-2">
+   <div class="col-2 text-right">
     <q-btn :label="tags.close" color="primary" v-close-popup flat dense></q-btn>
    </div>
   </div>
