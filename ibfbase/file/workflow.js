@@ -17,21 +17,18 @@ data() {return {
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     flName:this.$route.query.flName,
-    rmvBroken:this.$route.query.rmvBroken,
     dtlApi:this.$route.query.dtlApi,
     dtlPage:this.$route.query.dtlPage,
     tags:this.ibf.tags,
+    dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
-    //此处有约定:1)type为customer、order、payment、service等；
-    // 2）languages中必须由对应名称的tag集合；
-    // 3)必须由对应的detail接口，并且接口中响应中segs字段指定了要显示的字段名；
     var dtlUrl=appendParas(this.dtlApi,{id:this.did});
     var segments=this.tags[this.flName]['wfSegs'];
     request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            if(resp.code==RetCode.NOT_EXISTS&&this.rmvBroken) {
+            if(resp.code==RetCode.NOT_EXISTS) {
                 this.removeWf();
             }
             return;
@@ -48,17 +45,18 @@ showDtl() {
     this.ibf.goto(url)
 },
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
+    if(this.$ref.workflow.curStep()!=0)return;//只有第0步权签人(创建人)才有权限删除
+
     this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
-        var rmvUrl = appendParas(this.rmvBroken,{flowid:this.flowid,did:this.did});
-        request({method:"DELETE",url:rmvUrl}, this.service).then(resp=>{
+        _WF_.remove(this.flowid,this.did,this.service).then(resp=>{
             if(resp.code!=RetCode.OK) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
-                this.$router.back();
+                this.ibf.back();
             }
         })
     })
-},
+}
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
@@ -80,7 +78,7 @@ template:`
 <q-separator color="primary" inset></q-separator>
 <workflow :service="service" :flowid="flowid" :did="did"
  :serviceTags="tags" :flowTags="tags.flow"
- :apiErrors="tags.errMsgs"></workflow>
+ :apiErrors="tags.errMsgs" ref="workflow"></workflow>
     </q-page>
   </q-page-container>
 </q-layout>

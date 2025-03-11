@@ -25,6 +25,7 @@ defaultTags : {
       '10110':"必须指定下一步责任人",
       '10111':'工作流未定义',
       '10112':'工作流数据记录错误',
+      '10113':'存在未完成的工作',
       'unknown':"未知错误"
     }
 },
@@ -43,14 +44,16 @@ flowDefs:function(ids){
             return false;
         }
         //flows:{flow,name,dispName,cmt,callback}
-        //steps:{flow,step,type,name,ext,cmt}
+        //steps:{flow,step,type,name,ext,cmt,signer}
         resp.data.flows.forEach(f=>{
             var sd={name:f.dispName,maxStep:0,steps:[]};
             this.flowInfos[f.id]=sd;
         });
         resp.data.steps.forEach(s=> {
             var sd=this.flowInfos[s.flow];
-            sd.steps[s.step]={step:s.step,type:s.type,title:s.name+'('+s.cmt+')',ext:s.ext,comment:s.cmt};
+            sd.steps[s.step]={step:s.step,type:s.type,
+                title:s.name+'('+s.cmt+')',comment:s.cmt,
+                ext:s.ext, signer:s.signer};
             if(s.step>sd.maxStep){
                 sd.maxStep=s.step;
             }
@@ -72,7 +75,7 @@ getFlowDef:function(id) {
 formDtlData:function(dta, segments){
     var dtl=[];
     var dt=new Date();
-    segments.forEach(s => { //{t:type,n:segmentName,s:tag}
+    segments.forEach(s => { //{t:type,n:segmentName,s:tag,f:function(v){}}
         var v;
         if(s.t=='dt') {
             dt.setTime(dta[s.n]*60000); //时间都用分钟
@@ -80,12 +83,19 @@ formDtlData:function(dta, segments){
         } else if(s.t=='d') {
             dt.setTime(dta[s.n]*60000);
             v=date2str(dt);
+        } else if(s.t=='f') {
+            v=s.f(dta[s.n]);
         } else {/*(s.t=='s'||s.t=='n')*/
             v=dta[s.n];
         }
         dtl.push({k:s.s,v:v});
     });
     return dtl;
+},
+remove:function(flowid, did, service) {
+    //工作流数据错乱的情况下，业务数据不存在，工作流发起人可以删除工作流记录
+    var rmvUrl = appendParas("/removeByOwner", {flowid:flowid,did:did,service:service});
+    return request({method:"DELETE", url:rmvUrl}, this.service);
 }
 }
 export {_WF_};
@@ -101,7 +111,7 @@ data() {return {
     dtl:{}, //数据详情
     steps:[],//每一步的数据，并非定义
     opinion:'',//处理意见
-    nextSigners:[],//下一步处理人
+    nextSigners:[],//下一步处理人，如果指定了默认处理人，则不显示输入框
     allDone:true,
     oIcons:{P:'thumb_up',R:'thumb_down'},
     errMsgs:{},
@@ -145,75 +155,72 @@ query_opinions() {
         var dt=new Date();
         dt.setTime(resp.data.update_time);
         this.base.createAt=datetime2str(dt);
-        if(curStep<this.flow.maxStep) {
+        if(curStep<this.flow.maxStep) { //查询当前步骤的默认权签人
             var nextSigner=this.flow.steps[resp.data.nextStep].signer;//工作流定义中指定的权签人
-            this.get_next_signers(nextSigner,curStep).then(()=>{
-                this.init_steps(resp.data, curStep);
+            this.get_next_signers(nextSigner,curStep).then((hasSigner)=>{
+                this.init_steps(resp.data, curStep, hasSigner);
             });
         } else {
-            this.init_steps(resp.data, curStep);
+            this.init_steps(resp.data, curStep, false);
         }
     });
 },
-init_steps(data, curStep) {
+init_steps(data, curStep, hasSigner) {
     var signer=data.signer;//当前查看人
     var steps=[]; //预填充步骤的数据
-    var isOver=curStep==this.flow.maxStep;
     this.flow.steps.forEach(o=>{
-        var step={step:o.step,title:o.title,
-            type:o.type/*类型：O-ne单签，M-ulti会签*/,
-            t:0/*时间戳*/, ts:''/*时间*/,
-            list:[]/*当前步骤的意见列表*/,
-            olist:[]/*其他人的意见*/,
-            ext:{}};
-            
-        if(!isOver && curStep==o.step && o.ext!='') {
-            //附加参数解析{page:xxx,tag:yyy}，用于处理特殊功能。
-            //比如采购中设置采购价，或者确认采购清单等，支持button、page两种
-            //在过程初始化中需要设置好ext，并在language中添加相应的语言标签
-            var ext=JSON.parse(o.ext);
-            ext.tag=this.serviceTags[ext.tag];
-            if(ext.page) {
-                ext.page=appendParas(ext.page,{flowid:this.flowid,did:this.did,step:curStep});
-            } else if(ext.button) {
-                ext.button=appendParas(ext.button,{flowid:this.flowid,did:this.did,step:curStep});
-            }
-            step.ext=ext;
+        steps[o.step]={step:o.step,title:o.title,ext:o.ext,
+            type:o.type,//类型：O-ne单签，M-ulti会签
+            t:0,/*时间戳*/ts:'',//时间
+            list:[],//当前帐号在当前步骤的意见列表
+            olist:[]//其他人的意见
         }
-        steps[o.step]=step;
     });
 
     var dt=new Date();
     var cols=data.cols;
-    var s, opt, ts;
+    var step, ts;
     var allDone=true;
-    var opts=data.opinions;//step,opinion,result,type,signer,turn,update_time
-    for(var i=0;i<opts.length;i++) {
-        opt=opts[i];
+    //step,opinion,result,type,signer,turn,update_time
+    for(var l of data.opinions) {
         var o={};
         var j=0;
-        for(var c in cols) {
-            o[cols[c]]=opt[j++];
+        for(var c in cols) {//字段名在cols中，数据不带字段名
+            o[cols[c]]=l[j++];
         }
         dt.setTime(o.update_time);
         ts=datetime2str(dt);
-        s=steps[o.step];
-        if(!s){
+        if(!(step=steps[o.step])){
             continue;
         }
-        if(s.t<o.update_time){//标题上只显示最后一次时间
-            s.t=o.update_time;
-            s.ts=ts;
+        if(step.t<o.update_time){//标题上只显示最后一次时间
+            step.t=o.update_time;
+            step.ts=ts;
         }
-        
         if(o.signer==signer) {//当前处理人的意见
-            s.list.push({signer:o.signer,time:ts,opinion:o.opinion,
-            result:o.result,turn:o.turn,type:o.type,step:o.step});
+            step.list.push({signer:o.signer,time:ts,opinion:o.opinion,
+             result:o.result,turn:o.turn,type:o.type,step:o.step});
+            if(curStep==o.step&&o.result=='I') {
+                step.hasSigner=hasSigner; //是否有默认权签人
+                if(step.ext!='') {
+                    //附加参数解析{page:xxx,tag:yyy}，用于处理特殊功能。
+                    //比如采购中设置采购价，或者确认采购清单等，支持button、page两种
+                    //在过程初始化中需要设置好ext，并在language中添加相应的语言标签
+                    var ext=JSON.parse(step.ext);
+                    ext.tag=this.serviceTags[ext.tag];
+                    if(ext.page) {
+                        ext.page=appendParas(ext.page,{flowid:this.flowid,did:this.did,step:curStep});
+                    } else if(ext.button) {
+                        ext.button=appendParas(ext.button,{flowid:this.flowid,did:this.did,step:curStep});
+                    }
+                    step.ext=ext;
+                }
+            }
         } else {
-            s.olist.push({signer:o.signer,time:ts,
+            step.olist.push({signer:o.signer,time:ts,
             opinion:o.result=='I'?this.tags.unHandled:o.opinion,
             result:o.result,turn:o.turn,type:o.type,step:o.step});
-            if(curStep==o.step && s.type=='M') {//会签中，所有从签人都处理完毕才能向下走
+            if(curStep==o.step && step.type=='M') {//会签中，所有从签人都处理完毕才能向下走
                 if(o.result=='I') {
                     allDone=false;
                 }
@@ -224,6 +231,7 @@ init_steps(data, curStep) {
     this.steps=steps;
 },
 get_next_signers(signer,step) { //请求默认的处理人，如果存在，则不显示下一步权签人输入
+    if(!signer)return new Promise(resolve=>resolve(false));
     var url,service;
     if(/^\d+$/.test(signer)) {//步骤号
         service=_WF_.service;
@@ -232,12 +240,14 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
         service=this.service;
         url=appendParas(signer,{flowid:this.flowid,did:this.did,step:step});
     } else {
-        return new Promise(resolve=>resolve());
+        return new Promise(resolve=>resolve(false));
     }
     return request({method:"GET", url:url}, service).then(resp=>{
         if(resp.code==RetCode.OK) {
             this.nextSigners=resp.data.signers
+            return true;
         }
+        return false;
     });
 },
 confirm() {
@@ -296,8 +306,11 @@ btn_clk(api) {//ext中的button点击事件
         }
     });
 },
+curStep() {
+    return this.base.step;
+},
 goto(url) {
-    this.$router.goto(url);
+    this.$router.push(url);
 }
 },
 template:`
@@ -305,57 +318,57 @@ template:`
 <q-timeline-entry v-for="s in steps" :title="s.title" :subtitle="s.ts"
  :color="s.step==base.step?'orange':'primary'">
 
- <q-btn v-if="s.ext.page" color="primary" :label="s.ext.tag"
+<q-btn v-if="s.ext.page" color="primary" :label="s.ext.tag"
   @click="goto(s.ext.page)" dense></q-btn>
- <q-btn v-if="s.ext.button" color="primary" :label="s.ext.tag"
+<q-btn v-if="s.ext.button" color="primary" :label="s.ext.tag"
   @click="btn_clk(s.ext.button)" dense></q-btn>
 
- <q-list dense>
-  <q-item v-for="o in s.list">
-   <q-item-section>
-    <q-item-label>{{o.signer}}</q-item-label>
-    <q-item-label caption>
-     <div v-if="o.result=='I' && o.step==base.step">
-       <q-input v-model="opinion" :label="tags.opinion" outlined dense maxlength=100></q-input>
-       <div v-if="o.type!='S'"><!-- 会签时的从签不必设置下一步责任人,O/S/M -->
-        <user-selector :label="tags.signers" :multi="base.nextStepType=='M'"
-         :accounts="nextSigners"
-         v-if="s.step!=flow.maxStep && nextSigners.length==0"></user-selector>
-        <div class="row justify-end q-mt-lg">
-         <q-btn @click="confirm" color="primary" :disable="!allDone"
-          :label="s.step!=flow.maxStep?tags.nextStep:tags.finish" dense></q-btn>
-         <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="tags.reject" class="q-ml-sm" dense></q-btn>
-        </div>
-       </div>
-       <div v-else class="row justify-end q-mt-lg"> <!-- 会签时从签人发表意见后，不会向下一步走 -->
-        <q-btn @click="counterSign(true)" color="primary" :label="tags.agree" dense></q-btn>
-        <q-btn flat @click="counterSign(false)" color="primary" :label="tags.disAgree" class="q-ml-sm" dense></q-btn>
-       </div>
+<q-list dense>
+ <q-item v-for="o in s.list"><!-- 自己的意见 -->
+  <q-item-section>
+   <q-item-label>{{o.signer}}</q-item-label>
+   <q-item-label caption>
+    <div v-if="o.result=='I' && o.step==base.step">
+     <q-input v-model="opinion" :label="tags.opinion" outlined dense maxlength=100></q-input>
+     <div v-if="o.type!='S'"><!-- 会签时的从签不必设置下一步责任人,O/S/M -->
+      <user-selector :label="tags.signers" :multi="base.nextStepType=='M'"
+       :accounts="nextSigners" :useid="false"
+       v-if="s.step!=flow.maxStep && !s.hasSigner"></user-selector>
+      <div class="row justify-end q-mt-lg">
+       <q-btn @click="confirm" color="primary" :disable="!allDone"
+        :label="s.step!=flow.maxStep?tags.nextStep:tags.finish" dense></q-btn>
+       <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="tags.reject" class="q-ml-sm" dense></q-btn>
+      </div>
      </div>
-     <div v-else> <!-- o.result!='I' -->
-       {{o.opinion}}
+     <div v-else class="row justify-end q-mt-lg"> <!-- 会签时从签人发表意见后，不会向下一步走 -->
+      <q-btn @click="counterSign(true)" color="primary" :label="tags.agree" dense></q-btn>
+      <q-btn flat @click="counterSign(false)" color="primary" :label="tags.disAgree" class="q-ml-sm" dense></q-btn>
      </div>
-    </q-item-label>
-   </q-item-section>
-   <q-item-section side v-if="o.result!='I'">
-      <q-item-label caption>{{o.time}}</q-item-label>
-      <q-icon :name="oIcons[o.result]" :color="o.result=='P'?'primary':'red'"></q-icon>
-   </q-item-section>
-  </q-item>
-  <!-- 会签时，其他人的意见 -->
-  <q-item v-for="o in s.olist">
-   <q-item-section>
-    <q-item-label>{{o.signer}}</q-item-label>
-    <q-item-label caption>
-     <div>{{o.opinion}}</div>
-    </q-item-label>
-   </q-item-section>
-   <q-item-section side v-if="o.result!='I'">
-      <q-item-label caption>{{o.time}}</q-item-label>
-      <q-icon :name="oIcons[o.result]" :color="o.result=='P'?'primary':'red'"></q-icon>
-   </q-item-section>
-  </q-item>
- </q-list>
+    </div>
+    <div v-else> <!-- o.result!='I' -->
+      {{o.opinion}}
+    </div>
+   </q-item-label>
+  </q-item-section>
+  <q-item-section side v-if="o.result!='I'">
+   <q-item-label caption>{{o.time}}</q-item-label>
+   <q-icon :name="oIcons[o.result]" :color="o.result=='P'?'primary':'red'"></q-icon>
+  </q-item-section>
+ </q-item>
+ <!-- 会签时，其他人的意见 -->
+ <q-item v-for="o in s.olist">
+  <q-item-section>
+   <q-item-label>{{o.signer}}</q-item-label>
+   <q-item-label caption>
+    <div>{{o.opinion}}</div>
+   </q-item-label>
+  </q-item-section>
+  <q-item-section side v-if="o.result!='I'">
+     <q-item-label caption>{{o.time}}</q-item-label>
+     <q-icon :name="oIcons[o.result]" :color="o.result=='P'?'primary':'red'"></q-icon>
+  </q-item-section>
+ </q-item>
+</q-list>
 </q-timeline-entry>
 </q-timeline>
 

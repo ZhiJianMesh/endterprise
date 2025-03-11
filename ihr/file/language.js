@@ -25,7 +25,9 @@ cn:{
   end:"结束",
   name:"名称",
   initCal:"初始化",
-
+  wrongWfDef:"工作流定义存在错误",
+  wrongFlowState:"工作流状态错乱，请确认是否清除？",
+  
   sex:{
     M:"先生",
     F:"女士",

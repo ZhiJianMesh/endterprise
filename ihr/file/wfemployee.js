@@ -1,0 +1,197 @@
+import Workflow from "/assets/v3/components/workflow.js"
+import {_WF_} from "/assets/v3/components/workflow.js"
+const _SEGS_={ //不放在data中是为了避免不必要的双向绑定
+  entry:[
+    {t:'f',n:"office",f:null},
+    {t:'f',n:"worktime",f:null},
+    {t:'s',n:'email'},
+    {t:'n',n:'quali'},
+    {t:'n',n:'post'},
+    {t:'n',n:'salary'},
+    {t:'n',n:'dSalary'},
+    {t:'n',n:'hSalary'},
+    {t:'n',n:'subsidy'},
+    {t:'d',n:'entryAt'},
+    {t:'s',n:'addr'},
+    {t:'s',n:'idno'},
+    {t:'s',n:'signer'}
+  ],
+  leave:[
+    {t:'f',n:'state',f:null},
+  ],
+  grade:[
+    {t:'n',n:'quali'},
+    {t:'n',n:'post'},
+    {t:'n',n:'subsidy'}
+  ],
+  stock:[
+    {t:'n',n:'stock'}
+  ],
+  salary:[
+    {t:'n',n:'salary'},
+    {t:'n',n:'dSalary'},
+    {t:'n',n:'hSalary'}
+  ]
+};
+//处理salary,grade,stock三种工作流
+export default {
+inject:['service','tags'],
+components:{
+	"workflow":Workflow
+},
+data() {return {
+    flowid:this.$route.query.flow,
+    did:this.$route.query.did,
+    type:this.$route.query.type, //entry,leave,grade,salary,stock
+    worktimes:[],
+    offices:[],
+    info:{account:'',name:'',list:[],dlg:false}, //用于显示详情标题
+    dtl:[],
+	flow:{}//流程定义信息{name,maxStep,steps}
+}},
+created(){
+    this.service.allOffices().then(offices=>{
+        this.offices=offices;
+    });
+    this.service.worktimeList().then(opts=>{
+        this.worktimes=opts;
+    });
+    if(this.type=='entry') {
+        _SEGS_.entry[0].f=(v)=>{
+            var o=this.offices[v];
+            return o!=null?o.label:'';
+        };
+        _SEGS_.entry[1].f=(v)=>{
+            var o=this.worktimes[v];
+            return o!=null?o.label:'';
+        };
+    } else if(this.type=='leave') {
+        _SEGS_.leave[0].f=(v)=>{
+            return this.tags.evtType[v];
+        }
+    }
+    var tags=this.tags;
+    var eTags=tags.employee;
+    var segments=_SEGS_[this.type];
+    for(var s of segments) { //初始化标签
+        s.s=eTags[s.n];
+    }
+    request({method:"GET",url:"/wfemployee/get?did="+this.did}, this.service.name).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            if(resp.code==RetCode.NOT_EXISTS) {
+                this.removeWf();
+            }
+            return;
+        }
+        var dta=copyObjExc(resp.data, ['data','employee','pool']);
+        copyObjTo(JSON.parse(resp.data.data), dta);
+        this.dtl=_WF_.formDtlData(dta, segments);
+        this.info.account=dta.account; //入职时无employee，但是dta中有帐号
+        
+        var info=[];
+        var p=resp.data.pool; //maxEdu,firstEdu,sex,birth,name,phone
+        this.info.name=p.name+' '+tags.sex[p.sex];
+        
+        info.push({k:tags.pub.phone, v:p.phone});
+        info.push({k:eTags.maxEdu, v:tags.edu[p.maxEdu]});
+        info.push({k:eTags.firstEdu, v:tags.edu[p.firstEdu]});
+        var dt=new Date();
+        var thisYear=dt.getFullYear();
+        dt.setTime(p.birth*60000);
+        var birth=date2str(dt)+'('+(thisYear-dt.getFullYear())+')';
+        info.push({k:tags.pub.birth, v:birth});
+        
+        if(resp.data.employee) {
+            //office,worktime,state,account,
+            //salary,dSalary,hSalary,subsidy,stock,
+            //quali,post,entryAt,addr,email
+            var o,e=resp.data.employee;
+            
+            this.info.account=e.account;
+            o=this.offices[e.office];
+            info.push({k:eTags.office,v:(o!=null?o.label:'')});
+            o=this.worktimes[e.worktime];
+            info.push({k:eTags.worktime,v:(o!=null?o.label:'')});
+            dt.setTime(e.entryAt*60000);
+            info.push({k:eTags.entryAt,v:date2str(dt)});
+            info.push({k:eTags.state,v:tags.empState[e.state]});
+            
+            for(var i of ['salary','dSalary','hSalary','stock','quali','post','addr','email']) {
+                info.push({k:eTags[i],v:e[i]});
+            }
+        }
+        
+        this.info.list=info;
+    });
+	_WF_.flowDef(this.flowid).then(sd=>{
+        this.flow=sd;
+    });
+},
+methods:{
+removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
+    if(this.$ref.workflow.curStep()!=0)return;//只有第0步权签人(创建人)才有权限删除
+
+    this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
+        _WF_.remove(this.flowid,this.did,this.service.name).then(resp=>{
+            if(resp.code!=RetCode.OK) {
+                this.$refs.errMsg.showErr(resp.code, resp.info);
+            }else{
+                this.service.back();
+            }
+        })
+    })
+}
+},
+template:`
+<q-layout view="lHh lpr lFf" container style="height:100vh">
+  <q-header>
+   <q-toolbar>
+    <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
+    <q-toolbar-title>{{flow.name}}</q-toolbar-title>
+    <q-btn flat icon="person_pin_circle" dense @click="info.dlg=true"></q-btn>
+   </q-toolbar>
+  </q-header>
+  <q-page-container>
+    <q-page class="q-pa-sm">
+<q-list dense>
+  <q-item>
+    <q-item-section>{{tags.employee.account}}</q-item-section>
+    <q-item-section side>{{info.account}}</q-item-section>
+  </q-item>
+  <q-item>
+    <q-item-section>{{tags.pub.name}}</q-item-section>
+    <q-item-section side>{{info.name}}</q-item-section>
+  </q-item>
+  <q-item v-for="d in dtl">
+    <q-item-section>{{d.k}}</q-item-section>
+    <q-item-section side>{{d.v}}</q-item-section>
+  </q-item>
+</q-list>
+<q-separator color="primary" inset></q-separator>
+<workflow :service="service.name" :flowid="flowid" :did="did"
+ :serviceTags="tags" :flowTags="tags.flow"
+ :apiErrors="tags.errMsgs" ref="workflow"></workflow>
+    </q-page>
+  </q-page-container>
+</q-layout>
+
+<q-dialog v-model="info.dlg">
+  <q-card style="min-width:70vw">
+    <q-card-section>
+      <div class="text-h6">{{info.name}}</div>
+    </q-card-section>
+    <q-card-section class="q-pt-none">
+    <q-list dense>
+      <q-item v-for="i in info.list" dense>
+        <q-item-section>{{i.k}}</q-item-section>
+        <q-item-section>{{i.v}}</q-item-section>
+      </q-item>
+    </q-list>
+    </q-card-section>
+  </q-card>
+</q-dialog>
+    
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></alert-dialog>
+<confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
+`
+}
