@@ -13,8 +13,7 @@ const _SEGS_={ //不放在data中是为了避免不必要的双向绑定
     {t:'n',n:'subsidy'},
     {t:'d',n:'entryAt'},
     {t:'s',n:'addr'},
-    {t:'s',n:'idno'},
-    {t:'s',n:'signer'}
+    {t:'s',n:'idno'}
   ],
   leave:[
     {t:'f',n:'state',f:null},
@@ -43,33 +42,37 @@ data() {return {
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     type:this.$route.query.type, //entry,leave,grade,salary,stock
-    worktimes:[],
-    offices:[],
+    curStep:0,
     info:{account:'',name:'',list:[],dlg:false}, //用于显示详情标题
     dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
-    this.service.allOffices().then(offices=>{
-        this.offices=offices;
-    });
-    this.service.worktimeList().then(opts=>{
-        this.worktimes=opts;
-    });
+    this.service.allOffices().then(()=>{
+        this.service.worktimeList().then(()=>{
+            this.get();
+        })
+    })
     if(this.type=='entry') {
         _SEGS_.entry[0].f=(v)=>{
-            var o=this.offices[v];
-            return o!=null?o.label:'';
+            var o=this.service.officeMap[v];
+            return o!=null?o:'';
         };
         _SEGS_.entry[1].f=(v)=>{
-            var o=this.worktimes[v];
-            return o!=null?o.label:'';
+            var o=this.service.worktimeMap[v];
+            return o!=null?o:'';
         };
     } else if(this.type=='leave') {
         _SEGS_.leave[0].f=(v)=>{
             return this.tags.evtType[v];
         }
     }
+	_WF_.flowDef(this.flowid).then(sd=>{
+        this.flow=sd;
+    });
+},
+methods:{
+get() {
     var tags=this.tags;
     var eTags=tags.employee;
     var segments=_SEGS_[this.type];
@@ -108,28 +111,24 @@ created(){
             var o,e=resp.data.employee;
             
             this.info.account=e.account;
-            o=this.offices[e.office];
-            info.push({k:eTags.office,v:(o!=null?o.label:'')});
-            o=this.worktimes[e.worktime];
-            info.push({k:eTags.worktime,v:(o!=null?o.label:'')});
+            o=this.service.officeMap[e.office];
+            info.push({k:eTags.office,v:(o!=null?o:'')});
+            o=this.service.worktimeMap[e.worktime];
+            info.push({k:eTags.worktime,v:(o!=null?o:'')});
             dt.setTime(e.entryAt*60000);
             info.push({k:eTags.entryAt,v:date2str(dt)});
             info.push({k:eTags.state,v:tags.empState[e.state]});
-            
+
             for(var i of ['salary','dSalary','hSalary','stock','quali','post','addr','email']) {
                 info.push({k:eTags[i],v:e[i]});
             }
         }
         
         this.info.list=info;
-    });
-	_WF_.flowDef(this.flowid).then(sd=>{
-        this.flow=sd;
-    });
+    })
 },
-methods:{
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
-    if(this.$ref.workflow.curStep()!=0)return;//只有第0步权签人(创建人)才有权限删除
+    if(this.curStep>0)return;//只有第0步权签人(创建人)才有权限删除
 
     this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
         _WF_.remove(this.flowid,this.did,this.service.name).then(resp=>{
@@ -140,6 +139,15 @@ removeWf() { //数据不存在，工作流数据错乱的情况下，删除工�
             }
         })
     })
+},
+remove() {
+    request({method:"DELETE",url:"/wfemployee/remove?did="+this.did}, this.service.name).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.service.back();
+    })
 }
 },
 template:`
@@ -148,6 +156,7 @@ template:`
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{flow.name}}</q-toolbar-title>
+    <q-btn flat icon="cancel" dense v-if="curStep<=0" @click="remove"></q-btn>
     <q-btn flat icon="person_pin_circle" dense @click="info.dlg=true"></q-btn>
    </q-toolbar>
   </q-header>
@@ -170,7 +179,7 @@ template:`
 <q-separator color="primary" inset></q-separator>
 <workflow :service="service.name" :flowid="flowid" :did="did"
  :serviceTags="tags" :flowTags="tags.flow"
- :apiErrors="tags.errMsgs" ref="workflow"></workflow>
+ :apiErrors="tags.errMsgs" v-model="curStep"></workflow>
     </q-page>
   </q-page-container>
 </q-layout>

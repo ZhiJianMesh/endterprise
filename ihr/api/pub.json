@@ -6,9 +6,12 @@
             "config":"*",
             "grp":"*",
             "member":"*",
+            
             "pool":"*",
             "resource":"*",
             "employee":"*",
+            "wfemployee":"*",
+            "event":"*",
             "resume":"*",
             "salary":"*"
         }
@@ -17,10 +20,11 @@
         "name":"人事",
         "rights": {
             "pool":"*",
-            "employee":"*",
-            "resume":"*",
             "resource":"*",
-            "attendance":"*",
+            "employee":"*",
+            "wfemployee":"*",
+            "event":"*",
+            "resume":"*",
             "salary":"*"
         }
     }

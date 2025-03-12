@@ -95,19 +95,20 @@ cn:{
   },
   perState:{
     INIT:'初始',
-    CONT:'接触中',
-    EXAM:'已面试',
+    CONT:'接触',
+    EXAM:'面试',
+    REJ:'被拒绝',
+    DISC:'公司放弃',
+    PROC:'正在入职',
     JOIN:'已入职',
     LEAV:"已离职",
-    REJ:'被拒绝',
-    DIS:"被开除",
-    DISC:'公司放弃'
+    DIS:'被开除'
   },
   empState:{
     NORM:"正常",
     HIDE:"隐藏",
     DIS:"被开除",
-    LEAV:"离职"
+    LEAV:"已离职"
   },
   attendTp:{
     NORM:"打卡机刷卡",
@@ -149,15 +150,12 @@ cn:{
     ability:"能力",
     phone:"联系电话",
     email:"邮箱",
-    birth:"生日",
-    quali:"任职资格"
+    birth:"生日"
   },
   pool:{
     title:"人才库",
     detail:"人才",
     expSalary:"期望的工资",
-    maxEdu:"最高学历",
-    firstEdu:"第一学历",
     cmt:"备注",
     entry:"入职",
     state:'状态',
@@ -193,7 +191,15 @@ cn:{
     event:"关键事件",
     leave:"离职",
     join:"入职",
-    resume:"简历"
+    resume:"简历",
+    manage:'人事审批',
+    maxEdu:"最高学历",
+    firstEdu:"第一学历",
+    account:'帐号',
+    signer:'权签人',
+    setGrade:'任职',
+    setSalary:'调薪',
+    setStock:'调股'
   },
   resume:{
     org:"机构",
@@ -273,7 +279,17 @@ cn:{
     '6201':'存在员工数据引用',
     '6202':'雇员信息不可删除',
     '6203':'被对方拒绝或公司放弃的人才才可以删除',
+    '6204':'已经入职或不在人才库中',
     'unknown':'未知错误'
+  },
+  sta2icon:function(s){
+    if(s==0) {
+      return 'star_border';
+    }
+    if(s==100) {
+      return 'star';
+    }
+    return 'star_half';
   }
 }
 };

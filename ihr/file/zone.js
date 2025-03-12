@@ -8,7 +8,7 @@ data() {return {
     secs:{}, //劳动保障定义
     secOpts:[],
     edt:{zone:{},security:{}},
-    ctrl:{no:-2,tag:'',zoneDlg:false,secDlg:false}
+    ctrl:{no:-2,zone:-1,tag:'',zoneDlg:false,secDlg:false}
 }},
 created(){
     this.query_zones();
@@ -30,11 +30,15 @@ query_zones(){//查询区域
         }
         var props=this.tags.securityProp;
         var names=this.tags.securityTp;
+        var zoneSec;
         for(var s of resp.data.secs) {
             s.name_s=names[s.name]?names[s.name]:s.name;
             s.sponsor_s=props[s.sponsor];
             s.type_s=props[s.type];
-            secs[s.zone].push(s);
+            zoneSec=secs[s.zone];
+            if(zoneSec) {
+                zoneSec.push(s);
+            }
         }
         this.secs=secs;
     })  
@@ -69,13 +73,15 @@ zone_do() {
         } else {
             var zone = {id:resp.data.id};
             copyObjTo(this.edt.zone, zone);
+            this.secs[zone.id]=[];
             this.zones.push(zone);
         }
         this.ctrl.no=-2;
         this.ctrl.zoneDlg=false;
     });
 },
-remove_zone(i) {
+remove_zone() {
+    var i=this.ctrl.no;
     var opts={method:"DELETE",url:"/config/removeZone?id="+this.zones[i].id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
@@ -83,6 +89,8 @@ remove_zone(i) {
             return;
         }
         this.zones.splice(i,1);
+        this.ctrl.no=-2;
+        this.ctrl.zoneDlg=false;
     });
 },
 show_security(zone,i) {
@@ -96,6 +104,7 @@ show_security(zone,i) {
     }
     this.ctrl.tag+=this.tags.cfg.security;
     this.ctrl.no=i;
+    this.ctrl.zone=zone;
     this.ctrl.secDlg=true;
 },
 security_do() {
@@ -127,7 +136,9 @@ security_do() {
     });
     
 },
-remove_security(zone,i) {
+remove_security() {
+    var i=this.ctrl.no;
+    var zone=this.ctrl.zone;
     var sec=this.secs[zone][i];
     var url="/config/removeSecurity?zone="+zone+"&sponsor="+sec.sponsor+"&name="+sec.name;
     var opts={method:"DELETE",url:url};
@@ -137,6 +148,8 @@ remove_security(zone,i) {
             return;
         }
         this.secs[zone].splice(i,1);
+        this.ctrl.no=-2;
+        this.ctrl.secDlg=false;
     });
 },
 add_sec_opt(val, done) {
@@ -159,7 +172,7 @@ template:`
   <q-page-container>
     <q-page class="q-pa-none">
 <q-list v-for="(z,i) in zones" dense>
- <q-item>
+ <q-item clickable @click="show_zone(i)">
   <q-item-section>
    <q-item-label class="text-h5">{{z.name}}</q-item-label>
    <q-item-label caption>{{tags.cfg.timeOff}}:{{z.timeOff}}</q-item-label>
@@ -172,18 +185,6 @@ template:`
    <q-item-label caption>{{tags.cfg.fowSalary}}:{{z.fowSalary}}<q-item-label>
    <q-item-label caption>{{tags.cfg.subsidy}}:{{z.subsidy}}</q-item-label>
   </q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_zone(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_zone(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
  </q-item>
  <q-item>
   <q-item-section class="text-teal">{{tags.cfg.security}}</q-item-section>
@@ -191,23 +192,11 @@ template:`
    <q-icon @click="show_security(z.id,-1)" name='add_circle' color="primary" flat size="1.5em"></q-icon>
   </q-item-section>
  </q-item>
- <q-item v-for="(s,i) in secs[z.id]" dense>
+ <q-item v-for="(s,i) in secs[z.id]" clickable @click="show_security(z.id,i)">
   <q-item-section><q-item-label caption>{{s.name_s}}({{s.sponsor_s}})</q-item-label></q-item-section>
   <q-item-section>
    <q-item-label caption>{{s.val}}({{s.type_s}})</q-item-label>
   </q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_security(z.id,i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_security(z.id,i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
  </q-item>
  <q-separator spaced></q-separator>
 </q-list>
@@ -231,9 +220,14 @@ template:`
    <q-input :label="tags.cfg.taxFunc" v-model="edt.zone.taxFunc" dense type="textarea"></q-input>
    <q-input :label="tags.cmt" v-model="edt.zone.cmt" dense type="textarea" rows="2"></q-input>
   </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="zone_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  <q-card-actions class="row">
+   <div class="col" v-if="ctrl.no>-1">
+    <q-btn :label="tags.remove" flat color="red" @click="remove_zone()"></q-btn>
+   </div>
+   <div class="col text-right">
+    <q-btn :label="tags.ok" color="primary" @click="zone_do"></q-btn>
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   </div>
   </q-card-actions>
  </q-card>
 </q-dialog>
@@ -260,9 +254,14 @@ template:`
    </div>
    <q-input :label="tags.val" v-model.number="edt.security.val" dense></q-input>
   </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="security_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  <q-card-actions class="row">
+   <div class="col" v-if="ctrl.no>-1">
+    <q-btn :label="tags.remove" flat color="red" @click="remove_security()"></q-btn>
+   </div>
+   <div class="col text-right">
+    <q-btn :label="tags.ok" color="primary" @click="security_do"></q-btn>
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   </div>
   </q-card-actions>
  </q-card>
 </q-dialog>

@@ -8,6 +8,7 @@ defaultTags : {
     wrongWfDef:"工作流定义错误",
     wfClkSuccess:'执行成功!',
     unHandled:'未处理',
+    descr:'概要',
     
     opinion:"意见",
     agree:'同意',
@@ -152,6 +153,7 @@ query_opinions() {
         this.base.step=curStep; //待处理的步骤
         this.base.nextStepType=resp.data.nextStepType; //下一步类型，用于决定帐号输入是单选还是多选
         this.base.creator=resp.data.creator;
+        this.base.descr=resp.data.descr;
         var dt=new Date();
         dt.setTime(resp.data.update_time);
         this.base.createAt=datetime2str(dt);
@@ -163,6 +165,7 @@ query_opinions() {
         } else {
             this.init_steps(resp.data, curStep, false);
         }
+        this.$emit('update:modelValue', curStep);
     });
 },
 init_steps(data, curStep, hasSigner) {
@@ -264,6 +267,7 @@ confirm() {
             return;
         }
         this.base.step=resp.data.nextStep;
+        this.$emit('update:modelValue', this.base.step);
         this.query_opinions();
     });
 },
@@ -291,6 +295,7 @@ reject() {
             return;
         }
         this.base.step=resp.data.foreStep;
+        this.$emit('update:modelValue', this.base.step);
         this.query_opinions();
     });
 },
@@ -306,14 +311,14 @@ btn_clk(api) {//ext中的button点击事件
         }
     });
 },
-curStep() {
-    return this.base.step;
-},
 goto(url) {
     this.$router.push(url);
 }
 },
 template:`
+<q-expansion-item icon="comment" :label="tags.descr" header-class="text-purple">
+  <q-card><q-card-section>{{base.descr}}</q-card-section></q-card>
+</q-expansion-item>
 <q-timeline color="secondary">
 <q-timeline-entry v-for="s in steps" :title="s.title" :subtitle="s.ts"
  :color="s.step==base.step?'orange':'primary'">

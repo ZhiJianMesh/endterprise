@@ -203,7 +203,8 @@ cn:{
       {t:'s',n:'descr',s:'附加描述'}
     ]
   },
-  grn:{ //收货
+  grn:{//goods receive notes
+    title:'收货',
     state:{
         WAIT:'等待发货',
         CHK:'正在入库',
@@ -212,7 +213,8 @@ cn:{
     inDate:'入库时间',
     outDate:'供货方发货时间'
   },
-  gdn:{ //发货
+  gdn:{ //goods delivery notes
+    title:'发货',
     state:{
         WAIT:'等待发货',
         CHK:'正在出库',

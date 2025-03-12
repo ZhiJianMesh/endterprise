@@ -133,8 +133,7 @@ template:`
  <q-item>
   <q-item-section><q-item-label caption>{{tags.pub.name}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.pub.contact}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.pub.ability}}</q-item-label></q-item-section>
-  <q-item-section thumbnail></q-item-section>
+  <q-item-section side><q-item-label caption>{{tags.pub.ability}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="p in list" @click="detail(p.uid)" clickable>
   <q-item-section>
@@ -146,7 +145,7 @@ template:`
    <q-item-label>{{p.phone}}</q-item-label>
    <q-item-label caption>{{p.email}}</q-item-label>
   </q-item-section>
-  <q-item-section>
+  <q-item-section side>
    <q-item-label caption>{{p.cmt}}</q-item-label>
    <q-item-label caption>{{p.quali}}/{{p.expSalary}}</q-item-label>
    <q-item-label caption>{{p.maxEdu_s}}/{{p.firstEdu_s}}</q-item-label>
@@ -178,10 +177,10 @@ template:`
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-select v-model="perInfo.firstEdu" :options="eduOpts" emit-value
-        :label="tags.pool.firstEdu" dense map-options></q-select>
+        :label="tags.employee.firstEdu" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model.number="perInfo.quali" :label="tags.pub.quali" dense></q-input>
+       <q-input v-model.number="perInfo.quali" :label="tags.employee.quali" dense></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-input v-model.number="perInfo.expSalary" :label="tags.pool.expSalary" dense></q-input>

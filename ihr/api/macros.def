@@ -54,5 +54,16 @@
              where m.uid=#UID# and m.role='NOR' and g.id=m.gid and g.type='D')
               and uid=@{#tokenCaller} and role='ADM'"
         }]
+    },
+    
+   "check_accounts":{
+        "name":"check_accounts",
+        "comment":"检查帐号是否都存在",
+        "type" : "call",
+        "service": "user",
+        "method":"POST",
+        "url":"/user/userid",
+        "tokenSign":"APP",
+        "parameters":"{\"accounts\":#ACCLIST#}"
     }
 }

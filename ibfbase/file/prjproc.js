@@ -360,7 +360,7 @@ template:`
     <q-item-section>{{s.skuName}}</q-item-section>
     <q-item-section>{{s.num}}</q-item-section>
     <q-item-section side>
-     <q-icon color="red" name="clear" @click="rmv_purchase_sku(i)" v-if="purchase.editable"><q-icon>
+     <q-icon color="red" name="clear" @click="rmv_purchase_sku(i)" v-if="purchase.editable"></q-icon>
     <q-item-section>
    </q-item>
   </q-list>

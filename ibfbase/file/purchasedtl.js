@@ -45,8 +45,24 @@ query() {
         p.expDate_s=date2str(dt);
         p.staIcon=this.tags.sta2icon(p.status);
         if(p.cost<=0) p.cost=this.tags.purchase.notCalcu;
+        if(p.grn) {//state,inDate,outDate,execAcc,cmt
+            var g=p.grn;
+            dt.setTime(g.inDate*60000);
+            g.inDate=datetime2str(dt);
+            dt.setTime(g.outDate*60000);
+            g.outDate=datetime2str(dt);
+            g.state=this.tags.grn.state[g.state];
+        }      
+        if(p.gdn) {//state,outDate,cfmDate,tranNo,cmt
+            var g=p.gdn;
+            dt.setTime(g.cfmDate*60000);
+            g.cfmDate=datetime2str(dt);
+            dt.setTime(g.outDate*60000);
+            g.outDate=datetime2str(dt);
+            g.state=this.tags.gdn.state[g.state];
+        }      
         this.dtl=p;
-        this.editable=p.status==0&&p.power=='O';        
+        this.editable=p.status==0&&p.power=='O';
     })
 },
 show_sku() {
@@ -138,18 +154,18 @@ template:`
     <q-item-section side>{{dtl.cost}}</q-item-section>
   </q-item>
   <q-item clickable @click.stop="flow">
-    <q-item-section>{{tags.purchase.status}}</q-item-section>
+    <q-item-section class="text-blue">{{tags.purchase.status}}</q-item-section>
     <q-item-section side><q-icon :name="dtl.staIcon" color="blue"></q-icon></q-item-section>
   </q-item>
 </q-list>
 <q-list dense v-if="!editing">
   <q-item>
-    <q-item-section>{{tags.purchase.expDate}}</q-item-section>
-    <q-item-section side>{{dtl.expDate_s}}</q-item-section>
-  </q-item>
-  <q-item>
     <q-item-section>{{tags.purchase.receiver}}</q-item-section>
     <q-item-section side>{{dtl.receiver}}</q-item-section>
+  </q-item>
+  <q-item>
+    <q-item-section>{{tags.purchase.expDate}}</q-item-section>
+    <q-item-section side>{{dtl.expDate_s}}</q-item-section>
   </q-item>
   <q-item>
    <q-item-section>{{tags.cmt}}</q-item-section>
@@ -157,9 +173,9 @@ template:`
   </q-item>
 </q-list>
 <div v-else>
-  <date-input v-model="edtDtl.expDate_s" :label="tags.purchase.expDate"
-  :format="tags.dateFmt"></datet-input>
   <q-input v-model="edtDtl.receiver" :label="tags.purchase.receiver"></q-input>
+  <date-input v-model="edtDtl.expDate_s" :label="tags.purchase.expDate"
+  :format="tags.dateFmt"></date-input>
   <q-input v-model="edtDtl.descr" :label="tags.cmt"></q-input>
   <div class="row justify-end q-py-md">
     <div class="col-2">
@@ -170,6 +186,32 @@ template:`
     </div>
   </div>
 </div>
+<q-separator></q-separator>
+<q-list separator>
+<q-item v-if="dtl.grn">
+ <q-item-section>
+  <q-item-label>{{tags.grn.title}} {{dtl.grn.tranNo}}</q-item-label>
+  <q-item-label caption>{{dtl.grn.execAcc}}/{{dtl.grn.inDate}}</q-item-label>
+  <q-item-label caption>{{dtl.grn.cmt}}</q-item-label>
+ </q-item-section>
+ <q-item-section side>
+  <q-item-label>{{dtl.grn.state}}</q-item-label>
+  <q-item-label caption>{{dtl.grn.outDate}}</q-item-label>
+ </q-item-section>
+</q-item>
+<q-item v-if="dtl.gdn">
+ <q-item-section>
+  <q-item-label>{{tags.gdn.title}} {{dtl.gdn.tranNo}}</q-item-label>
+  <q-item-label caption>{{dtl.gdn.execAcc}}/{{dtl.gdn.cfmDate}}</q-item-label>
+  <q-item-label caption>{{dtl.gdn.cmt}}</q-item-label>
+ </q-item-section>
+ <q-item-section side>
+  <q-item-label>{{dtl.gdn.state}}</q-item-label>
+  <q-item-label caption>{{dtl.gdn.outDate}}</q-item-label>
+ </q-item-section>
+</q-item>
+</q-list>
+
 <q-banner inline-actions dense class="bg-indigo-3 text-white">
   {{tags.purchase.skuList}}
   <template v-slot:action v-if="dtl.status==0">

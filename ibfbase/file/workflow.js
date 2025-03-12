@@ -20,6 +20,7 @@ data() {return {
     dtlApi:this.$route.query.dtlApi,
     dtlPage:this.$route.query.dtlPage,
     tags:this.ibf.tags,
+    curStep:0,
     dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
@@ -45,7 +46,7 @@ showDtl() {
     this.ibf.goto(url)
 },
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
-    if(this.$ref.workflow.curStep()!=0)return;//只有第0步权签人(创建人)才有权限删除
+    if(this.curStep>0)return;//只有第0步权签人(创建人)才有权限删除
 
     this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
         _WF_.remove(this.flowid,this.did,this.service).then(resp=>{
@@ -78,7 +79,7 @@ template:`
 <q-separator color="primary" inset></q-separator>
 <workflow :service="service" :flowid="flowid" :did="did"
  :serviceTags="tags" :flowTags="tags.flow"
- :apiErrors="tags.errMsgs" ref="workflow"></workflow>
+ :apiErrors="tags.errMsgs" v-model="curStep"></workflow>
     </q-page>
   </q-page-container>
 </q-layout>

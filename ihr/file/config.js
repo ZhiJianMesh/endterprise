@@ -119,13 +119,7 @@ office_do() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        if(this.ctrl.no>-1) {
-            copyObjTo(this.edt.office, this.offices[this.ctrl.no]);
-        } else {
-            var o = {id:resp.data.id};
-            copyObjTo(this.edt.office, o);
-            this.offices.push(o);
-        }
+        this.query_offices(this.zone.cur);
         this.ctrl.no=-2;
         this.ctrl.officeDlg=false;
     });
@@ -154,13 +148,7 @@ perf_do() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        if(this.ctrl.no>-1) {
-            copyObjTo(this.edt.perf, this.perfs[this.ctrl.no]);
-        } else {
-            var o = {};
-            copyObjTo(this.edt.perf, o);
-            this.perfs.push(o);
-        }
+        this.query_perfs();
         this.ctrl.no=-2;
         this.ctrl.perfDlg=false;
     });
@@ -191,50 +179,48 @@ worktime_do() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        var w=this.edt.wt;
-        w.first_s=formatTime(w.first);
-        w.second_s=formatTime(w.second);
-        w.third_s=formatTime(w.third);
-        w.forth_s=formatTime(w.forth);
-        if(this.ctrl.no>-1) {
-            copyObjTo(w, this.worktimes[this.ctrl.no]);
-        } else {
-            var o = {id:resp.data.id};
-            copyObjTo(w, o);
-            this.worktimes.push(o);
-        }
+        this.query_worktimes();
         this.ctrl.no=-2;
         this.ctrl.wtDlg=false;
     });
 },
-remove_perf(i) {
+remove_perf() {
+    var i=this.ctrl.no;
     var opts={method:"DELETE",url:"/config/removePerfLevel?level="+this.perfs[i].level};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.perfs.splice(i,1);
+        this.query_perfs();
+        this.ctrl.perfDlg=false;
+        this.ctrl.no=-2;
     });
 },
-remove_worktime(i) {
+remove_worktime() {
+    var i=this.ctrl.no;
     var opts={method:"DELETE",url:"/config/removeWorktime?id="+this.worktimes[i].id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.worktimes.splice(i,1);
+        this.query_worktimes();
+        this.ctrl.wtDlg=false;
+        this.ctrl.no=-2;
     });
 },
-remove_office(i) {
+remove_office() {
+    var i=this.ctrl.no;
     var opts={method:"DELETE",url:"/config/removeOffice?id="+this.offices[i].id};
     request(opts, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.offices.splice(i,1);
+        this.query_offices(this.zone.cur);
+        this.ctrl.officeDlg=false;
+        this.ctrl.no=-2;
     });
 }
 },
@@ -261,21 +247,9 @@ template:`
   </template>
 </q-banner>
 <q-list dense>
- <q-item v-for="(o,i) in offices">
+ <q-item v-for="(o,i) in offices" clickable @click="show_office(i)">
   <q-item-section>{{o.name}}</q-item-section>
   <q-item-section>{{o.cmt}}</q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_office(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_office(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
  </q-item>
 </q-list>
 
@@ -287,7 +261,7 @@ template:`
   </template>
 </q-banner>
 <q-list>
- <q-item v-for="(w,i) in worktimes">
+ <q-item v-for="(w,i) in worktimes" clickable @click="show_worktime(i)">
   <q-item-section>
    <q-item-label>{{w.name}}</q-item-label>
    <q-item-label caption>{{w.calName}}</q-item-label>
@@ -297,18 +271,6 @@ template:`
    <q-item-label>{{tags.cfg.maxEdit}}:{{w.maxEdit}}<q-item-label>
    <q-item-label>{{tags.cfg.leadTime}}:{{w.leadTime}}<q-item-label>
   </q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_worktime(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_worktime(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
  </q-item>
 </q-list>
 
@@ -319,21 +281,9 @@ template:`
   </template>
 </q-banner>
 <q-list dense>
- <q-item v-for="(p,i) in perfs">
+ <q-item v-for="(p,i) in perfs" clickable @click="show_perf(i)">
   <q-item-section>{{p.level}}/{{p.name}}</q-item-section>
   <q-item-section>{{p.cmt}}</q-item-section>
-  <q-menu touch-position context-menu>
-    <q-list dense style="min-width:100px">
-      <q-item clickable v-close-popup @click="show_perf(i)">
-        <q-item-section avatar><q-icon name="edit" color="primary"></q-icon></q-item-section>
-        <q-item-section>{{tags.modify}}</q-item-section>
-      </q-item>
-      <q-item clickable v-close-popup @click="remove_perf(i)">
-        <q-item-section avatar><q-icon name="delete_forever" color="red"></q-icon></q-item-section>
-        <q-item-section>{{tags.remove}}</q-item-section>
-      </q-item>
-    </q-list>
-  </q-menu>
  </q-item>
 </q-list>
     </q-page>
@@ -349,9 +299,14 @@ template:`
    <q-input :label="tags.name" v-model="edt.office.name" dense></q-input>
    <q-input :label="tags.cmt" v-model="edt.office.cmt" dense></q-input>
   </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="office_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  <q-card-actions class="row">
+   <div class="col" v-if="ctrl.no>-1">
+    <q-btn :label="tags.remove" flat color="red" @click="remove_office()"></q-btn>
+   </div>
+   <div class="col text-right">
+    <q-btn :label="tags.ok" color="primary" @click="office_do"></q-btn>
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   </div>
   </q-card-actions>
  </q-card>
 </q-dialog>
@@ -379,9 +334,14 @@ template:`
     </div>
    </div>
   </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="worktime_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  <q-card-actions class="row">
+   <div class="col" v-if="ctrl.no>-1">
+    <q-btn :label="tags.remove" flat color="red" @click="remove_worktime()"></q-btn>
+   </div>
+   <div class="col text-right">
+    <q-btn :label="tags.ok" color="primary" @click="worktime_do"></q-btn>
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   </div>
   </q-card-actions>
  </q-card>
 </q-dialog>
@@ -396,9 +356,14 @@ template:`
    <q-input :label="tags.name" v-model="edt.perf.name" dense></q-input>
    <q-input :label="tags.cmt" v-model="edt.perf.cmt" dense></q-input>
   </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="perf_do"></q-btn>
-   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  <q-card-actions class="row">
+   <div class="col" v-if="ctrl.no>-1">
+    <q-btn :label="tags.remove" flat color="red" @click="remove_perf()"></q-btn>
+   </div>
+   <div class="col text-right">
+    <q-btn :label="tags.ok" color="primary" @click="perf_do"></q-btn>
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   </div>
   </q-card-actions>
  </q-card>
 </q-dialog>

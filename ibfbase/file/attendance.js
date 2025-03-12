@@ -481,7 +481,7 @@ template:`
     <q-item clickable v-for="(t,i) in atdAct.tms">
      <q-item-section>
       <q-item-label>{{t.type_s}}
-       <q-icon color="red" name="clear" @click="rmv_atd_tm(i)" class="q-pl-md" v-if="atdAct.editable"><q-icon>
+       <q-icon color="red" name="clear" @click="rmv_atd_tm(i)" class="q-pl-md" v-if="atdAct.editable"></q-icon>
       </q-item-label>
       <q-item-label caption>{{t.start_s}}</q-item-label>
       <q-item-label caption>{{t.end_s}}</q-item-label>
@@ -545,7 +545,7 @@ template:`
    <q-item clickable v-for="(t,i) in wtAct.items">
      <q-item-section>
       <q-item-label>{{t.prjName}}
-       <q-icon color="red" name="clear" @click="rmv_wt_item(i)" class="q-pl-md" v-if="wtAct.editable"><q-icon>
+       <q-icon color="red" name="clear" @click="rmv_wt_item(i)" class="q-pl-md" v-if="wtAct.editable"></q-icon>
       </q-item-label>
       <q-item-label caption>{{t.ratio}}%</q-item-label>
      </q-item-section>

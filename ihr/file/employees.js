@@ -100,8 +100,7 @@ template:`
  <q-item>
   <q-item-section><q-item-label caption>{{tags.pub.name}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.pub.contact}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.pub.ability}}</q-item-label></q-item-section>
-  <q-item-section thumbnail></q-item-section>
+  <q-item-section side><q-item-label caption>{{tags.pub.ability}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="p in list" @click="detail(p.uid)" clickable>
   <q-item-section>
@@ -113,7 +112,7 @@ template:`
    <q-item-label caption>{{p.email}}</q-item-label>
    <q-item-label caption>{{p.office_s}}</q-item-label>
   </q-item-section>
-  <q-item-section>
+  <q-item-section side>
    <q-item-label caption>{{p.quali}}</q-item-label>
    <q-item-label caption>{{p.post}}</q-item-label>
   </q-item-section>
