@@ -16,20 +16,20 @@
 <q-layout view="HHH LpR FFF" container style="height:99vh">
 <q-header>
   <q-toolbar>
-     <q-avatar square><img src="./favicon.png"></q-avatar>
-     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+   <q-avatar><img src="./favicon.png"></q-avatar>
+   <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
   </q-toolbar>
-  <div class="text-right bg-white">
+  <div class="text-right bg-white q-pt-sm">
     <q-btn :label="tags.pool.title" @click="goto('/pool')"
-     icon="group" color="primary" padding="xs" flat></q-btn>
+     icon="group" color="primary" padding="xs" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.employee.title" @click="goto('/employees')" 
-     icon="badge" color="primary" flat></q-btn>
+     icon="badge" color="primary" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.grp.title" @click="goto('/grp?id=0')"
      icon="account_tree" color="orange" flat padding="xs"></q-btn>
     <q-btn :label="tags.cfg.title" @click="goto('/config')"
-     icon="settings" color="accent" flat></q-btn>
+     icon="settings" color="accent" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.salary.title" @click="goto('/salary')"
-     icon="attach_money" color="primary" flat></q-btn>
+     icon="attach_money" color="primary" flat class="q-pl-none"></q-btn>
   </div>
 </q-header>
 <q-page-container>
@@ -72,9 +72,9 @@ const homeTpl=document.getElementById('tpl_home');
 const Home = {
 inject:['tags'],
 methods:{
-  goto(url) {
+goto(url) {
     this.$router.push(url);
-  }
+}
 },
 template:homeTpl.innerHTML
 }

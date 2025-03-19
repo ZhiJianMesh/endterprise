@@ -9,26 +9,105 @@
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <title>CRM</title>
 </head>
-<body style="overflow:hidden"><div id="app" v-cloak><router-view></router-view></div></body>
+<body style="overflow:hidden">
+<div id="app" v-cloak><router-view></router-view></div>
+
+<template id="tpl_home">
+<q-layout view="HHH LpR FFF" container style="height:99vh">
+  <q-header>
+   <q-toolbar>
+    <q-avatar><img src="./favicon.png"></q-avatar>
+    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+   </q-toolbar>
+   <div class="text-right bg-white q-pt-sm">
+    <q-btn v-for="i in myList" :label="i.name" @click="goto(i.url)" 
+     :icon="i.icon" color="primary" flat class="q-pl-none">
+     <q-badge v-if="i.weekInc" color="red" rounded floating>{{i.weekInc}}</q-badge>
+    </q-btn>
+    <q-btn :label="tags.home.bulletin" @click="goto('/brief')"
+     icon="svguse:/assets/imgs/meshicons.svg#barChart"
+     color="red" flat></q-btn>
+  </div>
+  </q-header>
+  <q-page-container>
+   <q-page class="q-pa-sm">
+  <q-separator spaced="sm"></q-separator>
+  <ibf></ibf>
+  </q-page>
+ </q-page-container>
+</q-layout>
+</template>
+
+</body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
 <script src="/assets/v3/echarts.js"></script>
 <script type="module">
-import Language from "./language.js"
-import DateInput from "/assets/v3/components/date_input.js"
-import UserSelector from "/assets/v3/components/user_selector.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+import DateInput from "/assets/v3/components/date_input.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
+import IBF from '/ibfbase/ibf.js'
+import Language from "./language.js"
+import { registerIbf } from '/ibfbase/ibf.js';
+
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 
+//常量定义
+const icons={
+ customer:"svguse:/assets/imgs/meshicons.svg#company",
+ contact:"contacts",
+ order:"event_note",
+ service:"svguse:/assets/imgs/meshicons.svg#build",
+ payment:"svguse:/assets/imgs/meshicons.svg#payment",
+ touchlog:"perm_phone_msg"
+};
+
+const homeTpl=document.getElementById('tpl_home');
+const Home = {
+inject:['service', 'tags'],
+data(){return{
+    myList:{
+        c:{icon:icons.customer,name:tags.home.customers,url:'/customers',weekInc:0},
+        n:{icon:icons.contact,name:tags.home.contacts,url:'/contacts',weekInc:0},
+        o:{icon:icons.order,name:tags.home.orders,url:'/orders',weekInc:0},
+        s:{icon:icons.service,name:tags.home.services,url:'/services',weekInc:0},
+        p:{icon:icons.payment,name:tags.home.payments,url:'/payments',weekInc:0}
+    }
+}},
+created(){
+    this.refresh();
+},
+methods:{
+refresh() {
+    var url2="/api/report/bulletin?days=7";
+    request({method:"GET",url:url2}, this.service.name).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            Console.warn("request "+url2+" failed:" + resp.code + ",info:" + resp.info);
+            return;
+        }
+        this.myList.c.weekInc=resp.data.customer;
+        this.myList.n.weekInc=resp.data.contact;
+        this.myList.o.weekInc=resp.data.ord;
+        this.myList.p.weekInc=resp.data.payment;
+        this.myList.s.weekInc=resp.data.service;
+    })
+},
+goto(url) {
+    this.$router.push(url);
+}
+},
+template:homeTpl.innerHTML
+}
+
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
-{path:'/home', component:()=>import('./home.js')},
+{path:'/home', component:Home},
 {path:'/customers', component:()=>import('./customers.js')},
 {path:'/customer', component:()=>import('./customer.js')},
 {path:'/contacts', component:()=>import('./contacts.js')},
@@ -41,32 +120,17 @@ routes:[
 {path:'/payment', component:()=>import('./payment.js')},
 {path:'/orders', component:()=>import('./orders.js')},
 {path:'/order', component:()=>import('./order.js')},
-{path:'/tasks', component:()=>import('./tasks.js')},
 {path:'/workflow', component:()=>import('./workflow.js')},
-{path:'/brief', component:()=>import('./brief.js')},
-{path:'/balance', component:()=>import('./balance.js')},
-{path:'/settings', component:()=>import('./settings.js')},
-{path:'/flowdef', component:()=>import('/workflow/pub/settings.js')}
+{path:'/brief', component:()=>import('./brief.js')}
 ]});
-
-//常量定义
-const icons={
- customer:"svguse:/assets/imgs/meshicons.svg#company",
- contact:"contacts",
- order:"event_note",
- service:"svguse:/assets/imgs/meshicons.svg#build",
- payment:"svguse:/assets/imgs/meshicons.svg#payment",
- touchlog:"perm_phone_msg",
- task:"playlist_add_check"
-};
 
 //service定义
 const service = {
-name:"crm",N_PAGE:10,N_SMPG:5,WF:"workflow",
+name:"icrm",N_PAGE:10,N_SMPG:5,
+runtime:{}, //运行时
 CLIENTW:document.documentElement.clientWidth,
 userinfo:{}, /*帐号基本信息缓存*/
 role:'', /*在服务中的角色*/
-flowInfos:{},/*工作流步骤定义缓存*/
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
 skus:[],//商品缓存
 encodeExt(ext) { //return {a:xx,b:yy...}
@@ -98,7 +162,7 @@ template(n,refresh){
             return {'cmt':{n:tags.comment,t:'s'}};//只有一个备注字段
         }
         if(resp.data.v) {
-            this.tmpl[n]=resp.data.v;
+            this.tmpl[n]=JSON.parse(resp.data.v);
         }
         return this.tmpl[n];
     });
@@ -113,69 +177,17 @@ baseInfo() {
         this.userinfo=resp.data;
     });
 },
-skuList() {
-    if(this.skus.length>0){
-        return new Promise(resolve=>{ resolve(this.skus) });
-    }
-    var url="/api/sku/list";
-    return request({method:"GET",url:url}, this.name).then(resp=>{
-        if(resp.code != 0) {
-            return [];
-        }
-        this.skus=resp.data.skus;
-        return this.skus;
-    });
+setRt(k, v) {
+    this.runtime[router.currentRoute.value.path+':'+k]=v;
 },
-getFlow(id) {return this.flowInfos[id]},
-flowsDef:(ids) => {
-    var url="/api/flow/infos?flowids="+ids
-    return request({method:"GET",url:url}, SERVICE_WF).then(resp=>{
-        if(resp.code!=0) {
-            return false;
-        }
-        //flows:{flow,name,dispName,cmt,callback}
-        //steps:{flow,step,type,name,ext,cmt}
-        resp.data.flows.forEach(f=>{
-            var sd={name:f.dispName,maxStep:0,steps:{}};
-            this.flowInfos[f.flow]=sd;
-        });
-        resp.data.steps.forEach(s=> {
-            var sd=this.flowInfos[s.flow];
-            sd.steps[s.step]={step:s.step,type:s.type,title:s.name+'('+s.cmt+')',ext:s.ext,comment:s.cmt};
-            if(s.step>sd.maxStep){
-                sd.maxStep=s.step;
-            }
-        });
-        return true;
-    });
+getRt(k) {
+    return this.runtime[router.currentRoute.value.path+':'+k];
 },
-flowDef:(id,refresh) => {
-    if(!refresh && this.flowInfos[id]) {
-        return new Promise(resolve=>{resolve(this.flowInfos[id])});
-    }
-    return this.flowsDef(id).then(r=>{
-        return r ? this.flowInfos[id] : {};
-    });
-},
-get_role() {
-    if(this.role!='') {
-        return new Promise(resolve=>{resolve(this.role)});
-    }
-    var url="/power/getrole?service="+this.name;
-    return request({method:"GET",url:url}, SERVICE_USER).then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            Console.warn("request "+url+" failed:" + resp.code + ",info:" + resp.info);
-            return '';
-        }
-        this.role=resp.data.role;
-        return this.role;
-    });
-},
-go_back() { //返回，在页面中通过service.go_back调用
+back() { //返回，在页面中通过service.back调用
     router.back();
 },
-jumpTo(url) {
-    router.push(url);
+goto(url) {
+    router.push(url)
 }
 };
 
@@ -184,8 +196,8 @@ const app = Vue.createApp({
 provide:{tags:tags, service:service, icons:icons},
 created(){
     service.baseInfo();
-    service.get_role().then(role=>{
-        this.$router.push('/home').catch(err => {err}) //避免报NavigationDuplicated，此错误不影响功能
+    registerIbf(app,router).then(()=> {
+        this.$router.push('/home').catch(err => {err})
     });
 },
 mounted() {
@@ -207,10 +219,11 @@ sysGoBack() {
 app.use(Quasar);
 app.use(router);
 //注册全局组件
-app.component('component-user-selector', UserSelector);
+app.component('ibf', IBF);
 app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
 app.component('component-date-input', DateInput);
+app.component('component-user-selector', UserSelector);
 //启动APP
 app.mount('#app');
 </script>

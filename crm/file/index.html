@@ -9,26 +9,165 @@
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <title>CRM</title>
 </head>
-<body style="overflow:hidden"><div id="app" v-cloak><router-view></router-view></div></body>
+<body style="overflow:hidden">
+<div id="app" v-cloak><router-view></router-view></div>
+
+<template id="tpl_home">
+<q-layout view="HHH LpR FFF" container style="height:99vh">
+  <q-header>
+   <q-toolbar>
+    <q-avatar><img src="./favicon.png"></q-avatar>
+    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
+    <q-btn flat round dense icon="menu" v-if="service.role=='admin'">
+      <q-menu>
+       <q-list style="min-width:100px">
+        <q-item clickable @click.stop="service.goto('/settings')">
+          <q-item-section avatar><q-icon name="settings"></q-icon></q-item-section>
+          <q-item-section>{{tags.home.settings}}</q-item-section>
+        </q-item>
+        <q-item clickable @click="flowDef">
+          <q-item-section avatar><q-icon name="playlist_add_check"></q-icon></q-item-section>
+          <q-item-section>{{tags.home.flowDef}}</q-item-section>
+        </q-item>
+       </q-list>
+     </q-menu>
+   </q-btn>
+   </q-toolbar>
+ </q-header>
+  <q-page-container>
+   <q-page class="q-pa-sm">
+<q-list separator>
+  <q-item clickable @click="service.goto('/tasks')">
+    <q-item-section avatar>
+      <q-icon :name="icons['task']" color="purple"></q-icon>
+    </q-item-section>
+    <q-item-section>
+      <q-item-label>{{tags.home.tasks}}</q-item-label>
+    </q-item-section>
+    <q-item-section thumbnail>
+      <q-item-label caption>
+        <q-badge color="red" rounded>{{taskNum}}</q-badge>
+      </q-item-label>
+    </q-item-section>
+  </q-item>
+  <q-item v-for="i in myList" clickable @click="service.goto(i.url)">
+    <q-item-section top avatar>
+      <q-icon :name="i.icon" color="primary"></q-icon>
+    </q-item-section>
+    <q-item-section>
+      <q-item-label>{{i.name}}</q-item-label>
+    </q-item-section>
+    <q-item-section thumbnail>
+      <q-badge :color="i.weekInc>0?'red':'green'" rounded>{{i.weekInc}}</q-badge>
+    </q-item-section>
+  </q-item>
+  <q-item clickable @click="service.goto('/brief')">
+    <q-item-section avatar>
+      <q-icon name="svguse:/assets/imgs/meshicons.svg#barChart" color="red"></q-icon>
+    </q-item-section>
+    <q-item-section>
+      <q-item-label>{{tags.home.bulletin}}</q-item-label>
+    </q-item-section>
+    <q-item-section thumbnail>
+    </q-item-section>
+  </q-item>
+  <q-item clickable @click="service.goto('/balance')"
+   v-if="service.role=='admin'||service.role=='finance'">
+    <q-item-section avatar>
+      <q-icon name="svguse:/assets/imgs/meshicons.svg#settle" color="yellow-10"></q-icon>
+    </q-item-section>
+    <q-item-section>
+      <q-item-label>{{tags.home.balance}}</q-item-label>
+    </q-item-section>
+    <q-item-section thumbnail>
+    </q-item-section>
+  </q-item>
+</q-list>
+  </q-page>
+ </q-page-container>
+</q-layout>
+</template>
+
+</body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
 <script src="/assets/v3/echarts.js"></script>
 <script type="module">
-import Language from "./language.js"
-import DateInput from "/assets/v3/components/date_input.js"
-import UserSelector from "/assets/v3/components/user_selector.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+import DateInput from "/assets/v3/components/date_input.js"
+import UserSelector from "/assets/v3/components/user_selector.js"
+import Language from "./language.js"
+
+//常量定义
+const icons={
+ customer:"svguse:/assets/imgs/meshicons.svg#company",
+ contact:"contacts",
+ order:"event_note",
+ service:"svguse:/assets/imgs/meshicons.svg#build",
+ payment:"svguse:/assets/imgs/meshicons.svg#payment",
+ touchlog:"perm_phone_msg",
+ task:"playlist_add_check"
+};
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 
+const homeTpl=document.getElementById('tpl_home');
+const Home = {
+inject:['service', 'tags'],
+data(){return{
+    taskNum:0,
+    myList:{
+        c:{icon:icons.customer,name:tags.home.customers,url:'/customers',weekInc:0},
+        n:{icon:icons.contact,name:tags.home.contacts,url:'/contacts',weekInc:0},
+        o:{icon:icons.order,name:tags.home.orders,url:'/orders',weekInc:0},
+        s:{icon:icons.service,name:tags.home.services,url:'/services',weekInc:0},
+        p:{icon:icons.payment,name:tags.home.payments,url:'/payments',weekInc:0}
+    }
+}},
+created(){
+    this.refresh();
+},
+methods:{
+refresh() {
+    var url1="/api/tasknum"; //此处有错误
+    request({method:"GET",url:url1}, this.service.WF).then(resp =>{
+        if(resp.code!=0) {
+            Console.warn("request "+url1+" failed:" + resp.code + ",info:" + resp.info);
+            return;
+        }
+        this.taskNum=resp.data.num;
+    });
+
+    var url2="/api/report/bulletin?days=7";
+    request({method:"GET",url:url2}, this.service.name).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            Console.warn("request "+url2+" failed:" + resp.code + ",info:" + resp.info);
+            return;
+        }
+        this.myList.c.weekInc=resp.data.customer;
+        this.myList.n.weekInc=resp.data.contact;
+        this.myList.o.weekInc=resp.data.ord;
+        this.myList.p.weekInc=resp.data.payment;
+        this.myList.s.weekInc=resp.data.service;
+    });
+},
+flowDef() {
+    var proxyUrl=encodeURIComponent("/api/proxy/flow");
+    this.$router.push({path:"/flowdef",query:{service:this.service.name,proxy:proxyUrl}});
+}
+},
+template:homeTpl.innerHTML
+};
+
+
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
-{path:'/home', component:()=>import('./home.js')},
+{path:'/home', component:Home},
 {path:'/customers', component:()=>import('./customers.js')},
 {path:'/customer', component:()=>import('./customer.js')},
 {path:'/contacts', component:()=>import('./contacts.js')},
@@ -42,23 +181,12 @@ routes:[
 {path:'/orders', component:()=>import('./orders.js')},
 {path:'/order', component:()=>import('./order.js')},
 {path:'/tasks', component:()=>import('./tasks.js')},
-{path:'/task', component:()=>import('./task.js')},
+{path:'/workflow', component:()=>import('./workflow.js')},
 {path:'/brief', component:()=>import('./brief.js')},
 {path:'/balance', component:()=>import('./balance.js')},
 {path:'/settings', component:()=>import('./settings.js')},
 {path:'/flowdef', component:()=>import('/workflow/pub/settings.js')}
 ]});
-
-//常量定义
-const icons={
- customer:"svguse:/assets/imgs/meshicons.svg#company",
- contact:"contacts",
- order:"event_note",
- service:"svguse:/assets/imgs/meshicons.svg#build",
- payment:"svguse:/assets/imgs/meshicons.svg#payment",
- touchlog:"perm_phone_msg",
- task:"playlist_add_check"
-};
 
 //service定义
 const service = {
@@ -66,7 +194,6 @@ name:"crm",N_PAGE:10,N_SMPG:5,WF:"workflow",
 CLIENTW:document.documentElement.clientWidth,
 userinfo:{}, /*帐号基本信息缓存*/
 role:'', /*在服务中的角色*/
-flowsteps:{customer:[],order:[],service:[],payment:[]},/*工作流步骤定义缓存*/
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
 skus:[],//商品缓存
 encodeExt(ext) { //return {a:xx,b:yy...}
@@ -98,7 +225,7 @@ template(n,refresh){
             return {'cmt':{n:tags.comment,t:'s'}};//只有一个备注字段
         }
         if(resp.data.v) {
-            this.tmpl[n]=resp.data.v;
+            this.tmpl[n]=JSON.parse(resp.data.v);
         }
         return this.tmpl[n];
     });
@@ -126,30 +253,6 @@ skuList() {
         return this.skus;
     });
 },
-flowDef(id,refresh) {
-    if(!refresh && this.flowsteps[id]) {
-        return new Promise(resolve=>{resolve(this.flowsteps[id])});
-    }
-
-    var url="/api/flow/info?flowid="+id
-    return request({method:"GET",url:url}, this.WF).then(resp=>{
-        if(resp.code!=0) {
-            reject(url + ",code:"+resp.code+",info:"+resp.info);
-            return {};
-        }
-        var sd={name:resp.data.dispName,maxStep:0,steps:[]};//steps definition
-        //step,type,name,ext,comment
-        var maxStep=0;
-        resp.data.steps.forEach(function(s) {
-            sd.steps[s.step]={step:s.step,type:s.type,title:s.name+'('+s.comment+')',ext:s.ext,comment:s.comment};
-            if(s.step>sd.maxStep){
-                sd.maxStep=s.step;
-            }
-        });
-        this.flowsteps[id]=sd;
-        return sd;
-    });
-},
 get_role() {
     if(this.role!='') {
         return new Promise(resolve=>{resolve(this.role)});
@@ -164,10 +267,10 @@ get_role() {
         return this.role;
     });
 },
-go_back() { //返回，在页面中通过service.go_back调用
+back() { //返回，在页面中通过service.back调用
     router.back();
 },
-jumpTo(url) {
+goto(url) {
     router.push(url);
 }
 };
@@ -200,10 +303,10 @@ sysGoBack() {
 app.use(Quasar);
 app.use(router);
 //注册全局组件
-app.component('component-user-selector', UserSelector);
 app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
 app.component('component-date-input', DateInput);
+app.component('component-user-selector', UserSelector);
 //启动APP
 app.mount('#app');
 </script>
