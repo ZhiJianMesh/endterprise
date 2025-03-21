@@ -72,7 +72,8 @@ show_sku() {
 add_sku() {
     var d=this.skuCtrl.dta;
     if(!d.sku.id||!d.num)return;
-    var dta={sku:d.sku.id,skuName:d.sku.name,num:d.num,purId:this.id};
+    var dta={sku:d.sku.id,skuName:d.sku.name,num:d.num,
+        purId:this.id,flowid:this.dtl.flowid};
 
     var opts={method:"POST", url:"/purchase/addSku", data:dta};
     request(opts, this.ibf.SERVICE_RES).then(resp => {
@@ -87,7 +88,7 @@ add_sku() {
 },
 remove_sku(i) {
     var url="/purchase/removeSku?purId="+this.id
-        +"&sku="+this.skuList[i].sku;
+        +"&flowid="+this.dtl.flowid+"&sku="+this.skuList[i].sku;
     request({method:"DELETE", url:url}, this.ibf.SERVICE_RES).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -103,6 +104,7 @@ show_edit() {
 update() {
     var dta=copyObj(this.edtDtl,['expDate','receiver','descr']);
     dta.id=this.id;
+    dta.flowid=this.dtl.flowid;
     request({method:"PUT", url:"/purchase/update", data:dta}, this.ibf.SERVICE_RES).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -114,7 +116,7 @@ update() {
 },
 remove() {
     this.$refs.cfmDlg.show(this.tags.cfmRmv, ()=>{
-        var opts={method:"DELETE",url:"/purchase/remove?id="+this.id};
+        var opts={method:"DELETE",url:"/purchase/remove?id="+this.id+"&flowid="+this.dtl.flowid};
         request(opts, this.ibf.SERVICE_RES).then(resp => {
             if(resp.code!=RetCode.OK) {
                 this.$refs.alertDlg.showErr(resp.code, resp.info);
