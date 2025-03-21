@@ -44,7 +44,7 @@ methods:{
 query_sku() {
     var begin=Math.ceil(this.beginTime/86400000);
     var url="/api/report/sku?beginTime="+begin+"&days="+this.days+"&skuId="+this.skuId;
-    request({method:"GET",url:url},this.service.name).then(function(resp){
+    request({method:"GET",url:url},this.service.name).then(resp=>{
         //reportAt,ord,service,contract,revenue,cost
         var contracts=[], revenues=[], costs=[];
         var monNum=this.monNum;
@@ -58,7 +58,7 @@ query_sku() {
             var bt=new Date(this.beginTime);
             var fullYear=bt.getFullYear();
             var mon=bt.getMonth();
-            resp.data.data.forEach(function(l) {
+            resp.data.data.forEach(l => {
                 var t=new Date(l[0]*86400000);
                 var i=12*(t.getFullYear()-fullYear)+t.getMonth()-mon;
                 if(i>=0&&i<monNum){
@@ -81,12 +81,12 @@ query_sku() {
                 {name:this.tags.report.cost,type:'bar',data:costs,yAxisIndex:0}
             ]
         });
-    }.bind(this))
+    })
 },
 query_month() {
     var end=this.beginTime + this.days*86400000;
     var url="/api/report/month?beginTime="+this.beginTime+"&endTime="+end;
-    request({method:"GET",url:url},this.service.name).then(function(resp){
+    request({method:"GET",url:url},this.service.name).then(resp=>{
         var contracts=[], revenues=[], costs=[];
         var orders=[];
         var monNum=this.monNum;
@@ -103,7 +103,7 @@ query_month() {
             var fullYear=bt.getFullYear();
             var mon=bt.getMonth();
             if(resp.data.orders) {
-                resp.data.orders.forEach(function(o) {//signAt,id,skuName,price,customer
+                resp.data.orders.forEach(o => {//signAt,id,skuName,price,customer
                     var t=new Date(o.signAt);
                     var i=12*(t.getFullYear()-fullYear)+t.getMonth()-mon;
                     if(i>=0&&i<monNum) {
@@ -115,7 +115,7 @@ query_month() {
             }
             
             if(resp.data.revenues) {
-                resp.data.revenues.forEach(function(l) {//signAt,amount
+                resp.data.revenues.forEach(l=>{//signAt,amount
                     var t=new Date(l[0]);
                     var i=12*(t.getFullYear()-fullYear)+t.getMonth()-mon;
                     if(i>=0&&i<monNum) {
@@ -125,7 +125,7 @@ query_month() {
             }
             
             if(resp.data.costs) {
-                resp.data.costs.forEach(function(l) {//signAt,cost
+                resp.data.costs.forEach(l=>{//signAt,cost
                     var t=new Date(l[0]);
                     var i=12*(t.getFullYear()-fullYear)+t.getMonth()-mon;
                     if(i>=0&&i<monNum) {
@@ -150,7 +150,7 @@ query_month() {
                 {name:this.tags.report.cost,type:'bar',data:costs}
             ]
         });
-    }.bind(this))
+    })
     
     //点击x轴的柱状图对应的段，而不仅是柱状图
     this.monthCharts.on('click', (params)=>{
@@ -229,7 +229,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
       <q-toolbar-title>{{tags.home.balance}}</q-toolbar-title>
    </q-toolbar>
   </q-header>

@@ -21,15 +21,15 @@ data() {return {
     visSegs:["taxid","price","skuName","skuPrice","payment","creator","createAt"]
 }},
 created(){
-    this.service.template('order').then(function(tpl){
+    this.service.template('order').then(tpl=>{
         this.tmpl=tpl;
         this.detail();
-    }.bind(this))
+    })
 },
 methods:{
 detail() {
     var reqUrl="/api/order/detail?id="+this.id;
-    request({method:"GET", url:reqUrl},this.service.name).then(function(resp){
+    request({method:"GET", url:reqUrl},this.service.name).then(resp=>{
         if(!resp || resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -43,12 +43,12 @@ detail() {
         }
         this.ext=this.service.decodeExt(dtl.comment, this.tmpl);
         this.dtl=dtl;
-    }.bind(this));
+    });
 },
 query_services(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
     var url="/api/service/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
         }
@@ -62,12 +62,12 @@ query_services(pg) {
         }
         this.services=services;
         this.page.service=Math.ceil(resp.data.total/this.service.N_SMPG);
-    }.bind(this));
+    });
 },
 query_payments(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
     var url="/api/payment/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0||resp.data.total==0) {
             return;
         }
@@ -82,21 +82,19 @@ query_payments(pg) {
         }
         this.payments=payments;
         this.page.payment=Math.ceil(resp.data.total/this.service.N_SMPG);
-    }.bind(this));
+    });
 },
 save_base() {
     var dta=copyObj(this.dtl,['price']);
     dta['comment']=this.service.encodeExt(this.ext);
     dta.id=this.id;
-
-    var cmt=JSON.stringify(this.ext);
-    request({method:"POST",url:"/api/order/setInfo",data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:"/api/order/setInfo",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.editBase=false;
-    }.bind(this))
+    })
 },
 more_services() {
     this.visible.service=!this.visible.service;
@@ -114,7 +112,7 @@ add_service() {
     var dta=copyObj(this.newService,['budget','nextSigners']);
     dta['order']=this.id;
     dta['comment']=this.service.encodeExt(this.newService.ext);
-    request({method:"POST",url:"/api/service/create",data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:"/api/service/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
@@ -122,13 +120,13 @@ add_service() {
             this.newService={budget:0,nextSigners:[],ext:{}};
             this.query_services(1);
         }
-    }.bind(this))
+    })
 },
 add_payment() {
     var dta=copyObj(this.newPayment,['amount','nextSigners']);
     dta['order']=this.id;
     dta['comment']=this.service.encodeExt(this.newPayment.ext);
-    request({method:"POST",url:"/api/payment/create",data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:"/api/payment/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
@@ -136,7 +134,7 @@ add_payment() {
             this.newPayment={amount:0,nextSigners:[],ext:{}};
             this.query_payments(1);
         }
-    }.bind(this))
+    })
 },
 order_flow(){
     var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=order&step="+this.dtl.status;
@@ -144,35 +142,35 @@ order_flow(){
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.order.title+' "'+this.dtl.cname+'-'+this.dtl.skuName+'"';
-    this.$refs.confirmDlg.show(msg, function(){
+    this.$refs.confirmDlg.show(msg, ()=>{
         var opts={method:"DELETE",url:"/api/order/remove?id="+this.id};
-        request(opts, this.service.name).then(function(resp){
+        request(opts, this.service.name).then(resp=>{
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
                 this.service.go_back();
             }
-        }.bind(this))
-    }.bind(this));
+        })
+    })
 },
 open_new_payment() {
-    this.service.template('payment').then(function(tmpl) {
+    this.service.template('payment').then(tmpl=> {
         this.payTmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
         this.visible.paymentDlg=true
-    }.bind(this));
+    });
 },
 open_new_service() {
-    this.service.template('service').then(function(tmpl) {
+    this.service.template('service').then(tmpl => {
         this.srvTmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
         this.visible.serviceDlg=true
-    }.bind(this));
+    });
 }
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
       <q-toolbar-title>{{dtl.cname}}-{{dtl.skuName}}</q-toolbar-title>
       <q-btn flat round dense icon="menu" v-if="dtl.power='O'">
        <q-menu>
@@ -197,7 +195,7 @@ template:`
   </template>
 </q-banner>
 <q-list dense>
-  <q-item clickable @click.stop="service.jumpTo('/customer?id='+dtl.customer)">
+  <q-item clickable @click.stop="service.goto('/customer?id='+dtl.customer)">
     <q-item-section>{{tags.order.cname}}</q-item-section>
     <q-item-section><span class="text-primary">{{dtl.cname}}</span></q-item-section>
   </q-item>

@@ -105,7 +105,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+    <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.home.customers}}</q-toolbar-title>
     <q-btn flat round dense icon="menu">
       <q-menu>
@@ -145,7 +145,7 @@ template:`
   <q-item-section><q-item-label caption>{{tags.customer.lastestTl}}</q-item-label></q-item-section>
   <q-item-section thumbnail></q-item-section>
  </q-item>
- <q-item v-for="c in customers" @click="service.jumpTo('/customer?id='+c.id)" clickable>
+ <q-item v-for="c in customers" @click="service.goto('/customer?id='+c.id)" clickable>
   <q-item-section>
    <q-item-label>{{c.name}}</q-item-label>
    <q-item-label caption>{{c.creator}}@{{c.createAt}}</q-item-label>

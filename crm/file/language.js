@@ -39,8 +39,11 @@ cn:{
   contactLevel:"重要度",
   sex:"性别",
   yearsOld:"岁",
-  sexName:['男','女'],
-  sexImg:['svguse:/assets/imgs/meshicons.svg#man','svguse:/assets/imgs/meshicons.svg#woman'],
+  sexName:{M:'男',F:'女',U:'未知'},
+  sexImg:{
+    M:'svguse:/assets/imgs/meshicons.svg#man',
+    F:'svguse:/assets/imgs/meshicons.svg#woman'
+  },
   unknown:"未知",
   
   accListPls:"请输入正确的帐号",
@@ -113,7 +116,7 @@ cn:{
   segKey:"字段名",
   segKeyRule:"字段名必须以字母开头，包括多个字母或数字",
   
-  levels:['未知','普通','一般','重要','很重要','关键人物'],
+  levels:['普通','一般','重要','很重要','关键人物'],
   errMsgs:{
     '5101':"回款总额超过合同总额",
     '5102':"订单尚未确认，不可创建回款",

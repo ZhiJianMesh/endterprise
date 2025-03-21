@@ -1,13 +1,9 @@
-import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
-import AlertDialog from "/assets/v3/components/alert_dialog.js";
 import Workflow from "/assets/v3/components/workflow.js"
 import {_WF_} from "/assets/v3/components/workflow.js"
 
 export default {
-inject:['ibf'],
+inject:['service', 'tags', 'icons'],
 components:{
-    "alert-dialog":AlertDialog,
-    "confirm-dialog":ConfirmDialog,
 	"workflow":Workflow
 },
 data() {return {
@@ -17,7 +13,6 @@ data() {return {
     flName:this.$route.query.flName,
     dtlApi:this.$route.query.dtlApi,
     dtlPage:this.$route.query.dtlPage,
-    tags:this.ibf.tags,
     curStep:0,
     dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
@@ -41,7 +36,7 @@ created(){
 methods:{
 showDtl() {
     var url=appendParas(this.dtlPage,{id:this.did,flowid:this.flowid,service:this.service});
-    this.ibf.goto(url)
+    this.service.goto(url)
 },
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
     if(this.curStep>0)return;//只有第0步权签人(创建人)才有权限删除
@@ -51,7 +46,7 @@ removeWf() { //数据不存在，工作流数据错乱的情况下，删除工�
             if(resp.code!=RetCode.OK) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
-                this.ibf.back();
+                this.service.back();
             }
         })
     })
@@ -61,9 +56,9 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header>
    <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="ibf.back"></q-btn>
+    <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{flow.name}}</q-toolbar-title>
-    <q-btn flat icon="info" @click="showDtl" v-if="dtlPage"></q-btn>
+    <q-btn flat :icon="icons[flName]" @click="showDtl" v-if="dtlPage"></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -81,7 +76,7 @@ template:`
     </q-page>
   </q-page-container>
 </q-layout>
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></alert-dialog>
-<confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
+<component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 `
 }

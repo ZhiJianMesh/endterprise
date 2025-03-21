@@ -31,7 +31,7 @@ query_orders(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = this.onlyMine ? "/api/order/my" : "/api/order/readable";
     url += "?offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK||resp.data.total==0) {
             this.orders=[];
             this.page.max=0;
@@ -40,7 +40,7 @@ query_orders(pg) {
         }
         this.fmt_order_lines(resp.data.cols, resp.data.orders);
         this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
-    }.bind(this))
+    })
 },
 onlyMineClk() {
     storageSet('order_onlyMine', this.onlyMine);
@@ -58,7 +58,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+    <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.home.orders}}</q-toolbar-title>
     <q-btn flat round dense icon="menu">
       <q-menu>

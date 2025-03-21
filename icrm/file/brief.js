@@ -100,25 +100,25 @@ date_range_end(range) {
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
 <q-header elevated>
-   <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
-      <q-toolbar-title>{{tags.home.bulletin}}</q-toolbar-title>
-</q-toolbar>
+ <q-toolbar>
+  <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
+  <q-toolbar-title>{{tags.home.bulletin}}</q-toolbar-title>
+ </q-toolbar>
 </q-header>
 <q-footer class="bg-white text-primary q-pa-md">
-    <q-input v-model="dateStr">
-      <template v-slot:prepend>
-        <q-icon name="event" class="cursor-pointer">
-          <q-popup-proxy transition-show="scale" transition-hide="scale">
-            <q-date v-model="date" range @range-end="date_range_end" minimal>
-              <div class="row items-center justify-end">
-                <q-btn v-close-popup :label="tags.close" color="primary" flat></q-btn>
-              </div>
-            </q-date>
-          </q-popup-proxy>
-        </q-icon>
-      </template>
-    </q-input>
+<q-input v-model="dateStr">
+ <template v-slot:prepend>
+  <q-icon name="event" class="cursor-pointer">
+  <q-popup-proxy transition-show="scale" transition-hide="scale">
+    <q-date v-model="date" range @range-end="date_range_end" minimal>
+      <div class="row items-center justify-end">
+        <q-btn v-close-popup :label="tags.close" color="primary" flat></q-btn>
+      </div>
+    </q-date>
+  </q-popup-proxy>
+  </q-icon>
+ </template>
+</q-input>
 </q-footer>
 
 <q-page-container>

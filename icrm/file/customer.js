@@ -35,7 +35,7 @@ created(){
 methods:{
 detail() {
     var url="/api/customer/detail?id="+this.id;
-    request({method:"GET", url:url}, this.service.name).then(function(resp){
+    request({method:"GET", url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -44,16 +44,16 @@ detail() {
         this.dtl.createAt=date2str(new Date(resp.data.createAt*60000));
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
         
-        this.service.template('customer').then(function(tmpl) {
+        this.service.template('customer').then(tmpl=>{
             this.tmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
             this.ext=this.service.decodeExt(this.dtl.comment, tmpl);
-        }.bind(this));
-    }.bind(this));
+        });
+    });
 },
 query_orders(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
     var url="/api/order/list?customer="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
         }
@@ -68,12 +68,12 @@ query_orders(pg) {
         }
         this.orders=orders;
         this.page.order=Math.ceil(resp.data.total/this.service.N_SMPG);
-    }.bind(this));
+    });
 },
 query_contacts(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
     var url="/api/contact/list?customer="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
         }
@@ -86,12 +86,12 @@ query_contacts(pg) {
         }
         this.contacts=contacts;
         this.page.contact=Math.ceil(resp.data.total/this.service.N_SMPG);
-    }.bind(this));
+    });
 },
 query_touchlogs(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
     var url="/api/touchlog/custTouchlogs?customer="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK||resp.data.total==0) {
             this.touchlogs=[];
             this.page.touchlog=0;
@@ -106,11 +106,11 @@ query_touchlogs(pg) {
         }
         this.touchlogs=logs;
         this.page.touchlog=Math.ceil(resp.data.total/this.service.N_SMPG);
-    }.bind(this));
+    });
 },
 query_shares() {
     var url="/api/customer/shareList?id="+this.id;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0) {
             this.shares=[];
             return;
@@ -127,14 +127,14 @@ query_shares() {
             shares.push({account:s.account,endT:t1,createAt:t2,power:this.tags.share[s.power]});
         }.bind(this));
         this.shares=shares;
-    }.bind(this));
+    });
 },
 create_order() {
     var dta=copyObj(this.newOrder,['skuId','price','nextSigners']);
     dta['customer']=this.id;
     dta['comment']=this.service.encodeExt(this.newOrder.ext);
     var url="/api/order/create";
-    request({method:"POST",url:url,data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -142,7 +142,7 @@ create_order() {
         this.visible.newOrd=false;
         this.newOrder={skuId:'',price:0,nextSigners:[],ext:{}};
         this.query_orders(1);
-    }.bind(this))
+    })
 },
 create_contact() {
     var dta=copyObj(this.newContact,['name','address','phone','sex','level','post']);
@@ -150,7 +150,7 @@ create_contact() {
     dta['comment']=this.service.encodeExt(this.newContact.ext);
     dta['birthday']=Math.ceil(new Date(this.newContact.birthday).getTime()/86400000); //转为天数
     var opts={method:"POST",url:"/api/contact/add",data:dta};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
@@ -159,7 +159,7 @@ create_contact() {
                 birthday:date2str(new Date()),ext:{}};
             this.query_contacts(1);
         }
-    }.bind(this))
+    })
 },
 opr_touchlog(opr){
     var opts;
@@ -192,19 +192,19 @@ save_base() {
     var url="/api/customer/setInfo";
     var req={id:this.id, name:this.dtl.name, comment:cmt,
      address:this.dtl.address, business:this.dtl.business};
-    request({method:"POST",url:url,data:req}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:req}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.editBase=false;
-    }.bind(this))
+    })
 },
 open_create_order() {
-    this.service.template('order').then(function(tmpl) {
+    this.service.template('order').then(tmpl=> {
         this.ordTmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
         return this.service.skuList();
-    }.bind(this)).then(function(skus){
+    }).then(skus=>{
         if(!skus || skus.length==0) {
             this.$refs.errMsg.show(this.tags.noSkuDef);
             return;
@@ -217,13 +217,13 @@ open_create_order() {
         this.newOrder.skuId=skus[0].id;
         this.skus=skuList;
         this.visible.newOrd=true;
-    }.bind(this));
+    });
 },
 open_new_contact() {
-    this.service.template('contact').then(function(tmpl) {
+    this.service.template('contact').then(tmpl=> {
         this.cntTmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
         this.visible.newContact=true
-    }.bind(this));
+    });
 },
 sku_changed(val) {
     for(var sku of this.skus) {
@@ -262,47 +262,47 @@ share_create(){
     var t=new Date(this.newShare.endT).getTime()/60000;
     var opts={method:"POST",url:"/api/customer/share",data:{id:this.id, endT:t,
      to:this.newShare.to, power:this.newShare.power}};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.newShare=false;
         this.query_shares();
-    }.bind(this))
+    })
 },
 share_remove(acc){
     var opts={method:"POST",url:"/api/customer/unshare",data:{id:this.id,to:acc}};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         }
         this.query_shares();
-    }.bind(this))
+    })
 },
 customer_deliver(){
     if(this.newShare.to.length<=0){return;}
     var opts={method:"POST",url:"/api/customer/deliver",data:{id:this.id, to:this.newShare.to[0]}};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.service.go_back();
-    }.bind(this))
+        this.service.back();
+    })
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.customer.title+' "'+this.dtl.name+'"';
-    this.$refs.confirmDlg.show(msg, function(){
+    this.$refs.confirmDlg.show(msg, ()=>{
         var opts={method:"DELETE",url:"/api/customer/remove?id="+this.id};
-        request(opts, this.service.name).then(function(resp){
+        request(opts, this.service.name).then(resp=>{
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
-                this.service.go_back();
+                this.service.back();
             }
-        }.bind(this))
-    }.bind(this));
+        })
+    });
 },
 show_relations(){
     this.visible.relation=!this.visible.relation;
@@ -313,7 +313,7 @@ show_relations(){
         this.relationChart=Vue.markRaw(echarts.init(document.getElementById('relationChart')));
     }
     var url="/api/relation/custRelations?customer="+this.id;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -344,14 +344,14 @@ show_relations(){
                 lineStyle: {color:'source',curveness: 0.3}
            }]
         })
-    }.bind(this))
+    })
 }
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
       <q-toolbar-title>{{dtl.name}}</q-toolbar-title>
       <q-btn flat round dense icon="menu" v-if="dtl.power=='O'">
        <q-menu>
@@ -406,7 +406,7 @@ template:`
 </q-banner>
 <div v-show="visible.contact">
 <q-list separator>
-  <q-item v-for="c in contacts" dense clickable @click="service.jumpTo('/contact?id='+c.id)">
+  <q-item v-for="c in contacts" dense clickable @click="service.goto('/contact?id='+c.id)">
     <q-item-section>{{c.name}}</q-item-section>
     <q-item-section>{{c.post}}</q-item-section>
     <q-item-section>{{c.creator}}</q-item-section>
@@ -447,7 +447,7 @@ template:`
   </template>
 </q-banner>
 <q-list separator v-show="visible.order">
-  <q-item v-for="o in orders" dense clickable @click="service.jumpTo('/order?id='+o.id)">
+  <q-item v-for="o in orders" dense clickable @click="service.goto('/order?id='+o.id)">
       <q-item-section>{{o.skuName}}</q-item-section>
       <q-item-section>{{o.price}}</q-item-section>
       <q-item-section>{{o.creator}}</q-item-section>

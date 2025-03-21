@@ -25,7 +25,7 @@ fmt_contact_lines(cols, lines) {
         for(var j in cols) {
             o[cols[j]]=ln[j];
         }
-        dt.setTime(o.createAt);
+        dt.setTime(o.createAt*60000);
         o.createAt=date2str(dt);
         contacts.push(o);
     }
@@ -36,7 +36,7 @@ query_contacts(pg) {
     this.search='';
     var url = this.onlyMine ? "/api/contact/my" : "/api/contact/readable";
     url+="?offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK||resp.data.total==0) {
             this.contacts=[];
             this.page={max:0,cur:1};
@@ -44,7 +44,7 @@ query_contacts(pg) {
         }
         this.fmt_contact_lines(resp.data.cols, resp.data.contacts);
         this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
-    }.bind(this))
+    })
 },
 search_contacts() {
     if(this.search=='') {
@@ -52,18 +52,18 @@ search_contacts() {
         return;
     }
     var url="/api/contact/search?s="+this.search+"&limit="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.fmt_contact_lines(resp.data.cols, resp.data.contacts);
         this.page.max=1;
-    }.bind(this))
+    })
 },
 query_touchlogs(id) {
     var url="/api/touchlog/list?contact="+id+"&offset=0&num=5";
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.touchlogs=[];
             return;
@@ -71,18 +71,18 @@ query_touchlogs(id) {
         var logs=[];
         var dt=new Date();
         for(var l of resp.data.touchlogs) {
-            dt.setTime(l.createAt);
+            dt.setTime(l.createAt*60000);
             logs.push({creator:l.creator,comment:l.comment,createAt:date2str(dt)});
         }
         this.touchlogs=logs;
-    }.bind(this))
+    })
 },
 show_detail(id) {
     this.newTouchlog={contact:id,comment:''};
     var detail=this.details[id];
     if(!detail) {
         var url="/api/contact/detail?id="+id;
-        request({method:"GET",url:url}, this.service.name).then(function(resp){
+        request({method:"GET",url:url}, this.service.name).then(resp=>{
             if(resp.code!=0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
                 return;
@@ -99,7 +99,7 @@ show_detail(id) {
             this.details[id]=resp.data;
             this.detail=resp.data;
             this.detailDlg=true;
-        }.bind(this))
+        })
     } else {
         this.detail=detail;
         this.detailDlg=true;
@@ -109,12 +109,12 @@ show_detail(id) {
 },
 add_touchlog(){
     var opts={method:"POST",url:"/api/touchlog/add",data:this.newTouchlog};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code==0) {
             this.query_touchlogs(this.newTouchlog.contact);
             this.newTouchlog.comment='';
         }
-    }.bind(this))
+    })
 },
 onlyMineClk() {
     storageSet('contact_onlyMine', this.onlyMine);
@@ -126,7 +126,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+    <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.home.contacts}}</q-toolbar-title>
     <q-btn flat round dense icon="menu">
       <q-menu>
@@ -168,8 +168,8 @@ template:`
   <q-item-section><q-item-label caption>{{tags.contact.post}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="c in contacts" clickable>
-  <q-item-section @click.stop="service.jumpTo('/customer?id='+c.cid)">{{c.cname}}</q-item-section>
-  <q-item-section @click.stop="service.jumpTo('/contact?id='+c.id)" no-wrap>
+  <q-item-section @click.stop="service.goto('/customer?id='+c.cid)">{{c.cname}}</q-item-section>
+  <q-item-section @click.stop="service.goto('/contact?id='+c.id)" no-wrap>
    <q-item-label>{{c.name}}<q-icon :name="tags.sexImg[c.sex]" :color="c.sex==0?'primary':'red'" size="1em"></q-icon></q-item-label>
    <q-item-label caption>{{c.creator}}@{{c.createAt}}</q-item-label>
   </q-item-section>

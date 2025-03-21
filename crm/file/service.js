@@ -10,61 +10,61 @@ data() {return {
     visSegs:["skuName","cost","budget","creator","createAt"]
 }},
 created(){
-    this.service.template('service').then(function(tpl){
+    this.service.template('service').then(tpl=>{
         this.tmpl=tpl;
         this.detail();
-    }.bind(this))
+    })
 },
 methods:{
 detail() {
     var reqUrl="/api/service/detail?id="+this.id;
-    request({method:"GET", url:reqUrl},this.service.name).then(function(resp){
+    request({method:"GET", url:reqUrl},this.service.name).then(resp=>{
         if(!resp || resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.dtl=resp.data;
-        this.dtl.createAt=new Date(parseInt(resp.data.createAt)).toLocaleString();
+        this.dtl.createAt=new Date(resp.data.createAt*60000).toLocaleString();
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
         this.ext=this.service.decodeExt(this.dtl.comment, this.tmpl);
-    }.bind(this));
+    });
 },
 save_base() {
     var dta=copyObj(this.dtl,['cost','budget']);
     dta['comment']=this.service.encodeExt(this.ext);
     dta.id=this.id;
     var url="/api/service/setInfo";
-    request({method:"POST",url:url,data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.editBase=false;
-    }.bind(this))
+    })
 },
 service_flow(){
-    var url='/task?flow='+this.dtl.flowid+"&did="+this.id+"&flName=service&step="+this.dtl.status;
+    var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=service&step="+this.dtl.status;
     this.$router.push(url);
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.service.title+' "'+this.dtl.cname+'-'+this.dtl.skuName+'"';
-    this.$refs.confirmDlg.show(msg, function(){
+    this.$refs.confirmDlg.show(msg, ()=>{
         var opts={method:"DELETE",url:"/api/service/remove?id="+this.id};
-        request(opts, this.service.name).then(function(resp){
+        request(opts, this.service.name).then((resp)=>{
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
-                this.service.go_back();
+                this.service.back();
             }
-        }.bind(this))
-    }.bind(this));
+        })
+    });
 }
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
       <q-toolbar-title>{{tags.service.title}}({{dtl.cname}}-{{dtl.skuName}})</q-toolbar-title>
       <q-btn flat round dense icon="menu" v-if="dtl.power='O'">
        <q-menu>
@@ -88,7 +88,7 @@ template:`
   </template>
 </q-banner>
 <q-list dense>
-  <q-item clickable @click.stop="service.jumpTo('/customer?id='+dtl.customer)">
+  <q-item clickable @click.stop="service.goto('/customer?id='+dtl.customer)">
     <q-item-section>{{tags.service.cname}}</q-item-section>
     <q-item-section><span class="text-primary">{{dtl.cname}}</span></q-item-section>
   </q-item>

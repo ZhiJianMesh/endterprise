@@ -32,7 +32,7 @@ created(){
 methods:{
 detail() {
     var reqUrl="/api/contact/detail?id="+this.id;
-    request({method:"GET", url:reqUrl}, this.service.name).then(function(resp){
+    request({method:"GET", url:reqUrl}, this.service.name).then(resp=>{
         if(!resp || resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -41,7 +41,7 @@ detail() {
 
         var dt=new Date();
         var year=dt.getFullYear();
-        dt.setTime(dtl.createAt);
+        dt.setTime(dtl.createAt*60000);
         dtl.createAt=date2str(dt);
 
         if(dtl.power!='O') {//不是联系人的所有人，是客户的所有人也可以修改、删除
@@ -52,15 +52,16 @@ detail() {
         dtl.birthday=date2str(dt);
         dtl.age=year-dt.getFullYear();
         
-        dtl.sex=""+dtl.sex; //radio值必须转成字符串
+        dtl.sex=dtl.sex;
+        dtl.sex_s=this.tags.sexName[dtl.sex];
         this.ext=this.service.decodeExt(dtl.comment, this.tmpl);
         this.dtl = dtl;
-    }.bind(this));
+    });
 },
 query_touchlogs(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url="/api/touchlog/list?contact="+this.id+"&offset="+offset+"&num="+this.service.N_PAGE;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
         }
@@ -68,17 +69,17 @@ query_touchlogs(pg) {
         var dt=new Date();
         for(var i in resp.data.touchlogs) { //createAt,creator,comment
             var l=resp.data.touchlogs[i];
-            dt.setTime(l.createAt);
-            logs.push({creator:l.creator,comment:l.comment,createAt:dt.toLocaleString(),
+            dt.setTime(l.createAt*60000);
+            logs.push({creator:l.creator,comment:l.comment,createAt:datetime2str(dt),
              t:l.createAt/*用于修改删除*/});
         }
         this.touchlogs=logs;
         this.page.touchlog=Math.ceil(resp.data.total/this.service.N_PAGE);
-    }.bind(this));
+    });
 },
 query_relations() {
     var url="/api/relation/list?customer="+this.dtl.customer+"&contact="+this.id;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0) {
             this.relations=[];
             return;
@@ -86,14 +87,14 @@ query_relations() {
         var dt=new Date();
         var relations=resp.data.relations.map(function(r) { //target,name,comment,update_time
             dt.setTime(r.update_time);
-            return {createAt:dt.toLocaleDateString(),comment:r.comment,name:r.name,target:r.target};
+            return {createAt:datetime2str(dt),comment:r.comment,name:r.name,target:r.target};
         });
         this.relations=relations;
-    }.bind(this));
+    });
 },
 query_shares() {
     var url="/api/contact/shareList?id="+this.id;
-    request({method:"GET",url:url}, this.service.name).then(function(resp){
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0) {
             this.shares=[];
             return;
@@ -101,15 +102,15 @@ query_shares() {
         var dt=new Date();
         var year=dt.getFullYear();
         var t1,t2;
-        var shares=resp.data.list.map(function(s) { //account,update_time,endT
+        var shares=resp.data.list.map((s)=> { //account,update_time,endT
             dt.setTime(s.endT*60000);
-            t1=dt.getFullYear()-year>100?this.tags.forever:dt.toLocaleDateString();
+            t1=dt.getFullYear()-year>100?this.tags.forever:datetime2str(dt);
             dt.setTime(s.update_time);
-            t2=dt.toLocaleDateString();
+            t2=datetime2str(dt);
             return {account:s.account,endT:t1,createAt:t2,power:this.tags.share[s.power]};
-        }.bind(this));
+        });
         this.shares=shares;
-    }.bind(this));
+    });
 },
 opr_touchlog(opr){
     var opts;
@@ -136,19 +137,19 @@ open_relation_dlg() {
     this.newRlDta={comment:'',target:null};
     if(this.contacts.length>0) {
         this.visible.newRelation=true;
-    } else {
-        var url="/api/contact/custList?customer="+this.dtl.customer;
-        request({method:"GET",url:url}, this.service.name).then(function(resp){
-            if(resp.code != 0) {
-                return;
-            }
-            this.contacts=resp.data.contacts;
-            this.visible.newRelation=true;
-        }.bind(this))
+        return;
     }
+    var url="/api/contact/custList?customer="+this.dtl.customer;
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
+        if(resp.code != 0) {
+            return;
+        }
+        this.contacts=resp.data.contacts;
+        this.visible.newRelation=true;
+    })
 },
 filterContacts(val, update, abort) {//用于建立关系时，过滤联系人选项
-    update(function(){
+    update(()=>{
       if(val.length<1) {
           abort()
           return
@@ -156,36 +157,36 @@ filterContacts(val, update, abort) {//用于建立关系时，过滤联系人选
       var s = val.toLowerCase()
       var opts=[];
       var curC=this.id;
-      this.contacts.forEach(function(c){
+      this.contacts.forEach(c=>{
         if(c.id!=curC&&c.name.toLowerCase().indexOf(s) >= 0){
           opts.push({label:c.name,value:c.id});
         }
       });
       this.contactOpts = opts;
-    }.bind(this));
+    });
 },
 add_relation(){
     var dta={customer:this.dtl.customer,contact:this.id,target:this.newRlDta.target.value,comment:this.newRlDta.comment};
     var opts={method:"POST",url:"/api/relation/add",data:dta};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.newRelation=false;
         this.query_relations();
-    }.bind(this))
+    })
 },
 remove_relation(target){
     var opts={method:"DELETE",url:"/api/relation/remove?contact="+this.id+"&customer="+this.dtl.customer+"&target="+target};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.newRelation=false;
         this.query_relations();
-    }.bind(this))
+    })
 },
 save_base() {
     var dta=copyObj(this.dtl,['name','address','phone','sex','level','post']);
@@ -194,13 +195,13 @@ save_base() {
     dta.id=this.id;
 
     var url="/api/contact/modify";
-    request({method:"POST",url:url,data:dta}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.editBase=false;
-    }.bind(this))
+    })
 },
 more_touchlogs() {
     this.visible.touchlog=!this.visible.touchlog;
@@ -221,39 +222,39 @@ more_shares() {
     }
 },
 share_create(){
-    var t=new Date(this.newShare.endT).getTime()/60000;
+    var t=parseInt(new Date(this.newShare.endT).getTime()/60000);
     var url="/api/contact/share";
     var req={id:this.id, endT:t, to:this.newShare.to, power:this.newShare.power};
-    request({method:"POST",url:url,data:req}, this.service.name).then(function(resp){
+    request({method:"POST",url:url,data:req}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.newShare=false;
         this.query_shares();
-    }.bind(this))
+    })
 },
 share_remove(acc){
     var opts={method:"POST",url:"/api/contact/unshare",data:{id:this.id,to:acc}};
-    request(opts, this.service.name).then(function(resp){
+    request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         }
         this.query_shares();
-    }.bind(this))
+    })
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.contact.title+' "'+this.dtl.name+'"';
-    this.$refs.confirmDlg.show(msg, function(){
+    this.$refs.confirmDlg.show(msg, ()=>{
         var opts={method:"DELETE",url:"/api/contact/remove?id="+this.id};
-        request(opts, this.service.name).then(function(resp){
+        request(opts, this.service.name).then((resp)=>{
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
-                this.service.go_back();
+                this.service.back();
             }
-        }.bind(this))
-    }.bind(this));
+        })
+    })
 }
 },
 
@@ -261,7 +262,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
       <q-toolbar-title>{{dtl.name}}</q-toolbar-title>
       <q-btn flat round dense icon="menu" v-if="dtl.power=='O'">
        <q-menu>
@@ -292,7 +293,7 @@ template:`
   </q-item>
   <q-item>
    <q-item-section>{{tags.contact.sex}}</q-item-section>
-   <q-item-section>{{tags.sexName[dtl.sex]}}</q-item-section>
+   <q-item-section>{{dtl.sex_s}}</q-item-section>
   </q-item>
   <q-item>
    <q-item-section>{{tags.contact.level}}</q-item-section>

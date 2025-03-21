@@ -52,7 +52,7 @@ menu_remove(){
             if(resp.code != 0) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{
-                this.service.go_back();
+                this.service.back();
             }
         })
     });
@@ -62,7 +62,7 @@ template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
       <q-toolbar-title>{{tags.service.title}}({{dtl.cname}}-{{dtl.skuName}})</q-toolbar-title>
       <q-btn flat round dense icon="menu" v-if="dtl.power='O'">
        <q-menu>
@@ -86,7 +86,7 @@ template:`
   </template>
 </q-banner>
 <q-list dense>
-  <q-item clickable @click.stop="service.jumpTo('/customer?id='+dtl.customer)">
+  <q-item clickable @click.stop="service.goto('/customer?id='+dtl.customer)">
     <q-item-section>{{tags.service.cname}}</q-item-section>
     <q-item-section><span class="text-primary">{{dtl.cname}}</span></q-item-section>
   </q-item>

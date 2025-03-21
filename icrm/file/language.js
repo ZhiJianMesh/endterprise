@@ -39,8 +39,11 @@ cn:{
   contactLevel:"重要度",
   sex:"性别",
   yearsOld:"岁",
-  sexName:['男','女'],
-  sexImg:['svguse:/assets/imgs/meshicons.svg#man','svguse:/assets/imgs/meshicons.svg#woman'],
+  sexName:{M:'男',F:'女',U:'未知'},
+  sexImg:{
+    M:'svguse:/assets/imgs/meshicons.svg#man',
+    F:'svguse:/assets/imgs/meshicons.svg#woman'
+  },
   unknown:"未知",
   
   accListPls:"请输入正确的帐号",
@@ -112,7 +115,7 @@ cn:{
   segKey:"字段名",
   segKeyRule:"字段名必须以字母开头，包括多个字母或数字",
   
-  levels:['未知','普通','一般','重要','很重要','关键人物'],
+  levels:['普通','一般','重要','很重要','关键人物'],
   errMsgs:{
     '5101':"回款总额超过合同总额",
     '5102':"订单尚未确认，不可创建回款",
@@ -124,6 +127,9 @@ cn:{
     '5108':"下一步会签，责任人不可以有自己",
     '5109':"下一步只可指定一个责任人",
     '5110':"必须指定下一步责任人",
+    '5111':'正在进行中的工作流，不可以删除',
+    '5112':'采购SKU不在订单列表中',
+    '5113':'采购量超过订单量',
     'unknown':"未知错误"
   },
   sta2icon:function(s){
@@ -136,16 +142,12 @@ cn:{
     return 'star_half';
   },
   home:{
-    tasks:"我的待办",
-    customers:"我的客户",
-    contacts:"我的联系人",
-    orders:"我的订单",
-    payments:"我的回款",
-    services:"我的服务单",
+    customers:"客户",
+    contacts:"联系人",
+    orders:"订单",
+    payments:"回款",
+    services:"服务单",
     template:"模板设置",
-    employee:"雇员管理",
-    settings:"系统设置",
-    flowDef:"工作流设置",
     bulletin:"简报",
     balance:"结算"
   },
