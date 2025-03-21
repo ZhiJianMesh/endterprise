@@ -4,7 +4,7 @@
         "type" : "call",
         "method" : "GET",
         "tokenSign" : "APP",
-        "cache" : "#PID#",
+        "cache" : "#PID# @{#tokenAcc}",
         "comment" : "查询帐号在项目中的角色",
         "service" : "iproject",
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
@@ -20,7 +20,7 @@
         "type" : "call",
         "method" : "GET",
         "tokenSign" : "APP",
-        "cache" : "#PID#",
+        "cache" : "#PID# @{#tokenAcc}",
         "comment" : "确认是否为项目成员",
         "service" : "iproject",
         "url" : "/role?id=#PID#&account=@{#tokenAcc}",
@@ -55,13 +55,24 @@
     },
 
     "is_purchase_owner":{
-        "name" : "judge_power",
-        "type" : "dataexists",
-        "db": "purchase",
-        "expect":true,
-        "errorCode":"NO_RIGHT",
-        "errorInfo":"no right",
-        "sql" : "select 1 from power where account='@{#tokenAcc}'
-             and did=#PURID# and power='O'"
+        "name":"check_signer",
+        "comment":"鉴权，询问workflow当前帐号是否为这个工作流中的权签人",
+        "type" : "call",
+        "service": "workflow",
+        "method":"GET",
+        "cache":"#PURID# @{#tokenAcc}",
+        "tokenSign":"APP",
+        "url":"/isSigner?did=#PURID#&flowid=#FLOWID#&account=@{#tokenAcc}&type=O"
+    },
+    
+    "is_purchase_signer":{
+        "name":"check_signer",
+        "comment":"鉴权，询问workflow当前帐号是否为这个工作流中的权签人",
+        "type" : "call",
+        "service": "workflow",
+        "method":"GET",
+        "cache":"#PURID# @{#tokenAcc}",
+        "tokenSign":"APP",
+        "url":"/isSigner?did=#PURID#&flowid=#FLOWID#&account=@{#tokenAcc}"
     }
 }
