@@ -316,7 +316,7 @@ goto(url) {
 }
 },
 template:`
-<q-expansion-item icon="comment" :label="tags.descr" header-class="text-purple">
+<q-expansion-item icon="comment" :label="tags.descr" header-class="text-purple" v-if="base.descr">
   <q-card><q-card-section>{{base.descr}}</q-card-section></q-card>
 </q-expansion-item>
 <q-timeline color="secondary">
