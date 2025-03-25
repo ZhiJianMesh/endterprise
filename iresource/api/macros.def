@@ -1,20 +1,4 @@
 {
-    "is_prj_leader" : {
-        "name" : "prj_info",
-        "type" : "call",
-        "method" : "GET",
-        "tokenSign" : "APP",
-        "cache" : "#PID# @{#tokenAcc}",
-        "comment" : "查询帐号在项目中的角色",
-        "service" : "iproject",
-        "url" : "/role?id=#PID#&account=@{#tokenAcc}",
-        "onSuccess" : {
-            "errorCode":"NO_RIGHT",
-            "errorInfo":"not leader",
-            "condition":"@{CONDITION|!role,'s.!=','L'}"
-        }
-    },
-    
     "is_prj_member" : {
         "name" : "prj_info",
         "type" : "call",
@@ -27,7 +11,7 @@
         "onSuccess" : {
             "errorCode":"NO_RIGHT",
             "errorInfo":"not a member",
-            "condition":"@{CONDITION|!role,'s.==',''}"
+            "condition":"@{CONDITION|!role,'s.@',`#ROLES#`}"
         }
     },
     

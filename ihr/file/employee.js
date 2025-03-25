@@ -349,7 +349,7 @@ template:`
     <q-item-label caption>{{tags.employee.sickRatio}}:{{empInfo.sickRatio}}</q-item-label>
    </q-item-section>
    <q-item-section avatar>
-    <q-icon name="edit" flat color="primary" @click="ctrl.weal=true"></q-btn>
+    <q-icon name="edit" flat color="primary" @click="ctrl.weal=true"></q-icon>
    </q-item-section>
   </q-item>
 </q-list>
@@ -376,7 +376,7 @@ template:`
     <q-item-label caption>{{tags.employee.subsidy}}:{{empInfo.subsidy}}</q-item-label>
    </q-item-section>
    <q-item-section avatar>
-    <q-icon name="grade" flat color="red" @click="showGrade"></q-btn>
+    <q-icon name="grade" flat color="red" @click="showGrade"></q-icon>
    </q-item-section>
   </q-item>
 </q-list>
@@ -390,7 +390,7 @@ template:`
     <q-item-label caption>{{tags.employee.hSalary}}:{{empInfo.hSalary}}</q-item-label>
    </q-item-section>
    <q-item-section avatar>
-    <q-icon name="paid" flat color="orange" @click="showSalary"></q-btn>
+    <q-icon name="paid" flat color="orange" @click="showSalary"></q-icon>
    </q-item-section>
   </q-item>
 </q-list>
@@ -402,7 +402,7 @@ template:`
     <q-item-label caption>{{tags.employee.stock}}:{{empInfo.stock}}</q-item-label>
    </q-item-section>
    <q-item-section avatar>
-    <q-icon name="assured_workload" flat color="dark" @click="showStock"></q-btn>
+    <q-icon name="assured_workload" flat color="dark" @click="showStock"></q-icon>
    </q-item-section>
   </q-item>
 </q-list>

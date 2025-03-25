@@ -114,7 +114,7 @@ template:`
         </template>
       </q-input>
       <q-list dense>
-        <q-item v-for="s in ctrl.suppliers">
+        <q-item v-for="s in ctrl.suppliers" clickable @click="scope.value=s.price">
          <q-item-section>{{s.name}}</q-item-section>
          <q-item-section side>{{s.price}}</q-item-section>
         </q-item>

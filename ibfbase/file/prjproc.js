@@ -10,7 +10,7 @@ const RT_TAB="prjproc_tab";
 export default {
 inject:["ibf"],
 components:{
-    "alert_dlg":AlertDialog,
+    "alert-dialog":AlertDialog,
     "month-input":MonthInput,
     "date-input":DateInput,
     "sku-select":SkuSelector,
@@ -23,6 +23,7 @@ data() {return {
     purs:[],
     busis:[],
     editable:false, //项目是否可编辑
+    over:false, //是否结束
     isLeader:false,
     tags:this.ibf.tags,
     tab:'', //worktime,busi,purchase
@@ -44,7 +45,10 @@ created(){
         dt.setTime(this.prj.end*60000);
         this.prj.end_s=date2str(dt);
         this.isLeader=this.prj.role=='L';
-        this.editable=this.isLeader&&this.prj.stage==this.ibf.PrjStage.init;
+        var stage=this.prj.stage;
+        var stageDef=this.ibf.PrjStage;
+        this.editable=this.isLeader&&stage==stageDef.init;
+        this.over=stage==stageDef.end||stage==stageDef.cancel;
         var tab=this.ibf.getRt(RT_TAB);
         this.tab=tab ? tab : 'worktime';
         this.tab_changed(this.tab);
@@ -285,7 +289,7 @@ template:`
 </q-tab-panel>
 
 <q-tab-panel name="purchase" class="q-pa-none">
- <div class="bg-grey-3 q-pa-sm text-right">
+ <div class="bg-grey-3 q-pa-sm text-right" v-if="!over">
    <q-btn color="primary" @click="show_purchase" icon="add_shopping_cart" flat dense></q-btn>
  </div>
  <div class="q-pa-sm flex flex-center" v-show="purchase.max>1">
@@ -351,27 +355,27 @@ template:`
   <q-input v-model="purchase.dta.descr" :label="tags.cmt" dense></q-input>
   <q-banner inline-actions class="bg-indigo-1 q-mt-sm" dense>
     {{tags.purchase.skuList}}
-    <template v-slot:action>
-     <q-icon name="add_circle" @click="add_purchase_sku" color="primary"></q-btn>
-    </template>
   </q-banner>
   <q-list>
    <q-item clickable v-for="(s,i) in purchase.skus">
     <q-item-section>{{s.skuName}}</q-item-section>
     <q-item-section>{{s.num}}</q-item-section>
     <q-item-section side>
-     <q-icon color="red" name="clear" @click="rmv_purchase_sku(i)" v-if="purchase.editable"></q-icon>
+     <q-icon color="red" name="clear" @click="rmv_purchase_sku(i)"></q-icon>
+    </q-item-section>
+   </q-item>
+   <q-item>
     <q-item-section>
+     <sku-select v-model="purchase.sku.sku" :label="tags.purchase.sku"></sku-select>
+    </q-item-section>
+    <q-item-section>
+     <q-input v-model.number="purchase.sku.num" :label="tags.num" dense></q-input>
+    </q-item-section>
+    <q-item-section side>
+     <q-icon name="add_circle" @click="add_purchase_sku" color="primary"></q-icon>
+    </q-item-section>
    </q-item>
   </q-list>
-  <div class="row">
-    <div class="col">
-     <sku-select v-model="purchase.sku.sku" :label="tags.purchase.sku"></sku-select>
-    </div>
-    <div class="col">
-     <q-input v-model.number="purchase.sku.num" :label="tags.num" dense></q-input>
-    </div>
-  </div>
  </q-card-section>
  <q-card-actions align="right">
    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
