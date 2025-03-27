@@ -22,6 +22,7 @@ data() {return {
     gdnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
     olCtrl:{cur:1,max:0},
     unattach:{no:'',user:[],cmt:'',dlg:false},
+    check:{dlg:false,no:'',state:''},
     
     factory:{opts:[],cur:-1,name:''},//工厂选项
     purchase:{},
@@ -315,6 +316,16 @@ show_unattach() {
     this.unattach.cmt='';
     this.unattach.dlg=true;
 },
+start_scan() { //开始扫描二维码
+    var jsCbId=__regsiterCallback(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.check.no=resp.data.value;
+    });
+    Platform.scanCode(jsCbId);
+},
 unattach_do() {
     var opts={method:"POST",url:"/resource/unattach",data:{
         no:this.unattach.no,
@@ -330,6 +341,18 @@ unattach_do() {
         this.unattach.dlg=false;
         this.query_res(this.resCtrl.cur);
     });
+},
+check_res(bad) { //资产清点
+    if(!this.check.no)return;
+    
+    var opts={method:"PUT",url:"/resource/check",data:{
+        bad:bad,no:this.check.no,factory:this.factory.cur
+    }};
+    request(opts, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+        }
+    })
 }
 },
 template:`
@@ -367,7 +390,7 @@ template:`
  <div class="text-right bg-grey-3 q-pa-sm">
   <q-btn color="accent" icon="link_off" @click="show_unattach"
   :label="tags.storage.unattach" flat dense></q-btn>
-  <q-btn color="secondary" icon="rule" @click="show_dir_in"
+  <q-btn color="secondary" icon="rule" @click="check.dlg=true"
    :label="tags.storage.check" flat dense></q-btn>
   <q-btn color="primary" @click="show_dir_in"
   :label="tags.storage.dir_in" icon="login" flat dense></q-btn>
@@ -583,6 +606,28 @@ template:`
    <q-btn :label="tags.ok" color="primary" @click="unattach_do"></q-btn>
    <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="check.dlg">
+ <q-card style="min-width:70vw">
+  <q-card-section class="row items-center q-pb-none">
+   <div class="text-h6">{{tags.storage.check}}</div>
+   <q-space></q-space>
+   <q-btn icon="close" flat dense v-close-popup></q-btn>
+  </q-card-section>
+  <q-separator></q-separator>
+  <q-card-section class="q-pt-none">
+   <q-input v-model="check.no" :label="tags.storage.no" dense>
+    <template v-slot:after>
+     <q-icon name="qr_code_scanner" @click="start_scan"></q-icon>
+    </template>
+   </q-input>
+   <div class="q-gutter-sm">
+    <q-btn @click="check_res(true)" :label="tags.storage.chkOk" flat dense color="primary"></q-btn>
+    <q-btn @click="check_res(false)" :label="tags.storage.chkBad" flat dense color="accent"></q-btn>
+   </div> 
+  </q-card-section>
  </q-card>
 </q-dialog>
 
