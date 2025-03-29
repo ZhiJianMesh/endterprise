@@ -127,11 +127,7 @@ remove() {
     });
 },
 flow() {
-    var pur = this.dtl;
-    var url='/ibf/workflow?flow='+pur.flowid+"&did="+this.id
-        +"&flName=purchase&service="+this.ibf.SERVICE_RES+"&step="+pur.status
-        +"&dtlApi=" + encodeURI('/purchase/detail');
-    this.ibf.goto(url);
+    this.ibf.purchaseFlow(this.dtl.flowid, this.id);
 }
 },
 template:`

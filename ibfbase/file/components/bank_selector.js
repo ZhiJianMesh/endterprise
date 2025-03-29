@@ -1,8 +1,8 @@
-//一边输入名称，一边过滤sku的组件
+//一边输入名称，一边过滤银行帐号的组件，银行帐号必须已输入ifinance
 export default {
-data() {return {opts:[],oldLen:0}},
+data() {return {opts:{value:[]},v:null,oldLen:0}},
 props: {
-    modelValue:{type:Object,required:true},
+    modelValue:{type:String,required:true},
     label:{type:String,required:true}
 },
 emits: ['update:modelValue'],
@@ -22,38 +22,33 @@ get_opts(val,update) {
         return;//已有的输入找不到，更多的输入更找不到
       }
     }
-    var opts={method:"GET",url:"/api/sku/search?limit=10&s="+val};
-    request(opts, "iresource").then(resp => {
+    var opts={method:"GET",url:"/api/bankaccount/search?limit=10&s="+val};
+    request(opts, "ifinance").then(resp => {
         if(resp.code!=RetCode.OK) {
             this.opts=[]
             return;
         }
         var opts=[];
-        var name;
         for(var s of resp.data.list) {
-            name=s.name+'('+s.speci+')';
-            opts.push({value:s.id, label:name});
+            opts.push(s.bank+':'+s.account+','+s.name);
         }
         this.opts=opts;
     })
   })
+},
+input_val(val) {
+    this.v=val;
+    this.$emit('update:modelValue', this.v);
+},
+changed() {
+    this.$emit('update:modelValue', this.v);
 }
 },
-computed: {
-  value: {
-      get() {
-        var v=this.modelValue;
-        return {value:v.id,label:v.name};
-      },
-      set(v) {
-        this.$emit('update:modelValue', {id:v.value, name:v.label});
-      }
-  }
-},
 template: `
-<q-select v-model="value" :label="label" :options="opts"
-  use-input input-debounce="200" dense hide-dropdown-icon
-  :multiple=false @filter="get_opts">
+<q-select v-model="v" :label="label" :options="opts"
+  use-input hide-selected fill-input input-debounce="200" dense
+  @update:model-value="changed" :multiple=false
+  @input-value="input_val" @filter="get_opts">
   <template v-slot:no-option>
    <q-item><q-item-section class="text-grey">
      No options

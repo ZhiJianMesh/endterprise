@@ -52,6 +52,18 @@ function registerIbf(app, router) { //注册ibf所需的路由
         },
         getRt(k) {
             return this.runtime[router.currentRoute.value.path+':'+k];
+        },
+        purchaseFlow(flowid,did) {
+            var url='/ibf/workflow?flow='+flowid+"&did="+did
+                +"&flName=purchase&service="+this.SERVICE_RES
+                +"&dtlApi=" + encodeURI('/purchase/detail');
+            this.goto(url);
+        },
+        busiFlow(flowid,did) {
+            var url='/ibf/workflow?flow='+flowid+"&did="+did
+                +"&flName=busi&service="+this.SERVICE_BUSINESS
+                +"&dtlApi=" + encodeURI('/business/detail');
+            this.goto(url);
         }
     })
     return new Promise((resolve) => {resolve(true)});

@@ -106,14 +106,6 @@ query_busi(pg) {
         this.busis=busi;
     })
 },
-busi_flow(i) {
-    var busi = this.busis[i];
-    
-    var url='/ibf/workflow?flow='+busi.flowid+"&did="+busi.id
-        +"&flName=busi&service="+this.ibf.SERVICE_BUSINESS+"&step="+busi.status
-        +"&dtlApi=" + encodeURI('/business/detail');
-    this.ibf.goto(url);
-},
 query_wts(pg) {
     if(!this.wt.month.num)return;//第一次切换到此tab，month还没准备好
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
@@ -248,7 +240,7 @@ template:`
 
 <q-tab-panel name="busi">
  <q-list dense separator>
-  <q-item v-for="(b,i) in busis" @click="busi_flow(i)" clickable>
+  <q-item v-for="(b,i) in busis" @click="ibf.busiFlow(b.flowid,b.id)" clickable>
    <q-item-section>
     <q-item-label>{{b.account}}</q-item-label>
     <q-item-label caption>{{b.dest}}</q-item-label>
