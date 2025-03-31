@@ -1,13 +1,29 @@
 import Workflow from "/assets/v3/components/workflow.js"
 import {_WF_} from "/assets/v3/components/workflow.js"
 
+const _SEGS_={ //不放在data中是为了避免不必要的双向绑定
+  customer:[
+    {t:'s',n:"name"},
+    {t:'s',n:"taxid"},
+    {t:'s',n:"address"},
+    {t:'s',n:"business"},
+    {t:'s',n:"creator"},
+    {t:'d',n:"createAt"}
+  ],
+  order:[
+    {t:'s',n:"cname"},
+    {t:'s',n:"taxid"},
+    {t:'n',n:"price"},
+    {t:'s',n:"creator"},
+    {t:'d',n:"createAt"}
+  ]
+};
 export default {
 inject:['service', 'tags', 'icons'],
 components:{
 	"workflow":Workflow
 },
 data() {return {
-    service:this.$route.query.service,
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     flName:this.$route.query.flName,
@@ -18,16 +34,13 @@ data() {return {
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
-    var dtlUrl=appendParas(this.dtlApi,{id:this.did});
-    var segments=this.tags[this.flName]['wfSegs'];
-    request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            if(resp.code==RetCode.NOT_EXISTS) {
-                this.removeWf();
-            }
-            return;
-        }
-        this.dtl=_WF_.formDtlData(resp.data, segments);
+    var tags=this.tags[this.flName];
+    var segments=_SEGS_[this.flName];
+    for(var s of segments) { //初始化标签
+        s.s=tags[s.n];
+    }
+    this.service.template(this.flName).then(tmpl=>{
+        this.detail(tmpl,segments);
     });
 	_WF_.flowDef(this.flowid).then(sd=>{
         this.flow=sd;
@@ -35,14 +48,31 @@ created(){
 },
 methods:{
 showDtl() {
-    var url=appendParas(this.dtlPage,{id:this.did,flowid:this.flowid,service:this.service});
+    var url=appendParas(this.dtlPage,{id:this.did,flowid:this.flowid,service:this.service.name});
     this.service.goto(url)
+},
+detail(tmpl,segments) {
+    var dtlUrl=appendParas(this.dtlApi,{id:this.did});
+    request({method:"GET",url:dtlUrl}, this.service.name).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            if(resp.code==RetCode.NOT_EXISTS) {
+                this.removeWf();
+            }
+            return;
+        }
+        var dta=_WF_.formDtlData(resp.data, segments);
+        var ext=this.service.decodeExt(dta.comment, tmpl);
+        if(ext) {
+            dta=dta.concat(ext);
+        }
+        this.dtl=dta;
+    });
 },
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
     if(this.curStep>0)return;//只有第0步权签人(创建人)才有权限删除
 
     this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
-        _WF_.remove(this.flowid,this.did,this.service).then(resp=>{
+        _WF_.remove(this.flowid,this.did,this.service.name).then(resp=>{
             if(resp.code!=RetCode.OK) {
                 this.$refs.errMsg.showErr(resp.code, resp.info);
             }else{

@@ -19,12 +19,8 @@ created(){
 methods:{
 fmt_customer_lines(data) {
     var dt=new Date();
-    var rows;
-    var touchlogs={};
-    rows=data.touchlogs;
-    for(var row of rows) {
-        touchlogs[row[0]]=row; //customer,cmt...
-    }
+    var rows=data.touchlogs;
+    var touchlogs=rows?rows:{};//可能无联系记录
     
     var customers=[];
     var cu,tl;
@@ -39,10 +35,10 @@ fmt_customer_lines(data) {
         cu.createAt=date2str(dt);
         cu.status=this.tags.sta2icon(cu.status);
         tl=touchlogs[cu.id];//客户可以没有最新的接触记录
-        if(tl) {//customer,cmt,createAt,creator,contact
-            cu['comment']=tl[1]+'@'+tl[4];
-            dt.setTime(tl[2]);
-            cu['tlCreator']=tl[3]+'@'+date2str(dt);
+        if(tl) {//customer->cmt,createAt,creator,contact
+            cu['comment']=tl[0]+'@'+tl[3];
+            dt.setTime(tl[1]*60000);
+            cu['tlCreator']=tl[2]+'@'+date2str(dt);
         }
         customers.push(cu);
     }
@@ -171,7 +167,7 @@ template:`
     <q-card-section class="q-pt-none">
      <q-list>
       <q-item><q-item-section>
-       <q-input v-model="newCust.name" :label="tags.custName" dense maxlength=100></q-input>
+       <q-input v-model="newCust.name" :label="tags.customer.name" dense maxlength=100></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-input v-model="newCust.taxid" :label="tags.taxid" dense maxlength=18

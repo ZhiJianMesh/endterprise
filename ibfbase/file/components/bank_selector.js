@@ -3,7 +3,7 @@ export default {
 data() {return {opts:{value:[]},v:null,oldLen:0}},
 props: {
     modelValue:{type:String,required:true},
-    label:{type:String,required:true}
+    label:{type:String,required:false,default:''}
 },
 emits: ['update:modelValue'],
 methods:{

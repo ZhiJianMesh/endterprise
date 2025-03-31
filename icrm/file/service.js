@@ -2,21 +2,19 @@ export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
     id:this.$route.query.id,
-    tmpl:{},
-    //cost,budget,creator,createAt,comment,status,flowid,cname,skuName
+    //ord,creator,createAt,comment,cost,cname,customer
     dtl:{},
     ext:{}, //从订单的comment转化而来
     visible:{editBase:false},
-    visSegs:["skuName","cost","budget","creator","createAt"]
+    visSegs:["cost","creator","createAt"]
 }},
 created(){
     this.service.template('service').then(tpl=>{
-        this.tmpl=tpl;
-        this.detail();
+        this.detail(tpl);
     })
 },
 methods:{
-detail() {
+detail(tmpl) {
     var reqUrl="/api/service/detail?id="+this.id;
     request({method:"GET", url:reqUrl},this.service.name).then(resp=>{
         if(!resp || resp.code != 0) {
@@ -24,25 +22,22 @@ detail() {
             return;
         }
         this.dtl=resp.data;
-        this.dtl.createAt=new Date(resp.data.createAt*60000).toLocaleString();
-        this.dtl.icon=this.tags.sta2icon(this.dtl.status);
-        this.ext=this.service.decodeExt(this.dtl.comment, this.tmpl);
+        var dt=new Date();
+        dt.setTime(resp.data.createAt*60000);
+        this.dtl.createAt=datetime2str(dt);
+        this.ext=this.service.decodeExt(this.dtl.comment, tmpl);
     });
 },
 save_base() {
     var dta={comment:this.service.encodeExt(this.ext), id:this.id};
     var url="/api/service/setComment";
-    request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
+    request({method:"PUT",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
         this.visible.editBase=false;
     })
-},
-service_flow(){
-    var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=service&step="+this.dtl.status;
-    this.$router.push(url);
 },
 menu_remove(){
     var msg=this.tags.cfmToDel+this.tags.service.title+' "'+this.dtl.cname+'-'+this.dtl.skuName+'"';
@@ -63,7 +58,7 @@ template:`
   <q-header elevated>
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
-      <q-toolbar-title>{{tags.service.title}}({{dtl.cname}}-{{dtl.skuName}})</q-toolbar-title>
+      <q-toolbar-title>{{tags.service.title}}({{dtl.cname}})</q-toolbar-title>
       <q-btn flat round dense icon="menu" v-if="dtl.power='O'">
        <q-menu>
        <q-list style="min-width: 100px">
@@ -94,13 +89,9 @@ template:`
     <q-item-section>{{tags.service[i]}}</q-item-section>
     <q-item-section>{{dtl[i]}}</q-item-section>
   </q-item>
-  <q-item v-if="dtl.power=='O'" clickable @click.stop="service_flow">
-    <q-item-section>{{tags.order.status}}</q-item-section>
-    <q-item-section><q-icon :name="dtl.icon" color="blue"></q-icon></q-item-section>
-  </q-item>
-  <q-item v-for="(tpl,k) in tmpl">
-    <q-item-section>{{tpl.n}}</q-item-section>
-    <q-item-section>{{ext[k]}}</q-item-section>
+  <q-item v-for="e in ext">
+    <q-item-section>{{e.n}}</q-item-section>
+    <q-item-section>{{e.v}}</q-item-section>
   </q-item>
 </q-list>
     </q-page>
@@ -111,7 +102,7 @@ template:`
 <component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 
 <!-- 修改服务基本信息弹窗 -->
-<q-dialog v-model="visible.editBase" no-backdrop-dismiss v-if="dtl.status!=100">
+<q-dialog v-model="visible.editBase" no-backdrop-dismiss>
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.baseInfo}}</div>
@@ -119,17 +110,16 @@ template:`
     <q-card-section class="q-pt-none">
     <q-list dense>
       <q-item><q-item-section>{{dtl.cname}}</q-item-section></q-item>
-      <q-item><q-item-section>{{dtl.skuName}}</q-item-section></q-item>
-      <q-item v-for="(tpl,k) in tmpl"><q-item-section>
-        <div v-if="tpl.t=='d'">
-          <component-date-input :close="tags.ok" :label="tpl.n" v-model="ext[k]"></component-date-input>
+      <q-item v-for="e in ext"><q-item-section>
+        <div v-if="e.t=='d'">
+          <component-date-input :close="tags.ok" :label="e.n" v-model="e.v"></component-date-input>
         </div>
-        <div v-else-if="tpl.t=='b'">
-          <q-checkbox v-model="ext[k]" :label="tpl.n" left-label></q-checkbox>
+        <div v-else-if="e.t=='b'">
+          <q-checkbox v-model="e.v" :label="e.n" left-label></q-checkbox>
         </div>
         <div v-else>
-         <q-input borderless :label="tpl.n" v-model="ext[k]" dense :autogrow="tpl.t!='n'"
-          :type="tpl.t=='n'?'number':'textarea'"></q-input>
+         <q-input borderless :label="e.n" v-model="e.v" dense :autogrow="e.t!='n'"
+          :type="e.t=='n'?'number':'textarea'"></q-input>
         </div>
       </q-item-section></q-item>
     </q-list>

@@ -102,9 +102,9 @@ template:`
     <q-item-section>{{tags.order.status}}</q-item-section>
     <q-item-section><q-icon :name="dtl.icon" color="blue"></q-icon></q-item-section>
   </q-item>
-  <q-item v-for="(tpl,k) in tmpl">
-    <q-item-section>{{tpl.n}}</q-item-section>
-    <q-item-section>{{ext[k]}}</q-item-section>
+  <q-item v-for="e in ext">
+    <q-item-section>{{e.n}}</q-item-section>
+    <q-item-section>{{e.v}}</q-item-section>
   </q-item>
 </q-list>
     </q-page>

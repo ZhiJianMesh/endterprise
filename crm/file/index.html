@@ -201,18 +201,22 @@ encodeExt(ext) { //return {a:xx,b:yy...}
 },
 decodeExt(extStr,tmpl) { //return {a:xx,b:yy,...}
     var o={};
+    var ext=[];
+    var t,v;
     try{o=JSON.parse(extStr);}catch(err){}
     for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
-        if(o[k]) {
-            continue;
+        t=tmpl[k];
+        v=o[k];
+        if(!v) {
+          if(t.t=='b') {
+            v=false; //vue3不必用this.$set方法
+          } else {
+            v='';
+          }
         }
-        if(tmpl[k].t=='b') {
-            o[k]=false; //vue3不必用this.$set方法
-        } else {
-            o[k]='';
-        }
+        ext.push({k:t.n, v:v});
     }
-    return o;
+    return ext;
 },
 template(n,refresh){
     if(!refresh && Object.keys(this.tmpl[n]).length>0){
@@ -222,7 +226,7 @@ template(n,refresh){
     return request({method:"GET",url:url}, this.name).then((resp)=>{
         if(resp.code!=RetCode.OK || !('data' in resp) || !('v' in resp.data)) {
             Console.info("request template `"+n+"` failed:" + resp.code + ",info:" + resp.info);
-            return {'cmt':{n:tags.comment,t:'s'}};//只有一个备注字段
+            return {'cmt':{n:tags.cmt,t:'s'}};//只有一个备注字段
         }
         if(resp.data.v) {
             this.tmpl[n]=JSON.parse(resp.data.v);

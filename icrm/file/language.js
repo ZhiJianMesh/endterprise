@@ -18,8 +18,12 @@ cn:{
   add:"增加",
   save:"保存",
   search:"搜索",
-
+  cmt:"备注",
+  start:'开始时间',
+  end:'结束时间',
+  
   more:"扩展信息",
+  dateFmt:"YYYY/MM/DD HH:mm",
   
   contract:"合同",
   account:"帐号",
@@ -54,7 +58,6 @@ cn:{
   wrongWfDef:"工作流定义存在错误",
   cfmToDel:"请确认是否删除",
 
-  custName:"名称",
   balance:"余额",
   oprSuccess:"操作成功",
   oprFailed:"操作失败",
@@ -64,20 +67,9 @@ cn:{
   serviceLogs:"服务记录",
   reports:"业务报表",
   revenue:"新增收入(元)",
-  orderNum:"新增订单(个)",
-  logNum:"新增服务(次)",
-  logVal:"新增服务值(个)",
-  vipNum:"新增会员(个)",
-  orderBal:"订单余额(元)",
   
   unit:{y:"元",g:"个"},
-  pkgUnit:{'0':'次','1':"元"},
-  pkgName:"名称",
-  pkgClass:"计费类型",
-  pkgPrice:"售价",
-  pkgVal:"价值",
-  pkgAlert1:"1）删除套餐不会影响已经生效的订单；",
-  pkgAlert2:"2）新增同名同计费类型的套餐会覆盖原有套餐。",
+
   segTypes:{'s':'文字','n':"数值",'d':'日期'},
   segName:"字段名称",
   segType:"字段类型",
@@ -89,18 +81,10 @@ cn:{
   pwd:"密码",
   role:"角色",
 
-  checkOrder:"校验订单",
-  addConsume:"增加消费记录",
-  addEmployee:"增加雇员",
-  consumeVal:"消费额",
-  comment:"备注",
   template:"模板",
   noOrders:"尚无订单，不可以创建消费记录，请点击会员详情，创建订单。",
   failed:"失败",
-  checking:"请输入正确的会员密码进行校验",
-  accountExists:"雇员已存在，请输入其他帐号！",
   mobilePls:"请输入11位正确的手机号！",
-  checkOk:"您的订单一切正常！",
   checkFailed:"您输入的密码有误，或您的订单被篡改过！",
   exceedsDayNum:"报表周期不可超过31天！",
   invalidRange:"报表周期至少1个月，最多12个月",
@@ -109,12 +93,6 @@ cn:{
   onlyMine:"只看我的",
   forever:"永久",
 
-  segTypes:{'s':'文字','n':"数值",'d':'日期','b':'是否'},
-  segName:"显示名称",
-  segType:"类型",
-  segKey:"字段名",
-  segKeyRule:"字段名必须以字母开头，包括多个字母或数字",
-  
   levels:['普通','一般','重要','很重要','关键人物'],
   errMsgs:{
     '5101':"回款总额超过合同总额",
@@ -130,6 +108,7 @@ cn:{
     '5111':'正在进行中的工作流，不可以删除',
     '5112':'采购SKU不在订单列表中',
     '5113':'采购量超过订单量',
+    '5114':'订单中必须指定SKU',
     'unknown':"未知错误"
   },
   sta2icon:function(s){
@@ -190,32 +169,34 @@ cn:{
     needPay:"待回款",
     skuName:"商品",
     skuPrice:"目录价",
+    skuNum:'数量',
+    skuList:'销售清单',
     creator:"创建人",
     createAt:"创建时间",
     signAt:"确定时间",
     fileNo:"合同文本",
-    taxid:"统一信用码"
+    taxid:"统一信用码",
+    prj:'所属项目'
   },
   payment:{
     title:"回款",
     amount:"回款金额",
     status:"审批状态",
     cname:"客户",
-    skuName:"商品",
+    bank:'银行帐号',
     creator:"创建人",
-    price:"合同总金额",
-    createAt:"创建时间"
+    createAt:"创建时间",
+    notCfm:'未确认'
   },
   service:{
     title:"服务",
-    cost:"实际成本",
-    budget:"预算成本",
-    status:"审批状态",
+    cost:"服务成本",
     cname:"客户",
-    skuName:"商品",
     creator:"创建人",
-    price:"合同总金额",
-    createAt:"创建时间"
+    createAt:"创建时间",
+    busi:'出差',
+    dest:'目的地',
+    reason:'出差事由'
   },
   report:{
     customer:"客户",
@@ -243,15 +224,12 @@ cn:{
     O:"全权",
     S:"只读"
   },
-  sku:{
-    title:"待售商品",
-    no:"内部编号",
-    name:"名称",
-    cost:"成本",
-    price:"建议售价",
-    lowest:"最低售价",
-    highest:"最高售价",
-    comment:"描述"
+  purchase:{
+    title:'采购申请',
+    buyer:'采购负责人',
+    receiver:'收件人',
+    expDate:'期望到货日期',
+    skuList:'采购清单'
   }
 },
 calClose:'关闭'

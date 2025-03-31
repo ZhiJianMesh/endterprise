@@ -84,21 +84,21 @@ template:`
 <q-list separator>
  <q-item>
   <q-item-section><q-item-label caption>{{tags.order.cname}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.order.skuName}}</q-item-label></q-item-section>
+  <q-item-section><q-item-label caption>{{tags.order.prj}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.order.price}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.order.creator}}</q-item-label></q-item-section>
   <q-item-section thumbnail></q-item-section>
  </q-item>
  <q-item v-for="o in orders" @click="order_detail(o.id)" clickable>
   <q-item-section @click.stop="customer_detail(o.cid)">{{o.cname}}</q-item-section>
-  <q-item-section>{{o.skuName}}</q-icon></q-item-section>
+  <q-item-section>{{o.prjName}}</q-icon></q-item-section>
   <q-item-section>
    <q-item-label>{{o.price}}</q-item-label>
    <q-item-label caption>{{tags.order.payment}}:{{o.payment}}</q-item-label>
   </q-item-section>
   <q-item-section>
    <q-item-label>{{o.creator}}</q-item-label>
-   <q-item-label caption>@{{o.createAt}}</q-item-label>
+   <q-item-label caption>{{o.createAt}}</q-item-label>
   </q-item-section>
   <q-item-section thumbnail><q-icon :name="o.status" color="primary" size="xs"></q-icon></q-item-section>
  </q-item>

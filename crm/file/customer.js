@@ -30,7 +30,10 @@ data() {return {
 }},
 created(){
     this.curDate=date2str(new Date());
-    this.detail();
+    this.service.template('customer').then(tmpl=>{
+        this.tmpl=tmpl;
+        this.detail();
+    });
 },
 methods:{
 detail() {
@@ -43,11 +46,9 @@ detail() {
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
         this.dtl.createAt=date2str(new Date(resp.data.createAt*60000));
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
-        
-        this.service.template('customer').then(tmpl=>{
-            this.tmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
-            this.ext=this.service.decodeExt(this.dtl.comment, tmpl);
-        });
+        if(this.tmpl) {
+            this.ext=this.service.decodeExt(this.dtl.comment, this.tmpl);
+        }
     });
 },
 query_orders(pg) {
@@ -391,9 +392,9 @@ template:`
     <q-item-section>{{tags.contactRelations}}</q-item-section>
     <q-item-section><q-icon name="people" color="primary"></q-icon></q-item-section>
   </q-item>
-  <q-item v-for="(tpl,k) in tmpl">
-    <q-item-section>{{tpl.n}}</q-item-section>
-    <q-item-section>{{ext[k]}}</q-item-section>
+  <q-item v-for="e in ext">
+    <q-item-section>{{e.n}}</q-item-section>
+    <q-item-section>{{e.v}}</q-item-section>
   </q-item>
 </q-list>
 
@@ -411,7 +412,7 @@ template:`
     <q-item-section>{{c.post}}</q-item-section>
     <q-item-section>{{c.creator}}</q-item-section>
     <q-item-section>{{c.createAt}}</q-item-section>
-    <q-item-section avatar><q-icon :name="icons['touchlog']" @click.stop="newTl={n:c.name,t:0,cid:c.id,tp:1,cmt:''};visible.newTl=true" color="primary"></q-btn></q-item-section>
+    <q-item-section avatar><q-icon :name="icons['touchlog']" @click.stop="newTl={n:c.name,t:0,cid:c.id,tp:1,cmt:''};visible.newTl=true" color="primary"></q-icon></q-item-section>
   </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.contact>1">
@@ -499,13 +500,15 @@ template:`
       <q-item><q-item-section>
         <q-input :label="tags.contact.name" v-model="newContact.name" dense></q-input>
       </q-item-section></q-item>
-      <q-item><q-item-section><div class="row">
-          <div class="col">{{tags.sex}}</div>
-          <div class="col">
-         <q-radio dense v-model="newContact.sex" val="0" :label="tags.sexName[0]" color="indigo" keep-color></q-radio>
-         &nbsp;<q-radio dense v-model="newContact.sex" val="1" :label="tags.sexName[1]" color="pink" keep-color></q-radio>
-        </div>
-      </div></q-item-section></q-item>
+      <q-item><q-item-section>
+       <div class="row">
+         <div class="col">{{tags.sex}}</div>
+         <div class="col">
+          <q-radio dense v-model="newContact.sex" val="M" :label="tags.sexName.M" color="indigo" keep-color></q-radio>
+          <q-radio dense v-model="newContact.sex" val="F" :label="tags.sexName.F" color="pink" keep-color></q-radio>
+         </div>
+       </div>
+      </q-item-section></q-item>
       <q-item><q-item-section><div class="row">
           <div class="col">{{tags.contactLevel}}</div>
           <div class="col">

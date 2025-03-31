@@ -171,7 +171,7 @@ template:`
     <q-card-section class="q-pt-none">
      <q-list>
       <q-item><q-item-section>
-       <q-input v-model="newCust.name" :label="tags.custName" dense maxlength=100></q-input>
+       <q-input v-model="newCust.name" :label="tags.customer.name" dense maxlength=100></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-input v-model="newCust.taxid" :label="tags.taxid" dense maxlength=18

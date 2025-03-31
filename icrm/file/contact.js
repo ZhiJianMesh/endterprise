@@ -2,8 +2,6 @@ export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
     id:this.$route.query.id,
-    tmpl:{},
-    
     dtl:{},//详情:id,name,cname,address,creator,createAt,birthday,sex,level,post,phone,comment
     ext:{}, //从联系人的comment转化而来
     dispSegs:["post","phone","cname","address","creator","createAt"],
@@ -25,12 +23,11 @@ data() {return {
 created(){
     this.curDate=date2str(new Date());
     this.service.template('contact').then(tpl=>{
-        this.tmpl=tpl;
-        this.detail();
+        this.detail(tpl);
     });
 },
 methods:{
-detail() {
+detail(tmpl) {
     var reqUrl="/api/contact/detail?id="+this.id;
     request({method:"GET", url:reqUrl}, this.service.name).then(resp=>{
         if(!resp || resp.code != 0) {
@@ -54,7 +51,7 @@ detail() {
         
         dtl.sex=dtl.sex;
         dtl.sex_s=this.tags.sexName[dtl.sex];
-        this.ext=this.service.decodeExt(dtl.comment, this.tmpl);
+        this.ext=this.service.decodeExt(dtl.comment, tmpl);
         this.dtl = dtl;
     });
 },
@@ -190,8 +187,8 @@ remove_relation(target){
 },
 save_base() {
     var dta=copyObj(this.dtl,['name','address','phone','sex','level','post']);
-    dta['comment']=this.service.encodeExt(this.ext);
-    dta['birthday']=Math.ceil(new Date(this.dtl.birthday).getTime()/86400000); //转为天数
+    dta.comment=this.service.encodeExt(this.ext);
+    dta.birthday=Math.ceil(new Date(this.dtl.birthday).getTime()/86400000); //转为天数
     dta.id=this.id;
 
     var url="/api/contact/modify";
@@ -307,9 +304,9 @@ template:`
     <q-item-section>{{tags.contact[i]}}</q-item-section>
     <q-item-section>{{dtl[i]}}</q-item-section>
   </q-item>
-  <q-item v-for="(tpl,k) in tmpl">
-    <q-item-section>{{tpl.n}}</q-item-section>
-    <q-item-section>{{ext[k]}}</q-item-section>
+  <q-item v-for="e in ext">
+    <q-item-section>{{e.n}}</q-item-section>
+    <q-item-section>{{e.v}}</q-item-section>
   </q-item>
 </q-list>
 
@@ -395,10 +392,14 @@ template:`
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
-    <q-card-actions align="right">
-      <q-btn :label="tags.ok" color="primary" @click="opr_touchlog(newTlDta.tp)"></q-btn>
-      <q-btn :label="tags.remove" color="primary" @click="opr_touchlog(3)" v-show="newTlDta.tp==2"></q-btn>
-      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-card-actions class="row">
+      <div class="col">
+       <q-btn :label="tags.remove" flat color="red" @click="opr_touchlog(3)" v-show="newTlDta.tp==2"></q-btn>
+      </div>
+      <div class="col text-right">
+       <q-btn :label="tags.ok" color="primary" @click="opr_touchlog(newTlDta.tp)"></q-btn>
+       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+      </div>
     </q-card-actions>
   </q-card>
 </q-dialog>
@@ -438,20 +439,24 @@ template:`
       <q-item><q-item-section>
         <q-input :label="tags.contact.name" v-model="dtl.name" dense></q-input>
       </q-item-section></q-item>
-      <q-item><q-item-section><div class="row">
-          <div class="col">{{tags.sex}}</div>
-          <div class="col">
-         <q-radio dense v-model="dtl.sex" val="0" :label="tags.sexName[0]" color="indigo" keep-color></q-radio>
-         &nbsp;<q-radio dense v-model="dtl.sex" val="1" :label="tags.sexName[1]" color="pink" keep-color></q-radio>
+      <q-item><q-item-section>
+       <div class="row">
+        <div class="col">{{tags.sex}}</div>
+        <div class="col">
+          <q-radio dense v-model="dtl.sex" val="M" :label="tags.sexName.M" color="indigo" keep-color></q-radio>
+          <q-radio dense v-model="dtl.sex" val="F" :label="tags.sexName.F" color="pink" keep-color></q-radio>
         </div>
-      </div></q-item-section></q-item>
-      <q-item><q-item-section><div class="row">
-          <div class="col">{{tags.contactLevel}}</div>
-          <div class="col q-pa-xs">
-            <q-rating v-model="dtl.level" max="5" size="1em"
-             color="yellow" color-selected="orange"></q-rating>
-          </div>
-      </div></q-item-section></q-item>
+       </div>
+      </q-item-section></q-item>
+      <q-item><q-item-section>
+       <div class="row">
+        <div class="col">{{tags.contactLevel}}</div>
+         <div class="col q-pa-xs">
+          <q-rating v-model="dtl.level" max="5" size="1em"
+           color="yellow" color-selected="orange"></q-rating>
+        </div>
+       </div>
+      </q-item-section></q-item>
       <q-item><q-item-section>
         <q-input :label="tags.contact.post" v-model="dtl.post" dense></q-input>
       </q-item-section></q-item>   
@@ -464,16 +469,16 @@ template:`
       <q-item><q-item-section>
        <component-date-input :close="tags.ok" :label="tags.contact.birthday" v-model="dtl.birthday" max="today"></component-date-input>
       </q-item-section></q-item>
-      <q-item v-for="(tpl,k) in tmpl"><q-item-section>
-        <div v-if="tpl.t=='d'">
-          <component-date-input :close="tags.ok" :label="tpl.n" v-model="ext[k]"></component-date-input>
+      <q-item v-for="e in ext"><q-item-section>
+        <div v-if="e.t=='d'">
+         <component-date-input :close="tags.ok" :label="e.n" v-model="e.v"></component-date-input>
         </div>
-        <div v-else-if="tpl.t=='b'">
-          <q-checkbox v-model="ext[k]" :label="tpl.n" left-label></q-checkbox>
+        <div v-else-if="e.t=='b'">
+         <q-checkbox v-model="e.v" :label="e.n" left-label></q-checkbox>
         </div>
         <div v-else>
-         <q-input borderless :label="tpl.n" v-model="ext[k]" dense :autogrow="tpl.t!='n'"
-          :type="tpl.t=='n'?'number':'textarea'"></q-input>
+         <q-input borderless :label="e.n" v-model="e.v" dense :autogrow="e.t!='n'"
+          :type="e.t=='n'?'number':'textarea'"></q-input>
         </div>
       </q-item-section></q-item>
     </q-list>

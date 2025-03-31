@@ -20,8 +20,9 @@
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
    </q-toolbar>
    <div class="text-right bg-white q-pt-sm">
-    <q-btn v-for="i in myList" :label="i.name" @click="goto(i.url)" 
-     :icon="i.icon" color="primary" flat class="q-pl-none">
+    <q-btn v-for="i in myList" @click="goto(i.url)"
+     :icon="i.icon" color="primary" flat>
+     {{i.name}}
      <q-badge v-if="i.weekInc" color="red" rounded floating>{{i.weekInc}}</q-badge>
     </q-btn>
     <q-btn :label="tags.home.bulletin" @click="goto('/brief')"
@@ -49,6 +50,8 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
+import SkuSelector from "/ibfbase/components/sku_selector.js"
+import PrjSelector from "/ibfbase/components/prj_selector.js"
 import IBF from '/ibfbase/ibf.js'
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -75,7 +78,7 @@ data(){return{
         c:{icon:icons.customer,name:tags.home.customers,url:'/customers',weekInc:0},
         n:{icon:icons.contact,name:tags.home.contacts,url:'/contacts',weekInc:0},
         o:{icon:icons.order,name:tags.home.orders,url:'/orders',weekInc:0},
-        s:{icon:icons.service,name:tags.home.services,url:'/services',weekInc:0},
+        //s:{icon:icons.service,name:tags.home.services,url:'/services',weekInc:0},
         p:{icon:icons.payment,name:tags.home.payments,url:'/payments',weekInc:0}
     }
 }},
@@ -94,7 +97,7 @@ refresh() {
         this.myList.n.weekInc=resp.data.contact;
         this.myList.o.weekInc=resp.data.ord;
         this.myList.p.weekInc=resp.data.payment;
-        this.myList.s.weekInc=resp.data.service;
+        //this.myList.s.weekInc=resp.data.service;
     })
 },
 goto(url) {
@@ -134,23 +137,31 @@ userinfo:{}, /*帐号基本信息缓存*/
 role:'', /*在服务中的角色*/
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
 skus:[],//商品缓存
-encodeExt(ext) { //return {a:xx,b:yy...}
-    return JSON.stringify(ext);
+encodeExt(ext) { //[{k:k,v:yyy,n:xxx,t:n/s/d}...] => {k:yyy}
+    var dta={};
+    for(var e of ext) {
+      dta[e.k]=e.v;
+    }
+    return JSON.stringify(dta);
 },
-decodeExt(extStr,tmpl) { //return {a:xx,b:yy,...}
+decodeExt(extStr,tmpl) { //return [{k:tmpl.k,n:tmpl.n,v:extStr.v,t:tmpl.t}...]
     var o={};
+    var ext=[];
+    var t,v;
     try{o=JSON.parse(extStr);}catch(err){}
     for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
-        if(o[k]) {
-            continue;
+        t=tmpl[k];
+        v=o[k];
+        if(!v) {
+          if(t.t=='b') {
+            v=false; //vue3不必用this.$set方法
+          } else {
+            v='';
+          }
         }
-        if(tmpl[k].t=='b') {
-            o[k]=false; //vue3不必用this.$set方法
-        } else {
-            o[k]='';
-        }
+        ext.push({n:t.n, v:v, t:t.t, k:k});
     }
-    return o;
+    return ext;
 },
 template(n,refresh){
     if(!refresh && Object.keys(this.tmpl[n]).length>0){
@@ -160,7 +171,7 @@ template(n,refresh){
     return request({method:"GET",url:url}, this.name).then((resp)=>{
         if(resp.code!=RetCode.OK || !('data' in resp) || !('v' in resp.data)) {
             Console.info("request template `"+n+"` failed:" + resp.code + ",info:" + resp.info);
-            return {'cmt':{n:tags.comment,t:'s'}};//只有一个备注字段
+            return {'cmt':{n:tags.cmt,t:'s'}};//只有一个备注字段
         }
         if(resp.data.v) {
             this.tmpl[n]=JSON.parse(resp.data.v);
@@ -225,6 +236,8 @@ app.component('component-alert-dialog', AlertDialog);
 app.component('component-confirm-dialog', ConfirmDialog);
 app.component('component-date-input', DateInput);
 app.component('component-user-selector', UserSelector);
+app.component('component-sku-selector', SkuSelector);
+app.component('component-prj-selector', PrjSelector);
 //启动APP
 app.mount('#app');
 </script>

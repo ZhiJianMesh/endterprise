@@ -1,25 +1,22 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags', 'icons', 'ibf'],
 data() {return {
     id:this.$route.query.id,
-    tmpl:{}, //客户模板，{k:"x",n:"y",t:"z"}...
-    ordTmpl:{}, //订单模板，{k:"x",n:"y",t:"z"}...
-    cntTmpl:{}, //联系人模板，{k:"x",n:"y",t:"z"}...
     
     dtl:{}, //详情name,address,createAt,creator,taxid,flowid,status,business,comment
-    ext:{}, //从客户的comment转化而来
     orders:[], //id,createAt,price,skuName,creator
     contacts:[], //id,name,post,createAt
     touchlogs:[], //comment,createAt,creator
-    skus:[],//id,no,name,price,lowest
     shares:[],
     relationChart:null,
     curDate:'',//当前时间，用在分享界面
     
-    newOrder:{skuId:0,price:0,nextSigners:[],ext:{}},
+    prjInput:{},
+    skuInput:{sku:{},num:'',price:'',suppliers:[]}, //用于创建订单界面
+    newOrder:{price:0,nextSigners:[],ext:{},skus:[]},
     newContact:{name:'',sex:"0",level:0,phone:'',address:'',post:'',
                 birthday:date2str(new Date()),ext:{}},
-    newTl:{n:'',t:0,tp:0,cid:0,cmt:''},
+    newTl:{n:'',t:0,act:'',cid:0,cmt:''},
     newShare:{endT:'',to:[],power:"S"},
     
     page:{contact:1,curContact:1,touchlog:1,curTl:1,order:1,curOrder:1},
@@ -30,10 +27,12 @@ data() {return {
 }},
 created(){
     this.curDate=date2str(new Date());
-    this.detail();
+    this.service.template('customer').then(tmpl=>{
+        this.detail(tmpl);
+    });
 },
 methods:{
-detail() {
+detail(tmpl) {
     var url="/api/customer/detail?id="+this.id;
     request({method:"GET", url:url}, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -43,11 +42,7 @@ detail() {
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
         this.dtl.createAt=date2str(new Date(resp.data.createAt*60000));
         this.dtl.icon=this.tags.sta2icon(this.dtl.status);
-        
-        this.service.template('customer').then(tmpl=>{
-            this.tmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
-            this.ext=this.service.decodeExt(this.dtl.comment, tmpl);
-        });
+        this.dtl.ext=this.service.decodeExt(this.dtl.comment, tmpl);
     });
 },
 query_orders(pg) {
@@ -59,12 +54,11 @@ query_orders(pg) {
         }
         var orders=[];
         var dt=new Date();
-        var icon;
         for(var o of resp.data.orders){
             dt.setTime(o.createAt*60000);
-            icon=this.tags.sta2icon(o.status);
-            orders.push({id:o.id,price:o.price,skuName:o.skuName,creator:o.creator,
-                createAt:date2str(dt),status:icon});
+            o.createAt=date2str(dt);
+            o.status=this.tags.sta2icon(o.status);
+            orders.push(o);
         }
         this.orders=orders;
         this.page.order=Math.ceil(resp.data.total/this.service.N_SMPG);
@@ -82,7 +76,7 @@ query_contacts(pg) {
         for(var c of resp.data.contacts) {
             dt.setTime(c.createAt*60000);
             contacts.push({id:c.id,name:c.name,post:c.post,
-             createAt:date2str(dt),creator:c.creator});
+            createAt:date2str(dt),creator:c.creator});
         }
         this.contacts=contacts;
         this.page.contact=Math.ceil(resp.data.total/this.service.N_SMPG);
@@ -121,18 +115,24 @@ query_shares() {
         var t1,t2;
         resp.data.list.forEach(function(s) { //account,update_time,endT
             dt.setTime(s.endT*60000);
-            t1=dt.getFullYear()-year>100?'永久':dt.toLocaleDateString();
+            t1=dt.getFullYear()-year>100?this.tags.forever:date2str(dt);
             dt.setTime(s.update_time);
-            t2=dt.toLocaleDateString();
+            t2=date2str(dt);
             shares.push({account:s.account,endT:t1,createAt:t2,power:this.tags.share[s.power]});
         }.bind(this));
         this.shares=shares;
     });
 },
 create_order() {
-    var dta=copyObj(this.newOrder,['skuId','price','nextSigners']);
-    dta['customer']=this.id;
-    dta['comment']=this.service.encodeExt(this.newOrder.ext);
+    var dta=copyObj(this.newOrder,['price','nextSigners',"skus"]);
+    if(dta.skus.length==0) {
+        this.$refs.errMsg.showErr(5114, "no sku list");
+        return;
+    }
+    dta.customer=this.id;
+    dta.pid=this.prjInput.id;
+    dta.prjName=this.prjInput.name;
+    dta.comment=this.service.encodeExt(this.newOrder.ext);
     var url="/api/order/create";
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -140,7 +140,7 @@ create_order() {
             return;
         }
         this.visible.newOrd=false;
-        this.newOrder={skuId:'',price:0,nextSigners:[],ext:{}};
+        this.newOrder={pid:'',price:0,nextSigners:[],ext:{}};
         this.query_orders(1);
     })
 },
@@ -163,10 +163,10 @@ create_contact() {
 },
 opr_touchlog(opr){
     var opts;
-    if(opr==1) { //增加
+    if(opr=='add') { //增加
         var dta={contact:this.newTl.cid,comment:this.newTl.cmt};
         opts={method:"POST",url:"/api/touchlog/add",data:dta};
-    } else if(opr==2){ //修改
+    } else if(opr=='update'){ //修改
         var dta={contact:this.newTl.cid,createAt:this.newTl.t,comment:this.newTl.cmt};
         opts={method:"PUT",url:"/api/touchlog/modify",data:dta}
     } else { //删除
@@ -178,13 +178,15 @@ opr_touchlog(opr){
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
             this.visible.newTl=false;
-            this.newTl={t:0,tp:0,cid:0,cmt:''};
+            this.newTl={t:0,act:'',cid:0,cmt:''};
             this.query_touchlogs(1);
         }
     })
 },
 customer_flow(){
-    var url='/workflow?flow='+this.dtl.flowid+"&did="+this.id+"&flName=customer&step="+this.dtl.status;
+    var url='/workflow?flow='+this.dtl.flowid
+    +"&did="+this.id+"&flName=customer"
+    +"&dtlApi="+encodeURIComponent("/customer/detail");
     this.$router.push(url);
 },
 save_base() {
@@ -202,36 +204,26 @@ save_base() {
 },
 open_create_order() {
     this.service.template('order').then(tmpl=> {
-        this.ordTmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
-        return this.service.skuList();
-    }).then(skus=>{
-        if(!skus || skus.length==0) {
-            this.$refs.errMsg.show(this.tags.noSkuDef);
-            return;
-        }
-
-        var skuList=skus.map(function(sku){
-            return {label:sku.name + '(' + sku.price + ')', value:sku.id, price:sku.price};
-        });
-        this.newOrder.price=skus[0].price;
-        this.newOrder.skuId=skus[0].id;
-        this.skus=skuList;
+        this.newOrder.price='';
+        this.newOrder.ext=this.service.decodeExt("{}", tmpl);
+        this.skuInput={sku:{},num:'',price:this.tags.order.skuPrice,suppliers:[]}
         this.visible.newOrd=true;
     });
 },
 open_new_contact() {
     this.service.template('contact').then(tmpl=> {
-        this.cntTmpl=tmpl; //{a:{n:xxx,t:s/d/n},b:{}}
+        this.newContact.ext=this.service.decodeExt("{}", tmpl)
         this.visible.newContact=true
     });
 },
-sku_changed(val) {
-    for(var sku of this.skus) {
-        if(sku.value==val) {
-            this.newOrder.price=sku.price;
-            return;
-        }
+open_touchlog(i) {
+    if(typeof i === 'number' &&!isNaN(i)) {
+        var t=this.touchlogs[i];
+        this.newTl={n:t.name,t:t.t, act:'update',cid:t.cid};
+    } else {
+        this.newTl={n:i.name,t:0,cid:i.id, act:'add'};
     }
+    this.visible.newTl=true;
 },
 more_contacts() {
     this.visible.contact=!this.visible.contact;
@@ -345,6 +337,38 @@ show_relations(){
            }]
         })
     })
+},
+rmv_order_sku(i){
+    var sku=this.newOrder.skus[i];
+    var price=this.newOrder.price;
+    price-=sku.price*sku.num;
+    this.newOrder.price=price.toFixed(2);
+    this.newOrder.skus.splice(i,1);
+},
+add_order_sku(){
+    var sku = this.skuInput;
+    this.newOrder.skus.push({sku:sku.sku.id, skuName:sku.sku.name,
+        num:sku.num, price:sku.price, cmt:sku.cmt});
+    var total=0;
+    for(var s of this.newOrder.skus) {
+        total+=s.price*s.num;
+    }
+    this.newOrder.price=total.toFixed(2);
+},
+get_suppliers() {
+    if(!this.skuInput.sku.id) {
+        this.skuInput.suppliers=[];
+        return;
+    }
+    var opts={method:"GET", url:"/sku/listSupplier?id="+this.skuInput.sku.id};
+    request(opts, this.ibf.SERVICE_RES).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.skuInput.suppliers=[];
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.skuInput.suppliers=resp.data.list;
+    }); 
 }
 },
 template:`
@@ -391,9 +415,9 @@ template:`
     <q-item-section>{{tags.contactRelations}}</q-item-section>
     <q-item-section><q-icon name="people" color="primary"></q-icon></q-item-section>
   </q-item>
-  <q-item v-for="(tpl,k) in tmpl">
-    <q-item-section>{{tpl.n}}</q-item-section>
-    <q-item-section>{{ext[k]}}</q-item-section>
+  <q-item v-for="e in ext">
+    <q-item-section>{{e.n}}</q-item-section>
+    <q-item-section>{{e.v}}</q-item-section>
   </q-item>
 </q-list>
 
@@ -411,7 +435,9 @@ template:`
     <q-item-section>{{c.post}}</q-item-section>
     <q-item-section>{{c.creator}}</q-item-section>
     <q-item-section>{{c.createAt}}</q-item-section>
-    <q-item-section avatar><q-icon :name="icons['touchlog']" @click.stop="newTl={n:c.name,t:0,cid:c.id,tp:1,cmt:''};visible.newTl=true" color="primary"></q-btn></q-item-section>
+    <q-item-section avatar>
+     <q-icon :name="icons['touchlog']" @click.stop="open_touchlog(c)" color="primary"></q-icon>
+    </q-item-section>
   </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.contact>1">
@@ -426,7 +452,7 @@ template:`
 </q-banner>
 <div v-show="visible.touchlog">
 <q-list separator>
- <q-item v-for="t in touchlogs" dense clickable @click="newTl={n:t.name,t:t.t,tp:2,cid:t.cid,cmt:t.comment};visible.newTl=true">
+ <q-item v-for="(t,i) in touchlogs" dense clickable @click="open_touchlog(i)">
   <q-item-section>{{t.name}}</q-item-section>
   <q-item-section>{{t.comment}}</q-item-section>
   <q-item-section>{{t.creator}}</q-item-section>
@@ -447,13 +473,12 @@ template:`
   </template>
 </q-banner>
 <q-list separator v-show="visible.order">
-  <q-item v-for="o in orders" dense clickable @click="service.goto('/order?id='+o.id)">
-      <q-item-section>{{o.skuName}}</q-item-section>
-      <q-item-section>{{o.price}}</q-item-section>
-      <q-item-section>{{o.creator}}</q-item-section>
-      <q-item-section size>{{o.createAt}}</q-item-section>
-        <q-item-section thumbnail><q-icon :name="o.status"></q-icon></q-item-section>
-  </q-item>
+ <q-item v-for="o in orders" dense clickable @click="service.goto('/order?id='+o.id)">
+  <q-item-section>{{o.creator}}</q-item-section>
+  <q-item-section>{{o.price}}/{{o.payment}}</q-item-section>
+  <q-item-section>{{o.createAt}}</q-item-section>
+  <q-item-section thumbnail><q-icon :name="o.status"></q-icon></q-item-section>
+ </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.order>1">
  <q-pagination color="primary" :max="page.order" max-pages="10" v-model="page.curOrder"
@@ -499,13 +524,15 @@ template:`
       <q-item><q-item-section>
         <q-input :label="tags.contact.name" v-model="newContact.name" dense></q-input>
       </q-item-section></q-item>
-      <q-item><q-item-section><div class="row">
-          <div class="col">{{tags.sex}}</div>
-          <div class="col">
-         <q-radio dense v-model="newContact.sex" val="0" :label="tags.sexName[0]" color="indigo" keep-color></q-radio>
-         &nbsp;<q-radio dense v-model="newContact.sex" val="1" :label="tags.sexName[1]" color="pink" keep-color></q-radio>
-        </div>
-      </div></q-item-section></q-item>
+      <q-item><q-item-section>
+       <div class="row">
+         <div class="col">{{tags.sex}}</div>
+         <div class="col">
+          <q-radio dense v-model="newContact.sex" val="M" :label="tags.sexName.M" color="indigo" keep-color></q-radio>
+          <q-radio dense v-model="newContact.sex" val="F" :label="tags.sexName.F" color="pink" keep-color></q-radio>
+         </div>
+       </div>
+      </q-item-section></q-item>
       <q-item><q-item-section><div class="row">
           <div class="col">{{tags.contactLevel}}</div>
           <div class="col">
@@ -527,16 +554,16 @@ template:`
        <component-date-input :label="tags.contact.birthday" v-model="newContact.birthday" max="today"></component-date-input>
       </q-item-section></q-item>
       <!-- ext/comment -->
-      <q-item v-for="(tpl,k) in cntTmpl"><q-item-section>
-        <div v-if="tpl.t=='d'">
-          <component-date-input :close="tags.ok" :label="tpl.n" v-model="newContact.ext[k]"></component-date-input>
+      <q-item v-for="e in newContact.ext"><q-item-section>
+        <div v-if="e.t=='d'">
+          <component-date-input :close="tags.ok" :label="e.n" v-model="e.v"></component-date-input>
         </div>
-        <div v-else-if="tpl.t=='b'">
-          <q-checkbox v-model="newContact.ext[k]" :label="tpl.n" left-label></q-checkbox>
+        <div v-else-if="e.t=='b'">
+          <q-checkbox v-model="e.v" :label="e.n" left-label></q-checkbox>
         </div>
         <div v-else>
-         <q-input :label="tpl.n" v-model="newContact.ext[k]" dense :autogrow="tpl.t!='n'"
-          :type="tpl.t=='n'?'number':'textarea'"></q-input>
+         <q-input :label="e.n" v-model="e.v" dense :autogrow="e.t!='n'"
+          :type="e.t=='n'?'number':'textarea'"></q-input>
         </div>
       </q-item-section></q-item>
     </q-list>
@@ -556,29 +583,74 @@ template:`
     </q-card-section>
     <q-card-section class="q-pt-none">
     <q-list>
-      <q-item><q-item-section>
-        <q-select :label="tags.order.skuName" v-model="newOrder.skuId"
-         emit-value map-options :options="skus" @update:model-value="sku_changed"></q-select>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
-        <q-input :label="tags.order.price" v-model="newOrder.price" dense></q-input>
-      </q-item-section></q-item>
-      <!-- ext/comment -->
-      <q-item v-for="(tpl,k) in ordTmpl"><q-item-section>
-        <div v-if="tpl.t=='d'">
-          <component-date-input :close="tags.ok" :label="tpl.n" v-model="newOrder.ext[k]"></component-date-input>
+     <q-item><q-item-section>
+      <component-prj-selector v-model="prjInput" :label="tags.order.prj"></component-prj-selector>
+     </q-item-section></q-item>
+     <!-- ext/comment -->
+     <q-item v-for="e in dtl.ext"><q-item-section>
+        <div v-if="e.t=='d'">
+          <component-date-input :close="tags.ok" :label="e.n" v-model="e.v"></component-date-input>
         </div>
-        <div v-else-if="tpl.t=='b'">
-          <q-checkbox v-model="newOrder.ext[k]" :label="tpl.n" left-label></q-checkbox>
+        <div v-else-if="e.t=='b'">
+          <q-checkbox v-model="e.v" :label="e.n" left-label></q-checkbox>
         </div>
         <div v-else>
-         <q-input :label="tpl.n" v-model="newOrder.ext[k]" dense :autogrow="tpl.t!='n'"
-          :type="tpl.t=='n'?'number':'textarea'"></q-input>
+         <q-input :label="e.n" v-model="e.v" dense :autogrow="e.t!='n'"
+          :type="e.t=='n'?'number':'textarea'"></q-input>
         </div>
-      </q-item-section></q-item>
-      <q-item><q-item-section>
+     </q-item-section></q-item>
+     <q-item><q-item-section>
         <component-user-selector :label="tags.signers" :accounts="newOrder.nextSigners"></component-user-selector>
-      </q-item-section></q-item>
+     </q-item-section></q-item>
+     <q-item><q-item-section>
+      <q-banner inline-actions class="bg-indigo-1 q-mt-sm" dense>
+       {{tags.order.skuList}}
+      </q-banner>
+      <q-list dense separator>
+      <q-item clickable v-for="(s,i) in newOrder.skus">
+       <q-item-section>{{s.skuName}}</q-item-section>
+       <q-item-section>{{s.num}}</q-item-section>
+       <q-item-section side>{{s.price}}</q-item-section>
+       <q-item-section side>
+        <q-icon color="red" name="clear" @click="rmv_order_sku(i)"></q-icon>
+       <q-item-section>
+      </q-item>
+      </q-list>
+      <q-list dense>
+       <q-item>
+       <q-item-section>
+        <component-sku-selector v-model="skuInput.sku" :label="tags.order.skuName" dense></component-sku-selector>
+       </q-item-section>
+       <q-item-section side>{{skuInput.price}}
+        <q-popup-edit v-model="skuInput.price" v-slot="scope" @before-show="get_suppliers()">
+         <q-input v-model.number="scope.value" dense autofocus @keyup.enter="scope.set">
+           <template v-slot:append>
+            <q-icon name="save" color="primary" @click="scope.set"></q-icon>
+           </template>
+         </q-input>
+         <q-list dense>
+           <q-item v-for="s in skuInput.suppliers" clickable @click="scope.value=s.price;scope.set()">
+            <q-item-section>{{s.name}}</q-item-section>
+            <q-item-section side>{{s.price}}</q-item-section>
+           </q-item>
+         </q-list>
+        </q-popup-edit>
+       </q-item-section>
+       </q-item>
+       <q-item>
+       <q-item-section>
+        <q-input v-model.number="skuInput.num" :label="tags.order.skuNum" dense></q-input>
+       </q-item-section>
+       <q-item-section side>
+        <q-icon name="add_circle" @click="add_order_sku" color="primary"></q-icon>
+       </q-item-section>
+      </q-item>
+      </q-list>
+     
+     </q-item-section></q-item>
+     <q-item><q-item-section>
+       <q-input :label="tags.order.price" v-model="newOrder.price" dense></q-input>
+     </q-item-section></q-item>
     </q-list>
     </q-card-section>
     <q-card-actions align="right">
@@ -602,10 +674,14 @@ template:`
       </q-item-section></q-item>
     </q-list>
     </q-card-section>
-    <q-card-actions align="right">
-      <q-btn :label="tags.ok" color="primary" @click="opr_touchlog(newTl.tp)"></q-btn>
-      <q-btn :label="tags.remove" color="primary" @click="opr_touchlog(3)" v-show="newTl.tp==2"></q-btn>
+    <q-card-actions class="row">
+     <div class="col">
+      <q-btn :label="tags.remove" flat color="red" @click="opr_touchlog('rmv')" v-show="newTl.tp==2"></q-btn>
+     </div>
+     <div class="col text-right">
+      <q-btn :label="tags.ok" color="primary" @click="opr_touchlog(newTl.act)"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+     </div>
     </q-card-actions>
   </q-card>
 </q-dialog>
@@ -628,16 +704,16 @@ template:`
         <q-input :label="tags.customer.business" v-model="dtl.business" dense autogrow></q-input>
       </q-item-section></q-item>
       <!-- ext/comment -->
-      <q-item v-for="(tpl,k) in tmpl"><q-item-section>
-        <div v-if="tpl.t=='d'">
-          <component-date-input :close="tags.ok" :label="tpl.n" v-model="ext[k]"></component-date-input>
+      <q-item v-for="e in dtl.ext"><q-item-section>
+        <div v-if="e.t=='d'">
+          <component-date-input :close="tags.ok" :label="e.n" v-model="e.v"></component-date-input>
         </div>
         <div v-else-if="tpl.t=='b'">
-          <q-checkbox v-model="ext[k]" :label="tpl.n" left-label></q-checkbox>
+          <q-checkbox v-model="e.v" :label="e.n" left-label></q-checkbox>
         </div>
         <div v-else>
-         <q-input borderless :label="tpl.n" v-model="ext[k]" dense :autogrow="tpl.t!='n'"
-          :type="tpl.t=='n'?'number':'textarea'"></q-input>
+         <q-input borderless :label="e.n" v-model="e.v" dense :autogrow="e.t!='n'"
+          :type="e.t=='n'?'number':'textarea'"></q-input>
         </div>
       </q-item-section></q-item>
     </q-list>
