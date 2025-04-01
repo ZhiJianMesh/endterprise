@@ -3,6 +3,7 @@ import MonthInput from "/assets/v3/components/month_input.js"
 import SkuSelector from "./components/sku_selector.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import DateInput from "/assets/v3/components/date_input.js"
+import {sta2icon} from '/assets/v3/components/workflow.js';
 
 const EMPTY_PUR={expDate:'',descr:'',type:'SELF',receiver:'',buyer:[]};
 const RT_TAB="prjproc_tab";
@@ -148,7 +149,7 @@ query_purchase(pg) {
             }
             dt.setTime(b.expDate*60000);
             b.expDate=date2str(dt);
-            b.status=this.tags.sta2icon(b.status);
+            b.status=sta2icon(b.status);
             b.type=this.tags.purchase.types[b.type];
             list.push(b);
         }

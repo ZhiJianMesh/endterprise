@@ -2,6 +2,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js";
 import DatetimeInput from "/assets/v3/components/datetime_input.js";
 import {datetimeToDate} from '/assets/v3/components/datetime_input.js';
 import {addrToStr} from '/assets/v3/components/addr_input.js';
+import {sta2icon} from '/assets/v3/components/workflow.js';
 import AddrInput from "/assets/v3/components/addr_input.js";
 import PrjInput from "./components/prj_selector.js";
 
@@ -44,7 +45,7 @@ query_busis(pg) {
             b.start_s=datetime2str(dt);
             dt.setTime(b.end*60000);
             b.end_s=datetime2str(dt);
-            b.status=this.tags.sta2icon(b.status);
+            b.status=sta2icon(b.status);
             return b;
         });
         this.busiPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);

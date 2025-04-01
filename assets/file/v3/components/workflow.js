@@ -1,6 +1,17 @@
 import AlertDialog from "./alert_dialog.js";
 import UserSelector from "./user_selector.js"
 
+function sta2icon(s){//工作流状态转图标
+  if(s==0) {
+    return 'star_border';
+  }
+  if(s==100) {
+    return 'star';
+  }
+  return 'star_half';
+}
+export {sta2icon};
+
 const _WF_={
 defaultTags : {
     close:"关闭",

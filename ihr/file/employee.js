@@ -1,3 +1,4 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
 export default {
 inject:['service', 'tags'],
 data() {return {
@@ -95,7 +96,7 @@ getWorkflows(pg) {
         this.workflow.list=resp.data.list.map(e => {
             dt.setTime(e.createAt*60000);
             e.createAt=date2str(dt);
-            e.staIcon=this.tags.sta2icon(e.flSta);
+            e.staIcon=sta2icon(e.flSta);
             return e;
         });
         this.workflow.max=Math.ceil(resp.data.total/pgSize);

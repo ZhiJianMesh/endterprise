@@ -1,3 +1,4 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
 export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
@@ -25,7 +26,7 @@ detail() {
         }
         this.dtl=resp.data;
         this.dtl.createAt=new Date(resp.data.createAt*60000).toLocaleString();
-        this.dtl.icon=this.tags.sta2icon(this.dtl.status);
+        this.dtl.icon=sta2icon(this.dtl.status);
         this.ext=this.service.decodeExt(this.dtl.comment, this.tmpl);
     });
 },

@@ -323,15 +323,6 @@ cn:{
     mbrRole:"角色",
     account:"帐号"
   },
-  sta2icon:function(s){
-    if(s==0) {
-      return 'star_border';
-    }
-    if(s==100) {
-      return 'star';
-    }
-    return 'star_half';
-  },
   flow:{
     //中文使用默认的工作流标签
   },

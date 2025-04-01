@@ -1,3 +1,5 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
+
 export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
@@ -22,7 +24,7 @@ fmt_order_lines(cols, lines) {
         }
         dt.setTime(ord.createAt*60000);
         ord.createAt=date2str(dt);
-        ord.status=this.tags.sta2icon(ord.status);
+        ord.status=sta2icon(ord.status);
         orders.push(ord)
     }
     this.orders=orders;

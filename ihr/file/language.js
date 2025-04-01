@@ -281,15 +281,6 @@ cn:{
     '6203':'被对方拒绝或公司放弃的人才才可以删除',
     '6204':'已经入职或不在人才库中',
     'unknown':'未知错误'
-  },
-  sta2icon:function(s){
-    if(s==0) {
-      return 'star_border';
-    }
-    if(s==100) {
-      return 'star';
-    }
-    return 'star_half';
   }
 }
 };

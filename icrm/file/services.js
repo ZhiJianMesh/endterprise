@@ -21,7 +21,7 @@ fmt_lines(cols, lines) {
         }
         dt.setTime(sv.createAt*60000);
         sv.createAt=dt.toLocaleDateString();
-        sv.status=this.tags.sta2icon(sv.status);
+        sv.status=sta2icon(sv.status);
         list.push(sv)
     }
     this.list=list;

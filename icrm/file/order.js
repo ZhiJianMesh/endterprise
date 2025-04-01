@@ -1,4 +1,5 @@
 import BankSelector from "/ibfbase/components/bank_selector.js"
+import {sta2icon} from '/assets/v3/components/workflow.js';
 
 const EMPTY_PUR={expDate:'',descr:'',type:'SELL',receiver:'',buyer:[]};
 
@@ -42,7 +43,7 @@ detail(tmpl) {
         }
         var dtl=resp.data;
         dtl.createAt=date2str(new Date(dtl.createAt*60000));
-        dtl.icon=this.tags.sta2icon(dtl.status);
+        dtl.icon=sta2icon(dtl.status);
         dtl.needPay=dtl.price-dtl.payment;
         if(!('cost' in dtl)) {
             dtl['cost']=0;

@@ -1,3 +1,5 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
+
 export default {
 inject:['service', 'tags', 'icons', 'ibf'],
 data() {return {
@@ -41,7 +43,7 @@ detail(tmpl) {
         }
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
         this.dtl.createAt=date2str(new Date(resp.data.createAt*60000));
-        this.dtl.icon=this.tags.sta2icon(this.dtl.status);
+        this.dtl.icon=sta2icon(this.dtl.status);
         this.dtl.ext=this.service.decodeExt(this.dtl.comment, tmpl);
     });
 },
@@ -57,7 +59,7 @@ query_orders(pg) {
         for(var o of resp.data.orders){
             dt.setTime(o.createAt*60000);
             o.createAt=date2str(dt);
-            o.status=this.tags.sta2icon(o.status);
+            o.status=sta2icon(o.status);
             orders.push(o);
         }
         this.orders=orders;

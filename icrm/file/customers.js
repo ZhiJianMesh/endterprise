@@ -1,3 +1,5 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
+
 export default {
 inject:['service', 'tags', "icons"],
 data() {return {
@@ -33,7 +35,7 @@ fmt_customer_lines(data) {
         }
         dt.setTime(cu.createAt*60000);
         cu.createAt=date2str(dt);
-        cu.status=this.tags.sta2icon(cu.status);
+        cu.status=sta2icon(cu.status);
         tl=touchlogs[cu.id];//客户可以没有最新的接触记录
         if(tl) {//customer->cmt,createAt,creator,contact
             cu['comment']=tl[0]+'@'+tl[3];

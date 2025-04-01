@@ -1,3 +1,4 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
 export default {
 inject:['service', 'tags'],
 data() {return {
@@ -63,7 +64,7 @@ convert(src, p) {
     dt.setTime(p.update_time);
     p.updateAt=date2str(dt);
     if(src.entry) {
-        p.entry.staIcon=this.tags.sta2icon(src.entry.status);
+        p.entry.staIcon=sta2icon(src.entry.status);
         dt.setTime(src.entry.createAt*60000);
         p.entry.createAt=date2str(dt);
     }

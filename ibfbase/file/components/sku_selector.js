@@ -32,7 +32,7 @@ get_opts(val,update) {
         var name;
         for(var s of resp.data.list) {
             name=s.name+'('+s.speci+')';
-            opts.push({value:s.id, label:name});
+            opts.push({value:s.id, label:name, type:s.type, noHead:s.noHead});
         }
         this.opts=opts;
     })
@@ -43,10 +43,10 @@ computed: {
   value: {
       get() {
         var v=this.modelValue;
-        return {value:v.id,label:v.name};
+        return {value:v.id, label:v.name, type:v.type, noHead:v.noHead};
       },
       set(v) {
-        this.$emit('update:modelValue', {id:v.value, name:v.label});
+        this.$emit('update:modelValue', {id:v.value, name:v.label, type:v.type, noHead:v.noHead});
       }
   }
 },

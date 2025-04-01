@@ -1,3 +1,4 @@
+import {sta2icon} from '/assets/v3/components/workflow.js';
 export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
@@ -22,7 +23,7 @@ fmt_pay_lines(cols, lines) {
         }
         dt.setTime(pm.createAt);
         pm.createAt=dt.toLocaleDateString();
-        pm.status=this.tags.sta2icon(pm.status);
+        pm.status=sta2icon(pm.status);
         list.push(pm)
     }
     this.list=list;

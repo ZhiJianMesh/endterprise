@@ -111,15 +111,6 @@ cn:{
     '5114':'订单中必须指定SKU',
     'unknown':"未知错误"
   },
-  sta2icon:function(s){
-    if(s==0) {
-      return 'star_border';
-    }
-    if(s==100) {
-      return 'star';
-    }
-    return 'star_half';
-  },
   home:{
     customers:"客户",
     contacts:"联系人",

@@ -2,6 +2,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js";
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
 import DateInput from "/assets/v3/components/date_input.js"
 import SkuSelector from "./components/sku_selector.js"
+import {sta2icon} from '/assets/v3/components/workflow.js';
 
 export default {
 inject:["ibf"],
@@ -43,7 +44,7 @@ query() {
         var dt=new Date();
         dt.setTime(p.expDate*60000);
         p.expDate_s=date2str(dt);
-        p.staIcon=this.tags.sta2icon(p.status);
+        p.staIcon=sta2icon(p.status);
         if(p.cost<=0) p.cost=this.tags.purchase.notCalcu;
         if(p.grn) {//state,inDate,outDate,execAcc,cmt
             var g=p.grn;
@@ -62,7 +63,7 @@ query() {
             g.state=this.tags.gdn.state[g.state];
         }      
         this.dtl=p;
-        this.editable=p.status==0&&p.power=='O';
+        this.editable=p.status==0;
     })
 },
 show_sku() {
