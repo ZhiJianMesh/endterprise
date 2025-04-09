@@ -11,12 +11,12 @@ data() {return {
 }},
 props: {
     accType:{type:String,required:true, default:"N"},
-    label:{type:String,required:true, default:"登录"},
-    account:{type:String,required:true, default:"帐号"},
-    pwd:{type:String,required:true, default:"密码"},
-    close:{type:String,default:"关闭"},
-    failToCall:{type:String,default:"调用失败"},
-    cancel:{type:String,default:"取消"}
+    label:{type:String,required:false, default:"登录"},
+    account:{type:String,required:false, default:"帐号"},
+    pwd:{type:String,required:false, default:"密码"},
+    close:{type:String,required:false, default:"关闭"},
+    failToCall:{type:String,required:false, default:"调用失败"},
+    cancel:{type:String,required:false, default:"取消"}
 },
 components:{
     "alert-dialog":AlertDialog
@@ -51,6 +51,7 @@ template: `
     <q-card-section>
       <div class="text-h6">{{label}}</div>
     </q-card-section>
+	<q-separator></q-separator>
     <q-card-section class="q-pt-none">
       <q-input dense v-model="loginAcc" autofocus :label="account"></q-input>
       <q-input dense v-model="loginPwd" autofocus :type="hidePwd?'password':'text'" :label="pwd">

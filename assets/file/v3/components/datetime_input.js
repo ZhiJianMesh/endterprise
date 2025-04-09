@@ -127,7 +127,10 @@ template: `<q-input dense :label="label" v-model="oldVal" readonly :disable="dis
 <q-icon name="event" class="cursor-pointer">
  <q-popup-proxy cover transition-show="scale" transition-hide="scale" ref="_dt_input_dlg">
  <q-card>
-  <q-card-section><div class="text-h6">{{value}}</div></q-card-section>
+  <q-card-section>
+   <div class="text-h6">{{value}}</div>
+  </q-card-section>
+  <q-separator></q-separator>
   <q-card-section>
    <q-date minimal flat v-model="dateStr" :mask="format" emit-immediately
    :locale="{daysShort:weekDays,months:months,monthsShort:months}"

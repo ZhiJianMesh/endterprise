@@ -1,7 +1,7 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import MonthInput from "/assets/v3/components/month_input.js"
 import SkuSelector from "./components/sku_selector.js"
-import UserSelector from "/assets/v3/components/user_selector.js"
+import UserInput from "/assets/v3/components/user_input.js"
 import DateInput from "/assets/v3/components/date_input.js"
 import {sta2icon} from '/assets/v3/components/workflow.js';
 
@@ -15,7 +15,7 @@ components:{
     "month-input":MonthInput,
     "date-input":DateInput,
     "sku-select":SkuSelector,
-    "user-select":UserSelector
+    "user-input":UserInput
 },
 data() {return {
     pid:this.$route.query.id,
@@ -194,7 +194,7 @@ purchase_do() {
     dta.pid=this.pid;
     dta.prjName=this.prj.name;
     dta.expDate=parseInt(Date.parse(pur.expDate)/60000);
-    dta.buyer=pur.buyer[0];
+    dta.buyer=pur.buyer.account;
     dta.skus=this.purchase.skus;
     request({method:"POST", url:"/purchase/apply", data:dta}, this.ibf.SERVICE_RES).then(resp=>{
         if(resp.code != RetCode.OK) {
@@ -344,7 +344,7 @@ template:`
    :label="tags.purchase.receiver"></q-input>
   <date-input v-model="purchase.dta.expDate" :format="tags.dateFmt"
   :label="tags.purchase.expDate" min="today"></date-input>
-  <user-select :accounts="purchase.dta.buyer" :label="tags.purchase.buyer"></user-select>
+  <user-input v-model="purchase.dta.buyer" :label="tags.purchase.buyer"></user-input>
   <q-input v-model="purchase.dta.descr" :label="tags.cmt" dense></q-input>
   <q-banner inline-actions class="bg-indigo-1 q-mt-sm" dense>
     {{tags.purchase.skuList}}

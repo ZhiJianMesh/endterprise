@@ -12,7 +12,7 @@ data() {return {
     ctrl:{fun:'',pi:{},entryDlg:false,cntDlg:false},
     contact:{dlg:false, type:'',act:'',cmt:'',at:'',uid:this.$route.query.uid,tag:''},
     opts:{edu:[],state:[],zone:[],office:[],worktime:[]},
-    userInput:[]
+    userInput:{id:-1,account:''}
 }},
 created(){
     this.get();
@@ -99,7 +99,7 @@ modify() {
 doEntry() {
     var url="/api/wfemployee/entry";
     var dta=copyObjExc(this.empInfo,['entryAt']);
-    dta.signer=this.userInput[0];
+    dta.signer=this.userInput.account;
     dta.entryAt=parseInt(new Date(this.empInfo.entryAt).getTime()/60000);
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -400,7 +400,7 @@ template:`
         :close="tags.ok"></date-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <user-selector :label="tags.employee.signer" :multi="false" :accounts="userInput" :useid="false"></user-selector>
+       <user-input :label="tags.employee.signer" v-model="userInput"></user-input>
       </q-item-section></q-item>
      </q-list>
     </q-card-section>

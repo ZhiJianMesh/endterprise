@@ -2,7 +2,7 @@
 export default{
 data(){return {end:0,start:0}},
 props: {
-    modelValue:{type:String},
+    modelValue:{type:String,required:true},
     label:{type:String,required:true},
     min:{type:String,default:''},
     max:{type:String,default:''},

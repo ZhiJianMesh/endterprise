@@ -3,18 +3,23 @@ export default {
 data() {return {
     cfmDlg:false,
     message:'',
-    cb:null
+    cb:null,
+    iTitle:''
 }},
 props: {
-    title:{type:String,default:"注意"},
+    title:{type:String,default:"提醒确认"},
     ok:{type:String,default:"确定"},
     close:{type:String,default:"关闭"}
 },
+created(){
+    this.iTitle=this.title;
+},
 methods:{
-show(msg,callback) {
+show(msg,callback,title) {
     this.message=msg;
     this.cfmDlg=true;
     this.cb=callback; //promise or function
+    if(title)this.iTitle=title;
 },
 confirm(){
     if(this.cb){
@@ -36,9 +41,12 @@ cancel() {
 }
 },
 template: `
-<q-dialog v-model="cfmDlg">
+<q-dialog v-model="cfmDlg" @hide="iTitle=title">
   <q-card style="min-width:40vw;">
-    <q-card-section><div class="text-h6">{{title}}</div></q-card-section>
+    <q-card-section>
+     <div class="text-h6">{{iTitle}}</div>
+    </q-card-section>
+    <q-separator></q-separator>
     <q-card-section class="q-pt-none">{{message}}</q-card-section>
     <q-card-actions align="right" class="q-pr-md">
      <q-btn :label="ok" color="primary" @click="confirm"></q-btn>

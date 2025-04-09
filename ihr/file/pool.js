@@ -173,7 +173,7 @@ template:`
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-select v-model="perInfo.maxEdu" :options="eduOpts" emit-value
-        :label="tags.pool.maxEdu" dense map-options></q-select>
+        :label="tags.employee.maxEdu" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-select v-model="perInfo.firstEdu" :options="eduOpts" emit-value

@@ -2,30 +2,38 @@
 export default {
 data() {return {
     dlg:false,
+    iTitle:'',
     message:''
 }},
 props: {
     errMsgs:{type:Object,default:{}},
-    title:{type:String,default:"警告"},
+    title:{type:String,default:"注意"},
     close:{type:String,default:"关闭"}
 },
-created(){},
+created(){
+    this.iTitle=this.title;
+},
 methods:{
-show(msg) {
+show(msg,title) {
     this.message=msg;
+    if(title) this.iTitle=title;
     this.dlg=true;
 },
-showErr(code,info) {
+showErr(code,info,title) {
     this.message=formatErr(code,info,this.errMsgs); //必须提前加载errors.xx.js
+    if(title) this.iTitle=title;
     this.dlg=true;
 }
 },
 template: `
-<q-dialog v-model="dlg">
-  <q-card style="min-width:40vw;">
-    <q-card-section><div class="text-h6">{{title}}</div></q-card-section>
+<q-dialog v-model="dlg" @hide="iTitle=title">
+  <q-card style="min-width:60vw;">
+    <q-card-section class="q-pb-none">
+     <div class="text-h6">{{iTitle}}</div>
+    </q-card-section>
+    <q-separator></q-separator>
     <q-card-section class="q-pt-none" v-html="message"></q-card-section>
-    <q-card-actions align="right" class="q-pr-md">
+    <q-card-actions align="right">
      <q-btn flat :label="close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>

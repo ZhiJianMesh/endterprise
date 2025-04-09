@@ -71,19 +71,12 @@ setCity(c) {
         }
     });
 },
-setCounty(c) {
+setCounty(c) { //县|区
     this.addr.county=c;
-    var addr={
-        code:this.addr.county.zip,
-        province:this.addr.province.name,
-        city:this.addr.city.name,
-        county:this.addr.county.name
-    }
-    this.$emit('update:modelValue', addr);
 },
 confirm(){
     var addr={
-        code:this.addr.county.zip,
+        code:this.addr.county.zip, //邮政编码
         province:this.addr.province.name,
         city:this.addr.city.name,
         county:this.addr.county.name

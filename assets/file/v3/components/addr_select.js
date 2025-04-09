@@ -7,12 +7,13 @@ data() {return {
     counties:[]
 }},//选择项，调用search获得
 props: {
-    modelValue:{type:Object},
-    label:{type:String,required:true}
+    modelValue:{type:Object,required:true},
+    country:{type:Number,required:false,default:156}, //国家码
+    label:{type:String,required:false,default:''}
 },
 emits: ['update:modelValue'],
 created(){
-    this.subs(156,list=>{
+    this.subs(this.country,list=>{
         this.provinces=list;
         this.addr.province=list[0];
         this.chgProvince(list[0]);
@@ -48,7 +49,7 @@ chgProvince(p) {
 },
 chgCity(c) {
     this.subs(c.value,list=>{
-        this.counties=list;
+        this.counties=list; //县|区
         if(list.length>0) {
             this.addr.county=list[0];
         } else {
@@ -59,7 +60,7 @@ chgCity(c) {
 },
 chgCounty() {
     var addr={
-        code:this.addr.county.zip,
+        code:this.addr.county.zip, //邮政编码
         province:this.addr.province.label,
         city:this.addr.city.label,
         county:this.addr.county.label
@@ -67,33 +68,9 @@ chgCounty() {
     this.$emit('update:modelValue', addr);
 }
 },
-computed: {
-value: {
-  get() {
-    var m=this.modelValue;
-    if(!m.province) {
-        return null;
-    }
-    return m.province+' '+m.city+' '+m.county;
-  },
-  set(v) {
-    if(!v) {
-        this.$emit('update:modelValue', {province:'',city:'',county:'',code:''});
-    } else {
-        var addr={
-            code:this.addr.county.zip,
-            province:this.addr.province.name,
-            city:this.addr.city.name,
-            county:this.addr.county.name
-        }
-        this.$emit('update:modelValue', addr);
-    }
-  }
-}
-},
 template: `
 <div class="row justify-start items-center q-gutter-lg">
- <div>{{label}}</div>
+ <div v-if="label!=''">{{label}}</div>
  <div class="row justify-start">
   <q-select v-model="addr.province" :options="provinces" @update:model-value="chgProvince(addr.province)"></q-select>
   <q-select v-model="addr.city" :options="cities" @update:model-value="chgCity(addr.city)"></q-select>

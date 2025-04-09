@@ -1,7 +1,8 @@
 //一边输入帐号，一边过滤用户的组件
 export default {
 data() {return {
-    accOptions:[],//选择项，调用search获得
+    opts:[],//选择项，调用search获得
+    oldLen:0,
     values:null //选中项，不能赋值[]，会显示一个空选项
 }},
 props: {
@@ -14,14 +15,21 @@ props: {
     dense:{type:Boolean,required:false,default:false}
 },
 methods:{
-search_users(val,update) {
+get_opts(val,update) {
+  var ol=this.oldLen;
+  this.oldLen=val.length;
   if(val==='') {
     update(() => {
-      this.accOptions=[]
+      this.opts=[]
     })
     return;
   }
   update(() => {
+    if(val.length>1) {
+      if(this.opts.length==0 && val.length>ol) {
+        return;//已有的输入找不到，更多的输入更找不到
+      }
+    }
     var url;
     if(this.service=='') {
       url="/api/user/search?limit=10&s="+val;
@@ -30,7 +38,7 @@ search_users(val,update) {
     }
     request({method:"GET",url:url}, SERVICE_USER).then(resp => {
         if(resp.code!=RetCode.OK) {
-            this.accOptions=[]
+            this.opts=[]
             return;
         }
 
@@ -50,11 +58,11 @@ search_users(val,update) {
             val=this.useid ? user.id : user.account;
             opts.push({value:val, label:user.account+' '+user.nickName});
         }
-        this.accOptions=opts;
+        this.opts=opts;
     })
   })
 },
-input_user(val, done) {
+input_user(val, done) { //添加选项
   if (val.length > 0) {
      done(val, 'add-unique')
   }
@@ -75,10 +83,10 @@ changed() {
 }
 },
 template: `
-<q-select v-model="values" :label="label" :options="accOptions"
+<q-select v-model="values" :label="label" :options="opts"
   use-input use-chips :multiple="multi"
   hide-dropdown-icon input-debounce=200
-  @new-value="input_user" @filter="search_users"
+  @new-value="input_user" @filter="get_opts"
   @update:model-value="changed" :dense="dense">
  <template v-slot:selected-item="scope">
   <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"
