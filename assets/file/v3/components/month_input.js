@@ -86,7 +86,10 @@ parse(s,def) {
     if(!s) {
         return def;
     }
-    if(s.year&&s.month) return s; //解析过
+    if(typeof s !== 'string') {
+        if(s.year&&s.month) return s; //解析过
+        return def;
+    }
     var cfg=s.trim().toLowerCase();
     var dt=new Date();
     if(cfg=="cur") {

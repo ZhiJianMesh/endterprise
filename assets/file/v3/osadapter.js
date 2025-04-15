@@ -2,6 +2,7 @@ const SERVICE_USER="user";
 const SERVICE_UNIUSER="uniuser";
 const SERVICE_CONFIG="config";
 const SERVICE_ADDR="address";
+const MAX_INT=2147483648; //4字节整数最大值
 
 const RetCode={
 OK:0,

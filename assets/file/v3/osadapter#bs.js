@@ -3,6 +3,7 @@ const SERVICE_USER="user";
 const SERVICE_UNIUSER="uniuser";
 const SERVICE_CONFIG="config";
 const SERVICE_ADDR="address";
+const MAX_INT=2147483648;
 
 const COMPANY_ID="cid";
 const COMPANY_NAME="store_company_name";

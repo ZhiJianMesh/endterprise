@@ -137,6 +137,7 @@ props: {
     flowTags:{type:Object, required:false},
     serviceTags:{type:Object,required:true} //引用此组件的服务的标签，用于显示ext中的tag      
 },
+emits: ['update:modelValue'],
 created(){
     _WF_.flowDef(this.flowid).then(sd=>{
         this.flow=sd;
@@ -250,11 +251,14 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
     if(/^\d+$/.test(signer)) {//步骤号
         service=_WF_.service;
         url=appendParas("/stepSigners",{flowid:this.flowid,did:this.did,service:this.service,step:signer});
-    } else if(/^\/.+/.test(signer)){
+    } else if(/^\/.+/.test(signer)){//一个url，调用后获得signer
         service=this.service;
         url=appendParas(signer,{flowid:this.flowid,did:this.did,step:step});
-    } else {
-        return new Promise(resolve=>resolve(false));
+    } else { //具体的帐号
+        return new Promise(resolve=>{
+            this.nextSigners=[signer];
+            resolve(false)
+        });
     }
     return request({method:"GET", url:url}, service).then(resp=>{
         if(resp.code==RetCode.OK) {
