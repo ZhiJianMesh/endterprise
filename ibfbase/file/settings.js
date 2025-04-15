@@ -1,0 +1,87 @@
+import WfSettings from "/assets/v3/components/wfsettings.js";
+import CfgSettings from "/assets/v3/components/cfgsettings.js";
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
+import AlertDialog from "/assets/v3/components/alert_dialog.js"
+
+//简易的用户&群组管理
+export default {
+inject:['ibf'],
+components:{
+    "wfsettings":WfSettings,
+    "cfgsettings":CfgSettings,
+    "alert-dialog":AlertDialog,
+    "confirm-dialog":ConfirmDialog
+},
+data() {return {
+    service:this.$route.query.service, //运行的服务
+    flow:{},
+    cfg:{},
+    confirmDlg:null,
+    alertDlg:null,
+    tags:this.ibf.tags
+}},
+mounted(){//不能在created中赋值，更不能在data中
+    this.confirmDlg=this.$refs.confirmDlg;
+    this.alertDlg=this.$refs.errMsg;
+},
+methods:{
+back() {
+    if(!this.flow.changed&&!this.cfg.changed) {
+        this.ibf.back();
+        return;
+    }
+    this.$refs.confirmDlg.show(this.tags.changeNotSaved,()=>{
+        this.ibf.back();
+    })
+},
+save_flow() {
+    this.$refs.wfSet.save();
+},
+save_cfg(){
+    this.$refs.cfgSet.save();
+}
+},
+template:`
+<q-layout view="lHh lpr lFf" container style="height:100vh">
+  <q-header elevated>
+   <q-toolbar>
+     <q-btn flat round icon="arrow_back" dense @click="back"></q-btn>
+     <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
+   </q-toolbar>
+  </q-header>
+  <q-page-container>
+    <q-page class="q-pa-none">
+<q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
+  {{tags.flowDef}}
+  <template  v-slot:action>
+   <q-btn icon="save" @click.stop="save_flow" class="cursor-pointer"
+    :disable="!flow.changed" color="primary" flat dense></q-btn>
+  </template>
+</q-banner>
+<div class="q-pa-md">
+ <wfsettings v-model="flow" ref="wfSet" class="q-pa-md"
+ :confirmDlg="confirmDlg" :alertDlg="alertDlg"
+ :service="service" :flowTags="tags.flowTags"></wfsettings>
+</div> 
+
+<q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
+   {{tags.cfgDef}}
+   <template  v-slot:action>
+    <q-btn icon="save" @click.stop="save_cfg" class="cursor-pointer"
+     :disable="!cfg.changed" color="primary" flat dense></q-btn>
+   </template>
+ </q-banner>
+ <div class="q-pa-md">
+  <cfgsettings v-model="cfg" ref="cfgSet" class="q-pa-md"
+  :confirmDlg="confirmDlg" :alertDlg="alertDlg"
+  :service="service" :cfgTags="tags.flowTags"></cfgsettings>
+ </div>
+    </q-page>
+  </q-page-container>
+</q-layout>
+
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></alert-dialog>
+<confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
+
+`
+}

@@ -28,6 +28,8 @@
     <q-btn :label="tags.home.bulletin" @click="goto('/brief')"
      icon="svguse:/assets/imgs/meshicons.svg#barChart"
      color="red" flat></q-btn>
+    <q-btn :label="tags.home.settings" @click="goto('/settings?service=icrm')"
+     icon="settings" color="primary" flat></q-btn>
   </div>
   </q-header>
   <q-page-container>
@@ -125,7 +127,8 @@ routes:[
 {path:'/order', component:()=>import('./order.js')},
 {path:'/workflow', component:()=>import('./workflow.js')},
 {path:'/brief', component:()=>import('./brief.js')},
-{path:'/balance', component:()=>import('./balance.js')}
+{path:'/balance', component:()=>import('./balance.js')},
+{path:'/settings', component:()=>import('/ibfbase/settings.js')}
 ]});
 
 //service定义
