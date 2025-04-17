@@ -1,26 +1,21 @@
-const EMPTY_GRN={purId:'',tranNo:'',outDate:'',cmt:''};
-const EMPTY_GDN={purId:'',tranNo:''};
-const EMPTY_IN={cmt:'',price:'',num:'',sku:''};
+import PrjSelector from "/ibfbase/components/prj_selector.js"
+
+const EMPTY_IN={cmt:'',price:'',num:'',sku:'',prj:{value:-1,label:''}};
 const RT_TAB="storage_tab";
 
-import PurSelect from "./components/purchase_selector.js";
-import SkuSelect from "/ibfbase/components/sku_selector.js";
 export default {
 components:{
-    "pur-select":PurSelect,
-    "sku-select":SkuSelect
+    "prj-select":PrjSelector
 },
 inject:['service', 'tags'],
 data() {return {
     res:[], //工厂中的资产清单
-    grns:[], //入库单
-    gdns:[], //出库单
     outlogs:[],
     
-    resCtrl:{cur:1,max:0,inDlg:false,in:{},order:'',ordIcon:'swap_vert'},
-    grnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
-    gdnCtrl:{cur:1,max:0,dlg:false,state:'WAIT',stateOpts:[],no:-1,dta:{}},
-    olCtrl:{cur:1,max:0},
+    //直接入库
+    resCtrl:{cur:1,max:0,inDlg:false,prj:{},
+        in:{}, order:'', ordIcon:'swap_vert'},
+    olCtrl:{cur:1,max:0}, //出厂日志
     unattach:{no:'',user:[],cmt:'',dlg:false},
     check:{dlg:false,no:'',state:''},
     
@@ -40,12 +35,6 @@ created(){
         this.tab=tab?tab:'res';
         this.tab_changed(this.tab);
     });
-    for(var i in this.tags.grnState) {
-        this.grnCtrl.stateOpts.push({value:i,label:this.tags.grnState[i]});
-    }
-    for(var i in this.tags.gdnState) {
-        this.gdnCtrl.stateOpts.push({value:i,label:this.tags.gdnState[i]});
-    }
 },
 methods:{
 query_res(pg) {
@@ -69,68 +58,6 @@ query_res(pg) {
         }
         this.res = resp.data.list;
         this.resCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
-    })
-},
-query_grn(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
-    var opts={method:"GET", url:"/grn/listByFac?factory="
-        +this.factory.cur+"&state="+this.grnCtrl.state
-        +"&num="+this.service.N_PAGE+"&offset="+offset}
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.grns=[];
-            this.grnCtrl.max=0;
-            this.grnCtrl.cur=1;
-            return;
-        }
-        var purs=resp.data.purs;
-        var dt=new Date();
-        for(var l of resp.data.list) {
-            dt.setTime(l.outDate*60000);
-            l.outDate=datetime2str(dt);
-            dt.setTime(l.inDate*60000);
-            l.inDate=datetime2str(dt);
-            l.type=this.tags.grnType[l.type];
-            var pur=purs[l.purId];
-            l.prjName=pur[0];
-            l.applicant=pur[1];
-        }
-        this.grns = resp.data.list;
-        this.grnCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
-    })
-},
-query_gdn(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
-    var opts={method:"GET", url:"/gdn/listByFac?factory="
-        +this.factory.cur+"&state="+this.gdnCtrl.state
-        +"&num="+this.service.N_PAGE+"&offset="+offset}
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.gdns=[];
-            this.gdnCtrl.max=0;
-            this.gdnCtrl.cur=1;
-            return;
-        }
-
-        var purs=resp.data.purs;
-        var dt=new Date();
-        for(var l of resp.data.list) {
-            dt.setTime(l.outDate*60000);
-            l.outDate=datetime2str(dt);
-            if(l.cfmDate!=0) {
-                dt.setTime(l.cfmDate*60000);
-                l.cfmDate=datetime2str(dt);
-            } else {
-                l.cfmDate=this.tags.gdn.unCfmed;
-            }
-            l.type=this.tags.gdnType[l.type];
-            l.state=this.tags.gdnState[l.state];
-            var pur=purs[l.purId];
-            l.prjName=pur[0];
-            l.applicant=pur[1];
-        }
-        this.gdns = resp.data.list;
-        this.gdnCtrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 query_outlog(pg) {
@@ -160,14 +87,6 @@ tab_changed(tab) {
         if(this.res.length==0) {
             this.query_res(this.resCtrl.cur);
         }
-    } if(tab=='grn') {
-        if(this.grns.length==0) {
-            this.query_grn(this.grnCtrl.cur);
-        }
-    } else if(tab=='gdn') {
-        if(this.gdns.length==0) {
-            this.query_gdn(this.gdnCtrl.cur);
-        }
     } else if(tab=='out'){
         if(this.outlogs.length==0) {
             this.query_outlog(this.olCtrl.cur);
@@ -183,12 +102,6 @@ factory_changed(i) {
     this.factory.name=this.factory.opts[i].name;
     this.tab_changed(this.tab);
 },
-grn_sta_changed() {
-    this.query_grn(this.grnCtrl.cur);
-},
-gdn_sta_changed() {
-    this.query_gdn(this.gdnCtrl.cur);
-},
 changed_res_ord() {
     if(this.resCtrl.order=='') {
         this.resCtrl.order='asc';
@@ -202,106 +115,20 @@ changed_res_ord() {
     }
     this.query_res(this.resCtrl.cur);
 },
-show_grn(i) {
-    if(i>-1) {
-        this.grnCtrl.tag=this.tags.modify;
-        copyObjTo(this.grns[i], this.grnCtrl.dta);
-    } else {
-        this.grnCtrl.tag=this.tags.add;
-        copyObjTo(EMPTY_GRN, this.grnCtrl.dta);
-    }
-    this.grnCtrl.dta.factory=this.factory.cur;
-    this.grnCtrl.tag+=this.tags.storage.in;
-    this.grnCtrl.no=i;
-    this.grnCtrl.dlg=true;
-},
-grn_do() {
-    var opts;
-    if(this.grnCtrl.no>-1) {
-        opts={method:"PUT",url:"/grn/update",data:this.grnCtrl.dta};
-    } else {
-        this.grnCtrl.dta.purId=this.purchase.id;
-        var outDate=Date.parse(this.grnCtrl.dta.outDate);//ms
-        this.grnCtrl.dta.outDate=parseInt(outDate/60000);
-        opts={method:"POST",url:"/grn/start",data:this.grnCtrl.dta};
-    }
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.grnCtrl.no=-2;
-        this.grnCtrl.dlg=false;
-        this.query_grn(this.grnCtrl.cur);
-    });
-},
-remove_grn() {
-    var opts={method:"DELETE",url:"/grn/remove?purId="
-        +this.grnCtrl.dta.purId+"&factory="+this.factory.cur};
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.grnCtrl.no=-2;
-        this.grnCtrl.dlg=false;
-        this.query_grn(this.grnCtrl.cur);
-    });
-},
-show_gdn(i) {
-    if(i>-1) {
-        this.gdnCtrl.tag=this.tags.modify;
-        copyObjTo(this.gdns[i], this.gdnCtrl.dta);
-    } else {
-        this.gdnCtrl.tag=this.tags.add;
-        copyObjTo(EMPTY_GDN, this.gdnCtrl.dta);
-    }
-    this.gdnCtrl.dta.factory=this.factory.cur;
-    this.gdnCtrl.tag+=this.tags.storage.out;
-    this.gdnCtrl.no=i;
-    this.gdnCtrl.dlg=true;
-},
-gdn_do() {
-    var opts;
-    if(this.gdnCtrl.no>-1) {
-        opts={method:"PUT",url:"/gdn/update",data:this.gdnCtrl.dta};
-    } else {
-        this.gdnCtrl.dta.purId=this.purchase.id;
-        opts={method:"POST",url:"/gdn/start",data:this.gdnCtrl.dta};
-    }
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.gdnCtrl.no=-2;
-        this.gdnCtrl.dlg=false;
-        this.query_gdn(this.gdnCtrl.cur);
-    });
-},
-remove_gdn() {
-    var opts={method:"DELETE",url:"/gdn/remove?purId="
-        +this.gdnCtrl.dta.purId+"&factory="+this.factory.cur};
-    request(opts, this.service.name).then(resp => {
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errMsg.showErr(resp.code, resp.info);
-            return;
-        }
-        this.gdnCtrl.no=-2;
-        this.gdnCtrl.dlg=false;
-        this.query_gdn(this.gdnCtrl.cur);
-    });
-},
 show_dir_in() {
     this.resCtrl.tag=this.tags.storage.dir_in;
     copyObjTo(EMPTY_IN, this.resCtrl.in);
-    this.resCtrl.in.factory=this.factory.cur;
     this.resCtrl.inDlg=true;
 },
 dir_in_do() {
     this.resCtrl.in.sku=this.sku.id;
-    var opts={method:"POST",url:"/grn/dir_in",data:this.resCtrl.in};
-    request(opts, this.service.name).then(resp => {
+    var dta=copyObj(this.resCtrl.in, ["num","price","cmt"]);
+    if(this.sku.type!='CUR_INVT') { //非零件只能一次入库一个
+        dta.num=1;
+    }
+    dta.factory=this.factory.cur;
+    dta.pid=this.this.resCtrl.prj.id;
+    request({method:"POST",url:"/grn/dir_in",data:dta}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -377,8 +204,6 @@ template:`
     dense align="justify" switch-indicator inline-label
     class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
     <q-tab name="res" icon="list" :label="tags.storage.list"></q-tab>
-    <q-tab name="grn" icon="exit_to_app" :label="tags.storage.in"></q-tab>
-    <q-tab name="gdn" icon="output" :label="tags.storage.out"></q-tab>
     <q-tab name="out" icon="bus_alert" :label="tags.storage.out_log"></q-tab>
    </q-tabs>
   </q-footer>
@@ -422,87 +247,6 @@ template:`
  </q-list>
 </q-tab-panel>
 
-<q-tab-panel name="grn" class="q-pa-none">
-<div class="row bg-grey-3 q-pa-sm q-pa-sm">
- <div class="col-2">
-  <q-select v-model="grnCtrl.state" :options="grnCtrl.stateOpts"
-   @update:model-value="grn_sta_changed"
-   emit-value map-options dense></q-select>
- </div>
- <div class="col self-center">
-  <div class="text-right">
-   <q-btn color="primary" @click="show_grn(-1)" icon="add" flat dense></q-btn>
-  </div>
- </div>
-</div>
-<div class="q-pa-sm flex flex-center" v-show="grnCtrl.max>1">
- <q-pagination v-model="grnCtrl.cur" color="primary" :max="grnCtrl.max" max-pages="10"
-  boundary-numbers="false" @update:model-value="query_grn"></q-pagination>
-</div>
- <q-list dense separator class="q-pa-sm">
-  <q-item>
-   <q-item-section><q-item-label caption>{{tags.storage.tranNo}}</q-item-label></q-item-section>
-   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
-   <q-item-section side><q-item-label caption>{{tags.storage.applicant}}</q-item-label></q-item-section>
-  </q-item>
-  <q-item v-for="(g,i) in grns" @click="service.goto('/grndetail?id='+g.purId+'&factory='+factory.cur)" clickable>
-    <q-item-section>
-     <q-item-label>{{g.type}}</q-item-label>
-     <q-item-label caption>{{g.tranNo}}</q-item-label>
-    </q-item-section>
-    <q-item-section>
-     <q-item-label>{{g.cmt}}</q-item-label>
-     <q-item-label caption>{{g.outDate}} / {{g.inDate}}</q-item-label>
-    </q-item-section>
-    <q-item-section side>
-     <q-item-label>{{g.applicant}}</q-item-label>
-     <q-item-label caption>{{g.prjName}}</q-item-label>
-    </q-item-section>
-  </q-item>
- </q-list>
-</q-tab-panel>
-
-<q-tab-panel name="gdn" class="q-pa-none">
-<div class="row bg-grey-3 q-pa-sm">
- <div class="col-2">
-  <q-select v-model="gdnCtrl.state" :options="gdnCtrl.stateOpts"
-   @update:model-value="gdn_sta_changed"
-   emit-value map-options dense></q-select>
- </div>
- <div class="col self-center">
-  <div class="text-right">
-   <q-btn color="primary" @click="show_gdn(-1)" icon="add" flat dense></q-btn>
-  </div>
- </div>
-</div>
-<div class="q-pa-sm flex flex-center" v-show="gdnCtrl.max>1">
- <q-pagination v-model="gdnCtrl.cur" color="primary" :max="gdnCtrl.max" max-pages="10"
-  boundary-numbers="false" @update:model-value="query_gdn"></q-pagination>
-</div>
- <q-list dense separator class="q-pa-sm">
-  <q-item>
-   <q-item-section><q-item-label caption>{{tags.storage.tranNo}}</q-item-label></q-item-section>
-   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
-   <q-item-section side><q-item-label caption>{{tags.storage.applicant}}</q-item-label></q-item-section>
-  </q-item>
-  <q-item v-for="(g,i) in gdns" @click="service.goto('/gdndetail?id='+g.purId+'&factory='+this.factory.cur)" clickable>
-    <q-item-section>
-     <q-item-label>{{g.type}}</q-item-label>
-     <q-item-label caption>{{g.tranNo}}</q-item-label>
-    </q-item-section>
-    <q-item-section>
-     <q-item-label>{{g.cmt}}</q-item-label>
-     <q-item-label>{{g.applyCmt}}</q-item-label>
-     <q-item-label caption>{{g.outDate}} - {{g.cfmDate}}</q-item-label>
-    </q-item-section>
-    <q-item-section side>
-     <q-item-label>{{g.applicant}}</q-item-label>
-     <q-item-label caption>{{g.priName}}</q-item-label>
-    </q-item-section>
-  </q-item>
- </q-list>
-</q-tab-panel>
-
 <q-tab-panel name="out" class="q-pa-none">
  <div class="q-pa-sm flex flex-center" v-show="olCtrl.max>1">
   <q-pagination v-model="olCtrl.cur" color="primary" :max="olCtrl.max" max-pages="10"
@@ -537,52 +281,16 @@ template:`
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="grnCtrl.dlg">
- <q-card style="min-width:70vw">
-  <q-card-section>
-    <div class="text-h6">{{grnCtrl.tag}}</div>
-  </q-card-section>
-  <q-card-section class="q-pt-none">
-   <pur-select v-model="purchase" :label="tags.storage.purchase" v-show="grnCtrl.no<0"></pur-select>
-   <q-input v-model="grnCtrl.dta.tranNo" :label="tags.storage.tranNo" dense></q-input>
-   <date-input v-model="grnCtrl.dta.outDate" :close="tags.ok" :label="tags.storage.outDate" min="-5"></date-input>
-   <q-input :label="tags.cmt" v-model="grnCtrl.dta.cmt" dense></q-input>
-  </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.remove" color="red" @click="remove_grn" flat v-show="grnCtrl.no>-1"></q-btn>
-   <q-btn :label="tags.ok" color="primary" @click="grn_do"></q-btn>
-   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
-  </q-card-actions>
- </q-card>
-</q-dialog>
-
-<q-dialog v-model="gdnCtrl.dlg">
- <q-card style="min-width:70vw">
-  <q-card-section>
-    <div class="text-h6">{{gdnCtrl.tag}}</div>
-  </q-card-section>
-  <q-card-section class="q-pt-none">
-   <pur-select v-model="purchase" :label="tags.storage.purchase" v-show="gdnCtrl.no<0"></pur-select>
-   <q-input v-model="gdnCtrl.dta.tranNo" :label="tags.storage.tranNo" dense></q-input>
-   <q-input :label="tags.cmt" v-model="gdnCtrl.dta.cmt" dense></q-input>
-  </q-card-section>
-  <q-card-actions align="right">
-   <q-btn :label="tags.remove" color="red" @click="remove_gdn" flat v-show="gdnCtrl.no>-1"></q-btn>
-   <q-btn :label="tags.ok" color="primary" @click="gdn_do"></q-btn>
-   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
-  </q-card-actions>
- </q-card>
-</q-dialog>
-
-<q-dialog v-model="resCtrl.inDlg">
+<q-dialog v-model="resCtrl.inDlg"><!-- 直接入库 -->
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{resCtrl.tag}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
+   <prj-select v-model="resCtrl.prj" :label="tags.prjName"></prj-select>
    <sku-select v-model="sku" :label="tags.sku.title"></sku-select>
    <q-input v-model.number="resCtrl.in.price" :label="tags.sku.price" dense></q-input>
-   <q-input v-model.number="resCtrl.in.num" :label="tags.num"></q-input>
+   <q-input v-model.number="resCtrl.in.num" :label="tags.num" :disable="sku.type!='CUR_INVT'"></q-input>
    <q-input v-model="resCtrl.in.cmt" :label="tags.cmt"></q-input>
   </q-card-section>
   <q-card-actions align="right">
@@ -620,7 +328,7 @@ template:`
   <q-card-section class="q-pt-none">
    <q-input v-model="check.no" :label="tags.storage.no" dense>
     <template v-slot:after>
-     <q-icon name="qr_code_scanner" @click="start_scan"></q-icon>
+     <q-icon name="qr_code_scanner" @click="start_scan" color="primary"></q-icon>
     </template>
    </q-input>
    <div class="q-gutter-sm">
@@ -631,6 +339,6 @@ template:`
  </q-card>
 </q-dialog>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></alert-dialog>
 `
 }

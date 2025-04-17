@@ -22,10 +22,12 @@
   <div class="text-right bg-white q-pt-sm">
     <q-btn :label="tags.factory.title" @click="goto('/factory')"
      icon="factory" color="secondary" padding="xs" flat></q-btn>
-    <q-btn :label="tags.sku.title" @click="goto('/sku')" 
-     icon="list" color="primary" flat></q-btn>
     <q-btn :label="tags.supplier.title" @click="goto('/supplier')" 
      icon="shop" color="primary" flat></q-btn>
+    <q-btn :label="tags.sku.title" @click="goto('/sku')" 
+     icon="list" color="primary" flat></q-btn>
+    <q-btn :label="tags.storage.purchase" @click="goto('/purchase')"
+     icon="shopping_cart" color="accent" flat></q-btn>
     <q-btn :label="tags.storage.title" @click="goto('/storage')"
      icon="warehouse" color="accent" flat></q-btn>
   </div>
@@ -44,7 +46,6 @@
 <script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
-<script src="/assets/v3/echarts.js"></script>
 <script type="module">
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
@@ -63,6 +64,8 @@ import Storage from "./storage.js" //仓储，包括查看资产清单、执行�
 import ResDetail from "./resdetail.js" //资源详情，在Storage中使用
 import GrnDetail from "./grndetail.js"
 import GdnDetail from "./gdndetail.js"
+import Purchase from "./purchase.js"
+import PurchaseDetail from "./purchasedtl.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -90,6 +93,8 @@ routes:[
   {path:'/skudetail', component:SkuDetail},
   {path:'/supplier', component:Supplier},
   {path:'/supdetail', component:SupDetail},
+  {path:'/purchase', component:Purchase},
+  {path:'/purchasedtl', component:PurchaseDetail},
   {path:'/storage', component:Storage},
   {path:'/resdetail', component:ResDetail},
   {path:'/grndetail', component:GrnDetail},

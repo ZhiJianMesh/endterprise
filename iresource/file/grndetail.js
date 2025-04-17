@@ -2,7 +2,6 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
-    factory:this.$route.query.factory,
     dtl:{},
     ctrl:{editable:false,editing:false,edt:{}/*编辑内容*/},
 
@@ -15,7 +14,7 @@ created(){
 },
 methods:{
 query() {
-    var url="/grn/get?purId="+this.id+"&factory="+this.factory;
+    var url="/grn/get?purId="+this.id+"&factory="+this.dtl.factory;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -38,10 +37,10 @@ show_edit() {
     copyObjTo(this.dtl, this.ctrl.edt);
 },
 update() {
-    var dta=copyObj(this.ctrl.edt, ['tranNo','cmt','outDate_s']);
+    var dta=copyObj(this.ctrl.edt, ['tranNo','cmt']);
     dta.purId=this.id;
-    dta.factory=this.factory;
-    dta.outDate=parseInt(Date.parse(dta.outDate_s)/60000);
+    dta.factory=this.dtl.factory;
+    dta.outDate=parseInt(Date.parse(this.ctrl.edt.outDate_s)/60000);
     request({method:"PUT", url:"/grn/update", data:dta}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -53,7 +52,7 @@ update() {
 },
 remove() {
     this.$refs.cfmDlg.show(this.tags.cfmRmv, ()=>{
-        var opts={method:"DELETE",url:"/grn/remove?purId="+this.id+"&factory="+this.factory};
+        var opts={method:"DELETE",url:"/grn/remove?purId="+this.id+"&factory="+this.dtl.factory};
         request(opts, this.service.name).then(resp => {
             if(resp.code!=RetCode.OK) {
                 this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -64,7 +63,7 @@ remove() {
     });
 },
 grn_list() {
-    var url="/grn/grnlist?purId="+this.id+"&factory="+this.factory;
+    var url="/grn/grnlist?purId="+this.id+"&factory="+this.dtl.factory;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -81,7 +80,7 @@ ship_in() {
     var d=this.skuCtrl.dta;
     if(!sku.id||!d.num)return;
     var dta={sku:sku.id,num:d.num,cmt:d.cmt,
-        purId:this.id,factory:this.factory};
+        purId:this.id,factory:this.dtl.factory};
 
     var opts={method:"POST", url:"/grn/shipIn", data:dta};
     request(opts, this.service.name).then(resp => {
@@ -95,7 +94,7 @@ ship_in() {
 },
 remove_sku(i) {
     var url="/grn/removeSku?purId="+this.id
-        +"&factory="+this.factory+"&no="+this.skuList[i].no;
+        +"&factory="+this.dtl.factory+"&no="+this.skuList[i].no;
     request({method:"DELETE", url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -123,7 +122,7 @@ template:`
     <q-item-section side>{{dtl.prjName}}</q-item-section>
   </q-item>
   <q-item>
-    <q-item-section>{{tags.storage.applicant}}</q-item-section>
+    <q-item-section>{{tags.applicant}}</q-item-section>
     <q-item-section side>{{dtl.applicant}}</q-item-section>
   </q-item>
   <q-item>
@@ -211,8 +210,7 @@ template:`
  </q-card>
 </q-dialog>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
- :close="tags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 <confirm-dialog :title="tags.attention" :ok="tags.ok"
  :close="tags.cancel" ref="cfmDlg"></confirm-dialog>
 `

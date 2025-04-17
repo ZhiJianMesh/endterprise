@@ -25,12 +25,15 @@ cn:{
   type:'类型',
   prjName:'项目',
   detail:'详情',
+  dateFmt:"YYYY/MM/DD HH:mm",
   createAt:'创建时间',
-  sku:'存货单位',
   num:'数量',
   execAcc:'执行人',
   cfmRmv:'是否确定删除',
   account:'帐号',
+  expDate:'期望时间',
+  applicant:'申请人',
+  receiver:'收货人',
 
   sex:{
     F:'男',
@@ -45,10 +48,11 @@ cn:{
     NONE:'用完'
   },
   skuType:{
-    WHL:'整机',
-    PART:'零件',
-    SOFT:'软件',
-    VIRT:'虚拟物品'
+    FIX_EQUIP:'固定资产',
+    CUR_INVT:'存货',
+    VIR_COPY:'版权',
+    VIR_GOODS:'虚拟资产',
+    VIR_PATENT:'专利'
   },
   outType:{
     OUT:'直接出库',
@@ -123,38 +127,72 @@ cn:{
     out_log:'异常出库记录',
     dir_in:'直接入库',
     dir_out:'直接出库',
-    purchase:'采购单',
+    purchase:'采购',
     attach:'资产挂账',
     unattach:'资产解挂',
     check:'清点',
     discard:'报废',
     inDate:'入库时间',
     outDate:'发货时间',
-    expDate:'期望时间',
     cfmDate:'确认时间',
     execAcc:'执行人',
     tranNo:'运单号',
-    applicant:'申请人',
-    receiver:'收货人',
     checkAt:'清点时间',
     chkOk:'正常',
     chkBad:'异常',
     no:'资产编号'
   },
-  purchase:{
-    title:'采购',
-    price:'单价',
-    cost:'成本'
-  },
-  grn:{
+  grn:{//goods receive notes
     title:'入库',
-    skuList:'入库列表'
+    skuList:'入库列表',
+    state:{
+        WAIT:'等待入库',
+        CHK:'正在入库',
+        OVER:'已完成'
+    },
+    inDate:'入库时间',
+    outDate:'供货方发货时间'
   },
-  gdn:{
+  gdn:{ //goods delivery notes
     title:'出库',
     skuList:'出库列表',
     applyCmt:'申请人备注',
-    unCfmed:'未确认'
+    unCfmed:'未确认',
+    state:{
+        WAIT:'等待发货',
+        CHK:'正在出库',
+        TRAN:'运输中',
+        OVER:'已完成',
+        LOST:'丢失',
+        BACK:'退货'
+    },
+    outDate:'出库时间',
+    cfmDate:'确认时间',
+    tranNo:'运单号'
+  },
+  purchase:{
+    title:'采购',
+    cost:'成本',
+    type:'类型',
+    status:'审批状态',
+    skuList:'采购清单',
+    pay:'申请付款',
+    bank:'收款方帐号'
+  },
+  purType:{
+    SELL:'销售',
+    BUY:'采购',
+    SELF:'内部采购'
+  },
+  purState:{
+    INIT:'初始',
+    PROC:'进行中',
+    OVER:'结束'
+  },
+  payState:{
+    INIT:'申请支付',
+    PROC:'进行中',
+    OVER:'结束'
   },
   errMsgs:{
     '6001':'存在SKU关联了供应商',
@@ -167,6 +205,7 @@ cn:{
     '6009':'存量不足',
     '6010':'只有零件单次入库数量可以大于1',
     '6011':'零件不可以挂账',
+    '6012':'选择了无效的SKU，或SKU被删除',
     'unknown':'未知错误'
   }
 }

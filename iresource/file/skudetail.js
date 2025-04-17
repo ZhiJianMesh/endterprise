@@ -256,7 +256,6 @@ template:`
   </q-page-container>
 </q-layout>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
- :close="tags.close" ref="errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></alert-dialog>
 `
 }

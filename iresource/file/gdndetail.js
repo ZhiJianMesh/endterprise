@@ -2,20 +2,18 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
-    factory:this.$route.query.factory,
     dtl:{},
     ctrl:{editable:false,editing:false,edt:{}/*编辑内容*/},
 
     skuList:[],
-    skuCtrl:{dlg:false, dta:{},sku:{}/*用在SkuSelector中输入sku*/}
+    skuCtrl:{dlg:false,dta:{},sku:{}/*用在SkuSelector中输入sku*/}
 }},
 created(){
     this.query();
-    this.gdn_list();
 },
 methods:{
 query() {
-    var url="/gdn/get?purId="+this.id+"&factory="+this.factory;
+    var url="/gdn/get?purId="+this.id;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -35,6 +33,7 @@ query() {
         p.type=this.tags.gdnType[p.type];
         p.state=this.tags.gdnState[p.state];
         this.dtl=p;
+        this.gdn_list();
     })
 },
 show_edit() {
@@ -44,7 +43,7 @@ show_edit() {
 update() {
     var dta=copyObj(this.ctrl.edt, ['tranNo','cmt','receiver','applyCmt']);
     dta.purId=this.id;
-    dta.factory=this.factory;
+    dta.factory=this.dtl.factory;
     request({method:"PUT", url:"/gdn/update", data:dta}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -56,7 +55,7 @@ update() {
 },
 remove() {
     this.$refs.cfmDlg.show(this.tags.cfmRmv, ()=>{
-        var opts={method:"DELETE",url:"/gdn/remove?purId="+this.id+"&factory="+this.factory};
+        var opts={method:"DELETE",url:"/gdn/remove?purId="+this.id+"&factory="+this.dtl.factory};
         request(opts, this.service.name).then(resp => {
             if(resp.code!=RetCode.OK) {
                 this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -67,7 +66,7 @@ remove() {
     });
 },
 gdn_list() {
-    var url="/gdn/gdnlist?purId="+this.id+"&factory="+this.factory;
+    var url="/gdn/gdnlist?purId="+this.id+"&factory="+this.dtl.factory;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -82,7 +81,7 @@ show_ship() {
 ship_out() {
     var d=this.skuCtrl.dta;
     if(!d.num)return;
-    var dta={no:d.no, num:d.num, purId:this.id, factory:this.factory};
+    var dta={no:d.no, num:d.num, purId:this.id, factory:this.dtl.factory};
 
     var opts={method:"POST", url:"/gdn/shipOut", data:dta};
     request(opts, this.service.name).then(resp => {
@@ -96,7 +95,7 @@ ship_out() {
 },
 remove_sku(i) {
     var url="/gdn/removeSku?purId="+this.id
-        +"&factory="+this.factory+"&no="+this.skuList[i].no;
+        +"&factory="+this.dtl.factory+"&no="+this.skuList[i].no;
     request({method:"DELETE", url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -104,6 +103,16 @@ remove_sku(i) {
         }
         this.skuList.splice(i,1);
     });
+},
+start_scan() { //开始扫描二维码
+    var jsCbId=__regsiterCallback(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.skuCtrl.dta.no=resp.data.value;
+    });
+    Platform.scanCode(jsCbId);
 }
 },
 template:`
@@ -124,7 +133,7 @@ template:`
     <q-item-section side>{{dtl.prjName}}</q-item-section>
   </q-item>
   <q-item>
-    <q-item-section>{{tags.storage.applicant}}</q-item-section>
+    <q-item-section>{{tags.applicant}}</q-item-section>
     <q-item-section side>{{dtl.applicant}}</q-item-section>
   </q-item>
   <q-item>
@@ -158,7 +167,7 @@ template:`
    <q-item-section side>{{dtl.tranNo}}</q-item-section>
   </q-item>
   <q-item>
-   <q-item-section>{{tags.storage.receiver}}</q-item-section>
+   <q-item-section>{{tags.receiver}}</q-item-section>
    <q-item-section side>{{dtl.receiver}}</q-item-section>
   </q-item>
   <q-item>
@@ -168,7 +177,7 @@ template:`
 </q-list>
 <div v-else>
   <q-input v-model="ctrl.edt.tranNo" :label="tags.storage.tranNo"></q-input>
-  <q-input v-model="ctrl.edt.receiver" :label="tags.storage.receiver"></q-input>
+  <q-input v-model="ctrl.edt.receiver" :label="tags.receiver"></q-input>
   <q-input v-model="ctrl.edt.cmt" :label="tags.cmt"></q-input>
   <div class="row justify-end q-py-md">
     <div class="col-2">
@@ -208,7 +217,11 @@ template:`
    <q-separator></q-separator>
   </q-card-section>
   <q-card-section class="q-pt-none">
-    <q-input v-model="skuCtrl.dta.no" :label="tags.storage.no"></q-input>
+    <q-input v-model="skuCtrl.dta.no" :label="tags.storage.no">
+     <template v-slot:after>
+      <q-icon name="qr_code_scanner" @click="start_scan" color="primary"></q-icon>
+     </template>
+    </q-input>
     <q-input v-model.number="skuCtrl.dta.num" :label="tags.num"></q-input>
   </q-card-section>
   <q-card-actions align="right">
@@ -218,8 +231,7 @@ template:`
  </q-card>
 </q-dialog>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
- :close="tags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 <confirm-dialog :title="tags.attention" :ok="tags.ok"
  :close="tags.cancel" ref="cfmDlg"></confirm-dialog>
 `

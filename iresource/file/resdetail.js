@@ -1,13 +1,21 @@
-const EMPTY_OUT={cmt:'',num:''};
+import PrjSelector from "/ibfbase/components/prj_selector.js"
+const EMPTY_OUT={cmt:'',num:'',prj:{value:-1,label:''}};
+const EMPTY_DISC={cmt:'',num:''};
 
 export default {
+components:{
+    "prj-select":PrjSelector
+},
 inject:['service', 'tags'],
 data() {return {
     no:this.$route.query.no,
     factory:this.$route.query.factory,
     resInfo:{}, //res信息，包括供应商
     skuInfo:{},
-    ctrl:{api:'',tag:'',outDlg:false,outDta:{},attachDta:{},attachDlg:false}
+    ctrl:{api:'',tag:'',prj:{}, //输入项目信息
+       discDlg:false,discDta:{},
+       outDlg:false,outDta:{},
+       attachDlg:false,attachDta:{}}
 }},
 created(){
     this.get();
@@ -51,14 +59,8 @@ check(bad) { //清点
         this.resInfo.checkAt=datetime2str(new Date());
     });
 },
-show_out(type) {
-    if(type=='DISC') {
-        this.ctrl.tag=this.tags.storage.discard;
-    } else {
-        this.ctrl.tag=this.tags.storage.dir_out;
-    }
+show_out() {
     copyObjTo(EMPTY_OUT, this.ctrl.outDta);
-    this.ctrl.outDta.type=type;
     this.ctrl.outDlg=true;
 },
 out_do() {
@@ -66,14 +68,12 @@ out_do() {
         this.$refs.errMsg.showErr('6009', 'invalid num');
         return;
     }
-    var opts={method:"POST",url:"/resource/dir_out",data:{
-        num:this.ctrl.outDta.num,
-        no:this.no,
-        type:this.ctrl.outDta.type,
-        cmt:this.ctrl.outDta.cmt,
-        factory:this.factory
-    }};
-    request(opts, this.service.name).then(resp => {
+    var dta=copyObj(this.ctrl.outDta,["num","cmt"]);
+    dta.no=this.no;
+    dta.factory=this.factory;
+    dta.pid=this.ctrl.prj.id;
+    
+    request({method:"POST",url:"/gdn/dir_out",data:dta}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
@@ -83,6 +83,31 @@ out_do() {
             this.service.back(); //用完了，会删除，所以退回
         } else {
             this.ctrl.outDlg=false;
+        }
+    });
+},
+show_discard() {
+    copyObjTo(EMPTY_DISC, this.ctrl.discDta);
+    this.ctrl.outDlg=true;
+},
+disccard_do() {
+    if(this.ctrl.outDta.num>this.resInfo.num) {
+        this.$refs.errMsg.showErr('6009', 'invalid num');
+        return;
+    }
+    var dta=copyObj(this.ctrl.discDta,["num","cmt"]);
+    dta.no=this.no;
+    dta.factory=this.factory;
+    request({method:"POST",url:"/resource/discard",data:dta}, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.resInfo.num-=this.ctrl.discDta.num;
+        if(this.resInfo.num<=0) {
+            this.service.back(); //用完了，会删除，所以退回
+        } else {
+            this.ctrl.discDlg=false;
         }
     });
 },
@@ -111,9 +136,9 @@ template:`
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.detail}}-{{resInfo.skuName}}</q-toolbar-title>
-    <q-btn @click="show_out('DISC')" :label="tags.storage.discard" icon="delete_sweep" flat dense></q-btn>
-    <q-btn @click="show_out('OUT')" :label="tags.storage.dir_out" icon="logout" flat dense></q-btn>
-    <q-btn @click="show_attach()" v-if="skuInfo.type!='PART'" :label="tags.storage.attach" icon="add_link" flat dense></q-btn>
+    <q-btn @click="show_discard()" :label="tags.storage.discard" icon="delete_sweep" flat dense></q-btn>
+    <q-btn @click="show_out()" :label="tags.storage.dir_out" icon="logout" flat dense></q-btn>
+    <q-btn @click="show_attach()" v-if="skuInfo.type!='CUR_INVT'" :label="tags.storage.attach" icon="add_link" flat dense></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -183,14 +208,31 @@ template:`
 <q-dialog v-model="ctrl.outDlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-    <div class="text-h6">{{ctrl.tag}}</div>
+    <div class="text-h6">{{tags.storage.dir_out}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <prj-select v-model="ctrl.prj" :label="tags.prjName"></prj-select>
+   <q-input v-model.number="ctrl.outDta.num" :label="tags.num" dense></q-input>
+   <q-input v-model="ctrl.outDta.cmt" :label="tags.cmt" dense></q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn :label="tags.ok" color="primary" @click="out_do"></q-btn>
+   <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="ctrl.discDlg">
+ <q-card style="min-width:70vw">
+  <q-card-section>
+    <div class="text-h6">{{tags.storage.discard}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
    <q-input v-model.number="ctrl.outDta.num" :label="tags.num" dense></q-input>
    <q-input v-model="ctrl.outDta.cmt" :label="tags.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
-   <q-btn :label="tags.ok" color="primary" @click="out_do"></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="discard_do"></q-btn>
    <q-btn :label="tags.close" color="primary" v-close-popup flat></q-btn>
   </q-card-actions>
  </q-card>
@@ -211,7 +253,6 @@ template:`
  </q-card>
 </q-dialog>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
- :close="tags.close" ref="errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></alert-dialog>
 `
 }
