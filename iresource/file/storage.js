@@ -188,7 +188,7 @@ template:`
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>
      <q-toolbar-title>{{tags.storage.title}}</q-toolbar-title>
-     <q-btn flat dense icon-right="factory" :label="factory.name">
+     <q-btn flat dense icon="factory" :label="factory.name">
        <q-menu>
         <q-list style="min-width:100px">
          <q-item clickable v-close-popup v-for="(f,i) in factory.opts" @click="factory_changed(i)">

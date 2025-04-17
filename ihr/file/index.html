@@ -20,18 +20,17 @@
    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
   </q-toolbar>
   <div class="text-right bg-white q-pt-sm">
+    <q-btn :label="tags.cfg.title" @click="goto('/config')"
+     icon="settings" color="accent" flat class="q-pl-none"
+     v-if="service.userInfo.powers.ihr=='admin'"></q-btn>
     <q-btn :label="tags.pool.title" @click="goto('/pool')"
      icon="group" color="primary" padding="xs" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.employee.title" @click="goto('/employees')" 
      icon="badge" color="primary" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.grp.title" @click="goto('/grp?id=0')"
      icon="account_tree" color="orange" flat padding="xs"></q-btn>
-    <q-btn :label="tags.cfg.title" @click="goto('/config')"
-     icon="settings" color="accent" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.salary.title" @click="goto('/salary')"
      icon="attach_money" color="primary" flat class="q-pl-none"></q-btn>
-    <q-btn :label="tags.settings" @click="goto('/settings?service=ihr')"
-     icon="settings" color="primary" flat v-if="service.userInfo.powers.ihr=='admin'"></q-btn>
   </div>
 </q-header>
 <q-page-container>
@@ -58,7 +57,6 @@ import IBF from '/ibfbase/ibf.js'
 import Config from "./config.js"
 import Zone from "./zone.js"
 import Calendar from "./calendar.js"
-import Grp from "./grp.js"
 import Salary from "./salary.js"
 import Employees from "./employees.js"
 import Employee from "./employee.js"
@@ -66,7 +64,6 @@ import Resume from "./resume.js"
 import Pool from "./pool.js"
 import Person from "./person.js"
 import WfEmployee from "./wfemployee.js"
-import Settings from "/ibfbase/settings.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -88,7 +85,7 @@ const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
   {path:'/home', component:Home},
-  {path:'/grp', component:Grp}, //群组、成员管理
+  {path:'/grp', component:()=>import('./grp.js')}, //群组、成员管理
   {path:'/config', component:Config},
   {path:'/zone', component:Zone}, //大区管理
   {path:'/calendar', component:Calendar},
@@ -98,7 +95,6 @@ routes:[
   {path:'/resume', component:Resume}, //简历
   {path:'/pool', component:Pool}, //人才库
   {path:'/person', component:Person}, //人才详情
-  {path:'/settings', component:Settings}, //配置
   {path:'/wfemployee', component:WfEmployee} //entry,leave,stock、salary、grade工作流
 ]});
 

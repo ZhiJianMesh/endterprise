@@ -15,14 +15,24 @@ components:{
     "confirm-dialog":ConfirmDialog
 },
 data() {return {
-    service:this.$route.query.service, //运行的服务
+    service:{label:'',value:''},
     flow:{},
     cfg:{},
     sch:{},
     confirmDlg:null,
     alertDlg:null,
-    tags:this.ibf.tags
+    tags:this.ibf.tags,
+    serviceOpts:[]
 }},
+created(){
+    this.serviceOpts=[
+        {label:this.tags.crm.title,value:'icrm'},
+        {label:this.tags.hr.title,value:'ihr'},
+        {label:this.tags.busi.title,value:'ibusiness'},
+        {label:this.tags.resource.title,value:'iresource'}
+    ];
+    this.service=this.serviceOpts[0];
+},
 mounted(){//不能在created中赋值，更不能在data中
     this.confirmDlg=this.$refs.confirmDlg;
     this.alertDlg=this.$refs.errMsg;
@@ -46,12 +56,21 @@ save_cfg(){
 },
 template:`
 <q-layout view="lHh lpr lFf" container style="height:100vh">
-  <q-header elevated>
-   <q-toolbar>
-     <q-btn flat round icon="arrow_back" dense @click="back"></q-btn>
-     <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
-   </q-toolbar>
-  </q-header>
+ <q-header elevated>
+  <q-toolbar>
+   <q-btn flat round icon="arrow_back" dense @click="back"></q-btn>
+   <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
+   <q-btn flat dense icon="list" :label="service.label">
+    <q-menu>
+     <q-list style="min-width:100px">
+      <q-item clickable v-close-popup v-for="s in serviceOpts" @click="service=s">
+       <q-item-section>{{s.label}}</q-item-section>
+      </q-item>
+     </q-list>
+    </q-menu>
+   </q-btn>
+  </q-toolbar>
+ </q-header>
   <q-page-container>
     <q-page class="q-pa-none">
 <div v-show="flow.size>0">
@@ -65,7 +84,7 @@ template:`
  <div class="q-pa-md">
   <wfsettings v-model="flow" ref="wfSet" class="q-pa-md"
   :confirmDlg="confirmDlg" :alertDlg="alertDlg"
-  :service="service" :flowTags="tags.flowTags"></wfsettings>
+  :service="service.value" :flowTags="tags.flowTags"></wfsettings>
  </div>
 </div>
 
@@ -80,7 +99,7 @@ template:`
  <div class="q-pa-md">
   <cfgsettings v-model="cfg" ref="cfgSet" class="q-pa-md"
   :confirmDlg="confirmDlg" :alertDlg="alertDlg"
-  :service="service" :cfgTags="tags.configTags"></cfgsettings>
+  :service="service.value" :cfgTags="tags.configTags"></cfgsettings>
  </div>
 </div>
 
@@ -90,7 +109,7 @@ template:`
  </q-banner>
  <div class="q-pa-md">
   <schsettings v-model="sch" ref="schSet" class="q-pa-md" :alertDlg="alertDlg"
-  :service="service" :cfgTags="tags.schTags"></schsettings>
+  :service="service.value" :cfgTags="tags.schTags"></schsettings>
  </div>
 </div>
 

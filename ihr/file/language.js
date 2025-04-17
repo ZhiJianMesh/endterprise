@@ -27,7 +27,6 @@ cn:{
   initCal:"初始化",
   wrongWfDef:"工作流定义存在错误",
   wrongFlowState:"工作流状态错乱，请确认是否清除？",
-  settings:'配置',
   
   sex:{
     M:"先生",

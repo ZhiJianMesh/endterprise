@@ -84,7 +84,8 @@ cn:{
     REJ:'拒绝'
   }, 
   home:{
-    attendance:"打卡"
+    attendance:"打卡",
+    settings:'配置'
   },
   atd:{
     title:"考勤",
@@ -113,8 +114,14 @@ cn:{
       HOLI:'年休假'
     }
   },
-
+  crm:{
+    title:'极简CRM'
+  },
+  resource:{
+    title:'资源管理'
+  },
   hr:{
+    title:'人力资源',
     cfmed:'已确认',
     notCfm:'未确认',
     sponTp:{

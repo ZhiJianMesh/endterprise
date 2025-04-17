@@ -1,31 +1,22 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import Language from "./language.js"
-import Department from "./department.js"
-import My from "./my.js"
-import Contacts from "./contacts.js"
-import PrjProc from "./prjproc.js"
-import PrjInfo from "./prjinfo.js"
-import PurchaseDtl from "./purchasedtl.js"
-import SetPrice from "./setprice.js"
-import Attendance from "./attendance.js"
-import Business from "./business.js"
-import BusiDtl from "./busidtl.js"
-import Workflow from "./workflow.js"
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
 function registerIbf(app, router) { //注册ibf所需的路由
-    router.addRoute({path:"/ibf/department", component:Department});
-    router.addRoute({path:"/ibf/my", component:My});
-    router.addRoute({path:"/ibf/contacts", component:Contacts});
-    router.addRoute({path:"/ibf/prjproc", component:PrjProc}); //项目事务流程
-    router.addRoute({path:"/ibf/purchasedtl", component:PurchaseDtl}); //项目采购申请，接口在iresource中实现
-    router.addRoute({path:"/ibf/setprice", component:SetPrice}); //采购员设置采购单价
-    router.addRoute({path:"/ibf/prjinfo", component:PrjInfo}); //项目状态信息
-    router.addRoute({path:"/ibf/attendance", component:Attendance}); //考勤
-    router.addRoute({path:"/ibf/business", component:Business}); //差旅列表
-    router.addRoute({path:"/ibf/busidtl", component:BusiDtl}); //差旅详情
-    router.addRoute({path:"/ibf/workflow", component:Workflow}); //工作流
+    router.addRoute({path:"/ibf/department", component:()=>import('./department.js')});
+    router.addRoute({path:"/ibf/my", component:()=>import('./my.js')});
+    router.addRoute({path:"/ibf/contacts", component:()=>import('./contacts.js')});
+    router.addRoute({path:"/ibf/prjproc", component:()=>import('./prjproc.js')}); //项目事务流程
+    router.addRoute({path:"/ibf/purchasedtl", component:()=>import('./purchasedtl.js')}); //项目采购申请，接口在iresource中实现
+    router.addRoute({path:"/ibf/setprice", component:()=>import('./setprice.js')}); //采购员设置采购单价
+    router.addRoute({path:"/ibf/prjinfo", component:()=>import('./prjinfo.js')}); //项目状态信息
+    router.addRoute({path:"/ibf/attendance", component:()=>import('./attendance.js')}); //考勤
+    router.addRoute({path:"/ibf/business", component:()=>import('./business.js')}); //差旅列表
+    router.addRoute({path:"/ibf/busidtl", component:()=>import('./busidtl.js')}); //差旅详情
+    router.addRoute({path:"/ibf/workflow", component:()=>import('./workflow.js')}); //工作流
+    router.addRoute({path:"/ibf/tasks", component:()=>import('./tasks.js')}); //待办
+    router.addRoute({path:"/ibf/settings", component:()=>import('./settings.js')}); //工作流、配置、定时任务的配置
 
     app.provide('ibf', {//如果定义一个const/var写在外面，在此引用，路由会失败，原因未知
         tags:tags,
@@ -203,7 +194,7 @@ clock() { //上下班刷卡
 template:`
 <div class="row">
  <div class="col-1 self-center">
-  <q-btn color="deep-orange" no-caps @click="clock" style="min-width:30vw">
+  <q-btn color="deep-orange" no-caps @click="clock" style="min-width:28vw">
    <div class="row items-center no-wrap">
     <q-icon left name="event_available"></q-icon>
     <div class="text-center">
@@ -243,6 +234,12 @@ template:`
     <div class="text-center">
      <q-icon name="group"></q-icon><br>
      {{tags.grp.department}}
+    </div>
+   </q-btn>
+   <q-btn flat dense color="teal" @click="ibf.goto('/ibf/settings')" v-if="ibf.userInfo.account=='admin'">
+    <div class="text-center">
+     <q-icon name="settings"></q-icon><br>
+     {{tags.home.settings}}
     </div>
    </q-btn>
   </div>

@@ -116,8 +116,7 @@ cn:{
     services:"服务单",
     template:"模板设置",
     bulletin:"简报",
-    balance:"结算",
-    settings:'设置'
+    balance:"结算"
   },
   customer:{
     title:"客户",
