@@ -116,7 +116,7 @@ emit-value map-options></q-select>
         </q-page>
       </q-page-container>
     </q-layout>
-<alert-dialog :title="tags.failToCall" :close="tags.close" ref="errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" ref="errMsg"></alert-dialog>
 </div>
 `
 }

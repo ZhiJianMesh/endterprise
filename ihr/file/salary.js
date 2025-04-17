@@ -30,8 +30,9 @@ query_employees(pg) {
         var cols=resp.data.cols;
         var sals={};
         var sal;
+        var staInit=this.tags.aplSta['INIT'];
         for(var l of resp.data.list) {
-            sal={};
+            sal={state:'INIT',state_s:staInit};
             for(var i in cols) {
                 sal[cols[i]]=l[i];
             }
@@ -135,8 +136,7 @@ template:`
   </q-page-container>
 </q-layout>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
- :close="tags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 
 <q-dialog v-model="salAct.dlg">
  <q-card style="min-width:70vw">

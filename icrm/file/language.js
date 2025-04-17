@@ -70,9 +70,6 @@ cn:{
   
   unit:{y:"元",g:"个"},
 
-  segTypes:{'s':'文字','n':"数值",'d':'日期'},
-  segName:"字段名称",
-  segType:"字段类型",
   extSegs:"扩展字段",
   vipHome:"会员详情",
   baseInfo:"基本信息",
@@ -119,7 +116,8 @@ cn:{
     services:"服务单",
     template:"模板设置",
     bulletin:"简报",
-    balance:"结算"
+    balance:"结算",
+    settings:'设置'
   },
   customer:{
     title:"客户",
@@ -177,6 +175,7 @@ cn:{
     bank:'银行帐号',
     creator:"创建人",
     createAt:"创建时间",
+    cfmAt:'确认于',
     notCfm:'未确认'
   },
   service:{

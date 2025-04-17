@@ -106,7 +106,7 @@ template:`
 <q-dialog v-model="newUser.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-      <div class="text-h6">{{tags.newUser}}</div>
+   <div class="text-h6">{{tags.newUser}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
     <q-item>
@@ -127,6 +127,6 @@ template:`
  </q-card>
 </q-dialog>
 
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 `
 }

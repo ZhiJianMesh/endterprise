@@ -223,7 +223,7 @@ template:`
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.prj.title}}-{{prj.name}}</q-toolbar-title>
-     <q-btn flat dense icon="info" @click="ibf.goto('/ibf/prjinfo?id='+pid)"></q-btn>
+     <q-btn flat dense icon="info" @click.stop="ibf.goto('/ibf/prjinfo?id='+pid)"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer>
@@ -377,6 +377,6 @@ template:`
 </q-card>
 </q-dialog>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 `
 }

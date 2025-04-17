@@ -1,13 +1,15 @@
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import UserInput from "/assets/v3/components/user_input.js"
 const EMPTY_PLAN={pid:0,start_s:'',end_s:'',stage:'',cmt:''};
-const EMPTY_MEMBER={pid:0,account:[],role:''};
+const EMPTY_MEMBER={pid:0,account:{id:-1,account:''},role:''};
 const EMPTY_TARGET={pid:0,base:'',challenge:'',name:'',cmt:''};
 const EMPTY_PRJ={name:'',cmt:'',scope:'',start:'',end:'',type:'',leader:[]};
 
 export default {
 inject:["ibf"],
 components:{
-    "alert_dlg" : AlertDialog
+    "alert-dialog" : AlertDialog,
+    "user-input" : UserInput
 },
 data() {return {
     pid:this.$route.query.id,
@@ -257,7 +259,7 @@ member_do(act) {
         opts={method:"POST",url:"/api/member/addPrjEvent",data:dta};
     } else {
         var dta=copyObj(this.edt.member,["pid","role"]);
-        dta.account=this.edt.member.account[0];
+        dta.account=this.edt.member.account.account;
         opts={method:"POST",url:"/member/add", data:dta};
     }
     request(opts, this.ibf.SERVICE_PRJ).then(resp => {
@@ -554,9 +556,8 @@ template:`
     </q-list>
    </div>
    <div v-else>
-    <user-selector v-else :label="tags.prj.account"
-    :accounts="edt.member.account" :multi="false" :useid="false"></user-selector>
-    <q-select v-else v-model="edt.member.role" :options="opts.role"
+    <user-input :label="tags.prj.account" v-model="edt.member.account" ></user-input>
+    <q-select v-model="edt.member.role" :options="opts.role"
     :label="tags.prj.mbrRole" dense map-options emit-value></q-select>
    </div>
   </q-card-section>
@@ -629,6 +630,6 @@ template:`
  </q-card>
 </q-dialog>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 `
 }

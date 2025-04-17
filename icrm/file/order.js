@@ -82,11 +82,11 @@ query_payments(pg) {
         this.payments=resp.data.payments.map(l=>{
             dt.setTime(l.createAt*60000);
             l.createAt=datetime2str(dt);
-            if(l.cfmAt==0) {
+            if(l.cfmAt<=0) {
                 l.cfmAt=this.tags.payment.notCfm;
             } else {
                 dt.setTime(l.cfmAt*60000);
-                l.createAt=datetime2str(dt);
+                l.cfmAt=datetime2str(dt);
             }
             return l;
         })
@@ -343,10 +343,13 @@ template:`
 </q-banner>
 <div v-show="visible.payment">
 <q-list separator dense>
- <q-item v-for="p in payments"  clickable @click="service.goto('/payment?id='+p.id)">
-  <q-item-section>{{p.creator}}</q-item-section>
+ <q-item v-for="p in payments">
+  <q-item-section>
+   <q-item-label>{{p.creator}}</q-item-label>
+   <q-item-label caption>{{p.createAt}}</q-item-label>
+  </q-item-section>
   <q-item-section>{{p.amount}}</q-item-section>
-  <q-item-section>{{p.createAt}} / {{p.cfmAt}}</q-item-section>
+  <q-item-section>{{p.cfmAt}}</q-item-section>
  </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.payment>1">
@@ -358,7 +361,7 @@ template:`
   </q-page-container>
 </q-layout>
 
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 <component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 
 <!-- 新增服务弹窗 -->

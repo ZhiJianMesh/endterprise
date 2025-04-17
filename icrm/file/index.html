@@ -29,7 +29,7 @@
      icon="svguse:/assets/imgs/meshicons.svg#barChart"
      color="red" flat></q-btn>
     <q-btn :label="tags.home.settings" @click="goto('/settings?service=icrm')"
-     icon="settings" color="primary" flat></q-btn>
+     icon="settings" color="primary" flat v-if="service.userInfo.powers.icrm=='admin'"></q-btn>
   </div>
   </q-header>
   <q-page-container>
@@ -135,9 +135,8 @@ routes:[
 const service = {
 name:"icrm",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
+userInfo:{id:-1,powers:{},groups:[]},
 CLIENTW:document.documentElement.clientWidth,
-userinfo:{}, /*帐号基本信息缓存*/
-role:'', /*在服务中的角色*/
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
 skus:[],//商品缓存
 encodeExt(ext) { //[{k:k,v:yyy,n:xxx,t:n/s/d}...] => {k:yyy}
@@ -182,16 +181,6 @@ template(n,refresh){
         return this.tmpl[n];
     });
 },
-baseInfo() {
-    var opts={method:"GET",url:"/api/getbaseinfo?"};
-    request(opts, SERVICE_USER).then(resp=>{
-        if(resp.code!=0) {
-            console.info("request failed:" + resp.code + ",info:" + resp.info);
-            return;
-        }
-        this.userinfo=resp.data;
-    });
-},
 setRt(k, v) {
     this.runtime[router.currentRoute.value.path+':'+k]=v;
 },
@@ -210,8 +199,8 @@ goto(url) {
 const app = Vue.createApp({
 provide:{tags:tags, service:service, icons:icons},
 created(){
-    service.baseInfo();
-    registerIbf(app,router).then(()=> {
+    registerIbf(app,router).then(userInfo => {
+        service.userInfo=userInfo;
         this.$router.push('/home').catch(err => {err})
     });
 },

@@ -185,7 +185,7 @@ template:`
 </q-layout>
 
 <!-- 告警弹窗 -->
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 
 <!-- 联系人详情弹窗 -->
 <q-dialog v-model="detailDlg" position="right">

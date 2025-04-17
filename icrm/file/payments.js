@@ -1,13 +1,10 @@
-import {sta2icon} from '/assets/v3/components/workflow.js';
 export default {
 inject:['service', 'tags', 'icons'],
 data() {return {
-    list:[], //服务列表，包括自己可见的
-    page:{cur:1,max:0},
-    onlyMine:true
+    list:[], //回款列表
+    page:{cur:1,max:0}
 }},
 created(){
-    this.onlyMine=storageGet('pay_onlyMine') == 'true';
     this.query_list(1);
 },
 methods:{
@@ -15,23 +12,26 @@ fmt_pay_lines(cols, lines) {
     var list=[];
     var dt=new Date();
     var pm,ln;
-    for(var i in lines) { //id,amount,creator,createAt,status,customer,cname,skuName
-        ln=lines[i];
+    for(var ln of lines) { //id,amount,creator,createAt,status,customer,cname,skuName
         pm={};
-        for(var j in cols) {
-            pm[cols[j]]=ln[j];
+        for(var i in cols) {
+            pm[cols[i]]=ln[i];
         }
-        dt.setTime(pm.createAt);
-        pm.createAt=dt.toLocaleDateString();
-        pm.status=sta2icon(pm.status);
+        dt.setTime(pm.createAt*60000);
+        pm.createAt=datetime2str(dt);
+        if(pm.cfmAt<=0) {
+            pm.cfmAt=this.tags.payment.notCfm;
+        } else {
+            dt.setTime(pm.cfmAt*60000);
+            pm.cfmAt=this.tags.payment.cfmAt+':'+datetime2str(dt);
+        }
         list.push(pm)
     }
     this.list=list;
 },
 query_list(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
-    var url = this.onlyMine ? "/api/payment/my" : "/api/payment/readable";
-    url+="?offset="+offset+"&num="+this.service.N_PAGE;
+    var url = "/api/payment/my?offset="+offset+"&num="+this.service.N_PAGE;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK||resp.data.total==0) {
             this.list=[];
@@ -43,14 +43,6 @@ query_list(pg) {
         this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
-show_detail(id) {
-    this.$router.push('/payment?id='+id);
-},
-onlyMineClk() {
-    storageSet('pay_onlyMine', this.onlyMine);
-    this.page.cur=1;
-    this.query_list(1);
-},
 customer_detail(id) {
     this.$router.push('/customer?id='+id);
 }
@@ -61,21 +53,8 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.home.payments}}</q-toolbar-title>
-    <q-btn flat round dense icon="menu">
-      <q-menu>
-       <q-list style="min-width:100px">
-        <q-item clickable v-close-popup>
-          <q-item-section avatar>
-           <q-checkbox v-model="onlyMine" @update:model-value="onlyMineClk"></q-checkbox>
-          </q-item-section>
-          <q-item-section>{{tags.onlyMine}}</q-item-section>
-        </q-item>        
-       </q-list>
-     </q-menu>
-    </q-btn>
    </q-toolbar>
   </q-header>
-
   <q-page-container>
     <q-page class="q-pa-md">
 <div class="q-pa-sm flex flex-center" v-if="page.max>1">
@@ -85,20 +64,19 @@ template:`
 <q-list separator>
  <q-item>
   <q-item-section><q-item-label caption>{{tags.payment.cname}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.payment.skuName}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.payment.amount}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.payment.creator}}</q-item-label></q-item-section>
-  <q-item-section thumbnail></q-item-section>
  </q-item>
- <q-item v-for="l in list" @click="show_detail(l.id)" clickable>
+ <q-item v-for="l in list">
   <q-item-section @click.stop="customer_detail(l.customer)">{{l.cname}}</q-item-section>
-  <q-item-section>{{l.skuName}}</q-item-section>
-  <q-item-section>{{l.amount}}</q-item-section>
+  <q-item-section>
+   <q-item-label>{{l.amount}}</q-item-label>
+   <q-item-label caption>{{l.cfmAt}}</q-item-label>
+  </q-item-section>
   <q-item-section>
    <q-item-label>{{l.creator}}</q-item-label>
    <q-item-label caption>@{{l.createAt}}</q-item-label>
   </q-item-section>
-  <q-item-section thumbnail><q-icon :name="l.status" color="primary" size="xs"></q-icon></q-item-section>
  </q-item>
 </q-list>
     </q-page>

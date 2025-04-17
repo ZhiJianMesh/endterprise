@@ -4,26 +4,19 @@ export default {
 inject:['service', 'tags', "icons"],
 data() {return {
     customers:[], //客户列表
-    tmpl:{}, //{k:"x",n:"y",t:"z"}...
-    search:'',
-    newCustDlg:false,
-    onlyMine:true,
-    page:{cur:1, max:0},
-    newCust:{name:'',taxid:'',address:'',business:'',nextSigners:[],ext:{}}
+    ctrl:{cur:1, max:0,search:'',onlyMine:true},
+    newCust:{name:'',taxid:'',address:'',business:'',nextSigners:[],ext:{},dlg:false}
 }},
 created(){
-    this.onlyMine=storageGet('customer_onlyMine') == 'true';
-    this.query_custs(1);
-    this.service.template('customer').then(function(tmpl) {
-        this.tmpl=tmpl;
-    }.bind(this));
+    this.ctrl.onlyMine=storageGet('customer_onlyMine') == 'true';
+    this.query(1);
 },
 methods:{
-fmt_customer_lines(data) {
+fmt_lines(data) {
     var dt=new Date();
     var rows=data.touchlogs;
     var touchlogs=rows?rows:{};//可能无联系记录
-    
+
     var customers=[];
     var cu,tl;
     var cols=data.cols;
@@ -46,57 +39,63 @@ fmt_customer_lines(data) {
     }
     this.customers=customers;
 },
-query_custs(pg) {
-    this.search='';
+query(pg) {
+    this.ctrl.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
-    var url = this.onlyMine ? "/api/customer/my" : "/api/customer/readable";
+    var url = this.ctrl.onlyMine ? "/api/customer/my" : "/api/customer/readable";
     url += "?offset="+offset+"&num="+this.service.N_PAGE;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             this.customers=[];
-            this.page.max=0;
-            this.page.cur=1;
+            this.ctrl.max=0;
+            this.ctrl.cur=1;
             return;
         }
-        this.fmt_customer_lines(resp.data);
-        this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+        this.fmt_lines(resp.data);
+        this.ctrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
-search_custs() {
-    if(this.search=='') {
-        this.query_custs(1);
+search() {
+    if(this.ctrl.search=='') {
+        this.query(1);
         return;
     }
-    var url="/api/customer/search?s="+this.search+"&limit="+this.service.N_PAGE;
+    var url="/api/customer/search?s="+this.ctrl.search+"&limit="+this.service.N_PAGE;
     request({method:"GET",url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             return;
         }
-        this.fmt_customer_lines(resp.data);
-        this.page.max=1;
+        this.fmt_lines(resp.data);
+        this.ctrl.max=1;
     })
 },
 onlyMineClk() {
-    storageSet('customer_onlyMine', this.onlyMine);
-    this.page.cur=1;
-    this.query_custs(1);
+    storageSet('customer_onlyMine', this.ctrl.onlyMine);
+    this.ctrl.cur=1;
+    this.query(1);
 },
-create_cust() {
+create() {
     var dta=copyObj(this.newCust,['name','taxid','address','business','nextSigners']);
-    dta['comment']=this.service.encodeExt(this.newCust.ext);
+    dta.comment=this.service.encodeExt(this.newCust.ext);
     var url="/api/customer/create";
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.newCustDlg=false;
+        this.newCust.dlg=false;
         this.newCust={name:'',taxid:'',address:'',business:'',nextSigners:[],ext:{}};
-        this.query_custs(1);
+        this.query(1);
     })
 },
 chkCredit(code) {//不能在rules中直接调用原生对象的函数，原因未知
     return JStr.chkCreditCode(code);
+},
+show_create() {
+    this.service.template('customer').then(tmpl=> {//{k:"x",n:"y",t:"z"}...
+        this.newCust.ext=this.service.decodeExt("{}", tmpl);
+        this.newCust.dlg=true
+    });
 }
 },
 template:`
@@ -110,7 +109,7 @@ template:`
        <q-list style="min-width: 100px">
         <q-item clickable v-close-popup>
           <q-item-section avatar>
-           <q-checkbox v-model="onlyMine" @update:model-value="onlyMineClk"></q-checkbox>
+           <q-checkbox v-model="ctrl.onlyMine" @update:model-value="onlyMineClk"></q-checkbox>
           </q-item-section>
           <q-item-section>{{tags.onlyMine}}</q-item-section>
         </q-item>
@@ -120,21 +119,21 @@ template:`
   </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-pa-md">
-    <q-input outlined v-model="search" :label="tags.search" dense @keyup.enter="search_custs">
+    <q-input outlined v-model="ctrl.search" :label="tags.search" dense @keyup.enter="search">
      <template v-slot:append>
-      <q-icon v-if="search!==''" name="close" @click="query_custs(1)" class="cursor-pointer"></q-icon>
-      <q-icon name="search" @click="search_custs"></q-icon>
+      <q-icon v-if="ctrl.search!==''" name="close" @click="query(1)" class="cursor-pointer"></q-icon>
+      <q-icon name="search" @click="search"></q-icon>
      </template>
      <template v-slot:after>
-      <q-btn round color="primary" icon="add_circle" @click="newCustDlg=true"></q-btn>
+      <q-btn round color="primary" icon="add_circle" @click="show_create"></q-btn>
      </template>
     </q-input>
   </q-footer>
   <q-page-container>
     <q-page class="q-pa-md">
-<div class="q-pa-sm flex flex-center" v-if="page.max>1">
- <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"
-  boundary-numbers="false" @update:model-value="query_custs"></q-pagination>
+<div class="q-pa-sm flex flex-center" v-if="ctrl.max>1">
+ <q-pagination v-model="ctrl.cur" color="primary" :max="ctrl.max" max-pages="10"
+  boundary-numbers="false" @update:model-value="query"></q-pagination>
 </div>
 <q-list separator>
  <q-item>
@@ -159,9 +158,9 @@ template:`
     </q-page>
   </q-page-container>
 </q-layout>
-<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errMsg"></component-alert-dialog>
+<component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 
-<q-dialog v-model="newCustDlg">
+<q-dialog v-model="newCust.dlg">
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.addCust}}</div>
@@ -181,16 +180,16 @@ template:`
       <q-item><q-item-section>
        <q-input v-model="newCust.business" :label="tags.business" dense maxlength=100></q-input>
       </q-item-section></q-item>
-      <q-item v-for="(tpl,k) in tmpl"><q-item-section>
-        <div v-if="tpl.t=='d'">
-          <component-date-input :close="tags.ok" :label="tpl.n" v-model="newCust.ext[k]" dense></component-date-input>
+      <q-item v-for="e in newCust.ext"><q-item-section>
+        <div v-if="e.t=='d'">
+          <component-date-input :close="tags.ok" :label="e.n" v-model="e.v" dense></component-date-input>
         </div>
-        <div v-else-if="tpl.t=='b'">
-          <q-checkbox v-model="newCust.ext[k]" :label="tpl.n" left-label dense></q-checkbox>
+        <div v-else-if="e.t=='b'">
+          <q-checkbox v-model="e.v" :label="e.n" left-label dense></q-checkbox>
         </div>
         <div v-else>
-         <q-input :label="tpl.n" v-model="newCust.ext[k]" dense :autogrow="tpl.t!='n'"
-          :type="tpl.t=='n'?'number':'textarea'" dense></q-input>
+         <q-input :label="e.n" v-model="e.v" dense :autogrow="e.t!='n'"
+          :type="e.t=='n'?'number':'textarea'" dense></q-input>
         </div>
       </q-item-section></q-item>
       <q-item><q-item-section>
@@ -199,7 +198,7 @@ template:`
      </q-list>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn :label="tags.ok" color="primary" @click="create_cust"></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="create"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>

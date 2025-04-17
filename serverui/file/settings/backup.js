@@ -217,6 +217,6 @@ template: `
 </q-layout>
 
 <component-process-dialog ref="procDlg"></component-process-dialog>
-<component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
+<component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" ref="alertDlg"></component-alert-dialog>
 `
 }

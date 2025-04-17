@@ -66,7 +66,16 @@ function registerIbf(app, router) { //注册ibf所需的路由
             this.goto(url);
         }
     })
-    return new Promise((resolve) => {resolve(true)});
+    //返回userInfo
+    return request({method:"GET",url:"/api/getbaseinfo"}, SERVICE_USER).then(resp=>{
+        if(resp.code!=0) {
+            console.info("request failed:" + resp.code + ",info:" + resp.info);
+            return {id:-1,powers:{},groups:[]};
+        }
+        if(!resp.data.powers)resp.data.powers={}; //防止引用时powers为空
+        if(!resp.data.groups)resp.data.groups=[];
+        return resp.data;
+    })
 }
 export { registerIbf };
 
@@ -257,6 +266,6 @@ template:`
  <q-pagination v-model="ctrl.cur" color="primary" :max="ctrl.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query_prjs"></q-pagination>
 </div>
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 `
 }

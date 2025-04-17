@@ -30,6 +30,8 @@
      icon="settings" color="accent" flat class="q-pl-none"></q-btn>
     <q-btn :label="tags.salary.title" @click="goto('/salary')"
      icon="attach_money" color="primary" flat class="q-pl-none"></q-btn>
+    <q-btn :label="tags.settings" @click="goto('/settings?service=ihr')"
+     icon="settings" color="primary" flat v-if="service.userInfo.powers.ihr=='admin'"></q-btn>
   </div>
 </q-header>
 <q-page-container>
@@ -46,7 +48,6 @@
 <script src="/assets/v3/vue-router.js"></script>
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
-<script src="/assets/v3/echarts.js"></script>
 <script type="module">
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import DateInput from "/assets/v3/components/date_input.js"
@@ -65,13 +66,14 @@ import Resume from "./resume.js"
 import Pool from "./pool.js"
 import Person from "./person.js"
 import WfEmployee from "./wfemployee.js"
+import Settings from "/ibfbase/settings.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
 
 const homeTpl=document.getElementById('tpl_home');
 const Home = {
-inject:['tags'],
+inject:['tags','service'],
 methods:{
 goto(url) {
     this.$router.push(url);
@@ -96,12 +98,14 @@ routes:[
   {path:'/resume', component:Resume}, //简历
   {path:'/pool', component:Pool}, //人才库
   {path:'/person', component:Person}, //人才详情
+  {path:'/settings', component:Settings}, //配置
   {path:'/wfemployee', component:WfEmployee} //entry,leave,stock、salary、grade工作流
 ]});
 
 //service定义
 const service = {name:"ihr",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
+userInfo:{id:-1,powers:{}},
 zones:[],offices:[],officeMap:{},worktimes:[],worktimeMap:{},
 zoneList() {
     if(this.zones.length>0){
@@ -188,7 +192,8 @@ goto(url) {
 const app = Vue.createApp({
 provide:{tags:tags, service:service},
 created(){
-    registerIbf(app,router).then((r)=> {
+    registerIbf(app,router).then(userInfo => {
+        service.userInfo=userInfo;
         this.$router.push('/home').catch(err => {err});
     });
 },

@@ -74,7 +74,6 @@ cn:{
   addOrder:"创建订单",
   checkOrder:"校验订单",
   addConsume:"增加上课记录",
-  addEmployee:"增加雇员",
   consumeVal:"学习课时",
   consumePoint:"积分",
   comment:"备注",
@@ -89,7 +88,6 @@ cn:{
   namePls:"请输入正确的姓名",
   pwdPls:"请输入至少4位数字密码",
   failed:"失败",
-  checking:"请输入正确的学员密码进行校验",
   accountExists:"雇员已存在，请输入其他帐号！",
   exceedsDayNum:"报表周期最大可设为31天！",
   dlList:"下载文件"

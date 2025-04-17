@@ -273,7 +273,7 @@ template:`
 </q-layout>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"
- :close="tags.close" ref="alertDlg"></alert-dialog>
+ ref="alertDlg"></alert-dialog>
 <confirm-dialog :title="tags.attention" :ok="tags.ok"
  :close="tags.cancel" ref="cfmDlg"></confirm-dialog>
 
