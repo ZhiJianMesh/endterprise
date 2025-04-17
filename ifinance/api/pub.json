@@ -3,9 +3,12 @@
     "admin":{
         "name":"超级管理员",
         "rights":{
-            "config":"*",
-            "grp":"*",
-            "member":"*"
+            "pay":"*",
+            "income":"*",
+            "balance":"*",
+            "salary":"*",
+            "project":"*",
+            "bankacc":"*"
         }
     },
     "finance":{
@@ -13,8 +16,8 @@
         "rights":{
             "pay":"*",
             "income":"*",
-            "balance":"*",
-            "salary":"*"
+            "salary":"*",
+            "bankacc":"*"
         }
     }
 }
