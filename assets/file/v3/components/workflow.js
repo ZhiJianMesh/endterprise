@@ -392,6 +392,6 @@ template:`
 </q-timeline-entry>
 </q-timeline>
 
-<alert-dialog :title="tags.failToCall" :errMsgs="errMsgs" :close="tags.close" ref="wf_errMsg"></alert-dialog>
+<alert-dialog :title="tags.failToCall" :errMsgs="errMsgs" ref="wf_errMsg"></alert-dialog>
 `
 }

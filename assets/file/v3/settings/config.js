@@ -39,6 +39,7 @@ created(){
     var url="/settings/list?service="+this.service;
     return request({method:"GET",url:url}, SERVICE_CONFIG).then((resp)=>{
         if(resp.code!=RetCode.OK) {
+            this.changed(false);
             return this.cur.asMap?{}:'';
         }
         this.cfgs=resp.data.cfgs;
@@ -57,7 +58,7 @@ rmv_tpl_seg(k){
     this.changed(true);
 },
 add_tpl_seg(){
-    if(!/^[a-zA-Z]+$/.test(this.newSeg.k)) {
+    if(!/^[a-zA-Z]{1,30}$/.test(this.newSeg.k)) {
         this.alertDlg.show(this.tags.needAz);
         return;
     }
@@ -101,7 +102,8 @@ setCur(i) {
 },
 changed(chged) {
     this.chged=chged;
-    this.$emit('update:modelValue', {changed:chged,name:this.cur.k});
+    this.$emit('update:modelValue', {changed:chged,
+        name:this.cur.k,size:this.cfgs.length});
 }
 },
 template:`

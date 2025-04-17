@@ -1,5 +1,6 @@
-import WfSettings from "/assets/v3/components/wfsettings.js";
-import CfgSettings from "/assets/v3/components/cfgsettings.js";
+import WfSettings from "/assets/v3/settings/workflow.js";
+import CfgSettings from "/assets/v3/settings/config.js";
+import SchSettings from "/assets/v3/settings/schedule.js";
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
 
@@ -9,6 +10,7 @@ inject:['ibf'],
 components:{
     "wfsettings":WfSettings,
     "cfgsettings":CfgSettings,
+    "schsettings":SchSettings,
     "alert-dialog":AlertDialog,
     "confirm-dialog":ConfirmDialog
 },
@@ -16,6 +18,7 @@ data() {return {
     service:this.$route.query.service, //运行的服务
     flow:{},
     cfg:{},
+    sch:{},
     confirmDlg:null,
     alertDlg:null,
     tags:this.ibf.tags
@@ -51,20 +54,23 @@ template:`
   </q-header>
   <q-page-container>
     <q-page class="q-pa-none">
-<q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
+<div v-show="flow.size>0">
+ <q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
   {{tags.flowDef}}
   <template  v-slot:action>
    <q-btn icon="save" @click.stop="save_flow" class="cursor-pointer"
     :disable="!flow.changed" color="primary" flat dense></q-btn>
   </template>
-</q-banner>
-<div class="q-pa-md">
- <wfsettings v-model="flow" ref="wfSet" class="q-pa-md"
- :confirmDlg="confirmDlg" :alertDlg="alertDlg"
- :service="service" :flowTags="tags.flowTags"></wfsettings>
-</div> 
+ </q-banner>
+ <div class="q-pa-md">
+  <wfsettings v-model="flow" ref="wfSet" class="q-pa-md"
+  :confirmDlg="confirmDlg" :alertDlg="alertDlg"
+  :service="service" :flowTags="tags.flowTags"></wfsettings>
+ </div>
+</div>
 
-<q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
+<div v-show="cfg.size>0">
+ <q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
    {{tags.cfgDef}}
    <template  v-slot:action>
     <q-btn icon="save" @click.stop="save_cfg" class="cursor-pointer"
@@ -74,14 +80,25 @@ template:`
  <div class="q-pa-md">
   <cfgsettings v-model="cfg" ref="cfgSet" class="q-pa-md"
   :confirmDlg="confirmDlg" :alertDlg="alertDlg"
-  :service="service" :cfgTags="tags.flowTags"></cfgsettings>
+  :service="service" :cfgTags="tags.configTags"></cfgsettings>
  </div>
-    </q-page>
-  </q-page-container>
+</div>
+
+<div v-show="sch.size>0">
+ <q-banner inline-actions class="bg-indigo-1 q-ma-none" dense>
+   {{tags.schDef}}
+ </q-banner>
+ <div class="q-pa-md">
+  <schsettings v-model="sch" ref="schSet" class="q-pa-md" :alertDlg="alertDlg"
+  :service="service" :cfgTags="tags.schTags"></schsettings>
+ </div>
+</div>
+
+  </q-page>
+ </q-page-container>
 </q-layout>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></alert-dialog>
 <confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
-
 `
 }

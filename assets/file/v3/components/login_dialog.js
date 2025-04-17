@@ -14,7 +14,6 @@ props: {
     label:{type:String,required:false, default:"登录"},
     account:{type:String,required:false, default:"帐号"},
     pwd:{type:String,required:false, default:"密码"},
-    close:{type:String,required:false, default:"关闭"},
     failToCall:{type:String,required:false, default:"调用失败"},
     cancel:{type:String,required:false, default:"取消"}
 },
@@ -69,6 +68,6 @@ template: `
     class="q-mt-sm" v-show="logining"></q-linear-progress>
   </q-card>
 </q-dialog>
-<alert-dialog :title="failToCall" :close="close" ref="errMsg"></alert-dialog>
+<alert-dialog :title="failToCall" ref="errMsg"></alert-dialog>
 `
 }

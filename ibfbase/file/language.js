@@ -10,7 +10,11 @@ en:{
   search:"Search",
   more:"More",
   
-  flow:{
+  flowTags:{
+  },
+  configTags:{
+  },
+  schTags:{
   }
 },
 cn:{
@@ -54,6 +58,7 @@ cn:{
   plsInputPrj:'请选择项目',
   notInBusiTime:"不在差旅的时间段内",
   hasOverlap:"时间段有重叠",
+  changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
   dateFmt:"YYYY/MM/DD HH:mm",
   start:'开始时间',
   end:'结束时间',
@@ -62,6 +67,10 @@ cn:{
   chkPurchase:'检查采购情况',
   wfClkSuccess:'执行成功!',
   cfmRmv:'是否确定删除',
+  flowDef:'工作流定义',
+  cfgDef:'配置定义',
+  schDef:'定时任务定义',
+  settings:'配置',
 
   sex:{
     M:"先生",
@@ -323,10 +332,21 @@ cn:{
     mbrRole:"角色",
     account:"帐号"
   },
-  flow:{
-    //中文使用默认的工作流标签
-  },
   
+  flowTags:{
+    //中文使用默认的工作流标签，英文需自定义，
+    //参照/assets/v3/settings/workflow.js的defaultTags
+  },
+  configTags:{
+    //中文使用默认的工作流标签，英文需自定义，
+    //参照/assets/v3/settings/config.js的defaultTags
+  },
+  schTags:{
+    //中文使用默认的工作流标签，英文需自定义，
+    //参照/assets/v3/settings/schedule.js的defaultTags
+  },
+
+
   //操作界面在ibf中的，返回码必须在此有定义，否则出错时不能显示合适的错误信息
   //icrm:11xxx,iresource:12xxx,ibusiness:13xxx,
   //ihr:14xxx,iproject:15xxx,ifinance:16xxx

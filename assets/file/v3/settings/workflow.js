@@ -49,9 +49,9 @@ created(){
         this.tags=_defaultFlowTags;
     }
     
-    request({method:"GET", url:"/flow/list?service="+this.service}, SERVICE_WF).then(resp=>{
+    request({method:"GET", url:"/settings/list?service="+this.service}, SERVICE_WF).then(resp=>{
         if(resp.code != RetCode.OK) {
-            this.alertDlg.showErr(resp.code, resp.info);
+            this.flow_changed(0);
             return;
         }
         for(var f of resp.data.list) {
@@ -114,7 +114,7 @@ open_add_step(){
 },
 save(){
     if((this.changed&BASE_CHANGED) !=0) {
-        var opts={method:"PUT", url:"/flow/update", data:{
+        var opts={method:"PUT", url:"/settings/update", data:{
             service:this.service, name:this.curFlow.name,
             dispName:this.curFlow.dispName, cmt:this.curFlow.cmt}};
         request(opts, SERVICE_WF).then(resp=>{
@@ -126,7 +126,7 @@ save(){
         });
     }
     if((this.changed&STEP_CHANGED) !=0) {
-        var opts={method:"POST", url:"/flow/saveSteps", data:{
+        var opts={method:"POST", url:"/settings/saveSteps", data:{
             service:this.service, name:this.curFlow.name,
             dispName:this.curFlow.dispName, steps:this.steps}};
         request(opts, SERVICE_WF).then(resp=>{
@@ -139,7 +139,7 @@ save(){
     }
 },
 get_flow_info(flow) {
-    var opts={method:"GET",url:"/flow/getInfoByName?name="+flow+"&service="+this.service};
+    var opts={method:"GET",url:"/settings/getInfoByName?name="+flow+"&service="+this.service};
     request(opts, SERVICE_WF).then(resp=>{
         if(resp.code != 0) {
             return;
@@ -166,7 +166,8 @@ flow_changed(chgFlg) {
     if(chgFlg==0) this.changed=0;
     else if(chgFlg>0) this.changed |= chgFlg;
     else this.changed &= ~(-chgFlg);
-    this.$emit('update:modelValue', {changed:this.changed!=0,name:this.curFlow.name});
+    this.$emit('update:modelValue', {changed:this.changed!=0,
+        name:this.curFlow.name, size:this.flowOpts.length});
 }
 },
 template:`
@@ -201,7 +202,7 @@ template:`
 <!-- 增加/修改/显示步骤信息弹窗 -->
 <q-dialog v-model="stepCtrl.dlg" no-backdrop-dismiss>
   <q-card style="min-width:70vw">
-    <q-card-section class="q-pt-none">
+   <q-card-section class="q-pt-none">
     <q-list>
       <q-item><q-item-section>
         <q-input :label="tags.step.step" v-model.num="stepCtrl.dta.step" dense></q-input>
@@ -221,11 +222,11 @@ template:`
          autogrow maxlength=100 dense></q-input>
       </q-item-section></q-item>
     </q-list>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn :label="tags.ok" color="primary" @click.stop="confirm_step"></q-btn>
-      <q-btn flat :label="tags.cancel" color="primary" v-close-popup></q-btn>
-    </q-card-actions>
+   </q-card-section>
+   <q-card-actions align="right">
+    <q-btn :label="tags.ok" color="primary" @click.stop="confirm_step"></q-btn>
+    <q-btn flat :label="tags.cancel" color="primary" v-close-popup></q-btn>
+   </q-card-actions>
   </q-card>
 </q-dialog>
 `
