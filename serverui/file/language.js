@@ -4,7 +4,7 @@ en:{
   cancel:"Cancel",
   app_name:"Server Manager"
 },
-cn:{
+zh:{
   ok:"确定",
   cancel:"取消",
   close:"关闭",

@@ -9,7 +9,7 @@ en:{
   save:"Save",
   search:"Search"
 },
-cn:{
+zh:{
   app_name:"财务管理",
   ok:"确定",
   cancel:"取消",

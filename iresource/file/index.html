@@ -23,11 +23,11 @@
     <q-btn :label="tags.factory.title" @click="goto('/factory')"
      icon="factory" color="secondary" padding="xs" flat
      v-if="service.userInfo.powers.iresource=='admin'"></q-btn>
+    <q-btn :label="tags.supplier.title" @click="goto('/supplier')" 
+     icon="shop" color="primary" flat></q-btn>
     <q-btn :label="tags.sku.title" @click="goto('/sku')" 
      icon="list" color="primary" flat
      v-if="service.userInfo.powers.iresource=='admin'"></q-btn>
-    <q-btn :label="tags.supplier.title" @click="goto('/supplier')" 
-     icon="shop" color="primary" flat></q-btn>
     <q-btn :label="tags.storage.purchase" @click="goto('/purchase')"
      icon="shopping_cart" color="accent" flat></q-btn>
     <q-btn :label="tags.storage.title" @click="goto('/storage')"
@@ -84,7 +84,7 @@ template:homeTpl.innerHTML
 }
 
 const l=Platform.language();
-const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[

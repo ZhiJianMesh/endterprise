@@ -56,9 +56,8 @@ import IBF from '/ibfbase/ibf.js'
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
 
-
 const l=Platform.language();
-const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
 
 //常量定义
 const icons={
@@ -132,6 +131,7 @@ routes:[
 const service = {
 name:"icrm",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
+lang:l,
 userInfo:{id:-1,powers:{},groups:[]},
 CLIENTW:document.documentElement.clientWidth,
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}

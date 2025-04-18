@@ -2,7 +2,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import Language from "./language.js"
 
 const l=Platform.language();
-const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
 function registerIbf(app, router) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/department", component:()=>import('./department.js')});
     router.addRoute({path:"/ibf/my", component:()=>import('./my.js')});

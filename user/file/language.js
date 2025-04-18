@@ -14,7 +14,7 @@ addMbr:"Add employee",
 crtGrp:"Create group",
 owner:"Owner"
 },
-cn:{
+zh:{
 app_name:"帐号管理",
 authorize:"服务授权",
 failToCall:"调用失败",

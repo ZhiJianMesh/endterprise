@@ -54,16 +54,6 @@ import MonthInput from "/assets/v3/components/month_input.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import UserInput from "/assets/v3/components/user_input.js"
 import IBF from '/ibfbase/ibf.js'
-import Config from "./config.js"
-import Zone from "./zone.js"
-import Calendar from "./calendar.js"
-import Salary from "./salary.js"
-import Employees from "./employees.js"
-import Employee from "./employee.js"
-import Resume from "./resume.js"
-import Pool from "./pool.js"
-import Person from "./person.js"
-import WfEmployee from "./wfemployee.js"
 
 import Language from "./language.js"
 import { registerIbf } from '/ibfbase/ibf.js';
@@ -80,27 +70,28 @@ template:homeTpl.innerHTML
 }
 
 const l=Platform.language();
-const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
 //router定义
 const router = VueRouter.createRouter({"history": VueRouter.createMemoryHistory(),
 routes:[
   {path:'/home', component:Home},
   {path:'/grp', component:()=>import('./grp.js')}, //群组、成员管理
-  {path:'/config', component:Config},
-  {path:'/zone', component:Zone}, //大区管理
-  {path:'/calendar', component:Calendar},
-  {path:'/salary', component:Salary}, //奖金、分红，工资自动生成，由hr确认
-  {path:'/employees', component:Employees}, //雇员列表
-  {path:'/employee', component:Employee}, //雇员详情、关键事件
-  {path:'/resume', component:Resume}, //简历
-  {path:'/pool', component:Pool}, //人才库
-  {path:'/person', component:Person}, //人才详情
-  {path:'/wfemployee', component:WfEmployee} //entry,leave,stock、salary、grade工作流
+  {path:'/config', component:()=>import('./config.js')},
+  {path:'/zone', component:()=>import('./zone.js')}, //大区管理
+  {path:'/calendar', component:()=>import('./calendar.js')}, //工作日历
+  {path:'/salary', component:()=>import('./salary.js')}, //奖金、分红，工资自动生成，由hr确认
+  {path:'/employees', component:()=>import('./employees.js')}, //雇员列表
+  {path:'/employee', component:()=>import('./employee.js')}, //雇员详情、关键事件
+  {path:'/resume', component:()=>import('./resume.js')}, //简历
+  {path:'/pool', component:()=>import('./pool.js')}, //人才库
+  {path:'/person', component:()=>import('./person.js')}, //人才详情
+  {path:'/workflow', name:'workflow', component:()=>import('./workflow.js')} //entry,leave,stock、salary、grade工作流
 ]});
 
 //service定义
 const service = {name:"ihr",N_PAGE:10,N_SMPG:5,
 runtime:{}, //运行时
+lang:l,
 userInfo:{id:-1,powers:{}},
 zones:[],offices:[],officeMap:{},worktimes:[],worktimeMap:{},
 zoneList() {

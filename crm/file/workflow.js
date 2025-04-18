@@ -13,31 +13,28 @@ components:{
 	"workflow":Workflow,
 },
 data() {return {
-    service:this.$route.query.service,
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
-    flName:this.$route.query.flName,
-    dtlApi:this.$route.query.dtlApi,
     dtlPage:this.$route.query.dtlPage,
     curStep:0,
     dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
-    var dtlUrl=appendParas(this.dtlApi,{id:this.did});
-    var segments=this.tags[this.flName]['wfSegs'];
-    request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            if(resp.code==RetCode.NOT_EXISTS) {
-                this.removeWf();
+    _WF_.flowDef(this.flowid).then(fd=>{
+        this.flow=fd;
+        var dtlUrl=appendParas(fd.dtlApi,{id:this.did});
+        var segments=this.tags[fd.Name]['wfSegs'];
+        request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
+            if(resp.code!=RetCode.OK) {
+                if(resp.code==RetCode.NOT_EXISTS) {
+                    this.removeWf();
+                }
+                return;
             }
-            return;
-        }
-        this.dtl=_WF_.formDtlData(resp.data, segments);
-    });
-	_WF_.flowDef(this.flowid).then(sd=>{
-        this.flow=sd;
-    });
+            this.dtl=_WF_.formDtlData(resp.data, segments);
+        })
+    })
 },
 methods:{
 showDtl() {
@@ -76,7 +73,7 @@ template:`
   </q-item>
 </q-list>
 <q-separator color="primary" inset></q-separator>
-<workflow :service="service" :flowid="flowid" :did="did"
+<workflow :service="service.name" :flowid="flowid" :did="did"
  :serviceTags="tags" :flowTags="tags.flow"
  :apiErrors="tags.errMsgs" v-model="curStep"></workflow>
     </q-page>

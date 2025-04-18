@@ -113,7 +113,7 @@ const icons={
 };
 
 const l=Platform.language();
-const tags = l.indexOf("zh") == 0 ? Language.cn : Language.en;
+const tags = l.indexOf('zh')==0 ? Language.zh : Language.en;
 
 const homeTpl=document.getElementById('tpl_home');
 const Home = {
@@ -193,6 +193,7 @@ const service = {
 name:"crm",N_PAGE:10,N_SMPG:5,WF:"workflow",
 CLIENTW:document.documentElement.clientWidth,
 userinfo:{}, /*帐号基本信息缓存*/
+lang:l, //语言
 role:'', /*在服务中的角色*/
 tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
 skus:[],//商品缓存

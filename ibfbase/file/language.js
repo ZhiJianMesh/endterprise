@@ -17,7 +17,7 @@ en:{
   schTags:{
   }
 },
-cn:{
+zh:{
   ok:"确定",
   cancel:"取消",
   close:"关闭",

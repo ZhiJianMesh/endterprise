@@ -9,7 +9,7 @@ en:{
   save:"Save",
   search:"Search"
 },
-cn:{
+zh:{
   app_name:"人力资源",
   ok:"确定",
   cancel:"取消",

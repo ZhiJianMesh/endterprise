@@ -151,7 +151,7 @@ en:{
 	successToUnInstall:"Succeed to uninstall"
   }
 },
-cn:{
+zh:{
   app_name:"设置",
   ok:"确定",
   cancel:"取消",

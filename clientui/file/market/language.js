@@ -10,7 +10,7 @@ en:{
   releaseAt:"Release at",
   aboutApp:"About the app"
 },
-cn:{
+zh:{
   app_name:"应用",
   ok:"确定",
   cancel:"取消",

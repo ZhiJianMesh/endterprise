@@ -8,7 +8,7 @@ en:{
   add:"Add",
   reset:"Reset"
 },
-cn:{
+zh:{
   app_name:"极简CRM",
   ok:"确定",
   cancel:"取消",

@@ -10,7 +10,7 @@ en:{
   save:"Save",
   search:"Search"
 },
-cn:{
+zh:{
   app_name:"消息中心",
   ok:"确定",
   cancel:"取消",

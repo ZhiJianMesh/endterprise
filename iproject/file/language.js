@@ -9,7 +9,7 @@ en:{
   save:"Save",
   search:"Search"
 },
-cn:{
+zh:{
   app_name:"项目管理",
   report:"报表",
   projects:"项目管理"
