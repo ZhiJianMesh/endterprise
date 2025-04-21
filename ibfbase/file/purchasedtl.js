@@ -127,8 +127,9 @@ remove() {
         })
     });
 },
-flow() {
-    this.ibf.purchaseFlow(this.dtl.flowid, this.id);
+pur_flow() {
+    this.ibf.showFlow(this.dtl.flowid, this.id,
+        '/ibf/workflow?service='+this.ibf.SERVICE_RES);
 }
 },
 template:`
@@ -152,7 +153,7 @@ template:`
     <q-item-section>{{tags.purchase.cost}}</q-item-section>
     <q-item-section side>{{dtl.cost}}</q-item-section>
   </q-item>
-  <q-item clickable @click.stop="flow">
+  <q-item clickable @click.stop="pur_flow">
     <q-item-section class="text-blue">{{tags.purchase.status}}</q-item-section>
     <q-item-section side><q-icon :name="dtl.staIcon" color="blue"></q-icon></q-item-section>
   </q-item>

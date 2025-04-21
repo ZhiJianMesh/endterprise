@@ -323,6 +323,17 @@ function copyObjExc(src,excludes){
     return obj;
 }
 
+function copyObjToExc(src,dst,excludes){
+    const excs = new Set(excludes);
+    for(var k in src) {
+        if(excs.has(k)) {
+            continue;
+        }
+        dst[k] = src[k];
+    }
+    return obj;
+}
+
 function copyObjTo(src,dst,segs){
     if(segs && segs.length>0) {
         for(var i of segs) {

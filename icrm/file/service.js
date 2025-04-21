@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
     //ord,creator,createAt,comment,cost,cname,customer
@@ -9,8 +9,10 @@ data() {return {
     visSegs:["cost","creator","createAt"]
 }},
 created(){
-    this.service.template('service').then(tpl=>{
-        this.detail(tpl);
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=service";
+    this.ibf.template('service', url, defaultVal).then(tmpl=> {
+        this.detail(tmpl);
     })
 },
 methods:{
@@ -25,11 +27,11 @@ detail(tmpl) {
         var dt=new Date();
         dt.setTime(resp.data.createAt*60000);
         this.dtl.createAt=datetime2str(dt);
-        this.ext=this.service.decodeExt(this.dtl.comment, tmpl);
+        this.ext=this.ibf.decodeExt(this.dtl.comment, tmpl);
     });
 },
 save_base() {
-    var dta={comment:this.service.encodeExt(this.ext), id:this.id};
+    var dta={comment:this.ibf.encodeExt(this.ext), id:this.id};
     var url="/api/service/setComment";
     request({method:"PUT",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {

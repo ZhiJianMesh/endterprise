@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
     tmpl:{}, //客户模板，{k:"x",n:"y",t:"z"}...
@@ -412,7 +412,7 @@ template:`
     <q-item-section>{{c.post}}</q-item-section>
     <q-item-section>{{c.creator}}</q-item-section>
     <q-item-section>{{c.createAt}}</q-item-section>
-    <q-item-section avatar><q-icon :name="icons['touchlog']" @click.stop="newTl={n:c.name,t:0,cid:c.id,tp:1,cmt:''};visible.newTl=true" color="primary"></q-icon></q-item-section>
+    <q-item-section avatar><q-icon :name="tags.icons['touchlog']" @click.stop="newTl={n:c.name,t:0,cid:c.id,tp:1,cmt:''};visible.newTl=true" color="primary"></q-icon></q-item-section>
   </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.contact>1">

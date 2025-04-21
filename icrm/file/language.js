@@ -21,6 +21,8 @@ zh:{
   cmt:"备注",
   start:'开始时间',
   end:'结束时间',
+  wrongWfDef:"工作流定义存在错误",
+  wrongFlowState:"工作流状态错乱，请确认是否清除？",
   
   more:"扩展信息",
   dateFmt:"YYYY/MM/DD HH:mm",
@@ -55,7 +57,6 @@ zh:{
 
   alert:"注意",
   failToCall:"调用失败",
-  wrongWfDef:"工作流定义存在错误",
   cfmToDel:"请确认是否删除",
 
   balance:"余额",
@@ -219,7 +220,15 @@ zh:{
     receiver:'收件人',
     expDate:'期望到货日期',
     skuList:'采购清单'
-  }
-},
-calClose:'关闭'
-};
+  },
+  icons:{//各功能的图标
+   customer:"svguse:/assets/imgs/meshicons.svg#company",
+   contact:"contacts",
+   order:"event_note",
+   service:"svguse:/assets/imgs/meshicons.svg#build",
+   payment:"svguse:/assets/imgs/meshicons.svg#payment",
+   touchlog:"perm_phone_msg"
+  },
+  flowTags:{}
+}
+}

@@ -30,6 +30,11 @@ props: {
     confirmDlg:{type:Object, required:true},
     alertDlg:{type:Object, required:true}
 },
+watch: {
+  service(_n,_o) {
+    this.init();
+  }
+},
 emits: ['update:modelValue'],
 data() {return {
     tags:{},
@@ -44,13 +49,24 @@ data() {return {
 }},
 created(){
     if(this.flowTags&&Object.keys(this.flowTags).length>0) {
+        copyObjTo(_defaultFlowTags, this.tags);
         copyObjTo(this.flowTags, this.tags);
     } else {
         this.tags=_defaultFlowTags;
     }
-    
+    for(var k in this.tags.types) {
+        var v=this.tags.types[k];
+        this.typeOpts.push({label:v, value:k});
+    }
+    this.init();
+},
+methods:{
+init() {
+    if(!this.service)return;
+
     request({method:"GET", url:"/settings/list?service="+this.service}, SERVICE_WF).then(resp=>{
         if(resp.code != RetCode.OK) {
+            this.flowOpts=[];
             this.flow_changed(0);
             return;
         }
@@ -60,14 +76,8 @@ created(){
         var f=resp.data.list[0];
         this.curFlow={name:f.name, cmt:f.cmt,id:f.id};
         this.get_flow_info(this.curFlow.name);
-    });
-
-    for(var k in this.tags.types) {
-        var v=this.tags.types[k];
-        this.typeOpts.push({label:v, value:k});
-    }
+    })
 },
-methods:{
 show_step_detail(i) {
     copyObjTo(this.steps[i], this.stepCtrl.dta);
     this.stepCtrl.dlg=true;

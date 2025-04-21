@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', "icons"],
+inject:['service', 'tags'],
 data() {return {
     customers:[], //客户列表
     tmpl:{}, //{k:"x",n:"y",t:"z"}...

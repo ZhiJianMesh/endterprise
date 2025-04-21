@@ -17,6 +17,11 @@ props: {
     confirmDlg:{type:Object, required:true},
     alertDlg:{type:Object, required:true}
 },
+watch: {
+  service(_n,_o) {
+    this.init();
+  }
+},
 emits: ['update:modelValue'],
 data() {return {
     chged:0,    
@@ -24,10 +29,11 @@ data() {return {
     cfgOpts:[],
     cfgs:[], //配置列表K-V
     cur:{k:'',v:'',tmpl:{},asMap:false/*多字段模板方式*/}, //字符串形式或map形式
-    newSeg:{k:'', n:'', t:'s'},
+    newSeg:{k:'', n:'', t:'s'}
 }},
 created(){
     if(this.cfgTags&&Object.keys(this.cfgTags).length>0) {
+        copyObjTo(_defaultCfgTags, this.tags);
         copyObjTo(this.cfgTags, this.tags);
     } else {
         this.tags=_defaultCfgTags;
@@ -36,10 +42,18 @@ created(){
     for(var n in this.tags.segTypes){
         this.segTypes.push({value:n,label:this.tags.segTypes[n]})
     }
+    this.init();
+},
+methods:{
+init() {
+    if(!this.service)return;
+
     var url="/settings/list?service="+this.service;
     return request({method:"GET",url:url}, SERVICE_CONFIG).then((resp)=>{
         if(resp.code!=RetCode.OK) {
             this.changed(false);
+            this.cfgOpts=[];
+            this.cfgs=[];
             return this.cur.asMap?{}:'';
         }
         this.cfgs=resp.data.cfgs;
@@ -51,8 +65,6 @@ created(){
         this.setCur(0);
     })
 },
-
-methods:{
 rmv_tpl_seg(k){
     delete this.cur.tmpl[k];
     this.changed(true);

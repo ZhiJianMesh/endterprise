@@ -1,7 +1,7 @@
 import {sta2icon} from '/assets/v3/components/workflow.js';
 
 export default {
-inject:['service', 'tags', 'icons', 'ibf'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     id:this.$route.query.id,
     
@@ -29,9 +29,11 @@ data() {return {
 }},
 created(){
     this.curDate=date2str(new Date());
-    this.service.template('customer').then(tmpl=>{
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=customer";
+    this.ibf.template('customer', url, defaultVal).then(tmpl=>{
         this.detail(tmpl);
-    });
+    })
 },
 methods:{
 detail(tmpl) {
@@ -44,7 +46,7 @@ detail(tmpl) {
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
         this.dtl.createAt=date2str(new Date(resp.data.createAt*60000));
         this.dtl.icon=sta2icon(this.dtl.status);
-        this.dtl.ext=this.service.decodeExt(this.dtl.comment, tmpl);
+        this.dtl.ext=this.ibf.decodeExt(this.dtl.comment, tmpl);
     });
 },
 query_orders(pg) {
@@ -134,7 +136,7 @@ create_order() {
     dta.customer=this.id;
     dta.pid=this.prjInput.id;
     dta.prjName=this.prjInput.name;
-    dta.comment=this.service.encodeExt(this.newOrder.ext);
+    dta.comment=this.ibf.encodeExt(this.newOrder.ext);
     var url="/api/order/create";
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -149,7 +151,7 @@ create_order() {
 create_contact() {
     var dta=copyObj(this.newContact,['name','address','phone','sex','level','post']);
     dta['customer']=this.id;
-    dta['comment']=this.service.encodeExt(this.newContact.ext);
+    dta['comment']=this.ibf.encodeExt(this.newContact.ext);
     dta['birthday']=Math.ceil(new Date(this.newContact.birthday).getTime()/86400000); //转为天数
     var opts={method:"POST",url:"/api/contact/add",data:dta};
     request(opts, this.service.name).then(resp=>{
@@ -192,7 +194,7 @@ customer_flow(){
     this.$router.push(url);
 },
 save_base() {
-    var cmt=this.service.encodeExt(this.ext);
+    var cmt=this.ibf.encodeExt(this.ext);
     var url="/api/customer/setInfo";
     var req={id:this.id, name:this.dtl.name, comment:cmt,
      address:this.dtl.address, business:this.dtl.business};
@@ -205,17 +207,21 @@ save_base() {
     })
 },
 open_create_order() {
-    this.service.template('order').then(tmpl=> {
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=order";
+    this.ibf.template('order', url, defaultVal).then(tmpl=> {
         this.newOrder.price='';
-        this.newOrder.ext=this.service.decodeExt("{}", tmpl);
+        this.newOrder.ext=this.ibf.decodeExt("{}", tmpl);
         this.skuInput={sku:{},num:'',price:this.tags.order.skuPrice,suppliers:[]}
         this.visible.newOrd=true;
     });
 },
 open_new_contact() {
-    this.service.template('contact').then(tmpl=> {
-        this.newContact.ext=this.service.decodeExt("{}", tmpl)
-        this.visible.newContact=true
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=contact";
+    this.ibf.template('contact', url, defaultVal).then(tmpl=> {
+        this.newContact.ext=this.ibf.decodeExt("{}", tmpl)
+        this.visible.newContact=true;
     });
 },
 open_touchlog(i) {
@@ -438,7 +444,7 @@ template:`
     <q-item-section>{{c.creator}}</q-item-section>
     <q-item-section>{{c.createAt}}</q-item-section>
     <q-item-section avatar>
-     <q-icon :name="icons['touchlog']" @click.stop="open_touchlog(c)" color="primary"></q-icon>
+     <q-icon :name="tags.icons['touchlog']" @click.stop="open_touchlog(c)" color="primary"></q-icon>
     </q-item-section>
   </q-item>
 </q-list>

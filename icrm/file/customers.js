@@ -1,7 +1,7 @@
 import {sta2icon} from '/assets/v3/components/workflow.js';
 
 export default {
-inject:['service', 'tags', "icons"],
+inject:['service', 'tags', "ibf"],
 data() {return {
     customers:[], //客户列表
     ctrl:{cur:1, max:0,search:'',onlyMine:true},
@@ -76,7 +76,7 @@ onlyMineClk() {
 },
 create() {
     var dta=copyObj(this.newCust,['name','taxid','address','business','nextSigners']);
-    dta.comment=this.service.encodeExt(this.newCust.ext);
+    dta.comment=this.ibf.encodeExt(this.newCust.ext);
     var url="/api/customer/create";
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != 0) {
@@ -92,8 +92,10 @@ chkCredit(code) {//不能在rules中直接调用原生对象的函数，原因�
     return JStr.chkCreditCode(code);
 },
 show_create() {
-    this.service.template('customer').then(tmpl=> {//{k:"x",n:"y",t:"z"}...
-        this.newCust.ext=this.service.decodeExt("{}", tmpl);
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=customer";
+    this.ibf.template('customer', url, defaultVal).then(tmpl=>{//{k:"x",n:"y",t:"z"}..
+        this.newCust.ext=this.ibf.decodeExt("{}", tmpl);
         this.newCust.dlg=true
     });
 }

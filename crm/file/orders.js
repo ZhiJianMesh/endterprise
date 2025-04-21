@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 data() {return {
     orders:[], //订单列表，包括自己可见的
     page:{cur:1,max:0},

@@ -153,6 +153,16 @@ function copyObjExc(src,excludes){
     }
     return obj;
 }
+function copyObjToExc(src,dst,excludes){
+    const excs = new Set(excludes);
+    for(var k in src) {
+        if(excs.has(k)) {
+            continue;
+        }
+        dst[k] = src[k];
+    }
+    return obj;
+}
 
 function copyObjTo(src,dst,segs){
     if(segs && segs.length>0) {
@@ -222,7 +232,7 @@ function sleep(time) {
 }
 
 function formatErr(code,info,errInfos){
-    var err=__err_infos[''+code];
+    var err=__err_infos[''+code];//__err_infos在assets/tags中定义
     if(!err) {
         err = errInfos[''+code];
     }

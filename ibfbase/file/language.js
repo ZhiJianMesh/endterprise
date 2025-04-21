@@ -11,6 +11,9 @@ en:{
   more:"More",
   
   flowTags:{
+    //采购工作流中的按钮标签
+    setPrice:'Set price',
+    chkPurchase:'Check purchase list'
   },
   configTags:{
   },
@@ -63,8 +66,6 @@ zh:{
   start:'开始时间',
   end:'结束时间',
   currency:'元',
-  setPrice:'设置采购价格',
-  chkPurchase:'检查采购情况',
   wfClkSuccess:'执行成功!',
   cfmRmv:'是否确定删除',
   flowDef:'工作流定义',
@@ -85,7 +86,8 @@ zh:{
   }, 
   home:{
     attendance:"打卡",
-    settings:'配置'
+    settings:'配置',
+    tasks:'待办'
   },
   atd:{
     title:"考勤",
@@ -343,6 +345,10 @@ zh:{
   flowTags:{
     //中文使用默认的工作流标签，英文需自定义，
     //参照/assets/v3/settings/workflow.js的defaultTags
+    
+    //采购工作流中的按钮标签
+    setPrice:'设置采购价格',
+    chkPurchase:'检查采购情况'
   },
   configTags:{
     //中文使用默认的工作流标签，英文需自定义，
@@ -381,7 +387,7 @@ zh:{
     14018:'无考勤记录',
     
     15001:"存在未完成的计划，不可结束项目",
-    15002:'预置的截断，不可删除'
+    15002:'预置的阶段，不可删除'
   }
 }
 };

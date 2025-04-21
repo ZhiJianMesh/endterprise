@@ -1,4 +1,9 @@
+import SkuSelector from "/ibfbase/components/sku_selector.js"
+
 export default {
+components:{
+    "sku-select":SkuSelector
+},
 inject:['service', 'tags'],
 data() {return {
     tab:'mon',
@@ -6,10 +11,9 @@ data() {return {
     monthCharts:null,
     beginTime:0, //毫秒单位
     days:365,//天
-    skuId:0,
+    skuInput:{},
     date:'',
     dateStr:'',
-    skuList:[],
     monNum:0,
     xAxis:[],
     orders:[],
@@ -24,26 +28,16 @@ created(){
     this.init_month(begin, this.days);
 },
 mounted(){ //mounted在created之后
-    this.skuCharts=Vue.markRaw(echarts.init(document.getElementById('skuCharts')));
     this.monthCharts=Vue.markRaw(echarts.init(document.getElementById('monthCharts')));
-    this.service.skuList().then(skus=>{
-        var skuList=[];
-        skus.forEach(function(s){
-            var sku={label:s.name+"("+s.price+")",value:s.id};
-            skuList.push(sku);
-        });
-        this.skuList=skuList;
-        if(this.skuId==0&&skuList.length>0) { //默认选中第一个商品
-            this.skuId=skuList[0].value;
-        }
-        this.query_sku();
-    });
+    this.query_sku();
     this.query_month();
 },
 methods:{
 query_sku() {
+    if(!this.skuInput.id||this.skuInput.id<=0) return;
+    
     var begin=Math.ceil(this.beginTime/86400000);
-    var url="/api/report/sku?beginTime="+begin+"&days="+this.days+"&skuId="+this.skuId;
+    var url="/api/report/sku?beginTime="+begin+"&days="+this.days+"&skuId="+this.skuInput.id;
     request({method:"GET",url:url},this.service.name).then(resp=>{
         //reportAt,ord,service,contract,revenue,cost
         var contracts=[], revenues=[], costs=[];
@@ -158,9 +152,6 @@ query_month() {
             this.monthOrders=this.orders[params.dataIndex];
         }
     })
-},
-sku_changed() {
-    this.query_sku();
 },
 date_range_end(range) {
     var ft=new Date(range.from.year, range.from.month-1, 1);
@@ -286,9 +277,9 @@ template:`
  </q-markup-table>
 </div>
 <div v-show="tab=='sku'">
-   <q-select v-model="skuId" emit-value map-options
-     :options="skuList" @update:model-value="sku_changed"></q-select>
-   <div id="skuCharts" :style="{width:'100vw', height:'50vh'}"></div>
+  <sku-select v-model="skuInput" :label="tags.order.skuName"
+   @update:model-value="query_sku"></sku-select>
+  <div id="skuCharts" :style="{width:'100vw', height:'50vh'}"></div>
 </div>
     </q-page>
   </q-page-container>

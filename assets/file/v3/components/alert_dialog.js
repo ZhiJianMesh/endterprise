@@ -18,9 +18,17 @@ show(msg,title) {
     if(title) this.iTitle=title;
     this.dlg=true;
 },
-showErr(code,info,title) {
-    this.message=formatErr(code,info,this.errMsgs); //必须提前加载errors.xx.js
-    if(title) this.iTitle=title;
+showErr(code,info,ext) {
+    if(ext) {
+        if((typeof ext)==='string'||(ext instanceof String)) {
+            this.iTitle=ext;
+            this.message=formatErr(code,info,this.errMsgs); //必须提前加载errors.xx.js
+        } else {
+            this.message=formatErr(code,info,ext);
+        }
+    } else {
+        this.message=formatErr(code,info,this.errMsgs); //必须提前加载errors.xx.js
+    }
     this.dlg=true;
 }
 },

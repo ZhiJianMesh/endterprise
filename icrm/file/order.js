@@ -7,7 +7,7 @@ export default {
 components:{
     "bank-select":BankSelector
 },
-inject:['service', 'tags', 'icons', 'ibf'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     id:this.$route.query.id,
     //customer,cname,price,skuId,skuName,skuPrice,creator,createAt,
@@ -28,8 +28,10 @@ data() {return {
     visSegs:["taxid","price","payment","creator","createAt"]
 }},
 created(){
-    this.service.template('order').then(tpl=>{
-        this.detail(tpl);
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=order";
+    this.ibf.template('order', url, defaultVal).then(tmpl=> {
+        this.detail(tmpl);
     });
     this.query_purList();
 },
@@ -49,7 +51,7 @@ detail(tmpl) {
             dtl['cost']=0;
         }
         dtl.editable=dtl.status==0&&dtl.power=='O';
-        this.ext=this.service.decodeExt(dtl.comment, tmpl);
+        this.ext=this.ibf.decodeExt(dtl.comment, tmpl);
         this.dtl=dtl;
     });
 },
@@ -109,7 +111,7 @@ query_purList() {
 },
 save_base() {
     var dta=copyObj(this.dtl,['price']);
-    dta['comment']=this.service.encodeExt(this.ext);
+    dta['comment']=this.ibf.encodeExt(this.ext);
     dta.id=this.id;
     request({method:"POST",url:"/api/order/setInfo",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -134,7 +136,7 @@ more_payments() {
 add_service() {
     var dta={customer:this.dtl.customer, order:this.id,
          cost:this.newService.cost};
-    dta.comment=this.service.encodeExt(this.newService.ext);
+    dta.comment=this.ibf.encodeExt(this.newService.ext);
     request({method:"POST",url:"/api/service/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -148,7 +150,7 @@ add_service() {
 add_payment() {
     var dta=copyObj(this.newPayment, ["amount","bank"]);
     dta.order=this.id;
-    dta.comment=this.service.encodeExt(this.newPayment.ext);
+    dta.comment=this.ibf.encodeExt(this.newPayment.ext);
     request({method:"POST",url:"/api/payment/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -178,19 +180,23 @@ menu_remove(){
     })
 },
 open_new_payment() {
-    this.service.template('payment').then(tmpl=> {
+    var defaultVal={cmt:{n:tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=payment";
+    this.ibf.template('payment', url, defaultVal).then(tmpl=> {
         //{a:{n:xxx,t:s/d/n},b:{}}
         this.newPayment.amount='';
         this.newPayment.bank='';
-        this.newPayment.ext=this.service.decodeExt('{}',tmpl);
+        this.newPayment.ext=this.ibf.decodeExt('{}',tmpl);
         this.visible.paymentDlg=true
     });
 },
 open_new_service() {
-    this.service.template('service').then(tmpl => {
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=service";
+    this.ibf.template('service', url, defaultVal).then(tmpl=> {
         //{a:{n:xxx,t:s/d/n},b:{}}
         this.newService.cost='';
-        this.newService.ext=this.service.decodeExt('{}',tmpl);
+        this.newService.ext=this.ibf.decodeExt('{}',tmpl);
         this.visible.serviceDlg=true
     })
 },
@@ -300,7 +306,8 @@ template:`
  </template>
 </q-banner>
 <q-list separator dense>
- <q-item v-for="p in purList" clickable @click="ibf.purchaseFlow(p.flowid,p.purId)">
+ <q-item v-for="p in purList" clickable
+  @click="ibf.showFlow(p.flowid,p.purId,'/ibf/workflow?service='+ibf.SERVICE_RES)">
   <q-item-section>{{p.cmt}}</q-item-section>
   <q-item-section side>{{p.createAt}}</q-item-section>
  </q-item>
@@ -309,7 +316,7 @@ template:`
 <!-- 服务记录列表 -->
 <q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_services">
  <template v-slot:avatar>
-  <q-icon :name="icons.service" color="primary" size="1em"></q-icon>
+  <q-icon :name="tags.icons.service" color="primary" size="1em"></q-icon>
  </template>
  {{tags.service.title}}({{tags.order.service}}:{{dtl.cost}})
  <template v-slot:action>
@@ -334,7 +341,7 @@ template:`
 <!-- 回款列表 -->
 <q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_payments">
  <template v-slot:avatar>
-  <q-icon :name="icons.payment" color="primary" size="1em"></q-icon>
+  <q-icon :name="tags.icons.payment" color="primary" size="1em"></q-icon>
  </template>
  {{tags.payment.title}}({{tags.order.payment}}:{{dtl.payment}},{{tags.order.needPay}}:{{dtl.needPay}})
  <template v-slot:action>

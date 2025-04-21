@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 data() {return {
     tasks:[], //任务列表
     page:{cur:1, max:0}
@@ -46,7 +46,7 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.home.tasks}}</q-toolbar-title>
-    <q-avatar :icon="icons['task']" color="primary"></q-avatar>
+    <q-avatar :icon="tags.icons['task']" color="primary"></q-avatar>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -57,7 +57,7 @@ template:`
 </div>
 <q-list separator>
  <q-item v-for="t in tasks" @click="detail(t.flow,t.did,t.name)" clickable>
-  <q-item-section thumbnail><q-icon :name="icons[t.name]" :color="t.color"></q-icon></q-item-section>
+  <q-item-section thumbnail><q-icon :name="tags.icons[t.name]" :color="t.color"></q-icon></q-item-section>
   <q-item-section>
       <q-item-label>{{t.flowName}}</q-item-label>
       <q-item-label caption>{{t.stepName}}:{{t.descr}}</q-item-label>

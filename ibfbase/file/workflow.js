@@ -11,32 +11,32 @@ components:{
 	"workflow":Workflow
 },
 data() {return {
-    service:this.$route.query.service,
+    service:this.$route.query.service, //ibf本身不是服务，所以需要指定服务名
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
-    flName:this.$route.query.flName,
-    dtlApi:this.$route.query.dtlApi,
-    dtlPage:this.$route.query.dtlPage,
     tags:this.ibf.tags,
-    curStep:0,
+    alertDlg:null,
     dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
-    var dtlUrl=appendParas(this.dtlApi,{id:this.did});
-    var segments=this.tags[this.flName]['wfSegs'];
-    request({method:"GET",url:dtlUrl}, this.service).then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            if(resp.code==RetCode.NOT_EXISTS) {
-                this.removeWf();
+    _WF_.flowDef(this.flowid).then(fd=>{
+        this.flow=fd;
+        var segments=this.tags[fd.name]['wfSegs'];
+        var dtlUrl=appendParas(fd.dtlApi,{id:this.did});
+        request({method:"GET", url:dtlUrl}, this.service).then(resp=>{
+            if(resp.code!=RetCode.OK) {
+                if(resp.code==RetCode.NOT_EXISTS) {
+                    this.removeWf();
+                }
+                return;
             }
-            return;
-        }
-        this.dtl=_WF_.formDtlData(resp.data, segments);
-    });
-	_WF_.flowDef(this.flowid).then(sd=>{
-        this.flow=sd;
-    });
+            this.dtl=_WF_.formDtlData(resp.data, segments);
+        })
+    })
+},
+mounted(){//不能在created中赋值，更不能在data中
+    this.alertDlg=this.$refs.errMsg;
 },
 methods:{
 showDtl() {
@@ -44,8 +44,6 @@ showDtl() {
     this.ibf.goto(url)
 },
 removeWf() { //数据不存在，工作流数据错乱的情况下，删除工作流记录
-    if(this.curStep>0)return;//只有第0步权签人(创建人)才有权限删除
-
     this.$refs.confirmDlg.show(this.tags.wrongFlowState, ()=>{
         _WF_.remove(this.flowid,this.did,this.service).then(resp=>{
             if(resp.code!=RetCode.OK) {
@@ -62,7 +60,7 @@ template:`
   <q-header>
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="ibf.back"></q-btn>
-    <q-toolbar-title>{{flow.name}}</q-toolbar-title>
+    <q-toolbar-title>{{flow.dispName}}</q-toolbar-title>
     <q-btn flat icon="info" @click="showDtl" v-if="dtlPage"></q-btn>
    </q-toolbar>
   </q-header>
@@ -76,8 +74,7 @@ template:`
 </q-list>
 <q-separator color="primary" inset></q-separator>
 <workflow :service="service" :flowid="flowid" :did="did"
- :serviceTags="tags" :flowTags="tags.flowTags"
- :apiErrors="tags.errMsgs" v-model="curStep"></workflow>
+ :flowTags="tags.flowTags" :alertDlg="alertDlg"></workflow>
     </q-page>
   </q-page-container>
 </q-layout>

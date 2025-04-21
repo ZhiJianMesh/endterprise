@@ -242,7 +242,15 @@ zh:{
     finish:"完成",
     reject:"返回",
     nextStep:"下一步"
+  },
+  icons:{
+   customer:"svguse:/assets/imgs/meshicons.svg#company",
+   contact:"contacts",
+   order:"event_note",
+   service:"svguse:/assets/imgs/meshicons.svg#build",
+   payment:"svguse:/assets/imgs/meshicons.svg#payment",
+   touchlog:"perm_phone_msg",
+   task:"playlist_add_check"
   }
-},
-calClose:'关闭'
-};
+}
+}

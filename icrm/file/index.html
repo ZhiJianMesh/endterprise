@@ -59,26 +59,16 @@ import { registerIbf } from '/ibfbase/ibf.js';
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
 
-//常量定义
-const icons={
- customer:"svguse:/assets/imgs/meshicons.svg#company",
- contact:"contacts",
- order:"event_note",
- service:"svguse:/assets/imgs/meshicons.svg#build",
- payment:"svguse:/assets/imgs/meshicons.svg#payment",
- touchlog:"perm_phone_msg"
-};
-
 const homeTpl=document.getElementById('tpl_home');
 const Home = {
 inject:['service', 'tags'],
 data(){return{
     myList:{
-        c:{icon:icons.customer,name:tags.home.customers,url:'/customers',weekInc:0},
-        n:{icon:icons.contact,name:tags.home.contacts,url:'/contacts',weekInc:0},
-        o:{icon:icons.order,name:tags.home.orders,url:'/orders',weekInc:0},
-        //s:{icon:icons.service,name:tags.home.services,url:'/services',weekInc:0},
-        p:{icon:icons.payment,name:tags.home.payments,url:'/payments',weekInc:0}
+        c:{icon:tags.icons.customer,name:tags.home.customers,url:'/customers',weekInc:0},
+        n:{icon:tags.icons.contact,name:tags.home.contacts,url:'/contacts',weekInc:0},
+        o:{icon:tags.icons.order,name:tags.home.orders,url:'/orders',weekInc:0},
+        //s:{icon:tags.icons.service,name:tags.home.services,url:'/services',weekInc:0},
+        p:{icon:tags.icons.payment,name:tags.home.payments,url:'/payments',weekInc:0}
     }
 }},
 created(){
@@ -130,60 +120,9 @@ routes:[
 //service定义
 const service = {
 name:"icrm",N_PAGE:10,N_SMPG:5,
-runtime:{}, //运行时
 lang:l,
 userInfo:{id:-1,powers:{},groups:[]},
 CLIENTW:document.documentElement.clientWidth,
-tmpl:{customer:{},contact:{},order:{},service:{},payment:{}},//模板缓存,{a:{n:xxx,t:s/n/d/b},b:{...}...}
-skus:[],//商品缓存
-encodeExt(ext) { //[{k:k,v:yyy,n:xxx,t:n/s/d}...] => {k:yyy}
-    var dta={};
-    for(var e of ext) {
-      dta[e.k]=e.v;
-    }
-    return JSON.stringify(dta);
-},
-decodeExt(extStr,tmpl) { //return [{k:tmpl.k,n:tmpl.n,v:extStr.v,t:tmpl.t}...]
-    var o={};
-    var ext=[];
-    var t,v;
-    try{o=JSON.parse(extStr);}catch(err){}
-    for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
-        t=tmpl[k];
-        v=o[k];
-        if(!v) {
-          if(t.t=='b') {
-            v=false; //vue3不必用this.$set方法
-          } else {
-            v='';
-          }
-        }
-        ext.push({n:t.n, v:v, t:t.t, k:k});
-    }
-    return ext;
-},
-template(n,refresh){
-    if(!refresh && Object.keys(this.tmpl[n]).length>0){
-        return new Promise(resolve=>{resolve(this.tmpl[n])});
-    }
-    var url="/api/proxy/gettemplate?name="+n;
-    return request({method:"GET",url:url}, this.name).then((resp)=>{
-        if(resp.code!=RetCode.OK || !('data' in resp) || !('v' in resp.data)) {
-            Console.info("request template `"+n+"` failed:" + resp.code + ",info:" + resp.info);
-            return {'cmt':{n:tags.cmt,t:'s'}};//只有一个备注字段
-        }
-        if(resp.data.v) {
-            this.tmpl[n]=JSON.parse(resp.data.v);
-        }
-        return this.tmpl[n];
-    });
-},
-setRt(k, v) {
-    this.runtime[router.currentRoute.value.path+':'+k]=v;
-},
-getRt(k) {
-    return this.runtime[router.currentRoute.value.path+':'+k];
-},
 back() { //返回，在页面中通过service.back调用
     router.back();
 },
@@ -194,7 +133,7 @@ goto(url) {
 
 //app主体定义
 const app = Vue.createApp({
-provide:{tags:tags, service:service, icons:icons},
+provide:{tags:tags, service:service},
 created(){
     registerIbf(app,router).then(userInfo => {
         service.userInfo=userInfo;

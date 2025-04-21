@@ -179,7 +179,7 @@ doContactAct() {
 },
 showEntry() {
     var e=this.perInfo.entry;
-    var url='/wfemployee?flow='+e.flowid+"&did="+e.did+"&type=entry";
+    var url='/workflow?flow='+e.flowid+"&did="+e.did+"&type=entry";
     this.service.goto(url);
 }
 },

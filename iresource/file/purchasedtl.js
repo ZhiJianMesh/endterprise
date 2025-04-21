@@ -114,7 +114,7 @@ gdn_do() {
     });
 },
 flow() {
-    this.ibf.purchaseFlow(this.dtl.flowid, this.id);
+    this.ibf.showFlow(this.dtl.flowid, this.id,'/ibf/workflow?service='+this.ibf.SERVICE_RES)
 },
 apply_pay(){
     if(this.dtl.payState!='INIT')return;

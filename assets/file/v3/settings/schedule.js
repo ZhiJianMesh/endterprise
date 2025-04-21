@@ -17,9 +17,14 @@ const _defaultSchTags = {
 //简易的用户&群组管理
 export default {
 props: {
-    service:{type:String,required:true},
+    service:{type:String, required:true},
     schTags:{type:Object, required:false},
     alertDlg:{type:Object, required:true}
+},
+watch: {
+  service(_n,_o) {
+    this.init();
+  }
 },
 emits: ['update:modelValue'],
 data() {return {
@@ -38,9 +43,20 @@ created(){
     } else {
         this.tags=_defaultSchTags;
     }
-    
+    for(var k in this.tags.types) {
+        var v=this.tags.types[k];
+        this.typeOpts.push({label:v, value:k});
+    }
+    this.init();
+},
+methods:{
+init() {
+    if(!this.service)return;
+
     request({method:"GET", url:"/settings/list?service="+this.service}, SERVICE_SCH).then(resp=>{
         if(resp.code != RetCode.OK) {
+            this.list=[];
+            this.schOpts=[];
             this.changed();
             return;
         }
@@ -56,13 +72,7 @@ created(){
         this.schOpts=opts;
         this.change_sch(0);
     });
-
-    for(var k in this.tags.types) {
-        var v=this.tags.types[k];
-        this.typeOpts.push({label:v, value:k});
-    }
 },
-methods:{
 save(){
     var dta=cloneObj(this.ctrl.dta);
     var offset=new Date().getTimezoneOffset();

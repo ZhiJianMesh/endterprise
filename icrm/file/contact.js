@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
     dtl:{},//详情:id,name,cname,address,creator,createAt,birthday,sex,level,post,phone,comment
@@ -22,8 +22,10 @@ data() {return {
 }},
 created(){
     this.curDate=date2str(new Date());
-    this.service.template('contact').then(tpl=>{
-        this.detail(tpl);
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=contact";
+    this.ibf.template('contact', url, defaultVal).then(tmpl=> {
+        this.detail(tmpl);
     });
 },
 methods:{
@@ -51,7 +53,7 @@ detail(tmpl) {
         
         dtl.sex=dtl.sex;
         dtl.sex_s=this.tags.sexName[dtl.sex];
-        this.ext=this.service.decodeExt(dtl.comment, tmpl);
+        this.ext=this.ibf.decodeExt(dtl.comment, tmpl);
         this.dtl = dtl;
     });
 },
@@ -187,7 +189,7 @@ remove_relation(target){
 },
 save_base() {
     var dta=copyObj(this.dtl,['name','address','phone','sex','level','post']);
-    dta.comment=this.service.encodeExt(this.ext);
+    dta.comment=this.ibf.encodeExt(this.ext);
     dta.birthday=Math.ceil(new Date(this.dtl.birthday).getTime()/86400000); //转为天数
     dta.id=this.id;
 

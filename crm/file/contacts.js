@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 data() {return {
     contacts:[], //联系人列表，包括自己可见的
     details:{},
@@ -193,7 +193,7 @@ template:`
   <q-card-section>
    <div class="column">
     <div class="col text-subtitle1">
-     <q-icon :name="icons['customer']" size="1em" color="primary"></q-icon>&nbsp;{{detail.cname}}
+     <q-icon :name="tags.icons['customer']" size="1em" color="primary"></q-icon>&nbsp;{{detail.cname}}
     </div>
     <div class="col self-center no-wrap text-h6">  
       {{detail.name}}&nbsp;{{detail.post}}

@@ -3,7 +3,7 @@ import Language from "./language.js"
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
-function registerIbf(app, router) { //注册ibf所需的路由
+function registerIbf(app, router, service) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/department", component:()=>import('./department.js')});
     router.addRoute({path:"/ibf/my", component:()=>import('./my.js')});
     router.addRoute({path:"/ibf/contacts", component:()=>import('./contacts.js')});
@@ -17,11 +17,14 @@ function registerIbf(app, router) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/workflow", component:()=>import('./workflow.js')}); //工作流
     router.addRoute({path:"/ibf/tasks", component:()=>import('./tasks.js')}); //待办
     router.addRoute({path:"/ibf/settings", component:()=>import('./settings.js')}); //工作流、配置、定时任务的配置
-
-    app.provide('ibf', {//如果定义一个const/var写在外面，在此引用，路由会失败，原因未知
+    const ibfDta = {
         tags:tags,
+        lang:l, //语言
+        service:service, //所处服务名称
+        userInfo:{id:-1,powers:{}},
         prjs:[],
         runtime:{}, //运行时
+        tmpl:{},//扩展字段模板
         department:{}, //所属部门，作为普通员工，只能从属于一个部门
         adminDpms:[], //管理的部门
         clockTms:[],
@@ -44,19 +47,55 @@ function registerIbf(app, router) { //注册ibf所需的路由
         getRt(k) {
             return this.runtime[router.currentRoute.value.path+':'+k];
         },
-        purchaseFlow(flowid,did) {
-            var url='/ibf/workflow?flow='+flowid+"&did="+did
-                +"&flName=purchase&service="+this.SERVICE_RES
-                +"&dtlApi=" + encodeURI('/purchase/detail');
-            this.goto(url);
+        showFlow(flowid,did,url) {
+            this.goto(appendParas(url,{flow:flowid,did:did}));
         },
-        busiFlow(flowid,did) {
-            var url='/ibf/workflow?flow='+flowid+"&did="+did
-                +"&flName=busi&service="+this.SERVICE_BUSINESS
-                +"&dtlApi=" + encodeURI('/business/detail');
-            this.goto(url);
+        encodeExt(ext) { //打包扩展字段，[{k:k,v:yyy,n:xxx,t:n/s/d}...] => {k:yyy}
+            var dta={};
+            for(var e of ext) {
+              dta[e.k]=e.v;
+            }
+            return JSON.stringify(dta);
+        },
+        decodeExt(extStr,tmpl) { //解析扩展字段 [{k:tmpl.k,n:tmpl.n,v:extStr.v,t:tmpl.t}...]
+            var o={};
+            var ext=[];
+            var t,v;
+            try{o=JSON.parse(extStr);}catch(err){}
+            for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
+                t=tmpl[k];
+                v=o[k];
+                if(!v) {
+                  if(t.t=='b') {
+                    v=false; //vue3不必用this.$set方法
+                  } else {
+                    v='';
+                  }
+                }
+                ext.push({n:t.n, v:v, t:t.t, k:k});
+            }
+            return ext;
+        },
+        template(n,url,def){
+            var k=this.service+'.'+n;
+            var tmpl=this.tmpl[k];
+            if(tmpl&&Object.keys(tmpl).length>0){
+                return new Promise(resolve=>{resolve(tmpl)});
+            }
+            return request({method:"GET",url:url}, this.service).then((resp)=>{
+                if(resp.code!=RetCode.OK || !resp.data || !resp.data.v) {
+                    Console.info("request template `"+k+"` failed:"+resp.code+",info:"+resp.info);
+                    return def;//返回默认值
+                }
+                if(resp.data.v) {
+                    this.tmpl[k]=JSON.parse(resp.data.v);
+                }
+                 return this.tmpl[k]?this.tmpl[k]:def;
+            })
         }
-    })
+    };
+    app.provide('ibf', ibfDta);
+
     //返回userInfo
     return request({method:"GET",url:"/api/getbaseinfo"}, SERVICE_USER).then(resp=>{
         if(resp.code!=0) {
@@ -65,7 +104,8 @@ function registerIbf(app, router) { //注册ibf所需的路由
         }
         if(!resp.data.powers)resp.data.powers={}; //防止引用时powers为空
         if(!resp.data.groups)resp.data.groups=[];
-        return resp.data;
+        ibfDta.userInfo=resp.data;
+        return ibfDta.userInfo;
     })
 }
 export { registerIbf };
@@ -80,7 +120,8 @@ data() {return {
     ctrl:{cur:1, max:0},
     prjs:[],//vue无法与inject的变量双向绑定，所以另外加以下三个字段
     isAdmin:false,
-    clockTms:[]
+    clockTms:[],
+    taskNum:0
 }},
 created(){
     if(this.ibf.prjs.length==0) {
@@ -122,6 +163,12 @@ created(){
     } else {
         this.isAdmin=this.ibf.adminDpms.length>0;
     }
+    
+    request({method:"GET",url:"/taskNum"}, this.ibf.SERVICE_WF).then(resp => {
+        if(resp.code==RetCode.OK) {
+            this.taskNum=resp.data.num
+        }
+    })
 },
 methods:{
 query_prjs(pg) {
@@ -206,39 +253,47 @@ template:`
  </div>
  <div class="col self-center text-right">
   <div class="q-gutter-lg">
+   <q-btn flat dense color="primary" @click="ibf.goto('/ibf/tasks')">
+    <div class="text-center">
+     <q-btn icon="assignment" flat dense>
+     <q-badge v-if="taskNum>0" color="red" rounded floating>{{taskNum}}</q-badge>
+     </q-btn><br>
+     {{tags.home.tasks}}
+    </div>
+   </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/attendance')">
     <div class="text-center">
-     <q-icon name="work_history"></q-icon><br>
+     <q-btn icon="work_history" flat dense></q-btn><br>
      {{tags.atd.title}}
     </div>
    </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/business')">
     <div class="text-center">
-     <q-icon name="flight_takeoff"></q-icon><br>
+     <q-btn icon="flight_takeoff" flat dense></q-btn><br>
      {{tags.busi.title}}
     </div>
    </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/contacts')">
     <div class="text-center">
-     <q-icon name="person_search"></q-icon><br>
+     <q-btn icon="person_search" flat dense></q-btn><br>
      {{tags.grp.contacts}}
     </div>
    </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/my')">
     <div class="text-center">
-     <q-icon name="sensor_occupied"></q-icon><br>
+     <q-btn icon="sensor_occupied" flat dense></q-btn><br>
      {{tags.my.title}}
     </div>
    </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/department')" v-if="isAdmin">
     <div class="text-center">
-     <q-icon name="group"></q-icon><br>
+     <q-btn icon="group" flat dense></q-btn><br>
      {{tags.grp.department}}
     </div>
    </q-btn>
    <q-btn flat dense color="teal" @click="ibf.goto('/ibf/settings')" v-if="ibf.userInfo.account=='admin'">
     <div class="text-center">
-     <q-icon name="settings"></q-icon><br>
+     <q-btn icon="settings" flat dense></q-btn><br>
      {{tags.home.settings}}
     </div>
    </q-btn>

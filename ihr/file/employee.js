@@ -16,7 +16,7 @@ data() {return {
     },
     ctrl:{ei:{},weal:false,zone:false},
     opts:{zone:[],office:[],worktime:[]},
-    leave:{dlg:false,disable:false, type:'LEAV', cmt:''},
+    leave:{dlg:false,disable:false, state:'LEAV', cmt:''},
     grade:{dlg:false,post:0,quali:0,subsidy:0,cmt:''},
     stock:{dlg:false,stock:0,cmt:''},
     salary:{dlg:false,salary:0,dSalary:0,hSalary:0,cmt:''}
@@ -37,11 +37,12 @@ created(){
 methods:{
 get() {
     var url = "/api/employee/get?uid="+this.uid;
-    request({method:"GET",url:url}, this.service.name).then(resp =>{
+    request({method:"GET",url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
         }
         this.empInfo=this.convert(resp.data);
+        //已提出离职的，不能再提出离职
         this.empInfo.showLeave=this.uid>1&&'leave'!=resp.data.recentFlow;
     })
 },
@@ -266,7 +267,7 @@ salaryChange(v) {
     this.salary.hSalary=parseInt(v/(22*8));
 },
 showFlow(flowid,did,name) {
-    var url='/wfemployee?flow='+flowid+"&did="+did+"&type="+name;
+    var url='/workflow?flow='+flowid+"&did="+did+"&type="+name;
     this.service.goto(url);
 }
 },
@@ -453,8 +454,8 @@ template:`
     </q-card-section>
     <q-card-section class="q-pt-none">
      <div class="q-gutter-sm q-pa-sm">
-       <q-radio dense v-model="leave.type" val="LEAV" :label="tags.evtType.LEAV"></q-radio>
-       <q-radio dense v-model="leave.type" val="DIS" :label="tags.evtType.DIS"></q-radio>
+       <q-radio dense v-model="leave.state" val="LEAV" :label="tags.evtType.LEAV"></q-radio>
+       <q-radio dense v-model="leave.state" val="DIS" :label="tags.evtType.DIS"></q-radio>
      </div>
      <q-input outlined v-model="leave.cmt" :label="tags.cmt" type="textarea"></q-input>
      <user-selector :label="tags.employee.signer" :multi="false" :useid="false" :accounts="signer" dense></user-selector>

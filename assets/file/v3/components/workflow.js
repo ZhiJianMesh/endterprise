@@ -1,4 +1,3 @@
-import AlertDialog from "./alert_dialog.js";
 import UserSelector from "./user_selector.js"
 
 function sta2icon(s){//工作流状态转图标
@@ -12,10 +11,7 @@ function sta2icon(s){//工作流状态转图标
 }
 export {sta2icon};
 
-const _WF_={
-defaultTags : {
-    close:"关闭",
-    failToCall:"调用失败",
+const _wf_defaultTags = {
     wrongWfDef:"工作流定义错误",
     wfClkSuccess:'执行成功!',
     unHandled:'未处理',
@@ -37,52 +33,32 @@ defaultTags : {
       '10110':"必须指定下一步责任人",
       '10111':'工作流未定义',
       '10112':'工作流数据记录错误',
-      '10113':'存在未完成的工作',
-      'unknown':"未知错误"
+      '10113':'存在未完成的工作'
     }
-},
+}
+
+const _WF_={
 flowInfos:{},
 service:"workflow",
-flowDefs:function(ids){
-    var fids='';
-    for(var id of ids){
-        if(this.flowInfos[id]) continue;
-        if(fids!='')fids+=',';
-        fids+=id;
-    }
-    var url="/api/flow/infos?flowids="+fids
-    return request({method:"GET",url:url}, this.service).then(resp=>{
-        if(resp.code!=0) {
-            return false;
-        }
-        //flows:{flow,name,dispName,cmt,callback}
-        //steps:{flow,step,type,name,ext,cmt,signer}
-        resp.data.flows.forEach(f=>{
-            var sd={name:f.dispName,maxStep:0,steps:[]};
-            this.flowInfos[f.id]=sd;
-        });
-        resp.data.steps.forEach(s=> {
-            var sd=this.flowInfos[s.flow];
-            sd.steps[s.step]={step:s.step,type:s.type,
-                title:s.name+'('+s.cmt+')',comment:s.cmt,
-                ext:s.ext, signer:s.signer};
-            if(s.step>sd.maxStep){
-                sd.maxStep=s.step;
-            }
-        });
-        return true;
-    });
-},
-flowDef:function(id,refresh){//不能用箭头函数，否则不能用this，箭头函数的this是在运行时所在的对象
-    if(!refresh && this.flowInfos[id]) {
+//不能用箭头函数，否则不能用this，箭头函数的this是在运行时所在的对象
+//同时获取工作流的定义
+flowDef:function(id){
+    if(this.flowInfos[id]) {
         return new Promise(resolve=>{resolve(this.flowInfos[id])});
     }
-    return this.flowDefs([id]).then(r=>{
-        return r ? this.flowInfos[id] : {};
-    });
-},
-getFlowDef:function(id) {
-    return this.flowInfos[id];
+    var url="/api/flow/info?flowid="+id;
+    return request({method:"GET",url:url}, this.service).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            return {};
+        }
+        //flow:{id,name,dispName,maxStep,cmt,reject,confirm,dtlApi}
+        //steps:{flow,step,type,name,ext,cmt,signer}
+        resp.data.steps.forEach(s=> {
+            s.title=s.name+'('+s.cmt+')';
+        })
+        this.flowInfos[id]=resp.data;
+        return resp.data;
+    })
 },
 formDtlData:function(dta, segments){
     var dtl=[];
@@ -114,28 +90,25 @@ export {_WF_};
 
 export default {
 components:{
-    "alert-dialog":AlertDialog,
     "user-selector":UserSelector
 },
 data() {return {
-    flow:{},//流程定义信息{name,maxStep,steps}
-    base:{creator:'',createAt:0,step:0},
+    flow:{},//流程定义信息{service,name,dispName,maxStep,steps}
+    base:{creator:'',createAt:0,step:0,descr:''},
     dtl:{}, //数据详情
     steps:[],//每一步的数据，并非定义
     opinion:'',//处理意见
     nextSigners:[],//下一步处理人，如果指定了默认处理人，则不显示输入框
     allDone:true,
     oIcons:{P:'thumb_up',R:'thumb_down'},
-    errMsgs:{},
-    tags:{}
+    tags:{},
 }},
 props: {
-    service:{type:String,required:true},
-    flowid:{type:Number,required:true},
-    did:{type:Number,required:true},
-    apiErrors:{type:Object,required:true},//错误码对应的信息
-    flowTags:{type:Object, required:false},
-    serviceTags:{type:Object,required:true} //引用此组件的服务的标签，用于显示ext中的tag      
+    service:{type:String, required:true}, //所属服务的名称
+    flowid:{type:Number, required:true},
+    did:{type:Number, required:true},
+    alertDlg:{type:Object, required:true},
+    flowTags:{type:Object, required:false} //工作流的tags，默认为_wf_defaultTags
 },
 emits: ['update:modelValue'],
 created(){
@@ -144,19 +117,17 @@ created(){
         this.query_opinions();
     });
     if(this.flowTags&&Object.keys(this.flowTags).length>0) {
+        copyObjTo(_wf_defaultTags, this.tags);
         copyObjTo(this.flowTags, this.tags);
     } else {
-        this.tags=_WF_.defaultTags;
+        this.tags=_wf_defaultTags
     }
-    copyObjTo(this.apiErrors, this.errMsgs);
-    copyObjTo(this.tags.errMsgs, this.errMsgs);
 },
 methods:{
 query_opinions() {
     this.opinion='';
     this.nextSigners=[];
-    var url="/api/opinions?flowid="+this.flowid+"&did="+this.did
-        +"&service="+this.service;
+    var url="/api/opinions?flowid="+this.flowid+"&did="+this.did+"&service="+this.service;
     request({method:"GET",url:url}, _WF_.service).then(resp=>{
         if(resp.code!=RetCode.OK) {
             return;
@@ -222,7 +193,7 @@ init_steps(data, curStep, hasSigner) {
                     //比如采购中设置采购价，或者确认采购清单等，支持button、page两种
                     //在过程初始化中需要设置好ext，并在language中添加相应的语言标签
                     var ext=JSON.parse(step.ext);
-                    ext.tag=this.serviceTags[ext.tag];
+                    ext.tag=this.tags[ext.tag];
                     if(ext.page) {
                         ext.page=appendParas(ext.page,{flowid:this.flowid,did:this.did,step:curStep});
                     } else if(ext.button) {
@@ -270,7 +241,7 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
 },
 confirm() {
     if(this.base.step>this.flow.maxStep) {
-        this.$refs.wf_errMsg.show(this.tags.wrongWfDef);
+        this.alertDlg.show(this.tags.wrongWfDef);
         return;
     }
     var url="/api/confirm";
@@ -278,7 +249,7 @@ confirm() {
         opinion:this.opinion, nextSigners:this.nextSigners};
     request({method:"POST",url:url, data:data}, _WF_.service).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            this.$refs.wf_errMsg.showErr(resp.code, resp.info);
+            this.showErr(resp);
             return;
         }
         this.base.step=resp.data.nextStep;
@@ -292,7 +263,7 @@ counterSign(agree) {//多人会签，不会向下一步走，等待主签人决�
         opinion:this.opinion, result:agree?'P':'R'};
     request({method:"POST",url:url,data:data}, _WF_.service).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            this.$refs.wf_errMsg.showErr(resp.code, resp.info);
+            this.showErr(resp);
             return;
         }
         this.query_opinions();
@@ -306,7 +277,7 @@ reject() {
     var data={flowid:this.flowid, did:this.did, opinion:this.opinion, service:this.service};
     request({method:"POST",url:url, data:data}, _WF_.service).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            this.$refs.wf_errMsg.showErr(resp.code, resp.info);
+            this.showErr(resp);
             return;
         }
         this.base.step=resp.data.foreStep;
@@ -320,11 +291,18 @@ btn_clk(api) {//ext中的button点击事件
     var url=api.substring(idx+1);
     request({method:"GET",url:url}, service).then(resp=>{
         if(resp.code!=RetCode.OK) {
-            this.$refs.wf_errMsg.showErr(resp.code, resp.info);
+            this.showErr(resp);
         } else {
-            this.$refs.wf_errMsg.show(this.tags.wfClkSuccess);
+            this.alertDlg.show(this.tags.wfClkSuccess);
         }
     });
+},
+showErr(resp) {
+    if(resp.code>=10104&&resp.code<=10113) {
+        this.alertDlg.showErr(resp.code, resp.info, this.tags.errMsgs);
+    } else {
+        this.alertDlg.showErr(resp.code, resp.info);
+    }
 },
 goto(url) {
     this.$router.push(url);
@@ -391,7 +369,5 @@ template:`
 </q-list>
 </q-timeline-entry>
 </q-timeline>
-
-<alert-dialog :title="tags.failToCall" :errMsgs="errMsgs" ref="wf_errMsg"></alert-dialog>
 `
 }

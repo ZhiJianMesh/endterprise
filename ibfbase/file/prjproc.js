@@ -215,6 +215,9 @@ add_purchase_sku() {
 },
 rmv_purchase_sku(i){
     this.purchase.skus.splice(i,1);
+},
+busi_flow(flowid,did) {
+    this.ibf.showFlow(flowid,did,'/ibf/workflow?service='+this.ibf.SERVICE_BUSINESS) 
 }
 },
 template:`
@@ -241,7 +244,7 @@ template:`
 
 <q-tab-panel name="busi">
  <q-list dense separator>
-  <q-item v-for="(b,i) in busis" @click="ibf.busiFlow(b.flowid,b.id)" clickable>
+  <q-item v-for="(b,i) in busis" @click="busi_flow(b.flowid,b.id)" clickable>
    <q-item-section>
     <q-item-label>{{b.account}}</q-item-label>
     <q-item-label caption>{{b.dest}}</q-item-label>

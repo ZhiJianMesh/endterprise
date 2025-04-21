@@ -10,59 +10,47 @@
 <title>About</title>
 </head>
 <body><div id="app" class="q-pa-md" v-cloak>
-    <q-carousel swipeable animated padding navigation
-        v-model="cur_title" transition-prev="scale" transition-next="scale"
-        control-color="white" height="55vh" autoplay="3000"
-        class="bg-primary text-white shadow-1 rounded-borders">
-        <q-carousel-slide name="pg1" class="column no-wrap flex-center">
-			<q-icon name="svguse:./about/img/logos.svg#white" size="6em"></q-icon>
-            <div class="q-pa-md text-h6">
-                <div>{{tags.welcome}}</div>
-            </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="pg2" class="column no-wrap flex-center">
-            <q-icon name="restaurant_menu" size="5em"></q-icon>
-            <div class="q-pa-md text-h6">
-                <div>{{tags.simple}}</div>
-            </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="pg3" class="column no-wrap flex-center">
-            <q-icon name="money_off" size="5em"></q-icon>
-            <div class="q-pa-md text-h6">
-                <div>{{tags.free}}</div>
-            </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="pg4" class="column no-wrap flex-center">
-            <q-icon name="lock_outline" size="5em"></q-icon>
-            <div class="q-pa-md text-h6">
-                <div>{{tags.security}}</div>
-            </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="pg5" class="column no-wrap flex-center">
-            <q-icon name="security" size="5em"></q-icon>
-            <div class="q-pa-md text-h6">
-                <div>{{tags.reliablity}}</div>
-            </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="pg6" class="column no-wrap flex-center">
-            <q-icon name="bookmark" size="5em"></q-icon>
-            <div class="q-pa-md text-h6">
-                {{tags.aboutUs}}
-            </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="pg7" class="column no-wrap flex-center">
-            <q-icon name="contact_phone" size="5em"></q-icon>
-            <div class="q-pa-md text-h6">
-                <div>{{tags.address}}</div>
-                <div>{{tags.email}}</div>
-            </div>
-        </q-carousel-slide>
-    </q-carousel>
-    <div style="height:40vh" class="text-center q-pt-lg">
-        <q-icon name="svguse:./about/img/logos.svg#darkRed" size="20vh"></q-icon>
-        <div class="text-h5 q-pt-md">{{tags.company}}</div>
-        <div class="text-caption">©2020-{{curYear}} {{tags.copyright}}</div>
-    </div>
+ <q-carousel swipeable animated padding navigation
+  v-model="cur_title" transition-prev="scale" transition-next="scale"
+  control-color="white" height="55vh" autoplay="3000"
+  class="bg-primary text-white shadow-1 rounded-borders">
+  <q-carousel-slide name="pg1" class="column no-wrap flex-center">
+    <q-icon name="svguse:./about/img/logos.svg#white" size="6em"></q-icon>
+    <div class="q-pa-md text-h6">{{tags.welcome}}</div>
+  </q-carousel-slide>
+  <q-carousel-slide name="pg2" class="column no-wrap flex-center">
+   <q-icon name="restaurant_menu" size="5em"></q-icon>
+   <div class="q-pa-md text-h6">{{tags.simple}}</div>
+  </q-carousel-slide>
+  <q-carousel-slide name="pg3" class="column no-wrap flex-center">
+   <q-icon name="money_off" size="5em"></q-icon>
+   <div class="q-pa-md text-h6">{{tags.free}}</div>
+  </q-carousel-slide>
+  <q-carousel-slide name="pg4" class="column no-wrap flex-center">
+   <q-icon name="lock_outline" size="5em"></q-icon>
+   <div class="q-pa-md text-h6">{{tags.security}}</div>
+  </q-carousel-slide>
+  <q-carousel-slide name="pg5" class="column no-wrap flex-center">
+   <q-icon name="security" size="5em"></q-icon>
+   <div class="q-pa-md text-h6">{{tags.reliablity}}</div>
+  </q-carousel-slide>
+  <q-carousel-slide name="pg6" class="column no-wrap flex-center">
+   <q-icon name="bookmark" size="5em"></q-icon>
+   <div class="q-pa-md text-h6">{{tags.aboutUs}}</div>
+  </q-carousel-slide>
+  <q-carousel-slide name="pg7" class="column no-wrap flex-center">
+   <q-icon name="contact_phone" size="5em"></q-icon>
+   <div class="q-pa-md text-h6">
+    <div>{{tags.address}}</div>
+    <div>{{tags.email}}</div>
+   </div>
+  </q-carousel-slide>
+ </q-carousel>
+ <div style="height:40vh" class="text-center q-pt-lg">
+  <q-icon name="svguse:./about/img/logos.svg#darkRed" size="20vh"></q-icon>
+  <div class="text-h5 q-pt-md">{{tags.company}}</div>
+  <div class="text-caption">©2020-{{curYear}} {{tags.copyright}}</div>
+ </div>
 </div></body>
 <script src="/assets/v3/vue.js"></script>
 <script src="/assets/v3/quasar.js"></script>

@@ -5,7 +5,7 @@ import Workflow from "/assets/v3/components/workflow.js"
 import {_WF_} from "/assets/v3/components/workflow.js"
 
 export default {
-inject:['service', 'tags', 'icons'],
+inject:['service', 'tags'],
 components:{
     "alert-dialog":AlertDialog,
     "confirm-dialog":ConfirmDialog,
@@ -16,6 +16,7 @@ data() {return {
     flowid:this.$route.query.flow,
     did:this.$route.query.did,
     dtlPage:this.$route.query.dtlPage,
+	alertDlg:null,
     curStep:0,
     dtl:[],
 	flow:{}//流程定义信息{name,maxStep,steps}
@@ -35,6 +36,9 @@ created(){
             this.dtl=_WF_.formDtlData(resp.data, segments);
         })
     })
+},
+mounted(){//不能在created中赋值，更不能在data中
+    this.alertDlg=this.$refs.errMsg;
 },
 methods:{
 showDtl() {
@@ -61,7 +65,7 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{flow.name}}</q-toolbar-title>
-    <q-btn flat :icon="icons[flName]" @click="showDtl" v-if="dtlPage"></q-btn>
+    <q-btn flat :icon="tags.icons[flow.name]" @click="showDtl" v-if="dtlPage"></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -74,8 +78,7 @@ template:`
 </q-list>
 <q-separator color="primary" inset></q-separator>
 <workflow :service="service.name" :flowid="flowid" :did="did"
- :serviceTags="tags" :flowTags="tags.flow"
- :apiErrors="tags.errMsgs" v-model="curStep"></workflow>
+ :flowTags="tags.flow" :alertDlg="alertDlg" v-model="curStep"></workflow>
     </q-page>
   </q-page-container>
 </q-layout>
