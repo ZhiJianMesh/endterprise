@@ -87,7 +87,7 @@ queryApps(pg) {
 },
 
 template: `
-<q-layout view="lHh lpr lFf" container style="height:100vh;">
+<q-layout view="hHh lpr fFf" container style="height:100vh;">
  <q-header elevated>
   <q-toolbar class="bg-grey-1 text-primary">
    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>

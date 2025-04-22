@@ -36,30 +36,31 @@ query() {
         if(resp.code!=RetCode.OK) {
             resp.data={list:[]}
         }
-        var m;
-        var bals=[]; //按月分行，每行记录多个类型
+        var m,sm;
+        var monNum=this.ctrl.monNum;
+        var bals=new Array(monNum); //按月分行，每行记录多个类型
         var xAxis=[];
-        for(var i=0;i<this.ctrl.monNum;i++) {
-            var bal={};
-            for(var type in this.type.list) bal[type]=0;
-            bals.push(bal);
+        var bal;
+        for(var i=0;i<monNum;i++) {
             m=i+start+1;
-            xAxis.push(parseInt(m/12)+'/'+((m%12)+1));
+            sm=parseInt(m/12)+'/'+((m%12)+1);
+            bal={month:sm};
+            for(var type in this.type.list) bal[type]=0;
+            bals[monNum-i-1]=bal; //倒序
+            xAxis.push(sm);
         }
         this.chart.x=xAxis;
 
         var bals1={}; //按类型分行，每行n个月
         for(var type of this.type.list) {//每个类型填充n个0
-            var bal=[];
-            for(var i=0;i<this.ctrl.monNum;i++) bal.push(0);
-            bals1[type]=bal;
+            bals1[type]=new Array(monNum).fill(0);;
         }
 
         var v;
         resp.data.list.map(l => { //向bals中填充实际值，没有的保持0值
             m=l.month-start-1;
             v=l.val.toFixed(2);
-            bals[m][l.type]=v;
+            bals[monNum-m-1][l.type]=v; //倒序
             bals1[l.type][m]=v;
         })
         this.bals=bals;
@@ -84,9 +85,6 @@ show_chart() {
         series: this.chart.series
     });
 },
-set_month(){
-    this.query();
-},
 set_types() {
     if(this.type.chged) {
         var types=JSON.stringify(this.type.list);
@@ -97,19 +95,19 @@ set_types() {
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.balance.title}}</q-toolbar-title>
     <q-btn flat icon="list" dense @click="type.dlg=true"></q-btn>
     <month-input class="text-subtitle1 q-pl-sm" v-model="ctrl.month"
-     @update:modelValue="set_month" min="-10y" max="cur"></month-input>
+     @update:modelValue="query" min="-10y" max="cur"></month-input>
    </q-toolbar>
   </q-header>
   <q-page-container>
     <q-page class="q-pa-md">
-<div id="balCharts" :style="{width:'100vw', height:'45vh'}"></div>
+<div id="balCharts" :style="{width:'99vw', height:'45vh'}"></div>
 <q-markup-table flat dense>
   <thead>
     <tr>
@@ -122,8 +120,8 @@ template:`
    </thead>
    <tbody>
      <tr v-for="(l,m) in bals">
-      <td class="text-left">{{chart.x[m]}}</td>
-      <td class="text-right" v-for="i in type.list">{{l[i]}}</td>
+      <td class="text-left">{{l.month}}</td>
+      <td class="text-center" v-for="i in type.list">{{l[i]}}</td>
      </tr>
    </tbody>
 </q-markup-table>

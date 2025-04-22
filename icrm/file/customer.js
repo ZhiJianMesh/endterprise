@@ -225,9 +225,9 @@ open_new_contact() {
     });
 },
 open_touchlog(i) {
-    if(typeof i === 'number' &&!isNaN(i)) {
+    if(typeof i === 'number' && !isNaN(i)) {
         var t=this.touchlogs[i];
-        this.newTl={n:t.name,t:t.t, act:'update',cid:t.cid};
+        this.newTl={n:t.name,t:t.t, cmt:t.comment, act:'update',cid:t.cid};
     } else {
         this.newTl={n:i.name,t:0,cid:i.id, act:'add'};
     }
@@ -380,7 +380,7 @@ get_suppliers() {
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
@@ -403,7 +403,7 @@ template:`
   </q-header>
 
   <q-page-container>
-    <q-page class="q-px-md q-pb-lg">
+    <q-page class="q-px-none q-pb-lg">
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.baseInfo}}
   <template v-slot:action>
@@ -461,10 +461,10 @@ template:`
 <div v-show="visible.touchlog">
 <q-list separator>
  <q-item v-for="(t,i) in touchlogs" dense clickable @click="open_touchlog(i)">
-  <q-item-section>{{t.name}}</q-item-section>
+  <q-item-section avatar>{{t.name}}</q-item-section>
   <q-item-section>{{t.comment}}</q-item-section>
-  <q-item-section>{{t.creator}}</q-item-section>
-  <q-item-section>{{t.createAt}}</q-item-section>
+  <q-item-section side>{{t.creator}}</q-item-section>
+  <q-item-section side>{{t.createAt}}</q-item-section>
  </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.touchlog>1">
@@ -676,10 +676,9 @@ template:`
     </q-card-section>
     <q-card-section class="q-pt-none">
     <q-list>
-      <q-item><q-item-section>
-        <q-input :label="tags.touchCtnt" v-model="newTl.cmt" type="textarea"
-        dense autogrow></q-input>
-      </q-item-section></q-item>
+     <q-item><q-item-section>
+      <q-input :label="tags.touchCtnt" v-model="newTl.cmt" type="textarea" dense autogrow></q-input>
+     </q-item-section></q-item>
     </q-list>
     </q-card-section>
     <q-card-actions class="row">

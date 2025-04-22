@@ -153,10 +153,10 @@ zh:{
     resource:'生产资料耗费',
     receivable:'应收账款',
     income:'已收款',
-    iIncome:'内部采购收入',
+    iIncome:'内部收入',
     payable:'应付账款',
     pay:'已付款',
-    iPay:'内部采购支出'
+    iPay:'内部支出'
   },
   bankType:{
     EMPL:'雇员帐号',

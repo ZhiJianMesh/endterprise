@@ -231,6 +231,23 @@ zh:{
     inDate:'入库时间',
     outDate:'供货方发货时间'
   },
+  bal:{
+    title:'报表',
+    val:'金额',
+    types:{
+      workload:'工时',
+      salary:'工资',
+      income:'已收款',
+      pay:'已付款',
+      iIncome:'内部收入',
+      iPay:'内部支出',
+      subsidy:'补助',
+      expense:'报销',
+      resource:'生产资料耗费',
+      receivable:'应收账款',
+      payable:'应付账款'
+    }
+  },
   gdn:{ //goods delivery notes
     title:'发货',
     state:{

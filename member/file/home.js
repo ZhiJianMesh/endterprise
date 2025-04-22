@@ -88,7 +88,7 @@ open_newvip_dlg() {
 },
 
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf" container style="height:100vh">
   <q-header class="bg-grey-1 text-primary" elevated>
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>

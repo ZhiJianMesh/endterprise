@@ -164,7 +164,7 @@ restore() {
 }
 },
 template: `
-<q-layout view="lHh lpr lFf" container style="height:100vh" v-cloak>
+<q-layout view="hHh lpr fFf" container style="height:100vh" v-cloak>
 <q-header elevated class="primary">
    <q-toolbar>
      <q-avatar square><q-icon name="arrow_back" @click="service.go_back"></q-icon></q-avatar>

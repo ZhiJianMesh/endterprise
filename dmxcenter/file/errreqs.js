@@ -47,7 +47,7 @@ remove(device) {
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf" container style="height:100vh">
   <q-header elevated>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>

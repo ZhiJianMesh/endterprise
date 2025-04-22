@@ -39,6 +39,7 @@ data() {return {
 }},
 created(){
     if(this.schTags&&Object.keys(this.schTags).length>0) {
+        copyObjTo(_defaultSchTags, this.tags);
         copyObjTo(this.schTags, this.tags);
     } else {
         this.tags=_defaultSchTags;

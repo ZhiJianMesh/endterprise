@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     id:this.$route.query.id,
     dtl:{},//详情:id,name,cname,address,creator,createAt,birthday,sex,level,post,phone,comment
@@ -258,7 +258,7 @@ menu_remove(){
 },
 
 template:`
-<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf" container style="height:100vh">
   <q-header elevated>
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
@@ -277,7 +277,7 @@ template:`
   </q-header>
 
   <q-page-container>
-    <q-page class="q-px-md q-pb-lg">
+    <q-page class="q-px-none q-pb-lg">
 
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.baseInfo}}
@@ -322,9 +322,9 @@ template:`
 <div v-show="visible.touchlog">
 <q-list separator dense v-show="visible.touchlog">
  <q-item clickable v-for="t in touchlogs" dense @click="newTlDta={t:t.t,tp:2,comment:t.comment};visible.touchlogDlg=true">
-  <q-item-section>{{t.creator}}</q-item-section>
+  <q-item-section avatar>{{t.creator}}</q-item-section>
   <q-item-section>{{t.comment}}</q-item-section>
-  <q-item-section>{{t.createAt}}</q-item-section>
+  <q-item-section side>{{t.createAt}}</q-item-section>
  </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.touchlog>1">

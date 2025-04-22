@@ -131,7 +131,7 @@ attach_do() {
 }
 },
 template:`
-<q-layout view="lHh lpr lFf" container style="height:99vh">
+<q-layout view="hHh lpr fFf" container style="height:99vh">
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.back"></q-btn>

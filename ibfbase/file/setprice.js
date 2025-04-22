@@ -65,7 +65,7 @@ set_price(val, oldVal) {
 }
 },
 template:`
-<q-layout view="HHH lpr FFF" container style="height:99.9vh">
+<q-layout view="hHh lpr fFf" container style="height:99.9vh">
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>

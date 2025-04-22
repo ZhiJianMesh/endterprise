@@ -37,6 +37,7 @@ function registerIbf(app, router, service) { //注册ibf所需的路由
         SERVICE_RES:"iresource",
         N_PAGE:10,
         N_SMPG:5,
+        CLIENTW:document.documentElement.clientWidth,
         PrjStage:{init:'INIT',start:'START',end:'END',cancel:'CANC'},
         PlanState:{init:'INIT',norm:'NORM',adv:'ADVA',delay:'DELA',cancel:'CANC'},
         back(){router.back()},
