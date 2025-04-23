@@ -7,6 +7,7 @@ import {sta2icon} from '/assets/v3/components/workflow.js';
 
 const EMPTY_PUR={expDate:'',descr:'',type:'SELF',receiver:'',buyer:[]};
 const RT_TAB="prjproc_tab";
+const BALANCE_TYPES = "prj_bal_types";
 
 export default {
 inject:["ibf"],
@@ -23,18 +24,25 @@ data() {return {
     wts:[],
     purs:[],
     busis:[],
+    bals:[],
     editable:false, //项目是否可编辑
     over:false, //是否结束
     isLeader:false,
     tags:this.ibf.tags,
     tab:'', //worktime,busi,purchase
-    
+    balCharts:null,
+
     wt:{cur:1,max:0,dlg:false,month:'-1m',no:-1}, //按月查询工时申请
     busi:{cur:1,max:0},
     purchase:{cur:1,max:0,dlg:false,typeOpts:[],
-        dta:{},skus:[],sku:{sku:{},num:''}}
+        dta:{},skus:[],sku:{sku:{},num:''}},
+    bal:{month:{year:0,month:1},monNum:12,typeDlg:false,types:[],chged:false,
+        x:[],series:[]}
 }},
 created(){
+    var types=storageGet(BALANCE_TYPES,'["salary","income","pay"]');
+    this.bal.types=JSON.parse(types);
+
     request({method:'GET',url:'/project/detail?id='+this.pid}, this.ibf.SERVICE_PRJ).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -59,6 +67,11 @@ created(){
         this.purchase.typeOpts.push({value:t, label:tps[t]});
     }
 },
+mounted(){ //mounted在created之后
+loadJs("/assets/v3/echarts.js").then(r=>{
+    if(!r) Console.info("fail to load echarts"); 
+})
+},
 methods:{
 tab_changed(tab) {
     this.ibf.setRt(RT_TAB, tab);
@@ -69,6 +82,10 @@ tab_changed(tab) {
     } else if(tab=='purchase'){
         if(this.purs.length==0) {
             this.query_purchase(this.purchase.cur);
+        }
+    } else if(tab=='bal'){
+        if(this.bals.length==0) {
+            this.query_bal();
         }
     } else {
         if(this.busis.length==0) {
@@ -157,6 +174,77 @@ query_purchase(pg) {
         this.purs=list;
     })
 },
+query_bal() {
+    if(!this.bal.month.num) return;
+    var end=this.bal.month.num;
+    var start=end-this.bal.monNum;
+    var dta={start:start, end:end, pid:this.pid, types:this.bal.types};
+    request({method:"POST",url:"/project/report", data:dta},this.ibf.SERVICE_FINANCE).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            resp.data={snapshots:[]}
+        }
+        var m,sm;
+        var monNum=this.bal.monNum;
+        var bals=new Array(monNum); //按月分行，每行记录多个类型
+        var xAxis=[];
+        var bal;
+        for(var i=0;i<monNum;i++) {
+            m=i+start+1;
+            sm=parseInt(m/12)+'/'+((m%12)+1);
+            bal={month:sm};
+            for(var type in this.bal.types) bal[type]=0;
+            bals[monNum-i-1]=bal; //倒序
+            xAxis.push(sm);
+        }
+        this.bal.x=xAxis;
+    
+        var bals1={}; //按类型分行，每行n个月
+        for(var type of this.bal.types) {//每个类型填充0
+            bals1[type]=new Array(monNum).fill(0);
+        }
+    
+        var v;
+        resp.data.snapshots.map(l => { //向bals中填充实际值，没有的保持0值
+            m=l.month-start-1;
+            for(var tp of this.bal.types) {
+                v=l[tp].toFixed(2);
+                bals[monNum-m-1][tp]=v;
+                bals1[tp][m]=v;
+            }
+        })
+        this.bals=bals;
+        
+        var series=[];
+        for(var type in bals1) {
+            series.push({name:this.tags.bal.types[type],type:'line',data:bals1[type]});
+        }
+        this.bal.series=series;
+        this.show_chart();
+    })
+},
+show_chart() {
+    this.balCharts=Vue.markRaw(echarts.init(document.getElementById('balCharts')));
+    this.balCharts.setOption({
+        title: {show:false},
+        tooltip: {},
+        grid: {left:'0%',containLabel:true},
+        legend: {type:'scroll',bottom:10,width:this.ibf.CLIENTW-60},
+        xAxis: {data:this.bal.x},
+        yAxis: [{name:this.tags.bal.val}],
+        series: this.bal.series
+    });
+},
+set_types() {
+    if(this.bal.chged) {
+        var types=this.bal.types.filter(tp=>{
+            return this.tags.bal.types[tp];
+        })
+        this.bal.types=types;
+        storageSet(BALANCE_TYPES, JSON.stringify(types));
+        this.bal.chged=false;
+        this.query_bal();
+    }
+},
 purchase_sta_changed() {
     this.query_purchase(this.purchase.cur);
 },
@@ -224,7 +312,7 @@ template:`
 <q-layout view="hHh lpr fFf" container style="height:99.9vh">
   <q-header>
    <q-toolbar>
-     <q-btn flat round icon="arrow_back" dense @click="ibf.back()"></q-btn>
+     <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
      <q-toolbar-title>{{tags.prj.title}}-{{prj.name}}</q-toolbar-title>
      <q-btn flat dense icon="info" @click.stop="ibf.goto('/ibf/prjinfo?id='+pid)"></q-btn>
    </q-toolbar>
@@ -236,6 +324,7 @@ template:`
     <q-tab name="worktime" icon="work_history" :label="tags.prj.worktime"></q-tab>
     <q-tab name="busi" icon="business" :label="tags.busi.title"></q-tab>
     <q-tab name="purchase" icon="shopping_cart" :label="tags.purchase.title"></q-tab>
+    <q-tab name="bal" icon="trending_up" :label="tags.bal.title"></q-tab>
    </q-tabs>
   </q-footer>
   <q-page-container>
@@ -315,6 +404,33 @@ template:`
  </q-list>
 </q-tab-panel>
 
+<q-tab-panel name="bal" class="q-pa-none">
+ <div class="row q-pa-md">
+  <div class="col text-primary">
+   <month-input class="text-subtitle1 q-pl-sm" v-model="bal.month"
+   @update:modelValue="query_bal()" min="-10y" max="cur"></month-input>
+  </div>
+  <div class="col text-right">
+   <q-btn flat icon="list" dense @click="bal.typeDlg=true" color="primary"></q-btn>
+  </div>
+ </div>
+ <div id="balCharts" :style="{width:'99vw', height:'35vh'}"></div>
+ <q-markup-table flat dense>
+  <thead>
+   <tr>
+    <th></th>
+    <th v-for="i in bal.types">{{tags.bal.types[i]}}</th>
+   </tr>
+  </thead>
+  <tbody>
+    <tr v-for="l in bals">
+     <td class="text-left">{{l.month}}</td>
+     <td class="text-center" v-for="i in bal.types">{{l[i]}}</td>
+    </tr>
+  </tbody>
+ </q-markup-table>
+</q-tab-panel>
+
 </q-tab-panels>
     </q-page>
   </q-page-container>
@@ -378,6 +494,17 @@ template:`
    <q-btn :label="tags.ok" color="primary" @click="purchase_do"></q-btn>
  </q-card-actions>
 </q-card>
+</q-dialog>
+
+<q-dialog v-model="bal.typeDlg" position="top" @hide="set_types">
+ <q-card style="width:100vw">
+  <q-card-section>
+   <div class="q-gutter-sm">
+     <q-checkbox v-for="(l,tp) in tags.bal.types" @update:model-value="bal.chged=true"
+      v-model="bal.types" :val="tp" :label="l"></q-checkbox>
+   </div>
+  </q-card-section>
+ </q-card>
 </q-dialog>
 
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>

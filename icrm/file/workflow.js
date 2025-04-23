@@ -48,7 +48,7 @@ created(){
         for(var s of segments) { //初始化标签
             s.s=tags[s.n];
         }
-        var defaultVal={cmt:{n:tags.cmt,t:'s'}};
+        var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
         var url="/api/proxy/gettemplate?name="+fd.name;
         this.ibf.template(fd.name, url, defaultVal).then(tmpl=>{
             this.detail(tmpl, segments);

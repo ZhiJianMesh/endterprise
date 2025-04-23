@@ -129,7 +129,6 @@ zh:{
     taxid:"统一信用码",
     status:"审批状态",
     business:"主营业务",
-    comment:"备注",
     lastestTl:"最近联系记录"
   },
   contact:{
@@ -144,8 +143,7 @@ zh:{
     phone:'电话',
     sex:"性别",
     post:"职位",
-    birthday:"出生年月",
-    comment:"备注"
+    birthday:"出生年月"
   },
   order:{
     title:"订单",

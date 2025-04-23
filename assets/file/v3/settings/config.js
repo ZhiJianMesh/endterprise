@@ -1,3 +1,4 @@
+//公司级服务配置，比如icrm的客户信息扩展字段的模板
 const _defaultCfgTags = {
     changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
     needAz:'字段必须是a-z、A-Z字符的组合',

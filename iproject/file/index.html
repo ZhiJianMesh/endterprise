@@ -20,9 +20,9 @@
      <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
    </q-toolbar>
    <div class="text-right bg-white q-pt-sm">
-    <q-btn :label="tags.projects" @click="goto('/projects')"
+    <q-btn :label="tags.prj.title" @click="goto('/projects')"
      icon="location_city" color="primary" padding="xs" flat></q-btn>
-    <q-btn :label="tags.report" @click="goto('/report')" 
+    <q-btn :label="tags.report.title" @click="goto('/report')" 
      icon="bar_chart" color="accent" flat></q-btn>
    </div>
   </q-header>

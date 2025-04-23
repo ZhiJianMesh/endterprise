@@ -87,8 +87,11 @@ show_chart() {
 },
 set_types() {
     if(this.type.chged) {
-        var types=JSON.stringify(this.type.list);
-        storageSet('balance_types', types);
+        var types=this.type.list.filter(tp=>{
+            return this.type.labels[tp];
+        })
+        this.type.list=types;
+        storageSet('balance_types', JSON.stringify(types));
         this.type.chged=false;
         this.query();
     }

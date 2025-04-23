@@ -216,7 +216,7 @@ template(n,refresh){
     return request({method:"GET",url:url}, this.name).then((resp)=>{
         if(resp.code!=RetCode.OK || !('data' in resp) || !('v' in resp.data)) {
             Console.info("request template `"+n+"` failed:" + resp.code + ",info:" + resp.info);
-            return {'cmt':{n:tags.cmt,t:'s'}};//只有一个备注字段
+            return {'cmt':{n:this.tags.cmt,t:'s'}};//只有一个备注字段
         }
         if(resp.data.v) {
             this.tmpl[n]=JSON.parse(resp.data.v);

@@ -116,7 +116,7 @@ query_perf(pg) {
 tab_changed(tab) {
     this.ibf.setRt(RT_TAB, tab);
     if(tab=='res') {
-        if(this.salaries.length==0) {
+        if(this.res.length==0) {
             this.query_res(this.resCtrl.cur);
         }
     } if(tab=='event') {

@@ -16,7 +16,7 @@ data() {return {
     },
     ctrl:{ei:{},weal:false,zone:false},
     opts:{zone:[],office:[],worktime:[]},
-    leave:{dlg:false,disable:false, state:'LEAV', cmt:''},
+    leave:{dlg:false, disable:false, state:'LEAV', cmt:''},
     grade:{dlg:false,post:0,quali:0,subsidy:0,cmt:''},
     stock:{dlg:false,stock:0,cmt:''},
     salary:{dlg:false,salary:0,dSalary:0,hSalary:0,cmt:''}
@@ -107,7 +107,7 @@ doLeave() { //离职
     var url="/api/wfemployee/leave";
     var dta=copyObjExc(this.leave, ["dlg","disable"]);
     dta.uid=this.uid;
-    dta.signer=this.signer[0];
+    dta.signer=this.signer.account;
     request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -117,7 +117,7 @@ doLeave() { //离职
     });
 },
 showLeave() {
-    if(this.empInfo.state!='JOIN')return;
+    if(!this.empInfo.showLeave)return;
     var url = "/api/resource/list?uid="+this.uid;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK) {
@@ -187,7 +187,7 @@ modifyGrade() {
     var url="/api/wfemployee/setGrade";
     var dta=copyObjExc(this.grade, ["dlg"]);
     dta.uid=this.uid;
-    dta.signer=this.signer[0];
+    dta.signer=this.signer.account;
     request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -208,7 +208,7 @@ modifySalary() {
     var url="/api/wfemployee/setSalary";
     var dta=copyObjExc(this.salary, ["dlg"]);
     dta.uid=this.uid;
-    dta.signer=this.signer[0];
+    dta.signer=this.signer.account;
     request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -227,7 +227,7 @@ modifyStock() {
     var url="/api/wfemployee/setStock";
     var dta=copyObjExc(this.stock, ["dlg"]);
     dta.uid=this.uid;
-    dta.signer=this.signer[0];
+    dta.signer=this.signer.account;
     request({method:"PUT", url:url, data:dta}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -458,7 +458,7 @@ template:`
        <q-radio dense v-model="leave.state" val="DIS" :label="tags.evtType.DIS"></q-radio>
      </div>
      <q-input outlined v-model="leave.cmt" :label="tags.cmt" type="textarea"></q-input>
-     <user-selector :label="tags.employee.signer" :multi="false" :useid="false" :accounts="signer" dense></user-selector>
+     <user-input :label="tags.employee.signer" v-model="signer" dense></user-input>
      <q-separator spaced></q-separator>
      <q-list dense>
       <q-item v-for="r in empInfo.rList">
@@ -490,7 +490,7 @@ template:`
      <q-input v-model.number="grade.post" :label="tags.employee.post"></q-input>
      <q-input v-model.number="grade.subsidy" :label="tags.employee.subsidy"></q-input>
      <q-input outlined v-model="grade.cmt" :label="tags.cmt" type="textarea"></q-input>
-     <user-selector :label="tags.employee.signer" :multi="false" :useid="false" :accounts="signer" dense></user-selector>
+     <user-input :label="tags.employee.signer" v-model="signer"></user-input>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.ok" color="primary" @click="modifyGrade"></q-btn>
@@ -507,7 +507,7 @@ template:`
     <q-card-section class="q-pt-none">
      <q-input v-model.number="stock.stock" :label="tags.employee.stock"></q-input>
      <q-input outlined v-model="stock.cmt" :label="tags.cmt" type="textarea"></q-input>
-     <user-selector :label="tags.employee.signer" :multi="false" :useid="false" :accounts="signer" dense></user-selector>
+     <user-input :label="tags.employee.signer" v-model="signer"></user-input>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.ok" color="primary" @click="modifyStock"></q-btn>
@@ -527,7 +527,7 @@ template:`
      <q-input v-model.number="salary.dSalary" :label="tags.employee.dSalary"></q-input>
      <q-input v-model.number="salary.hSalary" :label="tags.employee.hSalary"></q-input>
      <q-input outlined v-model="salary.cmt" :label="tags.cmt" type="textarea"></q-input>
-     <user-selector :label="tags.employee.signer" :multi="false" :useid="false" :accounts="signer" dense></user-selector>
+     <user-input :label="tags.employee.signer" v-model="signer"></user-input>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.ok" color="primary" @click="modifySalary"></q-btn>

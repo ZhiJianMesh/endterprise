@@ -180,7 +180,7 @@ menu_remove(){
     })
 },
 open_new_payment() {
-    var defaultVal={cmt:{n:tags.cmt,t:'s'}};
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
     var url="/api/proxy/gettemplate?name=payment";
     this.ibf.template('payment', url, defaultVal).then(tmpl=> {
         //{a:{n:xxx,t:s/d/n},b:{}}

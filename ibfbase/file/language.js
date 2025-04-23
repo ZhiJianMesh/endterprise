@@ -235,7 +235,6 @@ zh:{
     title:'报表',
     val:'金额',
     types:{
-      workload:'工时',
       salary:'工资',
       income:'已收款',
       pay:'已付款',
@@ -243,7 +242,7 @@ zh:{
       iPay:'内部支出',
       subsidy:'补助',
       expense:'报销',
-      resource:'生产资料耗费',
+      resource:'固定资产折旧',
       receivable:'应收账款',
       payable:'应付账款'
     }

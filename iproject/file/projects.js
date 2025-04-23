@@ -67,6 +67,7 @@ doSearch() {
             return;
         }
         this.fmt_lines(resp.data);
+        this.ctrl.cur=1;
         this.ctrl.max=1;
     })
 },
@@ -126,8 +127,8 @@ template:`
   </q-item-section>
  </q-item>
 </q-list>
-    </q-page>
-  </q-page-container>
+  </q-page>
+ </q-page-container>
 </q-layout>
 
 <q-dialog v-model="ctrl.prjDlg">
