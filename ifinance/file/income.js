@@ -38,6 +38,7 @@ query(pg) {
             list.push(this.fmt(income,dt));
         }
         this.list=list;
+        this.ctrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 fmt(dta,dt) {

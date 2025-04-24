@@ -7,12 +7,13 @@ components:{
 },
 data() {return {
     list:{}, //发薪申请
-    ctrl:{max:0,cur:1,dlg:false,dta:{},month:"-1m",state:'',opts:[]}
+    ctrl:{max:0,cur:1,dlg:false,dta:{},month:"-1m",state:'',opts:[]},
+    download:{dlg:false,list:[]}
 }},
 created(){
-    var opts=[];
-    for(var i in this.tags.payMode){
-        opts.push({value:i,label:this.tags.payMode[i]});
+    var opts=[{value:'',label:this.tags.unSet}];//状态选择项
+    for(var i in this.tags.salary.state){
+        opts.push({value:i,label:this.tags.salary.state[i]});
     }
     this.ctrl.opts=opts;
     this.query(1);
@@ -42,6 +43,9 @@ query(pg) {
             l.val=vals[l.uid] ? vals[l.uid] : 0;
             return l;
         });
+        //服务侧不返回total，max为NaN，因为max改变，所以触发q-pagination
+        //导致调用query(NaN)。此问题在多个地方出现过
+        this.ctrl.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 show_dtl(uid) {
@@ -110,6 +114,21 @@ sal_confirm() {
 },
 set_month() {
     this.query(this.ctrl.cur)
+},
+dl_salary() {
+    var dt=new Date();
+    var fn='salary_'+dt.getFullYear()+ String(dt.getMonth()).padStart(2, '0')
+        +String(dt.getDate()).padStart(2, '0')+".xlsx";
+    var url='/api/salary/download?month=' + this.ctrl.month.num
+        + "&state=" + this.ctrl.state;
+    download({file_name:fn, url:url, timeout:30000}, this.service.name).then(resp => {
+        if(resp.code == RetCode.OK) {
+            this.dlList.splice(0,0,{file:resp.data.saveAs, size:resp.data.size, bg:'#00000000'})
+        } else {
+            this.dlList.splice(0,0,{file:fn, size:0, bg:'#884444'})
+        }
+        this.download.dlg=true;
+    })
 }
 },
 template:`
@@ -120,6 +139,15 @@ template:`
      <q-toolbar-title>{{tags.salary.title}}</q-toolbar-title>
      <month-input class="text-subtitle1 q-pl-sm" v-model="ctrl.month"
       @update:modelValue="set_month" min="-3" max="-1m"></month-input>
+     <q-btn flat round dense icon="menu">
+      <q-menu>
+       <q-option-group v-model="ctrl.state" :options="ctrl.opts" type="radio"
+       @update:model-value="query(ctrl.cur)" style="min-width:10em;"></q-option-group>
+       <q-separator></q-separator>
+       <q-btn :label="tags.salary.download" @click="dl_salary"
+        flat color="primary" icon="get_app"></q-btn>
+      </q-menu>
+     </q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
@@ -189,7 +217,7 @@ template:`
     </q-item>
    </q-list>
    <q-option-group v-model="ctrl.dta.mode" :options="ctrl.opts"
-    inline type="radio" :disable="ctrl.dta.state!='WAIT'"></q-option-group>
+    inline type="radio" v-if="ctrl.dta.state=='WAIT'"></q-option-group>
   </q-card-section>
   <hr>
   <q-card-actions align="right" class="q-pt-none">
@@ -198,6 +226,24 @@ template:`
      v-if="ctrl.dta.state=='WAIT'"></q-btn>
   </q-card-actions>
  </q-card>
+</q-dialog>
+
+<q-dialog v-model="download.dlg">
+<q-card style="min-width:60vw;max-width:90vw">
+<q-card-section class="row items-center q-pb-none">
+  <div class="text-h6">{{tags.salary.dlList}}</div>
+  <q-space></q-space>
+  <q-btn icon="close" flat round dense v-close-popup></q-btn>
+</q-card-section>
+<q-card-section>
+ <q-markup-table style="width:100%;" flat>
+  <tr v-for="l in download.list" :style="{'background-color':l.bg}">
+   <td>{{l.file}}</td>
+   <td>{{l.size}}</td>
+  </tr>
+ </q-markup-table>
+</q-card-section>
+</q-card>
 </q-dialog>
 `
 }

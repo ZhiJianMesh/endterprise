@@ -60,6 +60,8 @@ zh:{
     cfmAcc:'支付执行人',
     mode:'支付方式',
     bank:'帐号信息',
+    download:'下载',
+    dlList:'下载列表',
     state:{
       OVER:'已发放',
       WAIT:'待发放'
