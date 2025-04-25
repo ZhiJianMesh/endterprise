@@ -277,7 +277,7 @@ template:`
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/contacts')">
     <div class="text-center">
      <q-btn icon="person_search" flat dense></q-btn><br>
-     {{tags.grp.contacts}}
+     {{tags.contacts.title}}
     </div>
    </q-btn>
    <q-btn flat dense color="primary" @click="ibf.goto('/ibf/my')">

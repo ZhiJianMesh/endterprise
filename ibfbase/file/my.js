@@ -13,6 +13,7 @@ data() {return {
     tab:'', //event,salary,res,perf
     events:[],
     res:[],
+    info:{securities:{}},
     perfs:[],
     salaries:[],
     salMonth:"-1m",
@@ -22,10 +23,11 @@ data() {return {
 }},
 created(){
     var tab=this.ibf.getRt(RT_TAB);
-    this.tab=tab?tab:'salary';
-    if(this.tab!='salary') { //salMonth会自动出发一次
+    this.tab=tab?tab:'base';
+    if(this.tab!='base') { //salMonth会自动出发一次
         this.tab_changed(this.tab);
     }
+    this.query_my();
 },
 methods:{
 query_salary(ym) {
@@ -47,7 +49,33 @@ query_salary(ym) {
             }
             return {val:s.val.toFixed(2),type:type};
         })
-    });    
+    })
+},
+query_my() {
+    request({method:"GET",url:"/employee/my"}, this.ibf.SERVICE_HR).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.info={securities:{}};
+            return;
+        }
+        var salTps=this.tags.hr.salType;
+        var secTps=this.tags.hr.secType;
+        var sponTps=this.tags.hr.sponTp;
+        var dt=new Date();
+        dt.setTime(resp.data.entryAt*60000);
+        resp.data.entryAt=date2str(dt);
+        resp.data.sickRatio=(resp.data.sickRatio*100)+'%';
+        resp.data.attend=this.tags.hr.attendTp[resp.data.attend];
+        this.info=resp.data;
+        this.info.securities=resp.data.securities.map(s => {
+            s.sponsor=sponTps[s.sponsor];
+            if(s.type=='R') {
+                s.val=(s.val*100).toFixed(2)+'%';
+            }
+            s.type=secTps[s.type];
+            s.name=salTps[s.name];
+            return s;
+        })
+    })
 },
 query_event(pg) {
     var offset=(parseInt(pg)-1)*this.ibf.N_PAGE;
@@ -123,7 +151,7 @@ tab_changed(tab) {
         if(this.events.length==0) {
             this.query_event(this.evtPg.cur);
         }
-    } else if(tab=='salary') {
+    } else if(tab=='base') {
         if(this.salaries.length==0) {
             this.query_salary(this.salMonth);
         }
@@ -200,6 +228,17 @@ reject_move() {
         this.resCtrl.dlg=false;
         this.query_res(this.resCtrl.cur);
     });    
+},
+set_contact(v, _v0) {//修改联系方式
+    var dta={phone:v.phone, email:v.email};
+    request({method:"PUT", url:"/api/employee/update", data:dta}, this.ibf.SERVICE_HR).then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.info.email=v.email;
+        this.student.phone=v.phone;
+    })
 }
 },
 template:`
@@ -213,7 +252,7 @@ template:`
   <q-footer>
    <q-tabs v-model="tab" @update:model-value="tab_changed" dense align="justify" switch-indicator inline-label
     class="text-grey bg-grey-3" active-color="primary" indicator-color="primary">
-    <q-tab name="salary" icon="paid" :label="tags.my.salary"></q-tab>
+    <q-tab name="base" icon="info" :label="tags.my.base"></q-tab>
     <q-tab name="perf" icon="autofps_select" :label="tags.my.perm"></q-tab>
     <q-tab name="res" icon="devices" :label="tags.my.res"></q-tab>
     <q-tab name="event" icon="receipt_long" :label="tags.my.event"></q-tab>
@@ -223,10 +262,60 @@ template:`
     <q-page class="q-pa-none">
 <q-tab-panels v-model="tab">
 
-<q-tab-panel name="salary">
-<month-input class="justify-center text-primary" min="-3" max="cur"
-v-model="salMonth" @update:modelValue="query_salary"></month-input>
-<q-list separator>
+<q-tab-panel name="base">
+<q-list separator dense>
+ <q-item>
+  <q-item-section>
+    <div>
+     {{info.email}}/{{info.phone}}
+     <q-icon name="edit" color="primary"></q-icon>
+    </div>
+    <q-popup-edit v-model="info" auto-save buttons v-slot="scope"
+     @save="set_contact" :label-set="tags.save" :label-cancel="tags.cancel">
+     <q-input v-model="scope.value.email" dense></q-input>
+     <q-input v-model="scope.value.phone" dense></q-input>
+    </q-popup-edit>
+  </q-item-section>
+  <q-item-section>{{info.office}}({{info.zName}})/{{info.worktime}}</q-item-section>
+ </q-item>
+ <q-item>
+  <q-item-section>
+   <q-item-label caption>{{tags.hr.quali}}:{{info.quali}}</q-item-label>
+   <q-item-label caption>{{tags.hr.post}}:{{info.post}}</q-item-label>
+   <q-item-label caption>{{tags.hr.salary}}:{{info.salary}}</q-item-label>
+   <q-item-label caption>{{tags.hr.subsidy}}:{{info.subsidy}}</q-item-label>
+   <q-item-label caption>{{tags.hr.attend}}:{{info.attend}}</q-item-label>
+   <q-item-label caption>{{tags.hr.entryAt}}:{{info.entryAt}}</q-item-label>
+  </q-item-section>
+  <q-item-section>
+   <q-item-label caption>{{tags.hr.holiday}}:{{info.holiday}}</q-item-label>
+   <q-item-label caption>{{tags.hr.weal}}:{{info.weal}}</q-item-label>
+   <q-item-label caption>{{tags.hr.sickRatio}}:{{info.sickRatio}}</q-item-label>
+   <q-item-label caption>{{tags.hr.fowSalary}}:{{info.fowSalary}}</q-item-label>
+   <q-item-label caption>{{tags.hr.oowSalary}}:{{info.oowSalary}}</q-item-label>
+   <q-item-label caption>{{tags.hr.wowSalary}}:{{info.wowSalary}}</q-item-label>
+  </q-item-section>
+ </q-item>
+</q-list>
+<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1" dense>
+{{tags.hr.security}}
+</q-banner>
+<q-list separator dense>
+ <q-item v-for="s in info.securities">
+  <q-item-section>{{s.name}}</q-item-section>
+  <q-item-section>{{s.sponsor}}</q-item-section>
+  <q-item-section>{{s.type}}</q-item-section>
+  <q-item-section>{{s.val}}</q-item-section>
+ </q-item>
+</q-list>
+<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1" dense>
+{{tags.my.monSalary}}
+  <template v-slot:action>
+   <month-input class="justify-right text-primary" min="-3" max="cur"
+    v-model="salMonth" @update:modelValue="query_salary"></month-input>
+  </template>
+</q-banner>
+<q-list separator dense>
  <q-item v-for="s in salaries">
   <q-item-section>{{s.type}}</q-item-section>
   <q-item-section>{{s.val}}</q-item-section>
@@ -235,7 +324,7 @@ v-model="salMonth" @update:modelValue="query_salary"></month-input>
 </q-tab-panel>
 
 <q-tab-panel name="perf">
- <q-list separator>
+ <q-list separator dense>
   <q-item v-for="p in perfs">
    <q-item-section>{{p.month}}</q-item-section>
    <q-item-section>{{p.level}}-</q-item-section>
@@ -268,7 +357,7 @@ v-model="salMonth" @update:modelValue="query_salary"></month-input>
 </q-tab-panel>
 
 <q-tab-panel name="event">
- <q-list separator>
+ <q-list separator dense>
   <q-item v-for="e in events">
    <q-item-section>{{e.at}}</q-item-section>
    <q-item-section>{{e.type}}</q-item-section>

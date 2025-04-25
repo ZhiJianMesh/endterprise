@@ -78,7 +78,7 @@ template:`
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="ibf.back"></q-btn>
-    <q-toolbar-title>{{tags.grp.contacts}}</q-toolbar-title>
+    <q-toolbar-title>{{tags.contacts.title}}</q-toolbar-title>
   </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-pa-sm">
@@ -99,13 +99,13 @@ template:`
  <q-item v-for="p in list">
   <q-item-section>
    <q-item-label>{{p.account}}</q-item-label>
-   <q-item-label caption>{{p.name}}</q-item-label>
+   <q-item-label caption>{{p.name}}({{tags.contacts.level}}:{{p.post}}/{{p.quali}})</q-item-label>
   </q-item-section>
   <q-item-section>
    <q-item-label>{{p.phone}}</q-item-label>
    <q-item-label caption>{{p.email}}</q-item-label>
   </q-item-section>
-  <q-item-section>
+  <q-item-section side>
    <q-item-label>{{p.office}}</q-item-label>
    <q-item-label caption>{{p.zone}}</q-item-label>
   </q-item-section>

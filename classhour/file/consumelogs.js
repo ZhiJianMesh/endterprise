@@ -55,15 +55,16 @@ on_load_logs(offset,done){
     this.query_logs(offset,done);
 },
 dldocx(){
+    var fn=this.studentName+'.docx';
     var dlUrl='/api/consume/todocx?order=' + this.orderId;
-    download({url:dlUrl, file_name:this.studentName+'.docx'}, this.service.name).then(resp => {
+    download({url:dlUrl, file_name:fn}, this.service.name).then(resp => {
         if(resp.code == RetCode.OK) {
             this.dlList.splice(0,0,{file:resp.data.saveAs, size:resp.data.size, bg:'#00000000'})
         } else {
-            this.dlList.splice(0,0,{file:f, size:0, bg:'#884444'})
+            this.dlList.splice(0,0,{file:fn, size:0, bg:'#884444'})
         }
 		this.dlgs.dl=true;
-    });
+    })
 }
 },
 

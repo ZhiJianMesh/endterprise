@@ -404,7 +404,7 @@ template:`
 
   <q-page-container>
     <q-page class="q-px-none q-pb-lg">
-<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
+<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1" dense>
 {{tags.baseInfo}}
   <template v-slot:action>
     <q-icon name="edit" color="primary" @click.stop="visible.editBase=true" v-if="dtl.power=='O'"></q-icon>
@@ -430,7 +430,7 @@ template:`
 </q-list>
 
 <!-- 联系人列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_contacts">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_contacts" dense>
 {{tags.contact.title}}
   <template v-slot:action>
     <q-icon name="add_circle" color="primary" @click.stop="open_new_contact"></q-icon>
@@ -455,7 +455,7 @@ template:`
 </div>
 
 <!-- 联系记录列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_touchlogs">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_touchlogs" dense>
 {{tags.touchlog}}
 </q-banner>
 <div v-show="visible.touchlog">
@@ -474,7 +474,7 @@ template:`
 </div>
 
 <!-- 订单列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_orders">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_orders" dense>
 {{tags.order.title}}
   <template v-slot:action>
     <q-icon name="add_circle" color="primary" @click.stop="open_create_order"></q-icon>
@@ -495,7 +495,7 @@ template:`
 
 <div v-if="dtl.power=='O'">
 <!-- 分享列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_shares">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_shares" dense>
 {{tags.share.title}}
 <template v-slot:action>
    <q-icon name="add_circle" color="primary" @click.stop="visible.newShare=true"></q-icon>

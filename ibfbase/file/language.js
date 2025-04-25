@@ -126,9 +126,30 @@ zh:{
     title:'人力资源',
     cfmed:'已确认',
     notCfm:'未确认',
+    security:'劳动保障',
+
+    quali:'任职资格',
+    post:'任职级别',
+    salary:'基本工资',
+    subsidy:'出差补助',
+    entryAt:'入职时间',
+
+    holiday:'年休假(天)',
+    weal:'福利假(小时)',
+    sickRatio:'病假工资系数',
+    fowSalary:'节假日加班工资系数',
+    oowSalary:'休息日加班工资系数',
+    wowSalary:'工作日加班工资系数',
+
+    attend:'考勤方式',
+
     sponTp:{
       P:"个人交",
       C:"公司交"
+    },
+    secType:{
+      R:'按比率',
+      V:'按金额'
     },
     salType:{
       SALARY:'工资',
@@ -162,6 +183,12 @@ zh:{
       LAUD:'表扬',
       PRJ:'项目经历',
       OTH:'其他'
+    },
+    attendTp:{
+      NORM:"打卡机刷卡",
+      LAN:"内网打卡",
+      REMO:"远程打卡",
+      FREE:"不打卡"
     }
   },
   busi:{
@@ -261,18 +288,18 @@ zh:{
     cfmDate:'确认时间',
     tranNo:'运单号'
   },
-  
   my:{
     title:"我的",
     event:"关键事件",
     perm:"绩效",
     res:"资产",
-    salary:"工资",
+    base:"基本信息",
     grp:"部门",
     startUse:'领用日期',
     now:'现在',
     moveFrom:'转自',
-    moveTo:'转给'
+    moveTo:'转给',
+    monSalary:'月工资明细'
   },
   
   prj:{
@@ -335,11 +362,14 @@ zh:{
       DONE:'完成'
     }
   },
+  contacts:{
+    title:'通讯录',
+    level:'等级'
+  },
   grp:{
     title:'群组',
     department:'部门',
     member:'成员',
-    contacts:'通讯录',
     atd:'加班请假申请',
     role:{
         ADM:"经理",
