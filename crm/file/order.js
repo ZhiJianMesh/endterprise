@@ -47,7 +47,7 @@ detail() {
 },
 query_services(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
-    var url="/api/service/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_PAGE;
+    var url="/api/service/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
@@ -66,7 +66,7 @@ query_services(pg) {
 },
 query_payments(pg) {
     var offset=(parseInt(pg)-1)*this.service.N_SMPG;
-    var url="/api/payment/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_PAGE;
+    var url="/api/payment/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0||resp.data.total==0) {
             return;

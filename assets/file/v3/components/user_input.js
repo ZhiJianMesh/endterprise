@@ -72,7 +72,7 @@ value: {
 },
 template: `<q-select :label="label" :options="opts" v-model="value"
   use-input emit-value hide-dropdown-icon :multiple=false
-  input-debounce="500" dense @filter="get_opts">
+  input-debounce="200" dense @filter="get_opts">
   <template v-slot:no-option>
    <q-item><q-item-section class="text-grey">
      No options

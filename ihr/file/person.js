@@ -11,7 +11,7 @@ data() {return {
         account:'',addr:'',email:'',idno:'', signer:''},
     ctrl:{fun:'',pi:{},entryDlg:false,cntDlg:false},
     contact:{dlg:false, type:'',act:'',cmt:'',at:'',uid:this.$route.query.uid,tag:''},
-    opts:{edu:[],state:[],zone:[],office:[],worktime:[]},
+    opts:{edu:[],state:[],zone:[],office:[],worktime:[],marriage:[]},
     userInput:{id:-1,account:''}
 }},
 created(){
@@ -34,6 +34,11 @@ created(){
     this.service.zoneList().then(opts=>{
         this.opts.zone=opts;
     });
+    var opts=[];
+    for(var i in this.tags.marriageSta) {
+        opts.push({value:i,label:this.tags.marriageSta[i]});
+    }
+    this.opts.marriage=opts;
     this.getContacts();
 },
 methods:{
@@ -56,6 +61,7 @@ convert(src, p) {
     p.joinable=p.state!='PROC'&&p.state!='JOIN';
     p.maxEdu_s=this.tags.edu[p.maxEdu];
     p.firstEdu_s=this.tags.edu[p.firstEdu];
+    p.marriage_s=this.tags.marriageSta[p.marriage];
     dt.setTime(p.birth*60000);
     p.age=year-dt.getFullYear();
     p.birth_s=date2str(dt);
@@ -231,6 +237,10 @@ template:`
    <q-item-section side>{{perInfo.birth_s}}</q-item-section>
   </q-item>
   <q-item>
+   <q-item-section>{{tags.pool.marriage}}</q-item-section>
+   <q-item-section side>{{perInfo.marriage_s}}</q-item-section>
+  </q-item>
+  <q-item>
    <q-item-section>{{tags.pool.cmt}}</q-item-section>
    <q-item-section side>{{perInfo.cmt}}</q-item-section>
   </q-item>
@@ -277,6 +287,10 @@ template:`
   <q-item><q-item-section>
    <date-input v-model="ctrl.pi.birth_s" :label="tags.pool.birth"
     :close="tags.ok" max="today"></date-input>
+  </q-item-section></q-item>
+  <q-item><q-item-section>
+   <q-select v-model="ctrl.pi.marriage" :options="opts.marriage" emit-value
+    :label="tags.pool.marriage" dense map-options></q-select>
   </q-item-section></q-item>
   <q-item><q-item-section>
    <q-input v-model="ctrl.pi.email" :label="tags.pub.email" dense maxlength=80></q-input>

@@ -1,12 +1,13 @@
 const EMPTY_PERSON={name:'',email:'',phone:'',maxEdu:'',firstEdu:'',
-            quali:0,birth:'',sex:'M',expSalary:0,cmt:''};
+            quali:0,birth:'',sex:'M',expSalary:0,cmt:'',marriage:'UN'};
 export default {
 inject:['service', 'tags'],
 data() {return {
     list:[], //人才列表
     search:'',
     ctrl:{cur:1,max:0,dlg:false},
-    perInfo:{}
+    perInfo:{},
+    opts:{edu:[],marriage:[]}
 }},
 created(){
     copyObjTo(EMPTY_PERSON,this.perInfo);
@@ -21,7 +22,12 @@ created(){
     for(var i in this.tags.edu) {
         opts.push({value:i,label:this.tags.edu[i]});
     }
-    this.eduOpts=opts;
+    this.opts.edu=opts;
+    opts=[];
+    for(var i in this.tags.marriageSta) {
+        opts.push({value:i,label:this.tags.marriageSta[i]});
+    }
+    this.opts.marriage=opts;
 },
 methods:{
 fmt_lines(data) {
@@ -172,11 +178,11 @@ template:`
        </q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-select v-model="perInfo.maxEdu" :options="eduOpts" emit-value
+       <q-select v-model="perInfo.maxEdu" :options="opts.edu" emit-value
         :label="tags.employee.maxEdu" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-select v-model="perInfo.firstEdu" :options="eduOpts" emit-value
+       <q-select v-model="perInfo.firstEdu" :options="opts.edu" emit-value
         :label="tags.employee.firstEdu" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
@@ -191,6 +197,10 @@ template:`
       <q-item><q-item-section>
        <date-input :close="tags.ok" :label="tags.pub.birth"
         v-model="perInfo.birth" max="today"></date-input>
+      </q-item-section></q-item>
+      <q-item><q-item-section>
+       <q-select v-model="perInfo.marriage" :options="opts.marriage" emit-value
+        :label="tags.pool.marriage" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <q-input v-model="perInfo.email" :label="tags.pub.email" dense maxlength=80></q-input>

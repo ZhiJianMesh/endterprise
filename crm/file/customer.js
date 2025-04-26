@@ -399,7 +399,7 @@ template:`
 </q-list>
 
 <!-- 联系人列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_contacts">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_contacts" dense>
 {{tags.contact.title}}
   <template v-slot:action>
     <q-icon name="add_circle" color="primary" @click.stop="open_new_contact"></q-icon>
@@ -441,7 +441,7 @@ template:`
 </div>
 
 <!-- 订单列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_orders">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_orders" dense>
 {{tags.order.title}}
   <template v-slot:action>
     <q-icon name="add_circle" color="primary" @click.stop="open_create_order"></q-icon>

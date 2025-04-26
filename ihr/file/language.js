@@ -136,11 +136,17 @@ zh:{
     PCREATION:'生育保险',
     HOUSE:'住房公积金'
   },
-  securityProp:{
+  securityProp:{//劳保属性
     P:'个人缴纳',
     C:'公司缴纳',
     R:'按比率',
     V:'固定金额'
+  },
+  marriageSta:{//婚姻状态
+    UN:'未婚',
+    ED:'已婚',
+    DI:'离异',
+    RE:'丧偶' 
   },
   pub:{
     account:"帐号",
@@ -160,7 +166,8 @@ zh:{
     entry:"入职",
     state:'状态',
     contact:"联系记录",
-    at:"时间"
+    at:"时间",
+    marriage:'婚姻'
   },
   employee:{
     title:"员工列表",
