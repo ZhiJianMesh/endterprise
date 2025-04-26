@@ -50,8 +50,9 @@ detail(tmpl) {
     });
 },
 query_orders(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_SMPG;
-    var url="/api/order/list?customer="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
+    var pgSize=this.service.N_SMPG;
+    var offset=(parseInt(pg)-1)*pgSize;
+    var url="/api/order/list?customer="+this.id+"&offset="+offset+"&num="+pgSize;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
@@ -65,12 +66,13 @@ query_orders(pg) {
             orders.push(o);
         }
         this.orders=orders;
-        this.page.order=Math.ceil(resp.data.total/this.service.N_SMPG);
+        this.page.order=Math.ceil(resp.data.total/pgSize);
     });
 },
 query_contacts(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_SMPG;
-    var url="/api/contact/list?customer="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
+    var pgSize=this.service.N_SMPG;
+    var offset=(parseInt(pg)-1)*pgSize;
+    var url="/api/contact/list?customer="+this.id+"&offset="+offset+"&num="+pgSize;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
@@ -83,12 +85,13 @@ query_contacts(pg) {
             createAt:date2str(dt),creator:c.creator});
         }
         this.contacts=contacts;
-        this.page.contact=Math.ceil(resp.data.total/this.service.N_SMPG);
+        this.page.contact=Math.ceil(resp.data.total/pgSize);
     });
 },
 query_touchlogs(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_SMPG;
-    var url="/api/touchlog/custTouchlogs?customer="+this.id+"&offset="+offset+"&num="+this.service.N_SMPG;
+    var pgSize=this.service.N_SMPG;
+    var offset=(parseInt(pg)-1)*pgSize;
+    var url="/api/touchlog/custTouchlogs?customer="+this.id+"&offset="+offset+"&num="+pgSize;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK||resp.data.total==0) {
             this.touchlogs=[];
@@ -103,7 +106,7 @@ query_touchlogs(pg) {
             t:l.createAt/*用于删除修改*/,cid:l.contact,creator:l.creator});
         }
         this.touchlogs=logs;
-        this.page.touchlog=Math.ceil(resp.data.total/this.service.N_SMPG);
+        this.page.touchlog=Math.ceil(resp.data.total/pgSize);
     });
 },
 query_shares() {

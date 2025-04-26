@@ -116,12 +116,6 @@ zh:{
     REMO:"远程",
     FREE:"不打卡"
   },
-  resumeTp:{
-    EDU:'学校教育',
-    TRA:'培训',
-    PRO:'工作',
-    OTH:'其他'
-  },
   roleTp:{
     ADM:"负责人",
     HR:"HR",
@@ -207,11 +201,6 @@ zh:{
     setGrade:'任职',
     setSalary:'调薪',
     setStock:'调股'
-  },
-  resume:{
-    org:"机构",
-    contrib:"贡献与收获",
-    type:"性质"
   },
   grp:{
     title:"组织管理",

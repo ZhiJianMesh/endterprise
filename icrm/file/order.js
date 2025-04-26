@@ -56,9 +56,10 @@ detail(tmpl) {
     });
 },
 query_services(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_SMPG;
+    var pgSize=this.service.N_SMPG;
+    var offset=(parseInt(pg)-1)*pgSize;
     var url="/api/service/list?customer="+this.dtl.customer+"&order="+this.id
-            +"&offset="+offset+"&num="+this.service.N_PAGE;
+            +"&offset="+offset+"&num="+pgSize;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
             return;
@@ -70,12 +71,13 @@ query_services(pg) {
             l.createAt=datetime2str(dt);
             return l;
         });
-        this.page.service=Math.ceil(resp.data.total/this.service.N_SMPG);
+        this.page.service=Math.ceil(resp.data.total/pgSize);
     });
 },
 query_payments(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_SMPG;
-    var url="/api/payment/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+this.service.N_PAGE;
+    var pgSize=this.service.N_SMPG;
+    var offset=(parseInt(pg)-1)*pgSize;
+    var url="/api/payment/list?customer="+this.dtl.customer+"&order="+this.id+"&offset="+offset+"&num="+pgSize;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0||resp.data.total==0) {
             return;
@@ -92,7 +94,7 @@ query_payments(pg) {
             }
             return l;
         })
-        this.page.payment=Math.ceil(resp.data.total/this.service.N_SMPG);
+        this.page.payment=Math.ceil(resp.data.total/pgSize);
     })
 },
 query_purList() {
@@ -271,7 +273,7 @@ template:`
     <q-item-section>{{tags.order[i]}}</q-item-section>
     <q-item-section>{{dtl[i]}}</q-item-section>
   </q-item>
-  <q-item v-if="dtl.power=='O'" clickable @click.stop="order_flow">
+  <q-item clickable @click.stop="order_flow">
     <q-item-section>{{tags.order.status}}</q-item-section>
     <q-item-section><q-icon :name="dtl.icon" color="blue"></q-icon></q-item-section>
   </q-item>

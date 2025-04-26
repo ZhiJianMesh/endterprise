@@ -287,7 +287,7 @@ template:`
    <q-item-section>{{tags.employee.maxEdu}}/{{tags.employee.firstEdu}}</q-item-section>
    <q-item-section><div>
     {{empInfo.maxEdu_s}}/{{empInfo.firstEdu_s}}
-    <q-badge color="primary" @click="service.goto('/resume?uid='+uid)">
+    <q-badge color="primary" @click="service.goto('/ibf/resume?uid='+uid)">
      {{tags.employee.resume}}<q-icon name="event_note" color="white"></q-icon>
     </q-badge>
    </div></q-item-section>

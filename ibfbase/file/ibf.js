@@ -6,6 +6,7 @@ const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
 function registerIbf(app, router, service) { //注册ibf所需的路由
     router.addRoute({path:"/ibf/department", component:()=>import('./department.js')});
     router.addRoute({path:"/ibf/my", component:()=>import('./my.js')});
+    router.addRoute({path:"/ibf/resume", component:()=>import('./resume.js')});
     router.addRoute({path:"/ibf/contacts", component:()=>import('./contacts.js')});
     router.addRoute({path:"/ibf/prjproc", component:()=>import('./prjproc.js')}); //项目事务流程
     router.addRoute({path:"/ibf/purchasedtl", component:()=>import('./purchasedtl.js')}); //项目采购申请，接口在iresource中实现
@@ -173,8 +174,9 @@ created(){
 },
 methods:{
 query_prjs(pg) {
-    var offset=(parseInt(pg)-1)*this.ibf.N_SMPG;
-    var url='/project/my?offset='+offset+'&num='+this.ibf.N_PAGE;
+    var pgSize=this.ibf.N_SMPG;
+    var offset=(parseInt(pg)-1)*pgSize;
+    var url='/project/my?offset='+offset+'&num='+pgSize;
     request({method:"GET", url:url}, this.ibf.SERVICE_PRJ).then(resp=>{
         var prjs=[];
         if(resp.code!=RetCode.OK) {
@@ -199,7 +201,7 @@ query_prjs(pg) {
                 prjs.push(l);
             }
             this.ibf.prjNum=resp.data.total;
-            this.ctrl.max=Math.ceil(resp.data.total/this.ibf.N_SMPG);
+            this.ctrl.max=Math.ceil(resp.data.total/pgSize);
         }
         this.ibf.prjs=prjs;
         this.ibf.ctrl=this.ctrl; //回退时使用历史记录

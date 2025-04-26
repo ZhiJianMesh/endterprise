@@ -191,6 +191,18 @@ zh:{
       FREE:"不打卡"
     }
   },
+  resume:{
+    title:'简历',
+    org:"机构",
+    contrib:"贡献与收获",
+    type:"性质",
+    types:{
+      EDU:'学校教育',
+      TRA:'培训',
+      PRO:'工作',
+      OTH:'其他'
+    }
+  },
   busi:{
     title:'差旅',
     prj:'所属项目',
@@ -301,7 +313,6 @@ zh:{
     moveTo:'转给',
     monSalary:'月工资明细'
   },
-  
   prj:{
     title:'项目',
     member:'成员',

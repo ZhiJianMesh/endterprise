@@ -5,7 +5,7 @@ const RT_TAB="mytab";
 export default {
 inject:["ibf"],
 components:{
-    "alert_dlg":AlertDialog,
+    "alert-dialog":AlertDialog,
     "month-input":MonthInput
 },
 data() {return {
@@ -285,7 +285,12 @@ template:`
    <q-item-label caption>{{tags.hr.salary}}:{{info.salary}}</q-item-label>
    <q-item-label caption>{{tags.hr.subsidy}}:{{info.subsidy}}</q-item-label>
    <q-item-label caption>{{tags.hr.attend}}:{{info.attend}}</q-item-label>
-   <q-item-label caption>{{tags.hr.entryAt}}:{{info.entryAt}}</q-item-label>
+   <q-item-label caption>
+   {{tags.hr.entryAt}}:{{info.entryAt}}
+    <q-badge color="primary" @click="ibf.goto('/ibf/resume?uid='+ibf.userInfo.id)">
+     {{tags.resume.title}}<q-icon name="event_note" color="white"></q-icon>
+    </q-badge>
+   </q-item-label>
   </q-item-section>
   <q-item-section>
    <q-item-label caption>{{tags.hr.holiday}}:{{info.holiday}}</q-item-label>
