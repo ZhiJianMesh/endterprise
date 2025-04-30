@@ -416,7 +416,7 @@ template:`
     <q-list>
       <q-item><q-item-section>
        <q-select v-model="newRlDta.target" use-input use-chips
-          input-debounce=200 :options="contactOpts" @filter="filterContacts" dense></q-select>
+        input-debounce=200 :options="contactOpts" @filter="filterContacts" dense></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
         <q-input :label="tags.relationCmt" v-model="newRlDta.comment" dense></q-input>

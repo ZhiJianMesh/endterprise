@@ -57,7 +57,7 @@ show_dtl(id) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        //pid,applyAt,maybeAt,payAt,bank,sid,
+        //pid,applyAt,maybeAt,payAt,bank,
         //state,val,cmt,prjName,submitter,cfmAcc
         var dt=new Date();
         if(resp.data.payAt&&resp.data.payAt>0) {

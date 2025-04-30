@@ -28,18 +28,7 @@ query(pg) {
     });
 },
 detail(flow,did) {
-    _WF_.flowDef(flow).then(fd=>{
-        var pos=fd.wfPage.indexOf('=>');
-        var url,page;
-        if(pos<0) {
-            url=fd.wfPage;
-        } else {
-            url=fd.wfPage.substring(0, pos);
-            page=fd.wfPage.substring(pos + 2);
-            this.$router.addRoute({path:url, component:()=>import(page)});
-        }
-        this.ibf.goto(appendParas(url,{flow:flow,did:did,service:fd.service}));
-    })
+    _WF_.showPage(flow, did, this.$router);
 }
 },
 template:`

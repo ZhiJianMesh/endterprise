@@ -15,6 +15,7 @@ const _wf_defaultTags = {
     wrongWfDef:"工作流定义错误",
     wfClkSuccess:'执行成功!',
     unHandled:'未处理',
+    result:'执行结果',
     descr:'概要',
     
     opinion:"意见",
@@ -22,6 +23,7 @@ const _wf_defaultTags = {
     disAgree:'不同意',
     finish:"完成",
     reject:"返回",
+    cancel:'取消',
     nextStep:"下一步",
     signers:'权签人',
 
@@ -33,7 +35,8 @@ const _wf_defaultTags = {
       '10110':"必须指定下一步责任人",
       '10111':'工作流未定义',
       '10112':'工作流数据记录错误',
-      '10113':'存在未完成的工作'
+      '10113':'存在未完成的工作',
+      '10114':'只有处于第一步的工作流才可以取消'
     }
 }
 
@@ -84,6 +87,20 @@ remove:function(flowid, did, service) {
     //工作流数据错乱的情况下，业务数据不存在，工作流发起人可以删除工作流记录
     var rmvUrl = appendParas("/removeByOwner", {flowid:flowid,did:did,service:service});
     return request({method:"DELETE", url:rmvUrl}, this.service);
+},
+showPage:function(flowid,did,router) {
+    this.flowDef(flowid).then(fd=>{
+        var pos=fd.wfPage.indexOf('=>');
+        var url,page;
+        if(pos<0) {
+            url=fd.wfPage;
+        } else {
+            url=fd.wfPage.substring(0, pos);
+            page=fd.wfPage.substring(pos + 2);
+            router.addRoute({path:url, component:()=>import(page)});
+        }
+        router.push(appendParas(url,{flow:flowid, did:did, service:fd.service}));
+    })
 }
 }
 export {_WF_};
@@ -166,7 +183,7 @@ init_steps(data, curStep, hasSigner) {
     var dt=new Date();
     var cols=data.cols;
     var step, ts;
-    var allDone=true;
+    var allDone=true;//会签人是否都反馈意见
     //step,opinion,result,type,signer,turn,update_time
     for(var l of data.opinions) {
         var o={};
@@ -229,7 +246,7 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
         return new Promise(resolve=>{
             this.nextSigners=[signer];
             resolve(false)
-        });
+        })
     }
     return request({method:"GET", url:url}, service).then(resp=>{
         if(resp.code==RetCode.OK) {
@@ -237,7 +254,7 @@ get_next_signers(signer,step) { //请求默认的处理人，如果存在，则�
             return true;
         }
         return false;
-    });
+    })
 },
 confirm() {
     if(this.base.step>this.flow.maxStep) {
@@ -255,7 +272,7 @@ confirm() {
         this.base.step=resp.data.nextStep;
         this.$emit('update:modelValue', this.base.step);
         this.query_opinions();
-    });
+    })
 },
 counterSign(agree) {//多人会签，不会向下一步走，等待主签人决定(上一步责任人)
     var url="/api/counterSign";
@@ -267,7 +284,7 @@ counterSign(agree) {//多人会签，不会向下一步走，等待主签人决�
             return;
         }
         this.query_opinions();
-    });
+    })
 },
 reject() {
     if(this.base.step<=0) {
@@ -283,7 +300,18 @@ reject() {
         this.base.step=resp.data.foreStep;
         this.$emit('update:modelValue', this.base.step);
         this.query_opinions();
-    });
+    })
+},
+cancel() { //取消
+    if(this.base.step!=0) return;
+    var url="/api/cancel?flowid="+this.flowid+"&did="+this.did+"&service="+this.service;
+    request({method:"DELETE", url:url}, _WF_.service).then(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.showErr(resp);
+            return;
+        }
+        this.$router.back();
+    })
 },
 btn_clk(api) {//ext中的button点击事件
     var idx=api.indexOf('@');
@@ -293,15 +321,15 @@ btn_clk(api) {//ext中的button点击事件
         if(resp.code!=RetCode.OK) {
             this.showErr(resp);
         } else {
-            this.alertDlg.show(this.tags.wfClkSuccess);
+            this.alertDlg.show(this.tags.wfClkSuccess, this.tags.result);
         }
     });
 },
 showErr(resp) {
-    if(resp.code>=10104&&resp.code<=10113) {
+    if(resp.code>=10104&&resp.code<=10114) {
         this.alertDlg.showErr(resp.code, resp.info, this.tags.errMsgs);
     } else {
-        this.alertDlg.showErr(resp.code, resp.info);
+        this.alertDlg.showErr(resp.code, resp.info, this.tags.result);
     }
 },
 goto(url) {
@@ -335,7 +363,10 @@ template:`
       <div class="row justify-end q-mt-lg">
        <q-btn @click="confirm" color="primary" :disable="!allDone"
         :label="s.step!=flow.maxStep?tags.nextStep:tags.finish" dense></q-btn>
-       <q-btn v-if="base.step>0" flat @click="reject" color="primary" :label="tags.reject" class="q-ml-sm" dense></q-btn>
+       <q-btn v-if="s.step==0" @click="cancel" color="primary"
+        :label="tags.cancel" class="q-ml-sm" flat dense></q-btn>
+       <q-btn v-else @click="reject" color="primary"
+        :label="tags.reject" class="q-ml-sm" flat dense></q-btn>
       </div>
      </div>
      <div v-else class="row justify-end q-mt-lg"> <!-- 会签时从签人发表意见后，不会向下一步走 -->

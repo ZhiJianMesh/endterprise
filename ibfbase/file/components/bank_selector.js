@@ -22,7 +22,7 @@ get_opts(val,update) {
         return;//已有的输入找不到，更多的输入更找不到
       }
     }
-    var opts={method:"GET",url:"/api/bankaccount/search?limit=10&s="+val};
+    var opts={method:"GET",url:"/api/bankacc/search?limit=10&s="+val};
     request(opts, "ifinance").then(resp => {
         if(resp.code!=RetCode.OK) {
             this.opts=[]
