@@ -1,4 +1,9 @@
+import ResNoSelector from "./components/resno_selector.js"
+
 export default {
+components:{
+    "resno-select":ResNoSelector
+},
 inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
@@ -6,6 +11,7 @@ data() {return {
     ctrl:{editable:false,editing:false,edt:{}/*编辑内容*/},
 
     skuList:[],
+    resNo:{no:'',name:''}, //快速搜索资产编号
     skuCtrl:{dlg:false,dta:{},sku:{}/*用在SkuSelector中输入sku*/}
 }},
 created(){
@@ -80,9 +86,10 @@ show_ship() {
 },
 ship_out() {
     var d=this.skuCtrl.dta;
-    if(!d.num)return;
-    var dta={no:d.no, num:d.num, purId:this.id, factory:this.dtl.factory};
-
+    var no=this.resNo.no;
+    if(!d.num||!no)return;
+    
+    var dta={no:no, num:d.num, purId:this.id, factory:this.dtl.factory};
     var opts={method:"POST", url:"/gdn/shipOut", data:dta};
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -110,7 +117,7 @@ start_scan() { //开始扫描二维码
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.skuCtrl.dta.no=resp.data.value;
+        this.resNo.no=resp.data.value;
     });
     Platform.scanCode(jsCbId);
 }
@@ -217,12 +224,16 @@ template:`
    <q-separator></q-separator>
   </q-card-section>
   <q-card-section class="q-pt-none">
-    <q-input v-model="skuCtrl.dta.no" :label="tags.storage.no">
-     <template v-slot:after>
-      <q-icon name="qr_code_scanner" @click="start_scan" color="primary"></q-icon>
-     </template>
-    </q-input>
-    <q-input v-model.number="skuCtrl.dta.num" :label="tags.num"></q-input>
+   <div class="row">
+    <div class="col-9">
+     <resno-select v-model="resNo" :label="tags.storage.no"
+     :factory="dtl.factory" :num="5"></resno-select>
+    </div>
+    <div class="col-3">
+      <q-btn icon="qr_code_scanner" @click="start_scan" color="primary" flat dense></q-btn>
+    </div>
+   </div>
+   <q-input v-model.number="skuCtrl.dta.num" :label="tags.num"></q-input>
   </q-card-section>
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>

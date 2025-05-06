@@ -114,7 +114,7 @@ gdn_do() {
     });
 },
 flow() {
-    this.ibf.showFlow(this.dtl.flowid, this.id,'/ibf/workflow?service='+this.ibf.SERVICE_RES)
+    this.ibf.showFlow(this.dtl.flowid, this.id, '/ibf/workflow?service='+this.ibf.SERVICE_RES)
 },
 apply_pay(){
     if(this.dtl.payState!='INIT')return;
@@ -139,11 +139,17 @@ gen_gdnTranNo() {
     var no='';
     if(this.gdnCtrl.dta.tranNo=='') {
         var dt=new Date();
-        //确保生成的随机数是16位，如果不足 16 位，前面补 0
-        let r = Math.floor(Math.random()*Math.pow(10, 16));
-        no=sysDateToStr(dt,"YYYYMMDDHHmmss")+String(r).padStart(16, '0');
+        //确保生成的随机数是8位，如果不足8位，前面补 0
+        let r = Math.floor(Math.random()*Math.pow(10, 8));
+        no=sysDateToStr(dt,"YYYYMMDDHHmm")+String(r).padStart(8, '0');
     }
     this.gdnCtrl.dta.tranNo=no;
+},
+gdn_detail(id) {
+    this.service.goto('/gdndetail?id='+id+'&factory='+this.factory.cur)
+},
+grn_detail(id) {
+    this.service.goto('/grndetail?id='+id+'&factory='+this.factory.cur)
 }
 },
 template:`
@@ -224,7 +230,7 @@ template:`
   </template>
 </q-banner>
 <q-list separator v-if="dtl.gdn">
-<q-item clickable @click="service.goto('/gdndetail?id='+id)">
+<q-item clickable @click="gdn_detail(id)">
  <q-item-section>
   <q-item-label>{{tags.gdn.title}} {{dtl.gdn.tranNo}}</q-item-label>
   <q-item-label caption>{{dtl.gdn.execAcc}}/{{dtl.gdn.cfmDate}}</q-item-label>
@@ -246,7 +252,7 @@ template:`
   </template>
 </q-banner>
 <q-list separator v-if="dtl.grn">
-<q-item v-if="dtl.grn" @click="service.goto('/grndetail?id='+id)" clickable>
+<q-item v-if="dtl.grn" @click="grn_detail(id)" clickable>
  <q-item-section>
   <q-item-label>{{tags.grn.title}} {{dtl.grn.tranNo}}</q-item-label>
   <q-item-label caption>{{dtl.grn.execAcc}}/{{dtl.grn.inDate}}</q-item-label>
@@ -303,7 +309,7 @@ template:`
 <q-dialog v-model="gdnCtrl.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-    <div class="text-h6">{{tags.add}} {{tags.storage.in}}</div>
+    <div class="text-h6">{{tags.add}} {{tags.storage.out}}</div>
     <q-separator></q-separator>
   </q-card-section>
   <q-card-section class="q-pt-none">

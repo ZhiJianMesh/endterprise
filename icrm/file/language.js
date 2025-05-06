@@ -90,6 +90,7 @@ zh:{
   unHandled:"未处理",
   onlyMine:"只看我的",
   forever:"永久",
+  notOver:'未完成',
 
   levels:['普通','一般','重要','很重要','关键人物'],
   errMsgs:{
@@ -152,7 +153,6 @@ zh:{
     cname:"客户",
     price:"合同价",
     payment:"回款总额",
-    service:"服务成本",
     needPay:"待回款",
     skuName:"商品",
     skuPrice:"目录价",
@@ -176,15 +176,26 @@ zh:{
     cfmAt:'确认于',
     notCfm:'未确认'
   },
-  service:{
-    title:"服务",
-    cost:"服务成本",
+  cost:{
+    title:"成本",
+    val:"金额(元)",
+    type:'类型',
     cname:"客户",
     creator:"创建人",
     createAt:"创建时间",
-    busi:'出差',
+    types:{
+      GOOD:'成本',
+      BUSI:'差旅',
+      GIFT:'礼品',
+      SERV:'服务',
+      OTH:'其他'
+    }
+  },
+  busi:{
+    title:'差旅',
     dest:'目的地',
-    reason:'出差事由'
+    reason:'事由',
+    account:'出差人员'
   },
   report:{
     customer:"客户",
@@ -194,7 +205,7 @@ zh:{
     payment:"回款数",
     contract:"合同额",
     revenue:"回款额",
-    cost:"服务成本",
+    cost:"成本",
     main:"简报",
     sku:"商品结算",
     month:"月度收支"

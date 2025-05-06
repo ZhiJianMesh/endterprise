@@ -122,12 +122,12 @@ show_dir_in() {
 },
 dir_in_do() {
     this.resCtrl.in.sku=this.sku.id;
-    var dta=copyObj(this.resCtrl.in, ["num","price","cmt"]);
+    var dta=copyObj(this.resCtrl.in, ["num","price","cmt","sku"]);
     if(this.sku.type!='CUR_INVT') { //非零件只能一次入库一个
         dta.num=1;
     }
     dta.factory=this.factory.cur;
-    dta.pid=this.this.resCtrl.prj.id;
+    dta.pid=this.resCtrl.prj.id;
     request({method:"POST",url:"/grn/dir_in",data:dta}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -281,7 +281,7 @@ template:`
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="resCtrl.inDlg"><!-- 直接入库 -->
+<q-dialog v-model="resCtrl.inDlg" persistent><!-- 直接入库 -->
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{resCtrl.tag}}</div>

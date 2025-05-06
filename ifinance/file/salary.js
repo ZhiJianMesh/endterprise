@@ -123,9 +123,9 @@ dl_salary() {
         + "&state=" + this.ctrl.state;
     download({file_name:fn, url:url, timeout:30000}, this.service.name).then(resp => {
         if(resp.code == RetCode.OK) {
-            this.dlList.splice(0,0,{file:resp.data.saveAs, size:resp.data.size, bg:'#00000000'})
+            this.download.list.splice(0,0,{file:resp.data.saveAs, size:resp.data.size, bg:'#00000000'})
         } else {
-            this.dlList.splice(0,0,{file:fn, size:0, bg:'#884444'})
+            this.download.list.splice(0,0,{file:fn, size:0, bg:'#884444'})
         }
         this.download.dlg=true;
     })

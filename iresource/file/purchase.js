@@ -52,6 +52,7 @@ fmt_lines(data) {
         dt.setTime(l.expDate*60000);
         l.expDate=datetime2str(dt);
         l.type=types[l.type];
+        l.color=l.state=='OVER'?'':'text-primary';
         l.state=states[l.state];
         ll.push(l);
     }
@@ -79,7 +80,6 @@ template:`
  <q-list dense separator>
   <q-item>
    <q-item-section><q-item-label caption>{{tags.prjName}}</q-item-label></q-item-section>
-   <q-item-section><q-item-label caption>{{tags.type}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.purchase.cost}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.receiver}}</q-item-label></q-item-section>
    <q-item-section side><q-item-label caption>{{tags.expDate}}</q-item-label></q-item-section>
@@ -87,10 +87,9 @@ template:`
   <q-item v-for="(l,i) in list" clickable
    @click="service.goto('/purchasedtl?id='+l.id)">
     <q-item-section>
-     <q-item-label>{{l.prjName}}</q-item-label>
-     <q-item-label caption>{{l.state}}</q-item-label>
+     <q-item-label :class="l.color">{{l.prjName}}</q-item-label>
+     <q-item-label caption>{{l.type}}/{{l.state}}</q-item-label>
     </q-item-section>
-    <q-item-section>{{l.type}}</q-item-section>
     <q-item-section>{{l.cost}}</q-item-section>
     <q-item-section>
      <q-item-label>{{l.receiver}}</q-item-label>

@@ -97,7 +97,7 @@ template:`
   </q-page-container>
 </q-layout>
 
-<q-dialog v-model="ctrl.dlg">
+<q-dialog v-model="ctrl.dlg" persistent>
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{tags.add}}</div>

@@ -1,11 +1,17 @@
-import BankSelector from "/ibfbase/components/bank_selector.js"
+import BankSelector from "/ibfbase/components/bank_selector.js";
+import UserInput from "/assets/v3/components/user_input.js";
+import DatetimeInput from "/assets/v3/components/datetime_input.js";
 import {sta2icon} from '/assets/v3/components/workflow.js';
+import {_WF_} from "/assets/v3/components/workflow.js"
 
 const EMPTY_PUR={expDate:'',descr:'',type:'SELL',receiver:'',buyer:[]};
+const EMPTY_BUSI={order:0,account:'',uid:0,cmt:'',reason:'',dest:'',start:'',end:''};
 
 export default {
 components:{
-    "bank-select":BankSelector
+    "bank-select":BankSelector,
+    "user-input":UserInput,
+    "datetime-input":DatetimeInput
 },
 inject:['service', 'tags', 'ibf'],
 data() {return {
@@ -15,17 +21,21 @@ data() {return {
     dtl:{},
     ext:[], //从订单的comment转化而来
     
-    services:[], //id,budget,createAt,creator
+    costs:[], //id,budget,createAt,creator
     payments:[], //id,amount,createAt,creator
-    purList:[],
-    
-    newService:{cost:0,nextSigners:[],comment:'',ext:[]},
-    newPayment:{amount:0,bank:'',comment:'',ext:[]},
-    purchase:{dlg:false,dta:{},skus:[],sku:{sku:{},num:''}},
+    purList:[], //订单相关的采购
+    busiList:[], //订单相关的差旅
 
-    page:{service:0,curSrv:1,payment:0,curPm:1},
-    visible:{service:false, payment:false, editBase:false, serviceDlg:false, paymentDlg:false},
-    visSegs:["taxid","price","payment","creator","createAt"]
+    newCost:{cost:0,nextSigners:[],comment:'',ext:[]},
+    newPayment:{amount:0,bank:'',comment:'',ext:[]},
+    purchase:{visible:false,dlg:false,dta:{},skus:[],sku:{sku:{},num:''}},
+    business:{visible:false,dlg:false,dta:{}},
+    userInput:{uid:0,account:''},
+
+    visSegs:["taxid","price","payment","creator","createAt"],
+    editBase:false,
+    payment:{visible:false,dlg:false,cur:1,max:0},
+    cost:{tmpl:{},tpOpts:[],visible:false,dlg:false,max:0,cur:1}
 }},
 created(){
     var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
@@ -33,7 +43,17 @@ created(){
     this.ibf.template('order', url, defaultVal).then(tmpl=> {
         this.detail(tmpl);
     });
-    this.query_purList();
+    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
+    var url="/api/proxy/gettemplate?name=cost";
+    this.ibf.template('cost', url, defaultVal).then(tmpl=> {
+        this.cost.tmpl=tmpl
+    })
+    var types=this.tags.cost.types;
+    this.cost.tpOpts=[
+        {label:types.GIFT,value:'GIFT'},
+        {label:types.SERV,value:'SERV'},
+        {label:types.OTH,value:'OTH'}
+    ];
 },
 methods:{
 detail(tmpl) {
@@ -55,23 +75,32 @@ detail(tmpl) {
         this.dtl=dtl;
     });
 },
-query_services(pg) {
+query_costs(pg) {
     var pgSize=this.service.N_SMPG;
     var offset=(parseInt(pg)-1)*pgSize;
-    var url="/api/service/list?customer="+this.dtl.customer+"&order="+this.id
+    var url="/api/cost/list?customer="+this.dtl.customer+"&order="+this.id
             +"&offset="+offset+"&num="+pgSize;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code!=0||resp.data.total==0) {
+            this.costs=[];
+            this.cost.max=0;
             return;
         }
         var dt=new Date();
-        //id,createAt,creator,cost
-        this.services=resp.data.services.map(l=>{ 
+        var total=0;
+        var opeartor=this.ibf.userInfo.account;
+        //id,createAt,creator,cost,flowid,did
+        this.costs=resp.data.list.map(l=>{ 
             dt.setTime(l.createAt*60000);
             l.createAt=datetime2str(dt);
+            l.type=this.tags.cost.types[l.type];
+            l.rmvAble=l.creator==opeartor&&l.flowid==0;//自己创建的才可以删除
+            l.ext=this.ibf.decodeExt(l.cmt, this.cost.tmpl);
+            total+=l.val;
             return l;
         });
-        this.page.service=Math.ceil(resp.data.total/pgSize);
+        this.cost.max=Math.ceil(resp.data.total/pgSize);
+        this.dtl.cost=total;
     });
 },
 query_payments(pg) {
@@ -94,19 +123,47 @@ query_payments(pg) {
             }
             return l;
         })
-        this.page.payment=Math.ceil(resp.data.total/pgSize);
+        this.payment.max=Math.ceil(resp.data.total/pgSize);
     })
 },
-query_purList() {
+query_purchase() {
     var url="/api/order/purchaselist?order="+this.id;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
         if(resp.code != 0||resp.data.total==0) {
             return;
         }
+        //id,cost,expDate,flSta status,flowid,
+        //applicant,receiver,descr,type,payState
         var dt=new Date();
         this.purList=resp.data.list.map(l=>{
-            dt.setTime(l.createAt);
-            l.createAt=date2str(dt);
+            dt.setTime(l.expDate*60000);
+            l.expDate=date2str(dt);
+            l.icon=sta2icon(l.status);
+            return l;
+        })
+    })
+},
+query_business() {
+    var url="/api/order/busilist?order="+this.id;
+    request({method:"GET",url:url}, this.service.name).then(resp=>{
+        if(resp.code != 0||resp.data.total==0) {
+            return;
+        }
+        //id,pid,flowid,flSta status,start,end,overAt,
+        //prjName,expense,subsidy,dest,reason
+        var dt=new Date();
+        this.busiList=resp.data.list.map(l=>{
+            if(l.overAt>0) {
+                dt.setTime(l.overAt*60000);
+                l.overAt=datetime2str(dt);
+            } else {
+                l.overAt=this.tags.notOver;
+            }
+            dt.setTime(l.start*60000);
+            l.start=datetime2str(dt);
+            dt.setTime(l.end*60000);
+            l.end=datetime2str(dt);
+            l.icon=sta2icon(l.status);
             return l;
         })
     })
@@ -120,33 +177,54 @@ save_base() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.visible.editBase=false;
+        this.editBase=false;
     })
 },
-more_services() {
-    this.visible.service=!this.visible.service;
-    if(this.visible.service && this.services.length==0) {
-        this.query_services(1);
+more_costs() {
+    this.cost.visible=!this.cost.visible;
+    if(this.cost.visible && this.costs.length==0) {
+        this.query_costs(1);
     }
 },
 more_payments() {
-    this.visible.payment=!this.visible.payment;
-    if(this.visible.payment && this.payments.length==0) {
+    this.payment.visible=!this.payment.visible;
+    if(this.payment.visible && this.payments.length==0) {
         this.query_payments(1);
     }
 },
-add_service() {
+more_purchase() {
+    this.purchase.visible=!this.purchase.visible;
+    if(this.purchase.visible && this.purList.length==0) {
+        this.query_purchase();
+    }
+},
+more_business() {
+    this.business.visible=!this.business.visible;
+    if(this.business.visible && this.busiList.length==0) {
+        this.query_business();
+    }
+},
+add_cost() {
     var dta={customer:this.dtl.customer, order:this.id,
-         cost:this.newService.cost};
-    dta.comment=this.ibf.encodeExt(this.newService.ext);
-    request({method:"POST",url:"/api/service/create",data:dta}, this.service.name).then(resp=>{
+         cost:this.newCost.cost, type:this.newCost.type};
+    dta.comment=this.ibf.encodeExt(this.newCost.ext);
+    request({method:"POST",url:"/api/cost/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.visible.serviceDlg=false;
-        this.newService={cost:'',ext:[]};
-        this.query_services(1);
+        this.cost.dlg=false;
+        this.newCost={cost:'',ext:[]};
+        this.query_costs(1);
+    })
+},
+remove_cost(id) {
+    request({method:"DELETE",url:"/api/cost/remove?id="+id}, this.service.name).then(resp=>{
+        if(resp.code != 0) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.query_costs(1);
     })
 },
 add_payment() {
@@ -158,14 +236,14 @@ add_payment() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.visible.paymentDlg=false;
+        this.payment.dlg=false;
         this.newPayment={amount:0,ext:[]};
         this.query_payments(1);
     })
 },
 order_flow(){
     var url='/workflow?flName=order&flow='+this.dtl.flowid
-    +"&did="+this.id+"&dtlApi="+encodeURIComponent("/order/detail");
+        +"&did="+this.id+"&dtlApi="+encodeURIComponent("/order/detail");
     this.service.goto(url);
 },
 menu_remove(){
@@ -189,21 +267,19 @@ open_new_payment() {
         this.newPayment.amount='';
         this.newPayment.bank='';
         this.newPayment.ext=this.ibf.decodeExt('{}',tmpl);
-        this.visible.paymentDlg=true
+        this.payment.dlg=true
     });
 },
-open_new_service() {
-    var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
-    var url="/api/proxy/gettemplate?name=service";
-    this.ibf.template('service', url, defaultVal).then(tmpl=> {
-        //{a:{n:xxx,t:s/d/n},b:{}}
-        this.newService.cost='';
-        this.newService.ext=this.ibf.decodeExt('{}',tmpl);
-        this.visible.serviceDlg=true
-    })
+open_new_cost() {
+    //{a:{n:xxx,t:s/d/n},b:{}}
+    this.newCost.cost='';
+    this.newCost.type='';
+    this.newCost.ext=this.ibf.decodeExt('{}',this.cost.tmpl);
+    this.cost.dlg=true
 },
 show_purchase() {
     copyObjTo(EMPTY_PUR, this.purchase.dta);
+    this.userInput={uid:0,account:''};
     this.purchase.skus=[];
     this.purchase.sku={sku:{id:0,name:''},num:''};
     this.purchase.dlg=true;
@@ -213,7 +289,7 @@ purchase_do() {
     var dta=copyObj(pur, ['receiver','descr','type']);
     dta.order=this.id;
     dta.expDate=parseInt(Date.parse(pur.expDate)/60000);
-    dta.buyer=pur.buyer[0];
+    dta.buyer=this.userInput.account;
     dta.skus=this.purchase.skus;
     request({method:"POST", url:"/order/purchase", data:dta}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
@@ -234,6 +310,32 @@ add_purchase_sku() {
 },
 rmv_purchase_sku(i){
     this.purchase.skus.splice(i,1);
+},
+show_busi() {
+    copyObjTo(EMPTY_BUSI, this.business.dta);
+    this.userInput={uid:0,account:''};
+    this.business.dlg=true;
+},
+busi_do() {
+    var busi=this.business;
+    var dta=copyObj(busi.dta, ['cmt','reason','dest']);
+    dta.order=this.id;
+    dta.uid=this.userInput.id;
+    dta.account=this.userInput.account;
+    dta.start=parseInt(Date.parse(busi.dta.start)/60000);
+    dta.end=parseInt(Date.parse(busi.dta.end)/60000);
+
+    request({method:"POST", url:"/order/business", data:dta}, this.service.name).then(resp=>{
+        if(resp.code != RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        this.business.dlg=false;
+        this.query_busiList();
+    })
+},
+show_workflow(flowid, did) {
+    _WF_.showPage(flowid, did, this.$router);
 }
 },
 template:`
@@ -256,12 +358,12 @@ template:`
   </q-header>
 
   <q-page-container>
-    <q-page class="q-px-md q-pb-lg">
+    <q-page class="q-px-none q-pb-lg">
 
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.baseInfo}}
   <template v-slot:action v-if="dtl.editable">
-    <q-icon name="edit" color="primary" @click.stop="visible.editBase=true"></q-icon>
+    <q-icon name="edit" color="primary" @click.stop="editBase=true"></q-icon>
   </template>
 </q-banner>
 <q-list dense>
@@ -298,7 +400,7 @@ template:`
 </q-list>
 
 <!-- 采购记录 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1">
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_purchase">
  <template v-slot:avatar>
   <q-icon name="shopping_cart" color="primary" size="1em"></q-icon>
  </template>
@@ -308,35 +410,76 @@ template:`
  </template>
 </q-banner>
 <q-list separator dense>
- <q-item v-for="p in purList" clickable
-  @click="ibf.showFlow(p.flowid,p.purId,'/ibf/workflow?service='+ibf.SERVICE_RES)">
-  <q-item-section>{{p.cmt}}</q-item-section>
-  <q-item-section side>{{p.createAt}}</q-item-section>
+ <q-item v-for="p in purList" clickable @click="show_workflow(p.flowid,p.id)">
+  <q-item-section>
+   <q-item-label>{{p.receiver}}</q-item-label>
+   <q-item-label caption>{{p.expDate}}</q-item-label>
+  </q-item-section>
+  <q-item-section>{{p.descr}}</q-item-section>
+  <q-item-section side>
+   <q-icon :name="p.icon" color="blue"></q-icon>
+  </q-item-section>
  </q-item>
 </q-list>
 
-<!-- 服务记录列表 -->
-<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_services">
+<!-- 差旅记录 -->
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_business">
+ <template v-slot:avatar>
+  <q-icon name="flight_takeoff" color="primary" size="1em"></q-icon>
+ </template>
+ {{tags.busi.title}}
+ <template v-slot:action>
+  <q-icon name="add_circle" color="primary" @click.stop="show_busi"></q-icon>
+ </template>
+</q-banner>
+<q-list separator dense>
+ <q-item v-for="b in busiList" clickable @click="show_workflow(b.flowid,b.id)">
+  <q-item-section>
+   <q-item-label>{{b.overAt}}</q-item-label>
+   <q-item-label caption>{{b.start}}-{{b.end}}</q-item-label>
+  </q-item-section>
+  <q-item-section>
+   <q-item-label>{{b.dest}}</q-item-label>
+   <q-item-label caption>{{b.reason}}</q-item-label>
+  </q-item-section>
+  <q-item-section side>
+   <q-icon :name="b.icon" color="blue"></q-icon>
+  </q-item-section>
+ </q-item>
+</q-list>
+
+<!-- 成本记录 -->
+<q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1" @click="more_costs">
  <template v-slot:avatar>
   <q-icon :name="tags.icons.service" color="primary" size="1em"></q-icon>
  </template>
- {{tags.service.title}}({{tags.order.service}}:{{dtl.cost}})
+ {{tags.cost.title}}:{{dtl.cost}}
  <template v-slot:action>
-  <q-icon name="add_circle" color="primary" @click.stop="open_new_service"></q-icon>
+  <q-icon name="add_circle" color="primary" @click.stop="open_new_cost"></q-icon>
  </template>
 </q-banner>
-<div v-show="visible.service">
+<div v-show="cost.visible">
 <q-list separator dense>
- <q-item v-for="s in services" clickable @click="service.goto('/service?id='+s.id)">
-  <q-item-section>{{s.creator}}</q-item-section>
-  <q-item-section>{{s.cost}}</q-item-section>
-  <q-item-section>{{s.createAt}}</q-item-section>
-  <q-item-section thumbnail><q-icon :name="s.status"></q-icon></q-item-section>
+ <q-item v-for="s in costs">
+  <q-item-section>
+   <q-item-label>{{s.creator}}</q-item-label>
+   <q-item-label caption>{{s.createAt}}</q-item-label>
+  </q-item-section>
+  <q-item-section>
+   <q-item-label>{{s.type}}:{{s.val}}</q-item-label>
+   <q-item-label v-for="e in s.ext" caption>
+     {{e.n}}:{{e.v}}
+   </q-item-label>
+  </q-item-section>
+  <q-item-section thumbnail>
+   <q-icon name="cancel" color="red" @click="remove_cost(s.id)" v-if="s.rmvAble"></q-icon>
+   <q-icon name="star" color="primary" @click="show_workflow(s.flowid,s.did)" v-if="s.flowid>0"></q-icon>
+  </q-item-section>
  </q-item>
 </q-list>
-<div class="q-pa-sm flex flex-center" v-if="page.service>1">
- <q-pagination color="primary" :max="page.service" max-pages="10" v-model="page.curSrv"
- dense boundary-numbers="false" @update:model-value="query_services"></q-pagination>
+<div class="q-pa-sm flex flex-center" v-if="cost.max>1">
+ <q-pagination color="primary" :max="cost.max" max-pages="10" v-model="cost.cur"
+ dense boundary-numbers="false" @update:model-value="query_costs"></q-pagination>
 </div>
 </div>
 
@@ -350,7 +493,7 @@ template:`
   <q-icon name="add_circle" color="primary" @click.stop="open_new_payment"></q-icon>
  </template>
 </q-banner>
-<div v-show="visible.payment">
+<div v-show="payment.visible">
 <q-list separator dense>
  <q-item v-for="p in payments">
   <q-item-section>
@@ -361,8 +504,8 @@ template:`
   <q-item-section>{{p.cfmAt}}</q-item-section>
  </q-item>
 </q-list>
-<div class="q-pa-sm flex flex-center" v-if="page.payment>1">
- <q-pagination color="primary" :max="page.payment" max-pages="10" v-model="page.curPm"
+<div class="q-pa-sm flex flex-center" v-if="payment.max>1">
+ <q-pagination color="primary" :max="payment.max" max-pages="10" v-model="payment.cur"
  dense boundary-numbers="false" @update:model-value="query_payments"></q-pagination>
 </div>
 </div>
@@ -373,19 +516,23 @@ template:`
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 <component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 
-<!-- 新增服务弹窗 -->
-<q-dialog v-model="visible.serviceDlg" no-backdrop-dismiss>
+<!-- 新增成本弹窗 -->
+<q-dialog v-model="cost.dlg" no-backdrop-dismiss>
   <q-card style="min-width:70vw">
     <q-card-section>
-      <div class="text-h6">{{tags.service.title}}</div>
+      <div class="text-h6">{{tags.cost.title}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
     <q-list>
       <q-item><q-item-section>
-        <q-input :label="tags.service.cost" v-model.number="newService.cost" dense></q-input>
+       <q-select v-model="newCost.type" :options="cost.tpOpts" emit-value
+        :label="tags.cost.type" dense map-options></q-select>
+      </q-item-section></q-item>
+      <q-item><q-item-section>
+        <q-input :label="tags.cost.val" v-model.number="newCost.cost" dense></q-input>
       </q-item-section></q-item>
       <!-- ext/comment -->
-      <q-item v-for="e in newService.ext"><q-item-section>
+      <q-item v-for="e in newCost.ext"><q-item-section>
         <div v-if="e.t=='d'">
           <component-date-input :close="tags.ok" :label="e.n" v-model="e.v"></component-date-input>
         </div>
@@ -400,14 +547,14 @@ template:`
     </q-list>
     </q-card-section>
     <q-card-actions align="right">
-      <q-btn :label="tags.ok" color="primary" @click="add_service"></q-btn>
+      <q-btn :label="tags.ok" color="primary" @click="add_cost"></q-btn>
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>
 </q-dialog>
 
 <!-- 新增回款弹窗 -->
-<q-dialog v-model="visible.paymentDlg" no-backdrop-dismiss>
+<q-dialog v-model="payment.dlg" no-backdrop-dismiss>
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.payment.title}}</div>
@@ -443,7 +590,7 @@ template:`
 </q-dialog>
 
 <!-- 修改订单基本信息弹窗 -->
-<q-dialog v-model="visible.editBase" no-backdrop-dismiss>
+<q-dialog v-model="editBase" no-backdrop-dismiss>
   <q-card style="min-width:70vw">
     <q-card-section>
       <div class="text-h6">{{tags.baseInfo}}</div>
@@ -482,12 +629,10 @@ template:`
   <div class="text-h6">{{tags.purchase.title}}</div>
  </q-card-section>
  <q-card-section class="q-pt-none">
-  <q-input v-model="purchase.dta.receiver" dense
-   :label="tags.purchase.receiver"></q-input>
+  <q-input v-model="purchase.dta.receiver" dense :label="tags.purchase.receiver"></q-input>
   <component-date-input v-model="purchase.dta.expDate" :format="tags.dateFmt"
   :label="tags.purchase.expDate" min="today"></component-date-input>
-  <component-user-selector :accounts="purchase.dta.buyer"
-  :label="tags.purchase.buyer"></component-user-selector>
+  <user-input v-model="userInput" :label="tags.purchase.buyer"></user-input>
   <q-input v-model="purchase.dta.descr" :label="tags.cmt" dense></q-input>
   <q-banner inline-actions class="bg-indigo-1 q-mt-sm" dense>
     {{tags.purchase.skuList}}
@@ -519,6 +664,29 @@ template:`
    <q-btn :label="tags.ok" color="primary" @click="purchase_do"></q-btn>
  </q-card-actions>
 </q-card>
+</q-dialog>
+
+<!-- 新建差旅 -->
+<q-dialog v-model="business.dlg">
+ <q-card style="min-width:70vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.add}} {{tags.busi.title}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <user-input v-model="userInput" :label="tags.busi.account"></user-input>
+   <component-date-input v-model="business.dta.start" :label="tags.start"
+    :format="tags.dateFmt"></component-date-input>
+   <component-date-input v-model="business.dta.end" :label="tags.end"
+    :format="tags.dateFmt" min="today"></component-date-input>
+   <q-input v-model="business.dta.dest" :label="tags.busi.dest"></q-input>
+   <q-input v-model="business.dta.reason" :label="tags.busi.reason"></q-input>
+   <q-input v-model="business.dta.cmt" :label="tags.cmt" type="textarea" rows="2"></q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-btn :label="tags.ok" color="primary" @click="busi_do"></q-btn>
+  </q-card-actions>
+ </q-card>
 </q-dialog>
 `
 }

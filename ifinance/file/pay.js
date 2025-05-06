@@ -163,9 +163,10 @@ template:`
     </q-item>
     <q-item>
      <q-item-section>{{tags.pay.sn}}</q-item-section>
-     <q-item-section>
-      <q-input v-model="dtl.sn" :disable="dtl.state=='OVER'"></q-input>
+     <q-item-section v-if="dtl.state!='OVER'">
+      <q-input v-model="dtl.sn" dense></q-input>
      </q-item-section>
+     <q-item-section v-else side>{{dtl.sn}}</q-item-section>
     </q-item>
    </q-list>
   </q-card-section>

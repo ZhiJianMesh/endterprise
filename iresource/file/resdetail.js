@@ -205,7 +205,7 @@ template:`
   </q-item>
 </q-list>
 
-<q-dialog v-model="ctrl.outDlg">
+<q-dialog v-model="ctrl.outDlg" persistent>
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{tags.storage.dir_out}}</div>
@@ -222,7 +222,7 @@ template:`
  </q-card>
 </q-dialog>
 
-<q-dialog v-model="ctrl.discDlg">
+<q-dialog v-model="ctrl.discDlg" persistent>
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{tags.storage.discard}}</div>
@@ -238,7 +238,7 @@ template:`
  </q-card>
 </q-dialog>
 
-<q-dialog v-model="ctrl.attachDlg">
+<q-dialog v-model="ctrl.attachDlg" persistent>
  <q-card style="min-width:70vw">
   <q-card-section>
     <div class="text-h6">{{tags.storage.attach}}</div>
