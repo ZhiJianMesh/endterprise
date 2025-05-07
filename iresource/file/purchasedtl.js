@@ -50,6 +50,7 @@ query() {
         dt.setTime(p.expDate*60000);
         p.expDate_s=date2str(dt);
         p.staIcon=sta2icon(p.status);
+        p.type_s=this.tags.purType[p.type];
         if(p.cost<=0) p.cost=this.tags.purchase.notCalcu;
         if(p.grn) {//state,inDate,outDate,execAcc,cmt
             var g=p.grn;
@@ -157,7 +158,7 @@ template:`
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
-     <q-toolbar-title>{{tags.purchase.title}}</q-toolbar-title>
+     <q-toolbar-title>{{tags.purchase.title}}({{dtl.type_s}})</q-toolbar-title>
      <q-btn flat dense icon-right="factory" :label="factory.name">
        <q-menu>
         <q-list style="min-width:100px">
@@ -170,7 +171,7 @@ template:`
    </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-sm">
+    <q-page class="q-pa-none">
 <q-list dense>
   <q-item>
     <q-item-section>{{tags.applicant}}</q-item-section>
@@ -204,7 +205,7 @@ template:`
   </q-item>
 </q-list>
 
-<q-banner inline-actions dense class="bg-indigo-3 text-white">
+<q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.purchase.skuList}}
 </q-banner>
 <q-list dense separator>
@@ -212,8 +213,6 @@ template:`
    <q-item-section><q-item-label caption>{{tags.sku.title}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.num}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.sku.price}}</q-item-label></q-item-section>
-   <q-item-section side>
-   </q-item-section>
   </q-item>
   <q-item v-for="(e,i) in skuList">
     <q-item-section>{{e.skuName}}</q-item-section>
@@ -222,15 +221,15 @@ template:`
   </q-item>
 </q-list>
 
-<div class="q-pb-sm">
-<q-banner inline-actions dense class="bg-indigo-3 text-white q-pb-sm">
+<div v-if="dtl.type!='BUY'" class="q-pb-sm">
+<q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.gdn.title}}
   <template v-slot:action v-if="editable&&!dtl.gdn">
-   <q-btn flat color="white" icon="output" dense @click="show_gdn"></q-btn>
+   <q-icon color="primary" name="output" @click="show_gdn"></q-icon>
   </template>
 </q-banner>
 <q-list separator v-if="dtl.gdn">
-<q-item clickable @click="gdn_detail(id)">
+ <q-item clickable @click="gdn_detail(id)">
  <q-item-section>
   <q-item-label>{{tags.gdn.title}} {{dtl.gdn.tranNo}}</q-item-label>
   <q-item-label caption>{{dtl.gdn.execAcc}}/{{dtl.gdn.cfmDate}}</q-item-label>
@@ -240,15 +239,15 @@ template:`
   <q-item-label>{{dtl.gdn.state}}</q-item-label>
   <q-item-label caption>{{dtl.gdn.outDate}}</q-item-label>
  </q-item-section>
-</q-item>
+ </q-item>
 </q-list>
 </div>
 
 <div v-if="dtl.type!='SELL'" class="q-pb-sm">
-<q-banner inline-actions dense class="bg-indigo-3 text-white">
+<q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.grn.title}}
   <template v-slot:action v-if="editable&&!dtl.grn">
-   <q-btn flat color="white" icon="exit_to_app" dense @click="show_grn"></q-btn>
+   <q-icon color="primary" name="exit_to_app" @click="show_grn"></q-icon>
   </template>
 </q-banner>
 <q-list separator v-if="dtl.grn">

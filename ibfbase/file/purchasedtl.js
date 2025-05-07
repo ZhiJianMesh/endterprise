@@ -45,6 +45,7 @@ query() {
         dt.setTime(p.expDate*60000);
         p.expDate_s=date2str(dt);
         p.staIcon=sta2icon(p.status);
+        p.type=this.tags.purchase.types[p.type];
         if(p.cost<=0) p.cost=this.tags.purchase.notCalcu;
         if(p.grn) {//state,inDate,outDate,execAcc,cmt
             var g=p.grn;
@@ -137,13 +138,13 @@ template:`
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>
-     <q-toolbar-title>{{tags.purchase.title}}</q-toolbar-title>
+     <q-toolbar-title>{{tags.purchase.title}}({{dtl.type}})</q-toolbar-title>
      <q-btn flat icon="clear" @click="remove()" v-if="editable" dense></q-btn>
      <q-btn flat icon="edit" @click="show_edit" v-if="editable&&!editing" dense></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-sm">
+    <q-page class="q-pa-none">
 <q-list dense>
   <q-item>
     <q-item-section>{{tags.purchase.applicant}}</q-item-section>
@@ -212,10 +213,10 @@ template:`
 </q-item>
 </q-list>
 
-<q-banner inline-actions dense class="bg-indigo-3 text-white">
+<q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.purchase.skuList}}
   <template v-slot:action v-if="dtl.status==0">
-    <q-btn icon="add_circle" @click="show_sku" flat dense></q-btn>
+    <q-icon name="add_circle" @click="show_sku" color="primary"></q-icon>
   </template>
 </q-banner>
 <q-list dense separator>
@@ -223,16 +224,15 @@ template:`
    <q-item-section><q-item-label caption>{{tags.purchase.sku}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.num}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.price}}</q-item-label></q-item-section>
-   <q-item-section side>
-   </q-item-section>
+   <q-item-section side></q-item-section>
   </q-item>
   <q-item v-for="(e,i) in skuList">
-    <q-item-section>{{e.skuName}}</q-item-section>
-    <q-item-section>{{e.num}}</q-item-section>
-    <q-item-section>{{e.price}}</q-item-section>
-    <q-item-section side v-if="editable">
-     <q-btn icon="clear" @click="remove_sku(i)" flat dense color="red"></q-btn>
-    </q-item-section>
+   <q-item-section>{{e.skuName}}</q-item-section>
+   <q-item-section>{{e.num}}</q-item-section>
+   <q-item-section>{{e.price}}</q-item-section>
+   <q-item-section side v-if="editable">
+    <q-btn icon="clear" @click="remove_sku(i)" flat dense color="red"></q-btn>
+   </q-item-section>
   </q-item>
 </q-list>
     </q-page>

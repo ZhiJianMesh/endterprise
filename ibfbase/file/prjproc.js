@@ -157,21 +157,14 @@ query_purchase(pg) {
         //id,cost,expDate,status,flowid,applicant,
         //receiver,descr,pid,prjName
         var dt=new Date();
-        var list=[];
-        for(var l of resp.data.list) {
-            var b={};
-            var i=0;
-            for(var c of resp.data.cols) {
-                b[c]=l[i++];
-            }
+        this.purs=resp.data.list.map(b => {
             dt.setTime(b.expDate*60000);
             b.expDate=date2str(dt);
             b.status=sta2icon(b.status);
             b.type=this.tags.purchase.types[b.type];
-            list.push(b);
-        }
+            return b;
+        });
         this.purchase.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
-        this.purs=list;
     })
 },
 query_bal() {
@@ -382,11 +375,6 @@ template:`
    boundary-numbers="false" @update:model-value="query_purchase"></q-pagination>
  </div>
  <q-list dense separator class="q-pa-sm">
-  <q-item>
-   <q-item-section><q-item-label caption>{{tags.purchase.applicant}}</q-item-label></q-item-section>
-   <q-item-section><q-item-label caption>{{tags.cmt}}</q-item-label></q-item-section>
-   <q-item-section side><q-item-label caption>{{tags.purchase.cost}}</q-item-label></q-item-section>
-  </q-item>
   <q-item v-for="(l,i) in purs" @click="ibf.goto('/ibf/purchasedtl?id='+l.id)" clickable>
    <q-item-section>
     <q-item-label>{{l.applicant}}</q-item-label>

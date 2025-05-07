@@ -11,11 +11,14 @@ data() {return {
     ctrl:{editable:false,editing:false,edt:{}/*编辑内容*/},
 
     skuList:[],
+    purList:[],
     resNo:{no:'',name:''}, //快速搜索资产编号
     skuCtrl:{dlg:false,dta:{},sku:{}/*用在SkuSelector中输入sku*/}
 }},
 created(){
     this.query();
+    this.gdn_list();
+    this.pur_list();
 },
 methods:{
 query() {
@@ -39,7 +42,6 @@ query() {
         p.type=this.tags.gdnType[p.type];
         p.state=this.tags.gdnState[p.state];
         this.dtl=p;
-        this.gdn_list();
     })
 },
 show_edit() {
@@ -72,12 +74,21 @@ remove() {
     });
 },
 gdn_list() {
-    var url="/gdn/gdnlist?purId="+this.id+"&factory="+this.dtl.factory;
+    var url="/gdn/gdnlist?purId="+this.id;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
         }
         this.skuList=resp.data.list;
+    })
+},
+pur_list() { //采购单申请的sku列表
+    var url="/purchase/skulist?id="+this.id;
+    request({method:"GET", url:url}, this.service.name).then(resp => {
+        if(resp.code!=RetCode.OK) {
+            return;
+        }
+        this.purList=resp.data.list;
     })
 },
 show_ship() {
@@ -195,10 +206,27 @@ template:`
     </div>
   </div>
 </div>
-<q-banner inline-actions dense class="bg-indigo-3 text-white">
+
+<q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
+  {{tags.purchase.skuList}}
+</q-banner>
+<q-list dense separator>
+  <q-item>
+   <q-item-section><q-item-label caption>{{tags.sku.title}}</q-item-label></q-item-section>
+   <q-item-section><q-item-label caption>{{tags.num}}</q-item-label></q-item-section>
+   <q-item-section><q-item-label caption>{{tags.sku.price}}</q-item-label></q-item-section>
+  </q-item>
+  <q-item v-for="(e,i) in purList">
+    <q-item-section>{{e.skuName}}</q-item-section>
+    <q-item-section>{{e.num}}</q-item-section>
+    <q-item-section>{{e.price}}</q-item-section>
+  </q-item>
+</q-list>
+
+<q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.gdn.skuList}}
   <template v-slot:action v-if="ctrl.editable">
-    <q-btn icon="add_circle" @click="show_ship" flat dense></q-btn>
+    <q-icon name="add_circle" @click="show_ship" color="primary"></q-icon>
   </template>
 </q-banner>
 <q-list dense separator>
