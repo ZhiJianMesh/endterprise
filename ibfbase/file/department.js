@@ -86,16 +86,27 @@ query_exps(pg) {
     var opts={method:"GET", url:"/exception/waitforme?offset="+offset+'&num='+this.ibf.N_PAGE+"&gid="+this.gid}
     request(opts, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code!=RetCode.OK) {
+            this.exps=[];
             return;
         }
         var dt=new Date();
         this.exps=resp.data.list.map(e=>{
-            dt.setTime(e.day*86400000);
-            e.day_s=date2str(dt);
-            dt.setTime(e.start*60000);
-            e.start_s=dt.getHours() + ':' + dt.getMinutes();
-            dt.setTime(e.end*60000);
-            e.end_s=dt.getHours() + ':' + dt.getMinutes();
+            if(e.start<=0) {
+                e.start=this.tags.atd.notChked;
+            } else {
+                dt.setTime(e.start*60000);
+                e.start=datetime2str(dt);
+            }
+            if(e.end<=0) {
+                e.end=this.tags.atd.notChked;
+            } else {
+                dt.setTime(e.end*60000);
+                e.end=datetime2str(dt);
+            }
+            dt.setTime(e.realStart*60000);
+            e.realStart=datetime2str(dt);
+            dt.setTime(e.realEnd*60000);
+            e.realEnd=datetime2str(dt);
             return e;
         });
         this.expPg.max=Math.ceil(resp.data.total/this.ibf.N_PAGE);
@@ -140,7 +151,7 @@ cfm_exp(uid,day) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.query_exps();
+        this.query_exps(this.expPg.cur);
     }); 
 },
 rej_exp(uid,day) {
@@ -150,7 +161,7 @@ rej_exp(uid,day) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.query_exps();
+        this.query_exps(this.expPg.cur);
     }); 
 },
 set_month(ym) {
@@ -268,12 +279,21 @@ template:`
 <q-tab-panel name="exps">
 <q-list>
   <q-item v-for="e in exps">
-   <q-item-section>{{e.account}}</q-item-section>
-   <q-item-section>{{e.date}}</q-item-section>
-   <q-item-section>{{e.start}}-{{e.end}}</q-item-section>
-   <q-item-section side class="q-gutter-sm text-primary">
-    <q-btn @click="cfm_exp(e.uid,e.day)" :label="tags.confirm" flat></q-btn>
-    <q-btn @click="rej_exp(e.uid,e.day)" :label="tags.reject"></q-btn>
+   <q-item-section>
+    <q-item-label>{{e.account}}</q-item-label>
+    <q-item-label caption>{{e.descr}}</q-item-label>
+   </q-item-section>
+   <q-item-section>
+    <q-item-label>{{e.realStart}}</q-item-label>
+    <q-item-label caption>{{e.start}}</q-item-label>
+   </q-item-section>
+   <q-item-section>
+    <q-item-label>{{e.realEnd}}</q-item-label>
+    <q-item-label caption>{{e.end}}</q-item-label>
+   </q-item-section>
+   <q-item-section side class="text-primary">
+     <q-btn @click="cfm_exp(e.uid,e.day)" :label="tags.confirm" flat dense></q-btn>
+     <q-btn @click="rej_exp(e.uid,e.day)" :label="tags.reject" flat dense></q-btn>
    </q-item-section>
   </q-item>
 </q-list>

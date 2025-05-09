@@ -55,10 +55,10 @@ query_dtl() {
         //account,cfmAcc,cfmAt,dest,reason,cmt
         var b=resp.data;
         if(b.overAt>0) {
-            dt.setTime(b.overAt);
+            dt.setTime(b.overAt*60000);
             b.overAt=date2str(dt);
         } else {
-            b.overAt='';
+            b.overAt=this.tags.notOver;
         }
         dt.setTime(b.start*60000);
         b.start_s=datetime2str(dt);
@@ -67,7 +67,7 @@ query_dtl() {
         b.staIcon=sta2icon(b.status);
         delete b.expenses;
         this.dtl=b;
-        this.editable=b.status!=100&&b.power=='O';
+        this.editable=b.status!=100&&b.uid==this.ibf.userInfo.id;
     })
 },
 show_exp(no) {
@@ -221,11 +221,11 @@ template:`
   </q-item>
   <q-item>
     <q-item-section>{{tags.busi.reason}}</q-item-section>
-    <q-item-section>{{dtl.reason}}</q-item-section>
+    <q-item-section side>{{dtl.reason}}</q-item-section>
   </q-item>
   <q-item>
     <q-item-section>{{tags.cmt}}</q-item-section>
-    <q-item-section>{{dtl.cmt}}</q-item-section>
+    <q-item-section side>{{dtl.cmt}}</q-item-section>
   </q-item>
 </q-list>
 <div v-else>

@@ -412,6 +412,10 @@ template:`
 <q-list separator dense>
  <q-item v-for="p in purList" clickable @click="show_workflow(p.flowid,p.id)">
   <q-item-section>
+   <q-item-label>{{p.applicant}}</q-item-label>
+   <q-item-label caption>{{p.cost}}</q-item-label>
+  </q-item-section>
+  <q-item-section>
    <q-item-label>{{p.receiver}}</q-item-label>
    <q-item-label caption>{{p.expDate}}</q-item-label>
   </q-item-section>
@@ -435,8 +439,14 @@ template:`
 <q-list separator dense>
  <q-item v-for="b in busiList" clickable @click="show_workflow(b.flowid,b.id)">
   <q-item-section>
+   <q-item-label>{{b.account}}</q-item-label>
+   <q-item-label caption>{{b.start}}</q-item-label>
+   <q-item-label caption>{{b.end}}</q-item-label>
+  </q-item-section>
+  <q-item-section>
    <q-item-label>{{b.overAt}}</q-item-label>
-   <q-item-label caption>{{b.start}}-{{b.end}}</q-item-label>
+   <q-item-label caption>{{b.subsidy}}</q-item-label>
+   <q-item-label caption>{{b.expense}}</q-item-label>
   </q-item-section>
   <q-item-section>
    <q-item-label>{{b.dest}}</q-item-label>

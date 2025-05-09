@@ -1,4 +1,4 @@
-//日期与时间选择组件component-datetime-input
+//日期与时间选择组件
 function datetimeToDate(v) {
     var dt=new Date();
     dt.setYear(v.year);

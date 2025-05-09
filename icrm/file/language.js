@@ -184,7 +184,7 @@ zh:{
     creator:"创建人",
     createAt:"创建时间",
     types:{
-      GOOD:'成本',
+      GOOD:'货物成本',
       BUSI:'差旅',
       GIFT:'礼品',
       SERV:'服务',

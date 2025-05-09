@@ -72,6 +72,7 @@ zh:{
   cfgDef:'配置定义',
   schDef:'定时任务定义',
   settings:'配置',
+  notOver:'尚未结束',
 
   sex:{
     M:"先生",
@@ -98,6 +99,7 @@ zh:{
     ovOrLv:'请假或加班',
     ratio:'分摊比率',
     prj:'项目',
+    notChked:'未刷卡',
     
     aplType:{
       OTW:'加班',

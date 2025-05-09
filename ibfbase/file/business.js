@@ -87,10 +87,12 @@ template:`
   <q-item v-for="b in busis" clickable @click="ibf.goto('/ibf/busidtl?id='+b.id)">
     <q-item-section>
      <q-item-label>{{b.prjName}}</q-item-label>
-     <q-item-label caption>{{b.start_s}}-&gt;{{b.end_s}}</q-item-label>
-     <q-item-label caption>{{b.dest}}</q-item-label>
+     <q-item-label caption>{{b.reason}}</q-item-label>
     </q-item-section>
-    <q-item-section>{{b.reason}}</q-item-section>
+    <q-item-section>
+     <q-item-label>{{b.dest}}</q-item-label>
+     <q-item-label caption>{{b.start_s}}-&gt;{{b.end_s}}</q-item-label>
+    </q-item-section>
     <q-item-section thumbnail>
      <q-icon :name="b.status" color="primary" size="xs"></q-icon>
     </q-item-section>

@@ -337,9 +337,6 @@ goto(url) {
 }
 },
 template:`
-<q-expansion-item icon="comment" :label="tags.descr" header-class="text-purple" v-if="base.descr">
-  <q-card><q-card-section>{{base.descr}}</q-card-section></q-card>
-</q-expansion-item>
 <q-timeline color="secondary">
 <q-timeline-entry v-for="s in steps" :title="s.title" :subtitle="s.ts"
  :color="s.step==base.step?'orange':'primary'">

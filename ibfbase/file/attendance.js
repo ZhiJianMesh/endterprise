@@ -355,9 +355,9 @@ show_exp(no) {
     this.expAct.no=no;
 },
 exp_do() {
-    var start=parseInt(datetimeToDate(this.expAct.dta.realStart_s).getTime()/60000);
-    var end=parseInt(datetimeToDate(this.expAct.dta.realEnd_s).getTime()/60000);
-    var dta={day:this.expAct.dta.day, start:start, end:end};
+    var dta=copyObj(this.expAct.dta,['day','descr']);
+    dta.start=parseInt(datetimeToDate(this.expAct.dta.realStart_s).getTime()/60000);
+    dta.end=parseInt(datetimeToDate(this.expAct.dta.realEnd_s).getTime()/60000);
     request({method:"PUT", url:"/exception/commit", data:dta}, this.ibf.SERVICE_HR).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
