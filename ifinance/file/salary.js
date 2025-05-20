@@ -1,10 +1,5 @@
-import MonthInput from "/assets/v3/components/month_input.js"
-
 export default {
 inject:['service', 'tags'],
-components:{
-    "month-input":MonthInput
-},
 data() {return {
     list:{}, //发薪申请
     ctrl:{max:0,cur:1,dlg:false,dta:{},month:"-1m",state:'',opts:[]},

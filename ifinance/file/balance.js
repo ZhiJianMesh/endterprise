@@ -1,12 +1,5 @@
-import MonthInput from "/assets/v3/components/month_input.js"
-import AlertDialog from "/assets/v3/components/alert_dialog.js"
-
 export default {
 inject:['tags','service'],
-components:{
-    "alert-dialog":AlertDialog,
-    "month-input":MonthInput
-},
 data() {return {
     balCharts:null,
     bals:[],

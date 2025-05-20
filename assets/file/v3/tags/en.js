@@ -11,7 +11,7 @@ const __err_infos={
 '108':"request timeout",
 '109':"api not supported",
 '110':"feature not exists",
-'111':"no right",
+'111':"no right to execute the operation",
 '112':"no valid node",
 '113':"request a irrelevant node",
 '114':"third party error",

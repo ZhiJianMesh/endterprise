@@ -1,4 +1,4 @@
-import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import AlertDialog from "./alert_dialog.js"
 //一边输入地址，一边过滤地址的组件
 export default {
 data() {return {

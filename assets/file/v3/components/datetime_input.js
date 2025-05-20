@@ -1,3 +1,4 @@
+import TimeInput from "./time_input.js"
 //日期与时间选择组件
 function datetimeToDate(v) {
     var dt=new Date();
@@ -28,6 +29,9 @@ function sysDateToStr(dt,fmt) {
 export {datetimeToDate, datetimeToStr, sysDateToStr};
 
 export default{
+components:{
+    "time-input":TimeInput
+},
 data(){return {
     end:253234080000000/*10000AC*/,
     start:-377485920000000/*10000BC*/,
@@ -105,9 +109,12 @@ date_changed(v, r, dtl) {
 confirm() {
     this.$emit('update:modelValue',this.val);
     var v=this.val;
-    //this.old=this.val;
     this.old={year:v.year,month:v.month,day:v.day,hour:v.hour,minute:v.minute};
     this.$refs._dt_input_dlg.hide();
+},
+timeChanged(){
+    this.val.hour=this.val.time.details.hour;
+    this.val.minute=this.val.time.details.minute;
 }
 },
 computed: {
@@ -136,10 +143,10 @@ template: `<q-input dense :label="label" v-model="oldVal" readonly :disable="dis
    :locale="{daysShort:weekDays,months:months,monthsShort:months}"
    :options="rangeFilter" @update:model-value="date_changed">
    </q-date>
-   <q-slider v-model="val.hour" :min="0" :max="23"
-    markers label-always label-color="blue-grey"></q-slider>
-   <q-slider v-model="val.minute" :min="0" :max="59" v-if="showMinute"
-    markers label-always switch-label-side label-color="blue-grey"></q-slider>
+   <q-separator></q-separator>
+   <div class="row justify-center text-center text-h6">
+    <time-input v-model="val.time" @update:model-value="timeChanged" :showSecond="false"></time-input>
+   </div>
   </q-card-section>
   <q-card-actions align="right">
    <q-btn flat v-close-popup :label="cancel" color="primary"></q-btn>
