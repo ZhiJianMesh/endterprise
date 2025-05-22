@@ -1,10 +1,15 @@
+import TimeInput from "/assets/v3/components/time_input.js"
+
 export default {
+components:{
+    "time-input":TimeInput
+},
 inject:['service', 'tags'],
 data() {return {
     outsideAddr:'',
     backup:{
         at:-1,
-        atStr:'',
+        atObj:'',
         recent:'',
         balance:0,
         buckets:[] //id list
@@ -48,20 +53,18 @@ init() {
             } else if(at >= 1440) {
                 at -= 1440;
             }
-            var h=parseInt(at/60);
+            var h=parseInt(at / 60);
             var m=parseInt(at % 60);
-            this.backup.atStr=(h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
+            this.backup.atObj=(h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
         } else {
-            this.backup.atStr='';
+            this.backup.atObj='';
         }
         //从云侧获取已选中的bucket
         this.service.request_cloud({method:"GET",url:"/service/getinfo?service=backup"},"company").then(resp => {
-            if(resp.code != RetCode.OK) {
-                return;
-            }
+            if(resp.code != RetCode.OK) return;
             this.backup.balance=resp.data.balance;
             this.backup.buckets=resp.data.ext.split(',');
-        });
+        })
     });
 
     //从云侧查询bucket列表
@@ -79,17 +82,18 @@ init() {
 },
 switchBackup() {
     if(this.backup.at<0) {
-        var at=120+(new Date()).getTimezoneOffset();
+        var at=120+(new Date()).getTimezoneOffset(); //默认凌晨2点
         if(at < 0) { //转成UTC
             at += 1440;
         } else if(at >= 1440) {
             at -= 1440;
         }
         this.backup.at=at;
-        this.backup.atStr='02:00';
+        this.backup.atObj='02:00';
         this.turnOn('backup');
     } else {
         this.backup.at=-1;
+		this.backup.atObj='';
         if(this.backup.balance<=0) {
             this.turnOff('backup');
         }
@@ -103,15 +107,15 @@ turnOn(service) {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         }
-    });
+    })
 },
 turnOff(service) {
-    var opts={method:"DELETE",url:"/api/service/turnoff",data:{service:service}};
+    var opts={method:"DELETE",url:"/api/service/turnoff?service="+service};
     this.service.request_cloud(opts,"company").then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         }
-    });
+    })
 },
 bucketChanged() {
     var buckets='';
@@ -131,8 +135,9 @@ bucketChanged() {
         }
     });
 },
-backupAtChanged(v, details) {
-    this.backup.at=details.minute + details.hour*60;
+backupAtChanged(v) {
+    if(this.backup.at<0)return;//尚未从服务器查询到时，不必保存，因为刚进页面时，会触发设置为当前时间
+    this.backup.at=v.details.minute + v.details.hour*60;
     this.saveBackupAt();
 },
 saveBackupAt() {
@@ -190,8 +195,8 @@ template: `
  <q-toolbar>
   <q-btn icon="arrow_back" dense @click="service.go_back" flat round></q-btn>
   <q-toolbar-title>{{tags.cfg.backup}}</q-toolbar-title>
-  <q-btn flat icon="power_settings_new" :label="backup.at<0?tags.cfg.startup:tags.cfg.shutdown"
-    @click="switchBackup" dense v-if="cmds.setbackup"></q-btn>
+  <q-btn icon="power_settings_new" :label="backup.at<0?tags.startup:tags.shutdown"
+    @click="switchBackup" dense v-if="cmds.setbackup" rounded color="primary"></q-btn>
  </q-toolbar>
 </q-header>
 <q-page-container>
@@ -214,12 +219,10 @@ template: `
  </tr>
  <tr>
   <td>{{tags.cfg.backupAt}}</td>
-  <td>{{backup.atStr}}
-    <q-btn icon="access_time" flat color="primary" :disable="backup.at<0"  v-if="cmds.setbackup">
-      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-        <q-time v-model="backup.atStr" format24h @update:model-value="backupAtChanged"></q-time>
-      </q-popup-proxy>
-    </q-btn>
+  <td>
+   <time-input v-model="backup.atObj" :showSecond="false"
+    @update:model-value="backupAtChanged"
+    :disable="backup.at<0"></time-input>
   </td>
  </tr>
  <tr>
@@ -234,7 +237,8 @@ template: `
  </q-page>
 </q-page-container>
 </q-layout>
+
 <component-process-dialog ref="procDlg"></component-process-dialog>
-<component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" :close="tags.close" ref="alertDlg"></component-alert-dialog>
+<component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" ref="alertDlg"></component-alert-dialog>
 `
 }

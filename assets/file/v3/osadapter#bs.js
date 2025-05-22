@@ -1045,7 +1045,7 @@ const Logs = {
 
 function findInArray(arr, s) {
     var no=0;
-    for(var a in arr) {
+    for(var a of arr) {
         if(a==s) {
             return no;
         }

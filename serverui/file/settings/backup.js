@@ -4,7 +4,7 @@ data() {return {
     outsideAddr:'',
     backup:{
         at:-1,
-        atStr:'',
+        atObj:'',
         recent:'',
         balance:0,
         buckets:[] //id list
@@ -45,9 +45,9 @@ init() {
             }
             var h=parseInt(at / 60);
             var m=parseInt(at % 60);
-            this.backup.atStr=(h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
+            this.backup.atObj=(h<10 ? ('0'+h) : (''+h))+ ':' + (m<10 ? ('0'+m) : (''+m));
         } else {
-            this.backup.atStr='';
+            this.backup.atObj='';
         }
     }));
     //从云侧获取已选中的bucket
@@ -59,16 +59,22 @@ init() {
 },
 switchBackup() {
     if(this.backup.at<0) {
-		this.backup.at=120;
-		this.backup.atStr='02:00';
-		this.turnOn('backup');
-	} else {
-		this.backup.at=-1;
-		this.backup.atStr='';
-		if(this.backup.balance<=0) {
-		    this.turnOff('backup');
-		}
-	}
+        var at=120+(new Date()).getTimezoneOffset(); //默认凌晨2点
+        if(at < 0) { //转成UTC
+            at += 1440;
+        } else if(at >= 1440) {
+            at -= 1440;
+        }
+        this.backup.at=at;
+        this.backup.atObj='02:00';
+        this.turnOn('backup');
+    } else {
+        this.backup.at=-1;
+		this.backup.atObj='';
+        if(this.backup.balance<=0) {
+            this.turnOff('backup');
+        }
+    }
     this.saveBackupAt();
 },
 turnOn(service) {
@@ -77,14 +83,14 @@ turnOn(service) {
 		if(resp.code != RetCode.OK) {
 			this.$refs.alertDlg.showErr(resp.code, resp.info);
 		}
-    });
+    })
 },
 turnOff(service) {
-	request({method:"DELETE",url:"/api/service/turnoff", data:{service:service}, cloud:true}, 'company').then(resp => {
+	request({method:"DELETE",url:"/api/service/turnoff?service="+service, cloud:true}, 'company').then(resp => {
 		if(resp.code != RetCode.OK) {
 			this.$refs.alertDlg.showErr(resp.code, resp.info);
 		}
-    });
+    })
 },
 bucketChanged() {
     var buckets='';
@@ -106,6 +112,7 @@ bucketChanged() {
     });
 },
 backupAtChanged(v, details) {
+    if(this.backup.at<0)return;//尚未从服务器查询到时，不必保存，因为刚进页面时，会触发设置为当前时间
     this.backup.at=details.minute + details.hour*60;
     this.saveBackupAt();
 },
@@ -169,10 +176,8 @@ template: `
    <q-toolbar>
      <q-avatar square><q-icon name="arrow_back" @click="service.go_back"></q-icon></q-avatar>
      <q-toolbar-title>{{tags.backup}}</q-toolbar-title>
-     <q-chip clickable color="primary" text-color="white" @click="switchBackup">
-       <q-avatar><q-icon name="power_settings_new"></q-icon></q-avatar>
-       {{backup.at<0?tags.startup:tags.shutdown}}
-     </q-chip>
+     <q-btn icon="power_settings_new" :label="backup.at<0?tags.startup:tags.shutdown"
+       @click="switchBackup" dense rounded color="primary"></q-btn>
    </q-toolbar>
 </q-header>
 <q-page-container>
@@ -195,12 +200,10 @@ template: `
  </tr>
  <tr>
   <td>{{tags.backupAt}}</td>
-  <td>{{backup.atStr}}
-    <q-btn icon="access_time" flat color="primary" :disable="backup.at<0">
-      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-        <q-time v-model="backup.atStr" format24h @update:model-value="backupAtChanged"></q-time>
-      </q-popup-proxy>
-    </q-btn>
+  <td>
+   <time-input v-model="backup.atObj" :showSecond="false"
+    @update:model-value="backupAtChanged"
+    :disable="backup.at<0"></time-input>
   </td>
  </tr>
  <tr>

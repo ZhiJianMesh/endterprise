@@ -5,56 +5,77 @@ components:{
     "scroll-select":ScrollSelect
 },
 data(){return {
-    val:{h:0,m:0,s:0},
-    old:{h:0,m:0,s:0},
+    val:{h:0,m:0,s:0,needEmit:false},
     style:{cursor:'pointer',width:'12em'},
     hours:Array.from({length:24}, (_, i) => i>9?i:'0'+i),
     ms:Array.from({length:60}, (_, i) => i>9?i:'0'+i) //分&秒
 }},
 props: {
     modelValue:{type:Object},
-    showSecond:{type:Boolean, default:true}
+    showSecond:{type:Boolean, default:true},
+    disable:{type:Boolean, default:false}
 },
 emits: ['update:modelValue'],
+watch:{
+    modelValue(nv,_ov) {
+        if(!nv || !nv.value || nv.value!=this.value) {
+            this.val=this.parse(nv);
+        }
+    }
+},
 created(){
     if(!this.showSecond){
         this.style.width='9em';
     }
-    if(this.modelValue) {
-        this.val=this.parse(this.modelValue);
-    } else {
-        var dt=new Date();
-        this.val={h:dt.getHours(),m:dt.getMinutes(),s:dt.getSeconds()};
-        var dtl={hour:this.val.h, minute:this.val.m, second:this.val.s};
-        this.$emit('update:modelValue',{value:this.value,details:dtl});
+    this.val=this.parse(this.modelValue);
+    if(this.val.needEmit) {
+        var v=this.val;
+        var dtl={hour:parseInt(v.h), minute:parseInt(v.m), second:parseInt(v.s)};
+        this.$emit('update:modelValue',{value:this.value, details:dtl});
     }
-    var v=this.val;
-    this.old={h:v.h, m:v.m, s:v.s};
 },
 methods:{
 parse(t) {
+    if(!t) {
+        var dt=new Date();
+        var v=dt.getHours();
+        var hour=v<9?('0'+v):v;
+        v=dt.getMinutes();
+        var minute=v<9?('0'+v):v;
+        v=dt.getSeconds();
+        var second=v<9?('0'+v):v;
+        return {h:hour, m:minute, s:second, needEmit:true};
+    }
+
     if((typeof t) === 'string') {
         var ss=t.split(':');
-        var hour=parseInt(ss[0]);
-        var minute=parseInt(ss[1]);
-        var second=ss.length>2?parseInt(ss[2]):0;
-        return {h:hour,m:minute,s:second};
+        var v=parseInt(ss[0]);
+        var hour=v<9?('0'+v):v;
+        v=parseInt(ss[1]);
+        var minute=v<9?('0'+v):v;
+        var second='00';
+        if(ss.length>2) {
+            v=parseInt(ss[2]);
+            second=v<9?('0'+v):v;
+        }
+        return {h:hour, m:minute, s:second, needEmit:true};
     }
     var d=t.details;
-    return {h:d.hour, m:d.minute, s:d.second};
+    return {h:d.hour>9?d.hour:('0'+d.hour),
+         m:d.minute>9?d.minute:('0'+d.minute),
+         s:d.second>9?d.second:('0'+d.second)};
 },
 confirm() {
     var v=this.val;
-    this.old={h:v.h,m:v.m,s:v.s};
-    var dtl={hour:v.h, minute:v.m, second:v.s};
-    this.$emit('update:modelValue',{value:this.value,details:dtl});
+    var dtl={hour:parseInt(v.h), minute:parseInt(v.m), second:parseInt(v.s)};
+    this.$emit('update:modelValue',{value:this.value, details:dtl});
     this.$refs._tm_ipt_dlg.hide();
 }
 },
 computed: {
    value: {
       get() {
-        var v=this.old;
+        var v=this.val;
         var i=parseInt(v.h);
         var s=(i<10?'0'+i:i)+':'
         i=parseInt(v.m);
@@ -69,7 +90,7 @@ computed: {
 },
 template: `
 <div :style="style" :class="$attrs.class">{{value}}
- <q-popup-proxy cover ref="_tm_ipt_dlg" @hide="confirm">
+ <q-popup-proxy cover ref="_tm_ipt_dlg" @hide="confirm" v-if="!disable">
   <q-card><q-card-section>
   <div class="row">
    <div class="col">
