@@ -88,7 +88,7 @@ getProducts(refresh){
             var prts=[];
             for(var p of resp.data.products) {
                 dt.setTime(p.createAt*60000);
-                p.createAt=tags.date2str(dt);
+                p.createAt=date2str(dt);
                 prts.push(p);
             }
             this.products=prts;
@@ -130,7 +130,7 @@ getCustDtl() {
             this.custDtl=resp.data;
             var dt=new Date();
             dt.setTime(resp.data.createAt*60000);
-            this.custDtl.createAt=tags.date2str(dt);
+            this.custDtl.createAt=date2str(dt);
             this.homePage=this.custDtl.id==0?"/home":"/customer?id="+this.custDtl.id;
         }
         return this.custDtl;

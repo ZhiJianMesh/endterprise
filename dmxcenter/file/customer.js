@@ -8,7 +8,7 @@ data() {return {
     admins:[],
     search:'',
     page:{cur:1, max:0},
-    adminInfo:{dlg:false,newAcc:[]},
+    adminInfo:{newAcc:[],expend:false},
     msg:{dlg:false, code:'', downmsg:'', upmsgs:[], downtime:'',setAt:''},
     custInfo:{dlg:false,id:0,name:'',address:'',createAt:'',cmt:'',contact:'',deviceNum:0}
 }},
@@ -136,7 +136,6 @@ addAdmin() {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.adminInfo.dlg=false;
         this.getAdmins();
     })
 },
@@ -187,7 +186,7 @@ template:`
    </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-px-md q-pb-lg">
+    <q-page class="q-px-none q-pb-lg">
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.cust.base}}
   <template v-slot:action>
@@ -205,22 +204,25 @@ template:`
 </q-list>
 
 <!-- admins -->
-<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
+<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1"
+ v-if="service.role!='customer'">
 {{tags.cust.admin}}
   <template v-slot:action>
-    <q-icon name="add_circle" @click.stop="adminInfo.dlg=true"
-     color="primary" size='1.8em' v-if="service.role!='customer'"></q-icon>
+   <q-icon :name="adminInfo.expend?'expand_less':'expand_more'"
+    @click="adminInfo.expend=!adminInfo.expend"
+    color="primary" size='1.8em'></q-icon>
   </template>
 </q-banner>
-<q-list dense>
+<q-list dense v-show="adminInfo.expend">
  <q-item v-for="admin in admins">
   <q-item-section>{{admin}}</q-item-section>
   <q-item-section>
    <q-icon name="cancel" @click="rmvAdmin(admin)" color="primary"
-    v-if="admins.length>1&&!(id==0&&admin=='admin')" size="1.8em"></q-icon>
+    v-if="admins.length>1&&!(id==0&&admin=='admin')" size="1em"></q-icon>
   </q-item-section>
  </q-item>
- <q-item v-show="adminInfo.dlg">
+ <q-separator></q-separator>
+ <q-item>
   <q-item-section>
    <component-user-selector :label="tags.cust.admin" :accounts="adminInfo.newAcc"
    :multi="false"></component-user-selector>
@@ -235,17 +237,17 @@ template:`
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
 {{tags.cust.devices}}
  <template v-slot:action>
-   <q-input v-model="search" dense @keyup.enter="search_custs">
-     <template v-slot:append>
-      <q-icon v-show="search" name="close" @click="query_devices(1)" class="cursor-pointer"></q-icon>
-      <q-icon name="search" @click="get_devices(1)"></q-icon>
-     </template>
-     <template v-slot:after>
-      <q-icon name="message" @click.stop="showMsgSender"
-      class="q-ml-md" color="primary"></q-icon>
-     </template>
-    </q-input>
-  </template>
+  <q-input v-model="search" dense @keyup.enter="get_devices(1)">
+   <template v-slot:append>
+    <q-icon v-show="search" name="close" @click="query_devices(1)" class="cursor-pointer"></q-icon>
+    <q-icon name="search" @click="get_devices(1)"></q-icon>
+   </template>
+   <template v-slot:after>
+    <q-icon name="message" @click.stop="showMsgSender"
+     class="q-ml-md" color="primary"></q-icon>
+   </template>
+  </q-input>
+ </template>
 </q-banner>
 <div class="q-pa-sm flex flex-center" v-if="page.max>1">
  <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"

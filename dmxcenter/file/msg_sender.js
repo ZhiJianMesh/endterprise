@@ -36,7 +36,7 @@ show() {
 },
 sendMessage() {
     if(this.type==1) {
-        send_by_customer(this.cutomer, this.msg);
+        this.send_by_customer(this.custId, this.msg);
     } else if(this.type==2) {
 		var codes=this.batch.split(/[(\r\n)\r\n;]+/);
 		this.percent.val=0;
