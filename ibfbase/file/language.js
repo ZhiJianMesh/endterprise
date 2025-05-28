@@ -1,6 +1,5 @@
 export default {
 en:{
-  app_name:"Operate&Manage",
   ok:"OK",
   cancel:"Cancel",
   modify:"Modify",
@@ -8,7 +7,6 @@ en:{
   add:"Add",
   save:"Save",
   search:"Search",
-  more:"More",
   
   flowTags:{
     //采购工作流中的按钮标签
@@ -36,25 +34,16 @@ zh:{
   accept:'接受',
   init:"初始化",
   clear:"清除",
-  more:"更多",
   name:"名称",
   cmt:"描述",
-  detail:"详情",
   opr:"操作",
-  month:"月",
   apply:'申请',
   attention:'注意',
-  signers:'权签人',
   num:"数量",
   price:'价格',
-  state:'状态',
-  execAcc:'执行人',
 
-  oprSuccess:"操作成功",
-  oprFailed:"操作失败",
   failToCall:"调用失败",
   onlyOneType:"一次申请中，只能填写同类的申请",
-  wrongWfDef:"工作流定义存在错误",
   wrongFlowState:"工作流状态错乱，请确认是否清除？",
   invalidInterval:"无效的时间段",
   invalidRatio:"请输入正确的分摊比率",
@@ -66,7 +55,6 @@ zh:{
   start:'开始时间',
   end:'结束时间',
   currency:'元',
-  wfClkSuccess:'执行成功!',
   cfmRmv:'是否确定删除',
   flowDef:'工作流定义',
   cfgDef:'配置定义',

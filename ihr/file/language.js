@@ -6,7 +6,6 @@ en:{
   modify:"Modify",
   remove:"Delete",
   add:"Add",
-  save:"Save",
   search:"Search"
 },
 zh:{
@@ -17,7 +16,6 @@ zh:{
   modify:"修改",
   remove:"删除",
   add:"增加",
-  save:"保存",
   search:"搜索",
   age:"岁",
   cmt:"备注",
@@ -25,7 +23,6 @@ zh:{
   end:"结束",
   name:"名称",
   initCal:"初始化",
-  wrongWfDef:"工作流定义存在错误",
   wrongFlowState:"工作流状态错乱，请确认是否清除？",
   
   sex:{
@@ -109,12 +106,6 @@ zh:{
     HIDE:"隐藏",
     DIS:"被开除",
     LEAV:"已离职"
-  },
-  attendTp:{
-    NORM:"打卡机刷卡",
-    LAN:"内网打卡",
-    REMO:"远程",
-    FREE:"不打卡"
   },
   roleTp:{
     ADM:"负责人",

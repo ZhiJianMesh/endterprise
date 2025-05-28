@@ -1,7 +1,14 @@
 export default {
 en:{
   welcome:"Welcome to use softwares of ZhiJian.net.cn",
-  aboutUs:"We are in NanJing"
+  free:"Free：All services of ZhiJian are free, use APL license to open source",
+  security:"Secure:Encrypt data before transfer, key data can be triple encrypted",
+  reliablity:"Reliable:Data local backup, and can be backuped to remote cloud everyday",
+  simple:"Simple:The server can run in an old android phone, services can be upgraded,installed and started or stopped with one click, just like using ordinary mobile applications. Multi-terminal access, multi-person collaboration and remote office",
+  aboutUs:"We focuses on network system and related product development and application, providing software product development and consulting services",
+  email:"EMail：zhijianmesh@sina.com",
+  company:"ZhiJian.net.cn",
+  copyright:" All Rights Reserved"
 },
 zh:{
   welcome:"欢迎使用至简网格！至简网格致力于为企业提供免费、安全、可靠、极简的企业信息化、自动化软件。",
@@ -10,7 +17,6 @@ zh:{
   reliablity:"可靠：数据本地存储，也可加密后每日备份到云端，保证数据安全，同时提升可靠性。",
   simple:"极简：一部旧手机就能当服务器，服务一键升级、一键安装，一键启停，与使用普通手机应用完全一样。多端访问、多人协作、远程办公。",
   aboutUs:"至简网格专注于网络系统及相关产品开发与运用，提供软件产品开发与咨询服务。",
-  address:"地址：江苏省南京市",
   email:"EMail：zhijianmesh@sina.com",
   company:"ZhiJian.net.cn",
   copyright:" All Rights Reserved"

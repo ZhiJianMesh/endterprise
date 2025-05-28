@@ -1,20 +1,16 @@
 export default {
 en:{
   ok:"OK",
-  cancel:"Cancel",
-  app_name:"Server Manager"
+  cancel:"Cancel"
 },
 zh:{
   ok:"确定",
   cancel:"取消",
   close:"关闭",
-  app_name:"服务管理",
   home:"服务器",
   settings:"设置",
   market:"应用市场",
   failToCall:"调用失败",
-  cidCantBe0:"公司ID不能为0，请在“设置-公司信息”中设置",
-  seperator:' ',
   addGw:"增加",
   testGw:"测试",
        
@@ -33,40 +29,24 @@ zh:{
   chgPwd:"修改密码",
   successToChgPwd:"密码已修改",
 
-  advanced:"高级服务",
-
   backup:"数据备份",
   testSettings:"调测设置",
   baseSettings:"基本设置",
   nwSettings:"网络接入",
-  debug:"调测助手",
-  uploadLogs:"上传日志",
-  faultreport:"故障上报",
   backupNow:"立即备份",
   restore:"恢复数据",
   accessToken:"调测令牌",
   neverBackup:"尚无备份",
   startup:"启用",
   shutdown:'停用',
-  state:"状态",
   backupTime:"最近备份时间",
   backupAt:"每日备份时间点",
   buckets:"备份站点",
-  notStart:"未启用",
-  running:"已启用",
-  ownWan:"自有外网IP",
-  bridgeWan:"网桥代理",
   pubGwIp:"公网IP",
-  failToOpenPort:"启动外网映射失败！",
   
   locServices:"已安装应用",
 
-  configs:"配置",
-  refresh:"刷新",
   logo:"公司图标",
-
-  name:"名称",
-  save:"保存",
   register:"注册",
   login:"登录",
   reRegister:"重注册/登录",
@@ -75,7 +55,6 @@ zh:{
   day:"天",
   hour:"时",
   minute:"分",
-  logDownloadable:"日志可下载",
   logLevel:"日志级别",
   failToCall:"调用失败",
   alert:"提示",
@@ -86,7 +65,6 @@ zh:{
   },
   invalidImg:"请选择有效的图片文件",
   needBuckets:"至少需要选择一个备份点",
-  needWanIp:"需要填写一个公网IP",
   invalidExtIP:"不是正确的公网地址",
   dontSet:"不设置",
   backupAlert:"<div>每次数据备份将占用一次备份机会。</div><p>请确认是否继续？</p>",

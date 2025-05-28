@@ -2,43 +2,27 @@ export default {
 en:{
   app_name:"HR",
   ok:"OK",
-  cancel:"Cancel",
   modify:"Modify",
   remove:"Delete",
   add:"Add",
-  save:"Save",
   search:"Search"
 },
 zh:{
   app_name:"财务管理",
   ok:"确定",
-  cancel:"取消",
   close:"关闭",
   modify:"修改",
   remove:"删除",
   add:"增加",
-  save:"保存",
   search:"搜索",
   cmt:'备注',
-  name:'名称',
-  state:'状态',
-  type:'类型',
-  prjName:'项目',
-  detail:'详情',
-  dateFmt:"YYYY/MM/DD HH:mm",
   applyAt:'申请时间',
   payAt:'支付时间',
-  execAcc:'执行人',
-  account:'帐号',
-  expDate:'期望时间',
-  applicant:'申请人',
-  month:'月份',
   submitter:'申请人',
   notCfm:'未确认',
   notPaid:'未支付',
   unSet:'不指定',
   forEver:'永久',
-  exipred:'已过期',
   deduct:'扣减',
 
   income:{
@@ -146,19 +130,6 @@ zh:{
         FDEBT_NEEDPAY:'长期应付款'
       }
     }
-  },
-  report:{
-    workload:'工时',
-    salary:'工资',
-    subsidy:'补助',
-    expense:'报销',
-    resource:'生产资料耗费',
-    receivable:'应收账款',
-    income:'已收款',
-    iIncome:'内部收入',
-    payable:'应付账款',
-    pay:'已付款',
-    iPay:'内部支出'
   },
   bankType:{
     EMPL:'雇员帐号',

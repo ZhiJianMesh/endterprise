@@ -3,10 +3,8 @@ en:{
   app_name:"HR",
   ok:"OK",
   cancel:"Cancel",
-  modify:"Modify",
   remove:"Delete",
   add:"Add",
-  save:"Save",
   search:"Search"
 },
 zh:{
@@ -14,10 +12,8 @@ zh:{
   ok:"确定",
   cancel:"取消",
   close:"关闭",
-  modify:"修改",
   remove:"删除",
   add:"增加",
-  save:"保存",
   search:"搜索",
   cmt:'备注',
   name:'名称',
@@ -28,7 +24,6 @@ zh:{
   dateFmt:"YYYY/MM/DD HH:mm",
   createAt:'创建时间',
   num:'数量',
-  execAcc:'执行人',
   cfmRmv:'是否确定删除',
   account:'帐号',
   expDate:'期望时间',
@@ -39,13 +34,6 @@ zh:{
     F:'男',
     M:'女',
     U:'未知'
-  },
-  resState:{
-    IDLE:'闲置在仓库中',
-    USE:'使用中',
-    DISC:'报废',
-    BAD:'损坏了',
-    NONE:'用完'
   },
   skuType:{
     FIX_EQUIP:'固定资产',
