@@ -4,7 +4,7 @@ inject:['service', 'tags'],
 data(){return {
     cid:'',
     companyName:'',
-	runMode:'SGT',
+	runMode:'SINGLETON',
     accessCode:'',
     insideAddr:'',
 	outsideAddr:'',
@@ -116,7 +116,7 @@ template: `
             <q-item-section side><q-icon color="primary" name="settings"></q-icon></q-item-section>
             <q-item-section no-wrap>{{tags.cfg.title}}</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showPage(1)" v-if="runMode!='RT'">
+          <q-item clickable v-close-popup @click="showPage(1)" v-if="runMode!='ROOT'">
             <q-item-section side><q-icon color="primary" name="menu_open"></q-icon></q-item-section>
             <q-item-section no-wrap>{{tags.om.title}}</q-item-section>
           </q-item>

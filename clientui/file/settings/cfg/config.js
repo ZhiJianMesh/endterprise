@@ -9,7 +9,7 @@ company:{
     accessCode:"",
     logLevel:'DEBUG',
     accessToken:"",
-	runMode:'SGT',
+	runMode:'SINGLETON',
     logo:"/assets/imgs/logo_example.png"
 },
 cmds:{setloglevel:false,setoutsideaddr:false,resetaccesstoken:false},
@@ -84,7 +84,7 @@ init() {
         var l=[];
 		if(info.mode) {
 			this.runMode=info.mode;
-			if(info.mode!='RT') {
+			if(info.mode!='ROOT') {
 				for(var addr of info.externAddrs) {
 					l.push({label:addr, value:addr})
 				}
