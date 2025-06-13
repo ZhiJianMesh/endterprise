@@ -185,7 +185,7 @@ template: `
        </q-item-section>
        <q-item-section class="text-left">
          <q-item-label overline>{{s.displayName}}/{{s.name}}
-          <q-badge :label="tags.mkt.unInstall" @click="unInstall(s.name)" v-if="s.level>4"></q-badge>
+          <q-badge :label="tags.mkt.unInstall" @click="unInstall(s.name)" v-if="s.level>3"></q-badge>
          </q-item-label>
          <q-item-label caption>{{s.author}}</q-item-label>
        </q-item-section>

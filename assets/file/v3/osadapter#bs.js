@@ -1010,6 +1010,10 @@ const App={
     logPath(){return "d:\\work\\code\\release"},
     isInstalled(){return true},
     isBuiltin(app) {return app=="market"||app=="settings"||app=="about"||app=="assets"},
+    verToInt(v){
+        var ss=v.split('.');
+        return parseInt(ss[0])*1000000+parseInt(ss[1])*1000+parseInt(ss[2]);
+    },
     intToVer(v) {return Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);},
     build(){return {ver:"0.1.0",os:"android",brand:"zhijian",language:"zh_CN",agent:"mc_android_0.1.0"}}
 }
