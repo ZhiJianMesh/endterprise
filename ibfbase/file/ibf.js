@@ -321,6 +321,6 @@ template:`
  <q-pagination v-model="ctrl.cur" color="primary" :max="ctrl.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query_prjs"></q-pagination>
 </div>
-<alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
+<alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 `
 }

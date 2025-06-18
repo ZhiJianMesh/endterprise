@@ -147,7 +147,9 @@ function sendRequest(opts, service) {
     } else {
         hh.trace_id='browser'+__traceid;
     }
-    hh.cid=Companies.cid();
+    if(!hh.cid) {
+        hh.cid=Companies.cid();
+    }
 
     return new Promise((resolve, reject) => {
         var req = {method:opts.method, url:url, headers:hh};

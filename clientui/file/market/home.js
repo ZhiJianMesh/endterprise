@@ -3,7 +3,7 @@ inject:['service', 'tags'],
 data() {return {
     apps:[],
     page:{cur:1, max:0},
-    tab:'personal'
+    tab:storageGet("apps_tab", "enterprise")
 }},
 created(){
     this.queryApps(1);
@@ -78,6 +78,7 @@ format_apps(total, cols, data, cloud) {
     this.apps = apps;
 },
 queryApps(pg) {
+    storageSet("apps_tab", this.tab);
     if(this.tab=="enterprise") {
         this.enterprise_apps(pg);
     } else {
@@ -87,7 +88,7 @@ queryApps(pg) {
 },
 
 template: `
-<q-layout view="hHh lpr fFf" container style="height:100vh;">
+<q-layout view="hHh lpr fFf">
  <q-header elevated>
   <q-toolbar class="bg-grey-1 text-primary">
    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>

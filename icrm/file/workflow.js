@@ -95,7 +95,7 @@ removeWf() { //数据不存在，工作流数据错乱的情况下，删除工�
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf">
   <q-header>
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="ibf.back"></q-btn>

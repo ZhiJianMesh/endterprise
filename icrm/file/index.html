@@ -9,11 +9,11 @@
 <link href="/assets/v3/quasar.css" rel="stylesheet" type="text/css">
 <title>iCRM</title>
 </head>
-<body style="overflow:hidden">
+<body>
 <div id="app" v-cloak><router-view></router-view></div>
 
 <template id="tpl_home">
-<q-layout view="hHh lpr fFf" container style="height:99vh">
+<q-layout view="hHh lpr fFf">
   <q-header>
    <q-toolbar>
     <q-avatar><img src="./favicon.png"></q-avatar>
@@ -30,12 +30,10 @@
      color="red" flat></q-btn>
   </div>
   </q-header>
-  <q-page-container>
-   <q-page class="q-pa-sm">
-  <q-separator spaced="sm"></q-separator>
-  <ibf></ibf>
-  </q-page>
- </q-page-container>
+  <q-page-container><q-page class="q-pa-sm">
+   <q-separator spaced="sm"></q-separator>
+   <ibf></ibf>
+  </q-page></q-page-container>
 </q-layout>
 </template>
 

@@ -133,7 +133,7 @@ getLocServices() {
 },
 
 template: `
-<q-layout view="hHh lpr fFf" container style="height:100vh" v-cloak>
+<q-layout view="hHh lpr fFf">
 <q-header elevated>
  <q-toolbar>
   <q-avatar square><q-icon name="shop_two"></q-icon></q-avatar>

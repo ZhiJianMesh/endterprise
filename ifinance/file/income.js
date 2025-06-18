@@ -57,7 +57,7 @@ show_dtl(id) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
-        //pid,applyAt,maybeAt,payAt,bank,
+        //pid,applyAt,maybeAt,payAt,bank
         //state,val,cmt,prjName,submitter,cfmAcc
         var dt=new Date();
         if(resp.data.payAt&&resp.data.payAt>0) {
@@ -85,7 +85,7 @@ confirm(){
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:99.9vh">
+<q-layout view="hHh lpr fFf">
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>

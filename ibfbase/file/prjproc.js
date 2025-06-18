@@ -302,7 +302,7 @@ busi_flow(flowid,did) {
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:99.9vh">
+<q-layout view="hHh lpr fFf">
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="ibf.back()"></q-btn>

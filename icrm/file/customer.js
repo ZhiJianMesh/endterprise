@@ -383,7 +383,7 @@ get_suppliers() {
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf">
   <q-header elevated>
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
@@ -466,7 +466,7 @@ template:`
  <q-item v-for="(t,i) in touchlogs" dense clickable @click="open_touchlog(i)">
   <q-item-section avatar>{{t.name}}</q-item-section>
   <q-item-section>{{t.comment}}</q-item-section>
-  <q-item-section side>{{t.creator}}</q-item-section>
+  <q-item-section>{{t.creator}}</q-item-section>
   <q-item-section side>{{t.createAt}}</q-item-section>
  </q-item>
 </q-list>
@@ -488,7 +488,9 @@ template:`
   <q-item-section>{{o.creator}}</q-item-section>
   <q-item-section>{{o.price}}/{{o.payment}}</q-item-section>
   <q-item-section>{{o.createAt}}</q-item-section>
-  <q-item-section thumbnail><q-icon :name="o.status"></q-icon></q-item-section>
+  <q-item-section avatar>
+   <q-icon :name="o.status" color="primary"></q-icon>
+  </q-item-section>
  </q-item>
 </q-list>
 <div class="q-pa-sm flex flex-center" v-if="page.order>1">

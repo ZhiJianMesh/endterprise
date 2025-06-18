@@ -162,7 +162,7 @@ unInstall() {
 }
 },
 template: `
-<q-layout view="hHh lpr fFf" container style="height:100vh;">
+<q-layout view="hHh lpr fFf">
   <q-header class="bg-grey-3">
    <q-list class="q-pa-sm" dense>
     <q-item>

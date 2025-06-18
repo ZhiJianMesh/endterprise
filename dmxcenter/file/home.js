@@ -128,7 +128,7 @@ ship_batch(codes, customer, sellAt, start) {
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf">
   <q-header elevated>
    <q-toolbar>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>

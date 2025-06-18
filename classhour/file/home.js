@@ -206,7 +206,7 @@ student_changed() {
 },
 
 template:`
-<q-layout view="hHh lpr fFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf">
   <q-header class="bg-grey-1 text-primary" elevated>
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>

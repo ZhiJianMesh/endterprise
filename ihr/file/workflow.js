@@ -148,7 +148,7 @@ remove() {
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf">
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="ibf.back"></q-btn>

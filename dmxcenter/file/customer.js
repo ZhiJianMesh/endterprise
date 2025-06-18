@@ -178,7 +178,7 @@ rmvCustomer() {
 }
 },
 template:`
-<q-layout view="hHh lpr fFf" container style="height:100vh">
+<q-layout view="hHh lpr fFf">
   <q-header elevated>
    <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back" v-if="service.role!='customer'"></q-btn>
