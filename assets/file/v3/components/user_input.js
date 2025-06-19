@@ -22,8 +22,8 @@ get_opts(val,update) {
   }
   update(() => {
     if(val.length>1) {
-      if(this.opts.length==0 && val.length>ol) {
-        return;//已有的输入找不到，更多的输入更找不到
+      if(ol>0 && this.opts.length==0 && val.length>ol) {
+        return;//已有的输入找不到，更多的输入更找不到；如果原有的输入没来得及触发查询，仍然要查询
       }
     }
     //id,account,nickName,type,sex,ustatus

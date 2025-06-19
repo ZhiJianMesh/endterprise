@@ -20,7 +20,7 @@ get_opts(val,update) {
   }
   update(() => {
     if(val.length>1) {
-      if(this.opts.length==0 && val.length>ol) {
+      if(ol>0 && this.opts.length==0 && val.length>ol) {
         return;//已有的输入找不到，更多的输入更找不到
       }
     }

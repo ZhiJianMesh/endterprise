@@ -1,9 +1,10 @@
+const APPS_TAB="apps_tab";
 export default {
 inject:['service', 'tags'],
 data() {return {
     apps:[],
     page:{cur:1, max:0},
-    tab:storageGet("apps_tab", "enterprise")
+    tab:storageGet(APPS_TAB, "enterprise")
 }},
 created(){
     this.queryApps(1);
@@ -78,7 +79,7 @@ format_apps(total, cols, data, cloud) {
     this.apps = apps;
 },
 queryApps(pg) {
-    storageSet("apps_tab", this.tab);
+    storageSet(APPS_TAB, this.tab);
     if(this.tab=="enterprise") {
         this.enterprise_apps(pg);
     } else {
