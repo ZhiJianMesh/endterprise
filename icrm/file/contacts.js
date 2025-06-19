@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     contacts:[], //联系人列表，包括自己可见的
     details:{},
@@ -12,8 +12,9 @@ data() {return {
     onlyMine:true
 }},
 created(){
-    this.onlyMine=storageGet('contact_onlyMine') == 'true';
-    this.query_contacts(1);
+    this.page.cur=this.ibf.getRt("cur",1);
+    this.onlyMine=this.ibf.getRt('onlyMine','false') == 'true';
+    this.query_contacts(this.page.cur);
 },
 methods:{
 fmt_contact_lines(cols, lines) {
@@ -32,6 +33,7 @@ fmt_contact_lines(cols, lines) {
     this.contacts=contacts;
 },
 query_contacts(pg) {
+    this.ibf.setRt("cur", pg);
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     this.search='';
     var url = this.onlyMine ? "/api/contact/my" : "/api/contact/readable";
@@ -117,7 +119,7 @@ add_touchlog(){
     })
 },
 onlyMineClk() {
-    storageSet('contact_onlyMine', this.onlyMine);
+    this.ibf.setRt('onlyMine',this.onlyMine);
     this.page.cur=1;
     this.query_contacts(1);
 }

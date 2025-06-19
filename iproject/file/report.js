@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     //报表数据:pid,name,workload,salary,subsidy,expense,resource,
     //receivable,income,iIncome,payable,pay,iPay
@@ -9,10 +9,12 @@ data() {return {
     ctrl:{cur:1, max:0}
 }},
 created(){
-    this.query(1);
+    this.ctrl.cur=this.ibf.getRt("cur",1);
+    this.query(this.ctrl.cur);
 },
 methods:{
 query(pg) {
+    this.ibf.setRt("cur",pg);
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = "/project/reports?offset="+offset+"&num="+this.service.N_PAGE;
@@ -98,7 +100,7 @@ template:`
   <th>{{segs.workload}}</th>
  </tr></thead>
  <tbody>
-  <tr v-for="l in list" @click="detail(l.pid)">
+  <tr v-for="l in list" @click="detail(l.pid)" style="cursor:hand;">
   <td>{{l.name}}</td>
   <td>
    {{segs.income}}:{{l.income}}<br>

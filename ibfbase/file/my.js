@@ -22,8 +22,7 @@ data() {return {
     resCtrl:{cur:1,max:0,dlg:false,no:'',logs:[],move:'',user:[]}
 }},
 created(){
-    var tab=this.ibf.getRt(RT_TAB);
-    this.tab=tab?tab:'base';
+    this.tab=this.ibf.getRt(RT_TAB,'base');
     if(this.tab!='base') { //salMonth会自动出发一次
         this.tab_changed(this.tab);
     }

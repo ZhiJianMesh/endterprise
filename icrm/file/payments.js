@@ -1,11 +1,12 @@
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     list:[], //回款列表
     page:{cur:1,max:0}
 }},
 created(){
-    this.query_list(1);
+    this.page.cur=this.ibf.getRt("cur",1);
+    this.query_list(this.page.cur);
 },
 methods:{
 fmt_pay_lines(cols, lines) {
@@ -30,6 +31,7 @@ fmt_pay_lines(cols, lines) {
     this.list=list;
 },
 query_list(pg) {
+    this.ibf.setRt("cur",pg);
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = "/api/payment/my?offset="+offset+"&num="+this.service.N_PAGE;
     request({method:"GET",url:url}, this.service.name).then(resp=>{

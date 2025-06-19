@@ -10,7 +10,8 @@ data() {return {
     typeOpts:[]
 }},
 created(){
-    this.query(1);
+    this.ctrl.cur=this.ibf.getRt("cur",1);
+    this.query(this.ctrl.cur);
     for(var i in this.tags.prj.typeCfg) {
         this.typeOpts.push({label:this.tags.prj.typeCfg[i],value:i});
     }
@@ -42,6 +43,7 @@ fmt_lines(data) {
     this.list=list;
 },
 query(pg) {
+    this.ibf.setRt("cur",pg);
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = "/api/project/list?offset="+offset+"&num="+this.service.N_PAGE;

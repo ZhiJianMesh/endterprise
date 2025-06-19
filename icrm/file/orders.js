@@ -1,15 +1,15 @@
 import {sta2icon} from '/assets/v3/components/workflow.js';
-
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     orders:[], //订单列表，包括自己可见的
     page:{cur:1,max:0},
     onlyMine:true
 }},
 created(){
-    this.onlyMine=storageGet('order_onlyMine') == 'true';
-    this.query_orders(1);
+    this.page.cur=this.ibf.getRt("cur",1);
+    this.onlyMine=this.ibf.getRt("onlyMine",'false') == 'true';
+    this.query_orders(this.page.cur);
 },
 methods:{
 fmt_order_lines(cols, lines) {
@@ -30,6 +30,7 @@ fmt_order_lines(cols, lines) {
     this.orders=orders;
 },
 query_orders(pg) {
+    this.ibf.setRt("cur", pg);
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = this.onlyMine ? "/api/order/my" : "/api/order/readable";
     url += "?offset="+offset+"&num="+this.service.N_PAGE;
@@ -45,15 +46,12 @@ query_orders(pg) {
     })
 },
 onlyMineClk() {
-    storageSet('order_onlyMine', this.onlyMine);
+    this.ibf.setRt("onlyMine", this.onlyMine);
     this.page.cur=1;
     this.query_orders(1);
 },
 order_detail(id) {
     this.$router.push('/order?id='+id);
-},
-customer_detail(id) {
-    this.$router.push('/customer?id='+id);
 }
 },
 template:`
@@ -92,7 +90,7 @@ template:`
   <q-item-section thumbnail></q-item-section>
  </q-item>
  <q-item v-for="o in orders" @click="order_detail(o.id)" clickable>
-  <q-item-section @click.stop="customer_detail(o.cid)">{{o.cname}}</q-item-section>
+  <q-item-section>{{o.cname}}</q-item-section>
   <q-item-section>{{o.prjName}}</q-icon></q-item-section>
   <q-item-section>
    <q-item-label>{{o.price}}</q-item-label>

@@ -58,8 +58,7 @@ created(){
         var stageDef=this.ibf.PrjStage;
         this.editable=this.isLeader&&stage==stageDef.init;
         this.over=stage==stageDef.end||stage==stageDef.cancel;
-        var tab=this.ibf.getRt(RT_TAB);
-        this.tab=tab ? tab : 'worktime';
+        this.tab=this.ibf.getRt(RT_TAB,'worktime');
         this.tab_changed(this.tab);
     });
     var tps=this.tags.purchase.types;

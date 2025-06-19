@@ -43,11 +43,12 @@ function registerIbf(app, router, service) { //注册ibf所需的路由
         PlanState:{init:'INIT',norm:'NORM',adv:'ADVA',delay:'DELA',cancel:'CANC'},
         back(){router.back()},
         goto(url){router.push(url)},
-        setRt(k, v) {
+        setRt(k,v) {
             this.runtime[router.currentRoute.value.path+':'+k]=v;
         },
-        getRt(k) {
-            return this.runtime[router.currentRoute.value.path+':'+k];
+        getRt(k,def) {
+            var v=this.runtime[router.currentRoute.value.path+':'+k];
+            return v?v:def;
         },
         showFlow(flowid,did,url) {
             this.goto(appendParas(url,{flow:flowid,did:did}));

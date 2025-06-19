@@ -8,8 +8,9 @@ data() {return {
     newCust:{name:'',taxid:'',address:'',business:'',nextSigners:[],ext:{},dlg:false}
 }},
 created(){
-    this.ctrl.onlyMine=storageGet('customer_onlyMine') == 'true';
-    this.query(1);
+    this.ctrl.cur=this.ibf.getRt("cur",1);
+    this.ctrl.onlyMine=this.ibf.getRt("onlyMine",'false') == 'true';
+    this.query(this.ctrl.cur);
 },
 methods:{
 fmt_lines(data) {
@@ -40,6 +41,7 @@ fmt_lines(data) {
     this.customers=customers;
 },
 query(pg) {
+    this.ibf.setRt("cur", pg);
     this.ctrl.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = this.ctrl.onlyMine ? "/api/customer/my" : "/api/customer/readable";
@@ -70,7 +72,7 @@ search() {
     })
 },
 onlyMineClk() {
-    storageSet('customer_onlyMine', this.ctrl.onlyMine);
+    this.ibf.setRt("onlyMine",this.ctrl.onlyMine);
     this.ctrl.cur=1;
     this.query(1);
 },
