@@ -1,5 +1,4 @@
 const BATCH_NUM=150;
-const PAGE_LEN=20;
 export default {
 inject:['service', 'tags'],
 data() {return {
@@ -32,9 +31,9 @@ created() {
 },
 methods:{
 query_devices(pg) {
-    var offset=(parseInt(pg)-1)*PAGE_LEN;
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var prt=this.products[parseInt(this.product)].id;
-    var url = "/api/device/list?offset="+offset+"&num="+PAGE_LEN+"&product="+prt;
+    var url = "/api/device/list?offset="+offset+"&num="+this.service.N_PAGE+"&product="+prt;
     request({method:"GET",url:url}, this.service.name).then(resp =>{
         if(resp.code!=RetCode.OK || resp.data.total==0) {
             this.devices=[];
@@ -45,7 +44,7 @@ query_devices(pg) {
         }
         this.fmt_lines(resp.data);
         this.total=resp.data.total;
-        this.page.max=Math.ceil(resp.data.total/PAGE_LEN);
+        this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 fmt_lines(data) {

@@ -105,19 +105,22 @@ template:`
   <q-item v-for="(e,i) in skus">
    <q-item-section>{{e.skuName}}</q-item-section>
    <q-item-section>{{e.num}}</q-item-section>
-   <q-item-section>{{e.price}}
+   <q-item-section>{{e.price}}</q-item-section>
+   <q-item-section avatar>
+    <q-icon name="edit" color="primary"></q-icon>
      <q-popup-edit v-model="e.price" v-slot="scope"
       @save="set_price" @before-show="get_suppliers(e.sku)">
       <q-input v-model.number="scope.value" dense autofocus @keyup.enter="scope.set">
-        <template v-slot:append>
-          <q-icon name="save" color="primary" @click="scope.set"></q-icon>
-        </template>
+       <template v-slot:append>
+        <q-icon name="save" color="primary" @click="scope.set"></q-icon>
+       </template>
       </q-input>
       <q-list dense>
-        <q-item v-for="s in ctrl.suppliers" clickable @click="scope.value=s.price">
-         <q-item-section>{{s.name}}</q-item-section>
-         <q-item-section side>{{s.price}}</q-item-section>
-        </q-item>
+       <q-item v-for="s in ctrl.suppliers" clickable
+        @click="scope.value=s.price;scope.set();">
+        <q-item-section>{{s.name}}</q-item-section>
+        <q-item-section side>{{s.price}}</q-item-section>
+       </q-item>
       </q-list>
      </q-popup-edit>
    </q-item-section>

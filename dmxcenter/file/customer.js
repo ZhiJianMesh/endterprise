@@ -10,7 +10,7 @@ data() {return {
     page:{cur:1, max:0},
     adminInfo:{newAcc:[],expend:false},
     msg:{dlg:false, code:'', downmsg:'', upmsgs:[], downtime:'',setAt:''},
-    custInfo:{dlg:false,id:0,name:'',address:'',createAt:'',cmt:'',contact:'',deviceNum:0}
+    custInfo:{dlg:false,id:0,name:'',address:'',createAt:'',cmt:'',contact:'',deviceNum:0,expend:false}
 }},
 created(){
     this.getCust();
@@ -187,54 +187,52 @@ template:`
   </q-header>
   <q-page-container>
     <q-page class="q-px-none q-pb-lg">
-<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
-{{tags.cust.base}}
-  <template v-slot:action>
-    <q-icon name="edit" @click.stop="custInfo.dlg=true" color="primary" size='1.8em'></q-icon>
-    <q-icon name="cancel" @click="rmvCustomer"
-     v-if="id>0&&service.role=='admin'&&devices.length==0"
-     color="red" size='1.8em' class="q-pl-lg"></q-icon>
-  </template>
-</q-banner>
-<q-list dense>
- <q-item v-for="i in ['name','address','contact','cmt','createAt','deviceNum']">
-  <q-item-section>{{tags.cust[i]}}</q-item-section>
-  <q-item-section>{{custInfo[i]}}</q-item-section>
- </q-item>
-</q-list>
+<q-expansion-item v-model="custInfo.expend" :label="tags.cust.base"
+ class="q-mb-md text-dark bg-blue-grey-1" dense><q-card>
+ <q-card-section>
+ <q-list dense>
+  <q-item v-for="i in ['name','address','contact','cmt','createAt','deviceNum']">
+   <q-item-section>{{tags.cust[i]}}</q-item-section>
+   <q-item-section>{{custInfo[i]}}</q-item-section>
+  </q-item>
+ </q-list>
+ </q-card-section>
+ <q-card-actions align="right" class="bg-white text-teal">
+  <q-btn icon="edit" @click.stop="custInfo.dlg=true" color="primary"></q-btn>
+  <q-btn icon="cancel" @click="rmvCustomer" color="red" class="q-pl-lg"
+   v-if="id>0&&service.role=='admin'&&devices.length==0"></q-btn>
+ </q-card-sections>
+ </q-card></q-expansion-item>
 
 <!-- admins -->
-<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1"
- v-if="service.role!='customer'">
-{{tags.cust.admin}}
-  <template v-slot:action>
-   <q-icon :name="adminInfo.expend?'expand_less':'expand_more'"
-    @click="adminInfo.expend=!adminInfo.expend"
-    color="primary" size='1.8em'></q-icon>
-  </template>
-</q-banner>
-<q-list dense v-show="adminInfo.expend">
- <q-item v-for="admin in admins">
-  <q-item-section>{{admin}}</q-item-section>
-  <q-item-section>
-   <q-icon name="cancel" @click="rmvAdmin(admin)" color="primary"
-    v-if="admins.length>1&&!(id==0&&admin=='admin')" size="1em"></q-icon>
-  </q-item-section>
- </q-item>
- <q-separator></q-separator>
- <q-item>
-  <q-item-section>
-   <component-user-selector :label="tags.cust.admin" :accounts="adminInfo.newAcc"
-   :multi="false"></component-user-selector>
-  </q-item-section>
-  <q-item-section>
-   <q-icon name="check_circle" @click="addAdmin" color="primary" size="1.8em"></q-icon>
-  </q-item-section>
- </q-item>
-</q-list>
+<q-expansion-item v-model="adminInfo.expend" :label="tags.cust.admin"
+ class="q-mb-md text-dark bg-blue-grey-1" dense
+ v-if="service.role!='customer'"><q-card>
+ <q-card-section>
+  <q-list dense>
+  <q-item v-for="admin in admins">
+   <q-item-section>{{admin}}</q-item-section>
+   <q-item-section>
+    <q-icon name="cancel" @click="rmvAdmin(admin)" color="red"
+     v-if="admins.length>1&&!(id==0&&admin=='admin')" size="1em"></q-icon>
+   </q-item-section>
+  </q-item>
+  <q-separator></q-separator>
+  <q-item>
+   <q-item-section>
+    <component-user-selector :label="tags.cust.admin" :accounts="adminInfo.newAcc"
+    :multi="false"></component-user-selector>
+   </q-item-section>
+   <q-item-section>
+    <q-icon name="check_circle" @click="addAdmin" color="primary"></q-icon>
+   </q-item-section>
+  </q-item>
+ </q-list>
+</q-card-section>
+</q-card></q-expansion-item>
 
 <!-- devices -->
-<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1">
+<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1" dense>
 {{tags.cust.devices}}
  <template v-slot:action>
   <q-input v-model="search" dense @keyup.enter="get_devices(1)">

@@ -388,6 +388,8 @@ template:`
     <q-item-section class="text-blue">{{dtl.prjName}}</q-item-section>
   </q-item>
 </q-list>
+
+<!-- 销售清单 -->
 <q-banner dense inline-actions class="q-mb-sm text-dark bg-blue-grey-1">
 {{tags.order.skuList}}
 </q-banner>
@@ -409,7 +411,7 @@ template:`
   <q-icon name="add_circle" color="primary" @click.stop="show_purchase"></q-icon>
  </template>
 </q-banner>
-<q-list separator dense>
+<q-list separator dense v-show="purchase.visible">
  <q-item v-for="p in purList" clickable @click="show_workflow(p.flowid,p.id)">
   <q-item-section>
    <q-item-label>{{p.applicant}}</q-item-label>
@@ -436,7 +438,7 @@ template:`
   <q-icon name="add_circle" color="primary" @click.stop="show_busi"></q-icon>
  </template>
 </q-banner>
-<q-list separator dense>
+<q-list separator dense v-show="business.visible">
  <q-item v-for="b in busiList" clickable @click="show_workflow(b.flowid,b.id)">
   <q-item-section>
    <q-item-label>{{b.account}}</q-item-label>
