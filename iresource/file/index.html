@@ -106,7 +106,6 @@ routes:[
 //service定义
 const _service = {name:"iresource",N_PAGE:10,N_SMPG:5,
 userInfo:{id:-1,powers:{}},
-runtime:{}, //运行时
 factories:[], //我管理的工厂列表
 skus:[],
 myFactories() {
@@ -143,12 +142,6 @@ skuList(pg) {
         if(pg==1) this.skus=resp.data.list;
         return resp.data.list;
     });
-},
-setRt(k, v) {
-    this.runtime[router.currentRoute.value.path+':'+k]=v;
-},
-getRt(k) {
-    return this.runtime[router.currentRoute.value.path+':'+k];
 },
 back() { //返回，在页面中通过service.back调用
     router.back();

@@ -1,5 +1,5 @@
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     list:[], //员工列表
     search:'',
@@ -7,13 +7,8 @@ data() {return {
 }},
 created(){
     this.service.officeList(0).then(() => {
-        var pg=this.service.getRt('pg');
-        if(pg) {
-            this.query(pg);
-        } else {
-            this.query(1);
-            this.service.setRt('pg',1);
-        }
+        var pg=this.ibf.getRt('pg', 1);
+        this.query(pg);
     });
 },
 methods:{
@@ -41,7 +36,7 @@ fmt_lines(data) {
     this.list=list;
 },
 query(pg) {
-    this.service.setRt('pg',pg);
+    this.ibf.setRt('pg',pg);
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = "/api/employee/listAll?offset="+offset+"&num="+this.service.N_PAGE;
@@ -58,7 +53,7 @@ query(pg) {
 },
 doSearch() {
     if(this.search=='') {
-        this.query(this.service.getRt('pg'));
+        this.query(this.ibf.getRt('pg', 1));
         return;
     }
     var url="/api/employee/search?s="+this.search+"&limit="+this.service.N_PAGE;

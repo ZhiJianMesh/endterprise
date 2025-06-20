@@ -91,13 +91,6 @@ routes:[
 //service定义
 const service = {name:"ifinance",N_PAGE:10,N_SMPG:5,
 CLIENTW:document.documentElement.clientWidth,
-runtime:{}, //运行时
-setRt(k, v) {
-    this.runtime[router.currentRoute.value.path+':'+k]=v;
-},
-getRt(k) {
-    return this.runtime[router.currentRoute.value.path+':'+k];
-},
 back() { //返回，在页面中通过service.back调用
     router.back();
 },

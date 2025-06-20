@@ -1,7 +1,7 @@
 const EMPTY_PERSON={name:'',email:'',phone:'',maxEdu:'',firstEdu:'',
             quali:0,birth:'',sex:'M',expSalary:0,cmt:'',marriage:'UN'};
 export default {
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     list:[], //人才列表
     search:'',
@@ -11,13 +11,8 @@ data() {return {
 }},
 created(){
     copyObjTo(EMPTY_PERSON,this.perInfo);
-    var pg=this.service.getRt('pg');
-    if(pg) {
-        this.query(pg);
-    } else {
-        this.query(1);
-        this.service.setRt('pg',1);
-    }
+    var pg=this.ibf.getRt('pg', 1);
+    this.query(pg);
     var opts=[];
     for(var i in this.tags.edu) {
         opts.push({value:i,label:this.tags.edu[i]});
@@ -59,7 +54,7 @@ fmt_lines(data) {
     this.list=list;
 },
 query(pg) {
-    this.service.setRt('pg',pg);
+    this.ibf.setRt('pg',pg);
     this.search='';
     var offset=(parseInt(pg)-1)*this.service.N_PAGE;
     var url = "/api/pool/list?offset="+offset+"&num="+this.service.N_PAGE;
@@ -76,7 +71,7 @@ query(pg) {
 },
 doSearch() {
     if(this.search=='') {
-        this.query(this.service.getRt('pg'));
+        this.query(this.ibf.getRt('pg', 1));
         return;
     }
     var url="/api/pool/search?s="+this.search+"&limit="+this.service.N_PAGE;

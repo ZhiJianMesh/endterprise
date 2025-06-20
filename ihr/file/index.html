@@ -88,9 +88,7 @@ routes:[
 ]});
 
 //service定义
-const service = {name:"ihr",N_PAGE:10,N_SMPG:5,
-runtime:{}, //运行时
-lang:l,
+const service = {name:"ihr",N_PAGE:10,N_SMPG:5,lang:l,
 userInfo:{id:-1,powers:{}},
 zones:[],offices:[],officeMap:{},worktimes:[],worktimeMap:{},
 zoneList() {
@@ -160,12 +158,6 @@ worktimeList() {
         this.worktimeMap=map;
         return opts;
     });
-},
-setRt(k, v) {
-    this.runtime[router.currentRoute.value.path+':'+k]=v;
-},
-getRt(k) {
-    return this.runtime[router.currentRoute.value.path+':'+k];
 },
 back() { //返回，在页面中通过service.back调用
     router.back();

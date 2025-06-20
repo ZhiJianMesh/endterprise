@@ -7,7 +7,7 @@ export default {
 components:{
     "prj-select":PrjSelector
 },
-inject:['service', 'tags'],
+inject:['service', 'tags', 'ibf'],
 data() {return {
     res:[], //工厂中的资产清单
     outlogs:[],
@@ -31,8 +31,7 @@ created(){
         this.factory.cur=ll[0].id;
         this.factory.name=ll[0].name;
         
-        var tab=this.service.getRt(RT_TAB);
-        this.tab=tab?tab:'res';
+        this.tab=this.ibf.getRt(RT_TAB, 'res');
         this.tab_changed(this.tab);
     });
 },
@@ -82,7 +81,7 @@ query_outlog(pg) {
     })
 },
 tab_changed(tab) {
-    this.service.setRt(RT_TAB, tab);
+    this.ibf.setRt(RT_TAB, tab);
     if(tab=='res') {
         if(this.res.length==0) {
             this.query_res(this.resCtrl.cur);
