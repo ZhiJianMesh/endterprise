@@ -52,21 +52,25 @@ query() {
         p.staIcon=sta2icon(p.status);
         p.type_s=this.tags.purType[p.type];
         if(p.cost<=0) p.cost=this.tags.purchase.notCalcu;
-        if(p.grn) {//state,inDate,outDate,execAcc,cmt
-            var g=p.grn;
-            dt.setTime(g.inDate*60000);
-            g.inDate=datetime2str(dt);
-            dt.setTime(g.outDate*60000);
-            g.outDate=datetime2str(dt);
-            g.state=this.tags.grn.state[g.state];
+        if(p.grn) {//id,state,inDate,outDate,execAcc,cmt
+            p.grn=p.grn.map(g=>{
+                dt.setTime(g.inDate*60000);
+                g.inDate=datetime2str(dt);
+                dt.setTime(g.outDate*60000);
+                g.outDate=datetime2str(dt);
+                g.state=this.tags.grn.state[g.state];
+                return g
+            });
         }
-        if(p.gdn) {//state,outDate,cfmDate,tranNo,cmt
-            var g=p.gdn;
-            dt.setTime(g.cfmDate*60000);
-            g.cfmDate=datetime2str(dt);
-            dt.setTime(g.outDate*60000);
-            g.outDate=datetime2str(dt);
-            g.state=this.tags.gdn.state[g.state];
+        if(p.gdn) {//id,state,outDate,cfmDate,tranNo,cmt
+            p.gdn=p.gdn.map(g=>{;
+                dt.setTime(g.cfmDate*60000);
+                g.cfmDate=datetime2str(dt);
+                dt.setTime(g.outDate*60000);
+                g.outDate=datetime2str(dt);
+                g.state=this.tags.gdn.state[g.state];
+                return g;
+            });
         }
         if(p.type=='BUY'){
             p.payState_s=this.tags.payState[p.payState];
@@ -94,7 +98,7 @@ grn_do() {
             return;
         }
         this.grnCtrl.dlg=false;
-        this.query();
+        this.grn_detail(resp.data.id);
     });
 },
 show_gdn() {
@@ -111,7 +115,7 @@ gdn_do() {
             return;
         }
         this.gdnCtrl.dlg=false;
-        this.query();
+        this.gdn_detail(resp.data.id);
     });
 },
 flow() {
@@ -224,21 +228,21 @@ template:`
 <div v-if="dtl.type!='BUY'" class="q-pb-sm">
 <q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.gdn.title}}
-  <template v-slot:action v-if="editable&&!dtl.gdn">
+  <template v-slot:action v-if="editable">
    <q-icon color="primary" name="output" @click="show_gdn"></q-icon>
   </template>
 </q-banner>
 <q-list separator v-if="dtl.gdn">
- <q-item clickable @click="gdn_detail(id)">
+ <q-item clickable v-for="gdn in dtl.gdn" @click="gdn_detail(gdn.id)">
  <q-item-section>
-  <q-item-label>{{tags.gdn.title}} {{dtl.gdn.tranNo}}</q-item-label>
-  <q-item-label caption>{{dtl.gdn.execAcc}}/{{dtl.gdn.cfmDate}}</q-item-label>
-  <q-item-label caption>{{dtl.gdn.cmt}}</q-item-label>
+  <q-item-label>{{gdn.tranNo}}</q-item-label>
+  <q-item-label caption>{{gdn.state}}</q-item-label>
  </q-item-section>
- <q-item-section side>
-  <q-item-label>{{dtl.gdn.state}}</q-item-label>
-  <q-item-label caption>{{dtl.gdn.outDate}}</q-item-label>
+ <q-item-section>
+  <q-item-label>{{gdn.execAcc}}/{{gdn.cfmDate}}</q-item-label>
+  <q-item-label caption>{{gdn.cmt}}</q-item-label>
  </q-item-section>
+ <q-item-section side>{{gdn.outDate}}</q-item-section>
  </q-item>
 </q-list>
 </div>
@@ -246,21 +250,21 @@ template:`
 <div v-if="dtl.type!='SELL'" class="q-pb-sm">
 <q-banner inline-actions dense class="q-mb-sm text-dark bg-blue-grey-1">
   {{tags.grn.title}}
-  <template v-slot:action v-if="editable&&!dtl.grn">
+  <template v-slot:action v-if="editable">
    <q-icon color="primary" name="exit_to_app" @click="show_grn"></q-icon>
   </template>
 </q-banner>
 <q-list separator v-if="dtl.grn">
-<q-item v-if="dtl.grn" @click="grn_detail(id)" clickable>
+<q-item v-for="grn in dtl.grn" @click="grn_detail(grn.id)" clickable>
  <q-item-section>
-  <q-item-label>{{tags.grn.title}} {{dtl.grn.tranNo}}</q-item-label>
-  <q-item-label caption>{{dtl.grn.execAcc}}/{{dtl.grn.inDate}}</q-item-label>
-  <q-item-label caption>{{dtl.grn.cmt}}</q-item-label>
+  <q-item-label>{{grn.tranNo}}</q-item-label>
+  <q-item-label caption>{{grn.state}}</q-item-label>
  </q-item-section>
- <q-item-section side>
-  <q-item-label>{{dtl.grn.state}}</q-item-label>
-  <q-item-label caption>{{dtl.grn.outDate}}</q-item-label>
+ <q-item-section>
+  <q-item-label>{{grn.execAcc}}/{{grn.inDate}}</q-item-label>
+  <q-item-label caption>{{grn.cmt}}</q-item-label>
  </q-item-section>
+ <q-item-section side>{{grn.outDate}}</q-item-section>
 </q-item>
 </q-list>
 </div>
@@ -315,7 +319,7 @@ template:`
    <pur-select v-model="purchase" :label="tags.storage.purchase" v-show="gdnCtrl.no<0"></pur-select>
    <q-input v-model="gdnCtrl.dta.tranNo" :label="tags.storage.tranNo" dense>
     <template v-slot:append>
-     <q-icon name="add_box" color="primary" @click="gen_gdnTranNo"></q-icon>
+     <q-icon name="wb_auto" color="primary" @click="gen_gdnTranNo"></q-icon>
     </template>
    </q-input>
    <q-input :label="tags.cmt" v-model="gdnCtrl.dta.cmt" dense></q-input>

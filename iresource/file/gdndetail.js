@@ -18,11 +18,10 @@ data() {return {
 created(){
     this.query();
     this.gdn_list();
-    this.pur_list();
 },
 methods:{
 query() {
-    var url="/gdn/get?purId="+this.id;
+    var url="/gdn/get?id="+this.id;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -42,6 +41,7 @@ query() {
         p.type=this.tags.gdnType[p.type];
         p.state=this.tags.gdnState[p.state];
         this.dtl=p;
+        this.pur_list();
     })
 },
 show_edit() {
@@ -50,7 +50,7 @@ show_edit() {
 },
 update() {
     var dta=copyObj(this.ctrl.edt, ['tranNo','cmt','receiver','applyCmt']);
-    dta.purId=this.id;
+    dta.id=this.id;
     dta.factory=this.dtl.factory;
     request({method:"PUT", url:"/gdn/update", data:dta}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
@@ -63,7 +63,7 @@ update() {
 },
 remove() {
     this.$refs.cfmDlg.show(this.tags.cfmRmv, ()=>{
-        var opts={method:"DELETE",url:"/gdn/remove?purId="+this.id+"&factory="+this.dtl.factory};
+        var opts={method:"DELETE",url:"/gdn/remove?id="+this.id+"&factory="+this.dtl.factory};
         request(opts, this.service.name).then(resp => {
             if(resp.code!=RetCode.OK) {
                 this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -74,7 +74,7 @@ remove() {
     });
 },
 gdn_list() {
-    var url="/gdn/gdnlist?purId="+this.id;
+    var url="/gdn/gdnlist?gdnId="+this.id;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
@@ -83,12 +83,23 @@ gdn_list() {
     })
 },
 pur_list() { //采购单申请的sku列表
-    var url="/purchase/skulist?id="+this.id;
+    var url="/purchase/skulist?id="+this.dtl.purId;
     request({method:"GET", url:url}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             return;
         }
-        this.purList=resp.data.list;
+        var skus=resp.data.skus;//id->[speci,noHead]
+        this.purList=resp.data.list.map(p=>{
+            var sku=skus[p.sku];
+            if(sku) {
+                p.speci=sku[0];
+                p.noHead=sku[1];
+            } else {
+                p.speci='';
+                p.noHead='';
+            }
+            return p;
+        })
     })
 },
 show_ship() {
@@ -100,7 +111,7 @@ ship_out() {
     var no=this.resNo.no;
     if(!d.num||!no)return;
     
-    var dta={no:no, num:d.num, purId:this.id, factory:this.dtl.factory};
+    var dta={no:no, num:d.num, gdnId:this.id, factory:this.dtl.factory};
     var opts={method:"POST", url:"/gdn/shipOut", data:dta};
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -112,7 +123,7 @@ ship_out() {
     });
 },
 remove_sku(i) {
-    var url="/gdn/removeSku?purId="+this.id
+    var url="/gdn/removeSku?gdnId="+this.id
         +"&factory="+this.dtl.factory+"&no="+this.skuList[i].no;
     request({method:"DELETE", url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
@@ -215,11 +226,13 @@ template:`
    <q-item-section><q-item-label caption>{{tags.sku.title}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.num}}</q-item-label></q-item-section>
    <q-item-section><q-item-label caption>{{tags.sku.price}}</q-item-label></q-item-section>
+   <q-item-section side><q-item-label caption>{{tags.sku.noHead}}</q-item-label></q-item-section>
   </q-item>
   <q-item v-for="(e,i) in purList">
     <q-item-section>{{e.skuName}}</q-item-section>
     <q-item-section>{{e.num}}</q-item-section>
     <q-item-section>{{e.price}}</q-item-section>
+    <q-item-section side>{{e.noHead}}</q-item-section>
   </q-item>
 </q-list>
 
