@@ -51,10 +51,10 @@ showMsg(code) {
         if(resp.data.downmsg) {
             this.msg.downmsg=resp.data.downmsg;
             dt.setTime(resp.data.setAt);
-            this.msg.setAt=dt.toLocaleString();
+            this.msg.setAt=datetime2str(dt,true);
             if(resp.data.downtime>resp.data.setAt) {
                 dt.setTime(resp.data.downtime);
-                this.msg.downtime=dt.toLocaleString();
+                this.msg.downtime=datetime2str(dt,true);
             } else {
                 this.msg.downtime=this.tags.notTaken;
             }
@@ -64,9 +64,11 @@ showMsg(code) {
             this.msg.setAt='';
         }
         var upmsgs=[];
-        for(var m of resp.data.upmsgs) {
-            dt.setTime(m.at);
-            upmsgs.push({msg:m.msg,at:dt.toLocaleString()});
+        if(resp.data.upmsgs) {
+            for(var m of resp.data.upmsgs) {
+                dt.setTime(m.at);
+                upmsgs.push({msg:m.msg,at:datetime2str(dt,true)});
+            }
         }
         this.msg.upmsgs=upmsgs;
         this.msg.code=code;
@@ -104,10 +106,10 @@ get_devices(pg) {
         var createAt,sellAt,prt,prtDef;
         for(var d of resp.data.devices) {
             dt.setTime(d[iCreate]*60000);
-            createAt=dt.toLocaleDateString();
+            createAt=date2str(dt,true);
             if(d[iSell]>0) {
                 dt.setTime(d[iSell]*60000);
-                sellAt=dt.toLocaleDateString();
+                sellAt=date2str(dt);
             } else {
                 sellAt=this.tags.notSell;
             }
@@ -259,7 +261,7 @@ template:`
  <th>{{tags.device.sellAt}}</th>
 </tr></thead>
 <tbody>
-<tr v-for="d in devices" @click="showMsg(d.code)">
+<tr v-for="d in devices" @click="showMsg(d.code)" style="cursor:pointer;">
  <td>{{d.code}}</td>
  <td>{{d.product}}</td>
  <td>{{d.createAt}}</td>
@@ -317,20 +319,20 @@ template:`
     <q-card-section class="q-pt-none">
      <q-list>
       <q-item>
+       <q-item-section>{{tags.cust.downmsg}}</q-item-section>
+      </q-item>
+      <q-item>
         <q-item-section>
-          <q-item-label>{{tags.cust.downmsg}}</q-item-label>
-          <q-item-label caption>{{msg.downmsg}}</q-item-label>
+          <q-item-label>{{msg.downmsg}}</q-item-label>
           <q-item-label caption>{{msg.setAt}} / {{msg.downtime}}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
-        <q-item-section>
-          <q-item-label>{{tags.cust.upmsg}}</q-item-label>
-        </q-item-section>
+        <q-item-section>{{tags.cust.upmsg}}</q-item-section>
       </q-item>
       <q-item v-for="m in msg.upmsgs">
         <q-item-section>
-          <q-item-label caption>{{m.msg}}</q-item-label>
+          <q-item-label>{{m.msg}}</q-item-label>
           <q-item-label caption>{{m.at}}</q-item-label>
         </q-item-section>
       </q-item>

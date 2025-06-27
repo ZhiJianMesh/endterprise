@@ -95,8 +95,8 @@ template: `
    <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
   </q-toolbar>
   <q-tabs v-model="tab" class="bg-grey-2 text-primary" @update:model-value="queryApps(1)" active-bg-color="green-1" dense>
-   <q-tab name="personal" icon="person" :label="tags.personal"></q-tab>
    <q-tab name="enterprise" icon="svguse:/assets/imgs/meshicons.svg#company" :label="tags.enterprise"></q-tab>
+   <q-tab name="personal" icon="person" :label="tags.personal"></q-tab>
   </q-tabs>
  </q-header>
  <q-page-container><q-page class="q-pa-md">
