@@ -73,7 +73,7 @@ show_dtl(id) {
 },
 confirm(){
     var payAt=parseInt(new Date(this.dtl.payAt).getTime()/60000);
-    var dta={id:this.dtl.id,payAt:payAt,sn:this.dtl.sn};
+    var dta={id:this.dtl.id,payAt:payAt,sn:this.dtl.sn,invoice:this.dtl.invoice};
     return request({method:"PUT", url:"/income/confirm", data:dta}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -163,20 +163,41 @@ template:`
      <q-item-section>{{tags.income.cfmAcc}}</q-item-section>
      <q-item-section side>{{dtl.cfmAcc}}</q-item-section>
     </q-item>
-    <q-item>
-     <q-item-section>{{tags.income.sn}}</q-item-section>
-     <q-item-section>
-      <q-input v-model="dtl.sn" :disable="dtl.state=='OVER'"></q-input>
-     </q-item-section>
-    </q-item>
-    <q-item>
-     <q-item-section>{{tags.payAt}}</q-item-section>
-     <q-item-section>
-      <date-input :close="tags.ok" v-model="dtl.payAt" :disable="dtl.state=='OVER'"></date-input>
-     </q-item-section>
-    </q-item>
+   </q-list>
+   
+   <q-list separator dense v-if="dtl.state=='OVER'">
+   <q-item>
+    <q-item-section>{{tags.income.sn}}</q-item-section>
+    <q-item-section side>{{dtl.sn}}</q-item-section>
+   </q-item>
+   <q-item>
+    <q-item-section>{{tags.invoice}}</q-item-section>
+    <q-item-section side>{{dtl.invoice}}</q-item-section>
+   </q-item>
+   <q-item>
+    <q-item-section>{{tags.payAt}}</q-item-section>
+    <q-item-section side>{{dtl.payAt}}</q-item-section>
+   </q-item>
+   </q-list>
+
+   <q-list separator dense v-else>
+   <q-item>
+    <q-item-section>{{tags.income.sn}}</q-item-section>
+    <q-item-section><q-input v-model="dtl.sn"></q-input></q-item-section>
+   </q-item>
+   <q-item>
+    <q-item-section>{{tags.invoice}}</q-item-section>
+    <q-item-section><q-input v-model="dtl.invoice"></q-input></q-item-section>
+   </q-item>
+   <q-item>
+    <q-item-section>{{tags.payAt}}</q-item-section>
+    <q-item-section>
+     <date-input :close="tags.ok" v-model="dtl.payAt"></date-input>
+    </q-item-section>
+   </q-item>
    </q-list>
   </q-card-section>
+
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     <q-btn :label="tags.ok" color="primary" @click="confirm" v-if="dtl.state=='WAIT'"></q-btn>

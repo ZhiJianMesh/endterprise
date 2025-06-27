@@ -24,6 +24,7 @@ zh:{
   unSet:'不指定',
   forEver:'永久',
   deduct:'扣减',
+  invoice:'发票号',
 
   income:{
     title:'回款',

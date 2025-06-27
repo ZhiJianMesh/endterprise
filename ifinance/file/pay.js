@@ -71,7 +71,7 @@ show_dtl(id) {
     })    
 },
 confirm(){
-    var dta={id:this.dtl.id,sn:this.dtl.sn};
+    var dta={id:this.dtl.id,sn:this.dtl.sn,invoice:this.dtl.invoice};
     return request({method:"PUT", url:"/pay/confirm", data:dta}, this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
@@ -87,7 +87,7 @@ template:`
   <q-header>
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>
-     <q-toolbar-title>{{tags.income.title}}</q-toolbar-title>
+     <q-toolbar-title>{{tags.pay.title}}</q-toolbar-title>
      <q-btn flat round dense icon="menu"><q-menu>
       <q-option-group v-model="state" :options="ctrl.opts" type="radio"
        @update:model-value="query(ctrl.cur)" style="min-width:10em;"></q-option-group>
@@ -161,12 +161,27 @@ template:`
      <q-item-section>{{tags.pay.cfmAcc}}</q-item-section>
      <q-item-section side>{{dtl.cfmAcc}}</q-item-section>
     </q-item>
+   </q-list>
+
+   <q-list separator dense v-if="dtl.state=='OVER'">
     <q-item>
      <q-item-section>{{tags.pay.sn}}</q-item-section>
-     <q-item-section v-if="dtl.state!='OVER'">
-      <q-input v-model="dtl.sn" dense></q-input>
-     </q-item-section>
-     <q-item-section v-else side>{{dtl.sn}}</q-item-section>
+     <q-item-section side>{{dtl.sn}}</q-item-section>
+    </q-item>
+    <q-item>
+     <q-item-section>{{tags.invoice}}</q-item-section>
+     <q-item-section side>{{dtl.invoice}}</q-item-section>
+    </q-item>
+   </q-list>
+
+   <q-list separator dense v-else>
+    <q-item>
+     <q-item-section>{{tags.pay.sn}}</q-item-section>
+     <q-item-section><q-input v-model="dtl.sn" dense></q-input></q-item-section>
+    </q-item>
+    <q-item>
+     <q-item-section>{{tags.invoice}}</q-item-section>
+     <q-item-section><q-input v-model="dtl.invoice" dense></q-input></q-item-section>
     </q-item>
    </q-list>
   </q-card-section>
