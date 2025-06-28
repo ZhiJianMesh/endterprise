@@ -27,13 +27,16 @@ zh:{
   invoice:'发票号',
 
   income:{
-    title:'回款',
+    title:'收入',
     maybeAt:'可能到账日期',
-    mode:'回款方式',
+    mode:'收款方式',
     val:'金额',
-    sn:'收款流水号',
-    bank:'付款银行帐号',
+    sn:'流水号',
+    bank:'付款方帐号',
     cfmAcc:'确认人',
+    prj:'收款项目',
+    direct:'直接收款',
+    alertDir:'直接收款，无法撤回，请确认是否执行?',
     state:{
       WAIT:'待确认',
       OVER:'已确认'
@@ -53,14 +56,16 @@ zh:{
     }
   },
   pay:{
-    title:'支付',
+    title:'支出',
     mode:'付款方式',
     val:'金额',
-    sn:'收款流水号',
-    bank:'对方银行帐号',
+    sn:'流水号',
+    bank:'收款方帐号',
     expectAt:'期望付款日期',
-    sn:'付款流水号',
     cfmAcc:'付款执行人',
+    prj:'付款项目',
+    direct:'直接付款',
+    alertDir:'直接付款，无法撤回，请确认是否执行?',
     state:{
       WAIT:'待付款',
       OVER:'已付款'
@@ -167,4 +172,4 @@ zh:{
       '6001':'工时未上报，不能发薪'
   }
 }
-};
+}

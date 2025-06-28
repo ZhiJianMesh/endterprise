@@ -5,7 +5,7 @@ props: {
     modelValue:{type:Object,required:true},
     label:{type:String,required:true}
 },
-emits: ['update:modelValue'],
+emits: ['update:modelValue'], //{id:prj_id,name:prj_name}
 methods:{
 get_opts(val,update) {
   var ol=this.oldLen;

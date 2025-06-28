@@ -1,11 +1,19 @@
+import BankSelector from "/ibfbase/components/bank_selector.js";
+import PrjSelector from "/ibfbase/components/prj_selector.js";
+
 export default {
+components:{
+    "bank-select":BankSelector,
+    "prj-select":PrjSelector
+},
 inject:['service', 'tags'],
 data() {return {
     //回款确认申请
     list:{},
     state:'',
-    ctrl:{cur:1,max:0,dlg:false,opts:[]},
-    dtl:{}
+    ctrl:{cur:1,max:0,dlg:false,opts:[],add:false,payModes:[]},
+    dtl:{},
+    newPay:{prj:{id:'',name:''}}
 }},
 created(){
     var opts=[{value:'',label:this.tags.unSet}];//状态选择项
@@ -13,6 +21,12 @@ created(){
         opts.push({value:s,label:this.tags.pay.state[s]});
     }
     this.ctrl.opts=opts;
+    
+    opts=[];
+    for(var s in this.tags.payMode) {
+        opts.push({value:s,label:this.tags.payMode[s]});
+    }
+    this.ctrl.payModes=opts;
     this.query(1);
 },
 methods:{
@@ -80,6 +94,21 @@ confirm(){
         this.ctrl.dlg=false;
         this.query(this.ctrl.cur);
     })  
+},
+dir_pay() {
+    this.$refs.confirmDlg.show(this.tags.pay.alertDir, ()=>{
+        var dta=copyObjExc(this.newPay,['prj']);
+        dta.pid=this.newPay.prj.id;
+        dta.prjName=this.newPay.prj.name;
+        return request({method:"POST", url:"/pay/dir_pay", data:dta}, this.service.name).then(resp => {
+            if(resp.code!=RetCode.OK) {
+                this.$refs.alertDlg.showErr(resp.code, resp.info);
+                return;
+            }
+            this.ctrl.add=false;
+            this.query(this.ctrl.cur);
+        })
+    })
 }
 },
 template:`
@@ -88,7 +117,8 @@ template:`
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>
      <q-toolbar-title>{{tags.pay.title}}</q-toolbar-title>
-     <q-btn flat round dense icon="menu"><q-menu>
+     <q-btn flat dense icon="add_box" @click="ctrl.add=true"></q-btn>
+     <q-btn flat dense icon="menu"><q-menu>
       <q-option-group v-model="state" :options="ctrl.opts" type="radio"
        @update:model-value="query(ctrl.cur)" style="min-width:10em;"></q-option-group>
      </q-menu></q-btn>
@@ -192,6 +222,44 @@ template:`
  </q-card>
 </q-dialog>
 
+<q-dialog v-model="ctrl.add"> <!-- 直接添加付款记录 -->
+ <q-card style="min-width:70vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.pay.direct}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-sm">
+  <q-list dense>
+   <q-item><q-item-section>
+    <prj-select :label="tags.pay.prj" v-model="newPay.prj"></prj-select>
+   </q-item-section></q-item> 
+   <q-item><q-item-section>
+    <q-select :label="tags.pay.mode" v-model="newPay.mode" :options="ctrl.payModes" emit-value map-options></q-select>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <bank-select :label="tags.pay.bank" v-model="newPay.bank" dense></bank-select>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.pay.val" v-model="newPay.val" type="number" dense></q-input>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.pay.sn" v-model="newPay.sn" dense></q-input>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.invoice" v-model="newPay.invoice" dense></q-input>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.cmt" v-model="newPay.cmt" dense></q-input>
+   </q-item-section></q-item>
+  </q-list>
+  </q-card-section>
+  <q-card-actions align="right">
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-btn :label="tags.ok" color="primary" @click="dir_pay"></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 `
 }

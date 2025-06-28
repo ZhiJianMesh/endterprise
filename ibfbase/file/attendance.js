@@ -584,7 +584,6 @@ template:`
    <div class="text-caption">{{expAct.dta.start_s}}-{{expAct.dta.end_s}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   
    <datetime-input v-model="expAct.dta.realStart_s" :label="tags.start"
     :format="tags.dateFmt" :showMinute="false"></datetime-input>
    <datetime-input v-model="expAct.dta.realEnd_s" :label="tags.end"

@@ -49,9 +49,11 @@
 <script src="/assets/v3/echarts.js"></script>
 <script type="module">
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
+import ConfirmDialog from "/assets/v3/components/confirm_dialog.js";
 import DateInput from "/assets/v3/components/date_input.js"
 import MonthInput from "/assets/v3/components/month_input.js"
 import UserInput from "/assets/v3/components/user_input.js"
+
 import IBF from '/ibfbase/ibf.js'
 import BankAcc from "./bankacc.js"
 import Salary from "./salary.js"
@@ -126,6 +128,7 @@ app.use(Quasar);
 app.use(router);
 app.component('ibf', IBF);
 app.component('alert-dialog', AlertDialog);
+app.component('confirm-dialog', ConfirmDialog);
 app.component('date-input', DateInput);
 app.component('month-input', MonthInput);
 app.component('user-input', UserInput);

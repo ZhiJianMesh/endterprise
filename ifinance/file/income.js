@@ -1,11 +1,19 @@
+import BankSelector from "/ibfbase/components/bank_selector.js";
+import PrjSelector from "/ibfbase/components/prj_selector.js";
+
 export default {
+components:{
+    "bank-select":BankSelector,
+    "prj-select":PrjSelector
+},
 inject:['service', 'tags'],
 data() {return {
     //回款确认申请
     list:{},
     state:'',
-    ctrl:{cur:1,max:0,dlg:false,opts:[]},
-    dtl:{}
+    ctrl:{cur:1,max:0,dlg:false,opts:[],add:false,payModes:[]},
+    dtl:{},
+    newIncome:{prj:{id:'',name:''}}
 }},
 created(){
     var opts=[{value:'',label:this.tags.unSet}];//状态选择项
@@ -13,6 +21,12 @@ created(){
         opts.push({value:s,label:this.tags.income.state[s]});
     }
     this.ctrl.opts=opts;
+    opts=[];
+    for(var s in this.tags.payMode) {
+        opts.push({value:s,label:this.tags.payMode[s]});
+    }
+    this.ctrl.payModes=opts;
+
     this.query(1);
 },
 methods:{
@@ -82,6 +96,21 @@ confirm(){
         this.ctrl.dlg=false;
         this.query(this.ctrl.cur);
     })  
+},
+dir_income() {
+    this.$refs.confirmDlg.show(this.tags.income.alertDir, ()=>{
+        var dta=copyObjExc(this.newIncome,['prj']);
+        dta.pid=this.newIncome.prj.id;
+        dta.prjName=this.newIncome.prj.name;
+        return request({method:"POST", url:"/income/dir_income", data:dta}, this.service.name).then(resp => {
+            if(resp.code!=RetCode.OK) {
+                this.$refs.alertDlg.showErr(resp.code, resp.info);
+                return;
+            }
+            this.ctrl.add=false;
+            this.query(this.ctrl.cur);
+        })
+    })
 }
 },
 template:`
@@ -90,6 +119,7 @@ template:`
    <q-toolbar>
      <q-btn flat icon="arrow_back" dense @click="service.back()"></q-btn>
      <q-toolbar-title>{{tags.income.title}}</q-toolbar-title>
+     <q-btn flat dense icon="add_box" @click="ctrl.add=true"></q-btn>
      <q-btn flat round dense icon="menu"><q-menu>
       <q-option-group v-model="state" :options="ctrl.opts" type="radio"
        @update:model-value="query(ctrl.cur)" style="min-width:10em;"></q-option-group>
@@ -205,6 +235,44 @@ template:`
  </q-card>
 </q-dialog>
 
+<q-dialog v-model="ctrl.add"> <!-- 直接添加收款记录 -->
+ <q-card style="min-width:70vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.income.direct}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-sm">
+  <q-list dense>
+   <q-item><q-item-section>
+    <prj-select :label="tags.income.prj" v-model="newIncome.prj"></prj-select>
+   </q-item-section></q-item> 
+   <q-item><q-item-section>
+    <q-select :label="tags.income.mode" v-model="newIncome.mode" :options="ctrl.payModes" emit-value map-options></q-select>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <bank-select :label="tags.income.bank" v-model="newIncome.bank" dense></bank-select>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.income.val" v-model="newIncome.val" type="number" dense></q-input>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.income.sn" v-model="newIncome.sn" dense></q-input>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.invoice" v-model="newIncome.invoice" dense></q-input>
+   </q-item-section></q-item>
+   <q-item><q-item-section>
+    <q-input :label="tags.cmt" v-model="newIncome.cmt" dense></q-input>
+   </q-item-section></q-item>
+  </q-list>
+  </q-card-section>
+  <q-card-actions align="right">
+    <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+    <q-btn :label="tags.ok" color="primary" @click="dir_income"></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></confirm-dialog>
 <alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="alertDlg"></alert-dialog>
 `
 }

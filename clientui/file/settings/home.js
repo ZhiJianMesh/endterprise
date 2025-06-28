@@ -4,11 +4,11 @@ data(){return{
     authorized:false,
     account:'',
     nickName:'',
-	companyName:'',
+    companyName:'',
     companies:[],
     curCompanyId:-1,
     regComDta:{creditCode:'',name:'',pwd:'',cfmPwd:'',verifyCode:'',session:'',
-	  addr:{province:'',city:'',county:''},vcImg:'',pwdVis:false}, //注册新公司数据
+      addr:{province:'',city:'',county:''},vcImg:'',pwdVis:false}, //注册新公司数据
     addComDta:{id:'',accessCode:'',insideAddr:'',needInside:false}, //添加已存在公司数据
     newUsrDta:{account:'',pwd:'',confirmPwd:'',verifyCode:'',session:'',pwdVis:false,vc:''}, //注册个人帐号
     dlg:{com:false,comTab:'checkin',usr:false,doing:false},//是否正在添加公司，用于显示进度条
@@ -23,9 +23,9 @@ init() {
     var company=this.service.curCompany();
     this.newComData={id:'',accessCode:'',insideAddr:'',needInside:false};
     Companies.list(__regsiterCallback(resp=>{
-		this.companies=resp.data.list;
-		//必须用let，否则在循环中使用异步闭包会用最后一个
-		//安卓7部分实现let
+        this.companies=resp.data.list;
+        //必须用let，否则在循环中使用异步闭包会用最后一个
+        //安卓7部分实现let
         for(let c of this.companies) {
             Companies.getLogo(c.id, __regsiterCallback(png=>{
                 if(png) {
@@ -37,16 +37,16 @@ init() {
         }
     }))
 
-	this.account=this.tags.account;
-	this.nickName=this.tags.nickName;
+    this.account=this.tags.account;
+    this.nickName=this.tags.nickName;
     if(company.authorized) {
-		this.authorized=true;
+        this.authorized=true;
         this.service.getUserInfo().then(userInfo=>{
             this.account=userInfo.account;
             this.nickName=userInfo.nickName;
         });
     } else {
-		this.authorized=false;
+        this.authorized=false;
     }
     this.companyName=company.name;
     this.curCompanyId=company.id;
@@ -85,7 +85,7 @@ addCompany(){
     __regsiterCallback(resp=>{
         this.dlg.doing=false;
         if(resp.code==RetCode.OK) {
-			this.dlg.com=false;
+            this.dlg.com=false;
             this.init();
             return;
         }
@@ -145,8 +145,8 @@ setCurCompany(cid) {
         if(resp.code!=RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
         } //即使失败，也要切换过去
-		this.init();//setCur需要重新probe，所以必须等它完成才能init
-	}));
+        this.init();//setCur需要重新probe，所以必须等它完成才能init
+    }));
 },
 exitCompany(){
     if(Companies.remove(this.curCompanyId)) {
@@ -210,72 +210,70 @@ chkCredit(code) {
 },
 template: `
 <q-layout view="hHh lpr fFf">
- <q-header class="bg-grey-1">
-  <q-list class="q-pa-sm">
-   <q-item>
-    <q-item-section top thumbnail class="q-ml-none">
-     <q-btn-dropdown color="primary" icon="group" push no-caps no-wrap fab-mini flat dense>
-      <q-list dense>
-        <q-item v-for="c in companies" clickable v-close-popup @click="setCurCompany(c.id)">
-          <q-item-section avatar>
-            <q-avatar square :icon="c.logo" :color="c.id==curCompanyId?'primary':'green-1'" text-color="white"></q-avatar>
-          </q-item-section>
-          <q-item-section no-wrap>{{c.name}}</q-item-section>
-        </q-item>
-        <q-item clickable v-close-popup @click="dlg.com=true">
-          <q-item-section avatar>
-            <q-avatar icon="add" color="teal-3" text-color="white"></q-avatar>
-          </q-item-section>
-          <q-item-section no-wrap>{{tags.addCompany}}</q-item-section>
-        </q-item>
-      </q-list>
-     </q-btn-dropdown>
-    </q-item-section>
-    <q-item-section>
-      <q-item-label caption>{{account}}</q-item-label>
-      <q-item-label caption>{{companyName}}/{{nickName}}</q-item-label>
-    </q-item-section>
-    <q-item-section side top>
-      <div class="row no-wrap">
-       <q-btn flat color="indigo" :label="tags.home.register"
-        @click="showRegister" v-show="rootComId==curCompanyId&&!authorized"></q-btn>
-       <q-btn flat dense color="primary" :label="authorized?tags.logout:tags.login" @click="logInOrOut"
-        :icon-right="authorized?'logout':'login'"></q-btn>
-      </div>
-    </q-item-section>
-   </q-item>
-  </q-list>
- </q-header>
- <q-page-container>
-    <q-page class="q-pa-md">
+<q-header class="bg-grey-1">
+ <q-list class="q-pa-sm" dense><q-item>
+  <q-item-section top thumbnail class="q-ml-none">
+   <q-btn-dropdown color="primary" icon="group" push no-caps no-wrap fab-mini flat dense>
+    <q-list dense>
+      <q-item v-for="c in companies" clickable v-close-popup @click="setCurCompany(c.id)">
+       <q-item-section avatar>
+        <q-avatar square :icon="c.logo" :color="c.id==curCompanyId?'primary':'green-1'" text-color="white"></q-avatar>
+       </q-item-section>
+       <q-item-section no-wrap>{{c.name}}</q-item-section>
+      </q-item>
+      <q-item clickable v-close-popup @click="dlg.com=true">
+       <q-item-section avatar>
+        <q-avatar icon="add" color="teal-3" text-color="white"></q-avatar>
+       </q-item-section>
+       <q-item-section no-wrap>{{tags.addCompany}}</q-item-section>
+      </q-item>
+    </q-list>
+   </q-btn-dropdown>
+  </q-item-section>
+  <q-item-section>
+   <q-item-label caption>{{account}}/{{nickName}}</q-item-label>
+   <q-item-label caption>{{companyName}}</q-item-label>
+  </q-item-section>
+  <q-item-section side top>
+   <div class="row no-wrap">
+    <q-btn flat color="indigo" :label="tags.home.register"
+     @click="showRegister" v-show="rootComId==curCompanyId&&!authorized"></q-btn>
+    <q-btn flat dense color="primary" :label="authorized?tags.logout:tags.login" @click="logInOrOut"
+     :icon-right="authorized?'logout':'login'"></q-btn>
+   </div>
+  </q-item-section>
+ </q-item></q-list>
+</q-header>
+<q-page-container>
+ <q-page class="q-pa-md">
 <q-list class="q-pa-md">
   <q-item clickable v-ripple @click="jump('/company')" v-show="rootComId!=curCompanyId">
     <q-item-section avatar>
-      <q-icon color="primary" name="business"></q-icon>
+     <q-icon color="primary" name="business"></q-icon>
     </q-item-section>
     <q-item-section>{{tags.home.company}}</q-item-section>
     <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
+     <q-icon name="chevron_right" class="text-primary"></q-icon>
     </q-item-section>
   </q-item>
 
   <q-item clickable v-ripple @click="jump('/personal')" v-show="authorized">
     <q-item-section avatar>
-      <q-icon color="primary" name="person_pin_circle"></q-icon>
+     <q-icon color="primary" name="person_pin_circle"></q-icon>
     </q-item-section>
     <q-item-section>{{tags.home.personal}}</q-item-section>
     <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
+     <q-icon name="chevron_right" class="text-primary"></q-icon>
     </q-item-section>
   </q-item>
 
   <q-item clickable v-ripple @click="jump('/advice')">
     <q-item-section avatar>
-      <q-icon color="brown" name="mail_outline"></q-icon>
+     <q-icon color="brown" name="mail_outline"></q-icon>
     </q-item-section>
     <q-item-section>{{tags.home.advice}}</q-item-section>
     <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
+     <q-icon name="chevron_right" class="text-primary"></q-icon>
     </q-item-section>
   </q-item>
 
@@ -299,92 +297,91 @@ template: `
     </q-item-section>
   </q-item>
 </q-list>
-    </q-page>
-  </q-page-container>
+ </q-page>
+</q-page-container>
 </q-layout>
 
 <q-dialog v-model="dlg.com"> <!-- 添加公司或注册新公司 -->
-  <q-card style="min-width:62vw;max-width:80vw">
-    <q-card-section>
-      <div class="text-h6">{{tags.addCompany}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-  <q-tabs v-model="dlg.comTab" dense class="text-grey" active-color="primary"
-   indicator-color="primary" align="justify" narrow-indicator
-   @update:model-value="newComTabChged">
-   <q-tab name="checkin" :label="tags.checkin"></q-tab>
-   <q-tab name="register" :label="tags.register"></q-tab>
-  </q-tabs>
-  <q-separator></q-separator>
-  <q-tab-panels v-model="dlg.comTab" animated>
-   <q-tab-panel name="checkin">
-    <q-input dense v-model="addComDta.id" autofocus :label="tags.cfg.id"></q-input>
-    <q-input dense v-model="addComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
-    <q-input dense v-model="addComDta.insideAddr" :label="tags.insideAddr" v-show="addComDta.needInside"></q-input>
-   </q-tab-panel>
-   <q-tab-panel name="register">
-    <q-input autofocus v-model="regComDta.creditCode" :label="tags.cfg.creditCode" dense maxlength=18
-    :rules="[v=>chkCredit(v)||tags.creditCodePls]"></q-input>
-    <q-input v-model="regComDta.name" :label="tags.cfg.name" maxlength=50 dense></q-input>
-    <q-input v-model="regComDta.pwd" :label="tags.pwd" dense maxlength=20 :type="regComDta.pwdVis ? 'text':'password'">
-     <template v-slot:append>
-      <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
+ <q-card style="min-width:62vw;max-width:80vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.addCompany}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <q-tabs v-model="dlg.comTab" dense class="text-grey" active-color="primary"
+    indicator-color="primary" align="justify" narrow-indicator
+    @update:model-value="newComTabChged">
+    <q-tab name="checkin" :label="tags.checkin"></q-tab>
+    <q-tab name="register" :label="tags.register"></q-tab>
+   </q-tabs>
+   <q-separator></q-separator>
+   <q-tab-panels v-model="dlg.comTab" animated>
+    <q-tab-panel name="checkin">
+     <q-input dense v-model="addComDta.id" autofocus :label="tags.cfg.id"></q-input>
+     <q-input dense v-model="addComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
+     <q-input dense v-model="addComDta.insideAddr" :label="tags.insideAddr" v-show="addComDta.needInside"></q-input>
+    </q-tab-panel>
+    <q-tab-panel name="register">
+     <q-input autofocus v-model="regComDta.creditCode" :label="tags.cfg.creditCode" dense maxlength=18
+     :rules="[v=>chkCredit(v)||tags.creditCodePls]"></q-input>
+     <q-input v-model="regComDta.name" :label="tags.cfg.name" maxlength=50 dense></q-input>
+     <q-input v-model="regComDta.pwd" :label="tags.pwd" dense maxlength=20 :type="regComDta.pwdVis ? 'text':'password'">
+      <template v-slot:append>
+       <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
         class="cursor-pointer" @click="regComDta.pwdVis=!regComDta.pwdVis"></q-icon>
-     </template>
-    </q-input>
-    <q-input v-model="regComDta.cfmPwd" :label="tags.cfmPwd" dense maxlength=20
-     :type="regComDta.pwdVis ? 'text':'password'" :rules="[v=>v==regComDta.pwd||tags.invalidCfmPwd]">
-     <template v-slot:append>
-      <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
+      </template>
+     </q-input>
+     <q-input v-model="regComDta.cfmPwd" :label="tags.cfmPwd" dense maxlength=20
+      :type="regComDta.pwdVis ? 'text':'password'" :rules="[v=>v==regComDta.pwd||tags.invalidCfmPwd]">
+      <template v-slot:append>
+       <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
         class="cursor-pointer" @click="regComDta.pwdVis=!regComDta.pwdVis"></q-icon>
-     </template>
-    </q-input>
-    <q-input v-model="regComDta.verifyCode" :label="tags.verifyCode">
-      <template v-slot:append><img :src="regComDta.vcImg" @click="refreshRegVc"></template>
-    </q-input>
-    <address-input :label="tags.cfg.address" v-model="regComDta.addr"></address-input>
-   </q-tab-panel>
-  </q-tab-panels>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="company_btn_act" :disable="dlg.doing"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="dlg.doing"></q-btn>
-    </q-card-actions>
-    <q-linear-progress indeterminate rounded color="pink"
-    class="q-mt-sm" v-show="dlg.doing"></q-linear-progress>
-  </q-card>
+      </template>
+     </q-input>
+     <q-input v-model="regComDta.verifyCode" :label="tags.verifyCode">
+       <template v-slot:append><img :src="regComDta.vcImg" @click="refreshRegVc"></template>
+     </q-input>
+     <address-input :label="tags.cfg.address" v-model="regComDta.addr"></address-input>
+    </q-tab-panel>
+   </q-tab-panels>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn color="primary" :label="tags.ok" @click="company_btn_act" :disable="dlg.doing"></q-btn>
+   <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="dlg.doing"></q-btn>
+  </q-card-actions>
+  <q-linear-progress indeterminate rounded color="pink" class="q-mt-sm" v-show="dlg.doing"></q-linear-progress>
+ </q-card>
 </q-dialog>
 
 <q-dialog v-model="dlg.usr"> <!-- 注册个人帐号 -->
-  <q-card style="min-width:62vw;max-width:80vw">
-    <q-card-section>
-      <div class="text-h6">{{tags.home.registerAcc}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-      <q-input dense v-model="newUsrDta.account" autofocus :label="tags.account"></q-input>
-      <q-input dense v-model="newUsrDta.pwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.pwd">
-        <template v-slot:append>
-          <q-icon :name="newUsrDta.pwdVis ? 'visibility' : 'visibility_off'"
-            class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>
-        </template>
-      </q-input>
-      <q-input dense v-model="newUsrDta.confirmPwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.cfmPwd">
-        <template v-slot:append>
-          <q-icon :name="newUsrDta.pwdVis ? 'visibility':'visibility_off'"
-            class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>
-        </template>
-      </q-input>
-      <q-input v-model="newUsrDta.verifyCode" autofocus :label="tags.verifyCode">
-        <template v-slot:append><img :src="newUsrDta.vc" @click="refreshUsrVc"></template>
-      </q-input>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="registerAcc" :disable="dlg.doing"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="dlg.doing"></q-btn>
-    </q-card-actions>
-    <q-linear-progress indeterminate rounded color="pink"
-    class="q-mt-sm" v-show="dlg.doing"></q-linear-progress>
-  </q-card>
+ <q-card style="min-width:62vw;max-width:80vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.home.registerAcc}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <q-input dense v-model="newUsrDta.account" autofocus :label="tags.account"></q-input>
+   <q-input dense v-model="newUsrDta.pwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.pwd">
+    <template v-slot:append>
+     <q-icon :name="newUsrDta.pwdVis ? 'visibility' : 'visibility_off'"
+      class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>
+    </template>
+   </q-input>
+   <q-input dense v-model="newUsrDta.confirmPwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.cfmPwd">
+    <template v-slot:append>
+     <q-icon :name="newUsrDta.pwdVis ? 'visibility':'visibility_off'"
+      class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>
+    </template>
+   </q-input>
+   <q-input v-model="newUsrDta.verifyCode" autofocus :label="tags.verifyCode">
+    <template v-slot:append><img :src="newUsrDta.vc" @click="refreshUsrVc"></template>
+   </q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn color="primary" :label="tags.ok" @click="registerAcc" :disable="dlg.doing"></q-btn>
+   <q-btn color="primary" flat :label="tags.cancel" v-close-popup :disable="dlg.doing"></q-btn>
+  </q-card-actions>
+  <q-linear-progress indeterminate rounded color="pink"
+  class="q-mt-sm" v-show="dlg.doing"></q-linear-progress>
+ </q-card>
 </q-dialog>
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs"

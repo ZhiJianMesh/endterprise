@@ -187,10 +187,10 @@ computed: {
 },
 template: `
 <div class="row">
- <div class="col q-pr-lg">
+ <div class="col-1">
   <q-icon name="navigate_before" @click="fore" :class="num<=minMonth?'text-grey':''"></q-icon>
  </div>
- <div class="col" style="cursor:pointer">{{value}}
+ <div class="col-8 q-px-md text-center" style="cursor:pointer">{{value}}
  <q-popup-proxy cover @before-show="set_array" ref="_my_dlg">
   <div class="row q-pa-sm" style="min-width:20em;">
    <div class="col self-center">
@@ -213,7 +213,7 @@ template: `
   </div>
  </q-popup-proxy>
  </div>
- <div class="col q-pl-lg">
+ <div class="col-1">
   <q-icon name="navigate_next" @click="next"
   :class="num>=maxMonth?'text-grey':''"></q-icon>
  </div> 
