@@ -47,9 +47,8 @@ detail() {
                 }
             }
             return {service:p.service,role:p.role,power:pn}//service,role,power
-        });
-        
-    });
+        })        
+    })
 },
 switch_active(){
     var url=this.dtl.ustatus=='N' ? "/api/user/deactive" : "/api/user/active";

@@ -1,7 +1,6 @@
 export default {
 inject:['service', 'tags'],
 data() {return {
-    configs:{},
     tab:'package',
     segTypes:[],
     template:{},

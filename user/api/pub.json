@@ -4,15 +4,13 @@
         "name":"超级管理员",
         "rights":{
             "user":"*",
-            "grp":"*",
             "power":"*"
         }
     },
     "employee":{
-        "name":"员工",
+        "name":"普通员工",
         "rights":{
             "user":"base",
-			"grp":"base",
 			"power":"base"
         }
     }

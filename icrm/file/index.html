@@ -65,7 +65,6 @@ data(){return{
         c:{icon:tags.icons.customer,name:tags.home.customers,url:'/customers',weekInc:0},
         n:{icon:tags.icons.contact,name:tags.home.contacts,url:'/contacts',weekInc:0},
         o:{icon:tags.icons.order,name:tags.home.orders,url:'/orders',weekInc:0},
-        //s:{icon:tags.icons.service,name:tags.home.services,url:'/services',weekInc:0},
         p:{icon:tags.icons.payment,name:tags.home.payments,url:'/payments',weekInc:0}
     }
 }},
@@ -84,7 +83,6 @@ refresh() {
         this.myList.n.weekInc=resp.data.contact;
         this.myList.o.weekInc=resp.data.ord;
         this.myList.p.weekInc=resp.data.payment;
-        //this.myList.s.weekInc=resp.data.service;
     })
 },
 goto(url) {
