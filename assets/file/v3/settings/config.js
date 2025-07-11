@@ -30,7 +30,8 @@ data() {return {
     cfgOpts:[],
     cfgs:[], //配置列表K-V
     cur:{k:'',v:'',tmpl:{},asMap:false/*多字段模板方式*/}, //字符串形式或map形式
-    newSeg:{k:'', n:'', t:'s'}
+    newSeg:{k:'', n:'', t:'s'},
+    tags:{}
 }},
 created(){
     if(this.cfgTags&&Object.keys(this.cfgTags).length>0) {
@@ -158,7 +159,8 @@ template:`
 </q-list>
 </div>
 <div v-else>
- <q-input v-model="cur.v" :label="tags.val"></q-input>
+ <q-input v-model="cur.v" :label="tags.val"
+  @update:model-value="changed(true)"></q-input>
 </div>
 `
 }

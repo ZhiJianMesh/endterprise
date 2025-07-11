@@ -50,7 +50,6 @@ zh:{
   plsInputPrj:'请选择项目',
   notInBusiTime:"不在差旅的时间段内",
   hasOverlap:"时间段有重叠",
-  changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
   dateFmt:"YYYY/MM/DD HH:mm",
   start:'开始时间',
   end:'结束时间',
@@ -61,7 +60,17 @@ zh:{
   schDef:'定时任务定义',
   settings:'配置',
   notOver:'尚未结束',
+  cfgTags : {
+      changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
+      needAz:'字段必须是a-z、A-Z字符的组合',
+      segTypes:{'s':'文字','n':"数值",'d':'日期'},
 
+      asMap:'模板格式',
+      segKey:'字段',
+      segName:"名称",
+      segType:"类型",
+      val:'配置内容'
+  },
   sex:{
     M:"先生",
     F:"女士",

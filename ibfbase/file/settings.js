@@ -43,7 +43,7 @@ back() {
         this.ibf.back();
         return;
     }
-    this.$refs.confirmDlg.show(this.tags.changeNotSaved,()=>{
+    this.$refs.confirmDlg.show(this.tags.cfgTags.changeNotSaved,()=>{
         this.ibf.back();
     })
 },
@@ -99,7 +99,7 @@ template:`
  <div class="q-pa-md">
   <cfgsettings v-model="cfg" ref="cfgSet" class="q-pa-md"
   :confirmDlg="confirmDlg" :alertDlg="alertDlg"
-  :service="service.value" :cfgTags="tags.configTags"></cfgsettings>
+  :service="service.value" :cfgTags="tags.cfgTags"></cfgsettings>
  </div>
 </div>
 
