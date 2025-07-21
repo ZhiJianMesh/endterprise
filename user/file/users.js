@@ -11,12 +11,18 @@ created(){
 },
 methods:{
 fmt_users(rows, cols) {
+    var types=this.tags.user.typeTitles;
+    var sexs=this.tags.user.sexTitles;
+    var sTypes=this.tags.user.statusTypes;
     var users=[];
     for(var row of rows) { //id,name,address,createAt,status,creator
         var r={};
         for(var i in cols) {
             r[cols[i]]=row[i];
         }
+        r.type=types[r.type];
+        r.sex=sexs[r.sex];
+        r.sStatus=sTypes[r.ustatus];
         users.push(r);
     }
     this.users=users;
@@ -91,12 +97,12 @@ template:`
  <q-item>
   <q-item-section><q-item-label caption>{{tags.user.account}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.user.nickName}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.user.sex}}</q-item-label></q-item-section>
+  <q-item-section side><q-item-label caption>{{tags.user.type}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="u in users" :class="u.ustatus=='N'?'':'bg-grey-1'" @click="service.jumpTo('/user?id='+u.id)" clickable>
   <q-item-section>{{u.account}}</q-item-section>
-  <q-item-section>{{u.nickName}}</q-item-section>
-  <q-item-section>{{tags.user.sexTitles[u.sex]}}</q-item-section>
+  <q-item-section>{{u.nickName}}({{u.sex}})</q-item-section>
+  <q-item-section side>{{u.type}}({{u.sStatus}})</q-item-section>
  </q-item>
 </q-list>
     </q-page>
@@ -109,6 +115,7 @@ template:`
    <div class="text-h6">{{tags.newUser}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
+   <q-list dense>
     <q-item>
      <q-item-section><q-input :label="tags.user.account" v-model="newUser.account" dense></q-input></q-item-section>
     </q-item>

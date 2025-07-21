@@ -1,4 +1,9 @@
+import CfgSettings from "/assets/v3/settings/config.js";
+
 export default {
+components:{
+    "cfgsettings":CfgSettings
+},
 inject:['service', 'tags'],
 data() {return {
     curService:'',
@@ -7,7 +12,10 @@ data() {return {
     users:[],
     roles:[],
     roleNames:{},
-    newUser:{uids:[],service:'',role:'',power:[false],dlg:false}
+    cfg:{dlg:false,val:{},item:'',chged:false},
+    newUser:{uids:[],service:'',role:'',power:[false],dlg:false},
+    confirmDlg:null,
+    alertDlg:null
 }},
 created(){
     this.service.get_services().then(resp => {
@@ -16,7 +24,13 @@ created(){
             return;
         }
         this.serviceOpts=resp.options;
-        this.curService=this.serviceOpts[0].value;
+
+        var first=this.serviceOpts[0].value;
+        this.curService=this.service.getRt("service", first);
+        this.service.setRt("service", this.curService);
+
+        this.cfg.item="ext_tmpl_"+this.curService;
+
         this.service.get_roles(this.curService).then(r => {
             if(r['code']&&r.code!=RetCode.OK) {
                 this.$refs.errMsg.showErr(r.code, r.info);
@@ -25,18 +39,23 @@ created(){
             this.roles=r.options;
             this.roleNames=r.names;
             this.list_users(1);
-        });
-    });
+        })
+    })
+},
+mounted(){//不能在created中赋值，更不能在data中
+    this.confirmDlg=this.$refs.confirmDlg;
+    this.alertDlg=this.$refs.errMsg;
 },
 methods:{
 fmt_users(rows, cols) {
     var users=[];
+    var sTypes=this.tags.user.statusTypes;
     for(var row of rows) { //id,account,nickName,ustatus,role
         var r={};
         for(var i in cols) {
             r[cols[i]]=row[i];
         }
-        r['p']='';
+        r.p='';
         if(r.power && r.power.length>=2) {
             var t=JStr.base64CharCode(r.power.charAt(0));
             var v=JStr.base64CharCode(r.power.charAt(1));
@@ -44,6 +63,7 @@ fmt_users(rows, cols) {
                 r.p=this.tags.power.pubAccess;
             }
         }
+        r.ustatus=sTypes[r.ustatus];
         users.push(r);
     }
     this.users=users;
@@ -51,7 +71,7 @@ fmt_users(rows, cols) {
 list_users(pg){//查询服务用户极其角色
     var num=this.service.N_PAGE;
     var offset=(pg-1)*num;
-    var url="/power/gets?offset="+offset+"&num="+num+"&service="+this.curService;
+    var url="/power/list?offset="+offset+"&num="+num+"&service="+this.curService;
     request({method:"GET",url:url},this.service.name).then(resp => {
         if(resp.code!=RetCode.OK) {
             this.users=[];
@@ -74,7 +94,7 @@ search_users() {
         }
         this.fmt_users(resp.data.users, resp.data.cols);
         this.page.max=1;
-    });
+    })
 },
 add_user() {
     var n=this.newUser;
@@ -91,6 +111,7 @@ add_user() {
     })
 },
 onServiceChange(s) {
+    this.service.setRt("service", this.curService);
     this.service.get_roles(s).then(resp=>{
         if(resp['code']) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -98,8 +119,17 @@ onServiceChange(s) {
         }
         this.roles=resp.options;
         this.roleNames=resp.names;
+        this.cfg.item="ext_tmpl_"+this.curService;
         this.list_users(1);
-    });
+    })
+},
+show_user(id) {
+    this.service.jumpTo('/user?id='+id+"&app=" + this.curService);
+},
+save_cfg(){
+    this.$refs.cfgSet.save().then(r=>{
+        this.cfg.chged=!r;
+    })
 }
 },
 template:`
@@ -108,12 +138,14 @@ template:`
    <q-toolbar>
      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
      <q-toolbar-title>{{tags.authorize}}</q-toolbar-title>
-     <q-select v-model="curService" :options="serviceOpts" emit-value map-options
-     @update:model-value="onServiceChange">
+     <q-select v-model="curService" :options="serviceOpts"
+      emit-value map-options dark
+      @update:model-value="onServiceChange">
       <template v-slot:selected-item="scope">
        <span class="text-white">{{scope.opt.label}}</span>
       </template>
      </q-select>
+     <q-btn flat icon="settings_ethernet" :label="tags.tmplDef" @click="cfg.dlg=true"></q-btn>
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-pa-md">
@@ -141,8 +173,8 @@ template:`
   <q-item-section><q-item-label caption>{{tags.power.role}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.power.ext}}</q-item-label></q-item-section>
  </q-item>
- <q-item v-for="u in users" clickable @click="service.jumpTo('/user?id='+u.id)">
-  <q-item-section>{{u.account}}</q-item-section>
+ <q-item v-for="u in users" clickable @click="show_user(u.id)">
+  <q-item-section>{{u.account}}({{u.ustatus}})</q-item-section>
   <q-item-section>{{u.nickName}}</q-item-section>
   <q-item-section>{{roleNames[u.role]}}</q-item-section>
   <q-item-section>{{u.p}}</q-item-section>
@@ -155,9 +187,10 @@ template:`
 <q-dialog v-model="newUser.dlg">
  <q-card style="min-width:70vw">
   <q-card-section>
-    <div class="text-h6">{{tags.setPower}}</div>
+   <div class="text-h6">{{tags.setPower}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
+   <q-list dense>
     <q-item><q-item-section>
      <component-user-selector :label="tags.user.account" :accounts="newUser.uids" useid="true"></component-user-selector>
     </q-item-section></q-item>
@@ -170,12 +203,33 @@ template:`
    </q-list>
   </q-card-section>
   <q-card-actions align="right">
-     <q-btn :label="tags.ok" color="primary" @click="add_user"></q-btn>
-     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+   <q-btn :label="tags.ok" color="primary" @click="add_user"></q-btn>
+   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
+  </q-card-actions>
+ </q-card>
+</q-dialog>
+
+<q-dialog v-model="cfg.dlg">
+ <q-card style="min-width:70vw">
+  <q-card-section>
+   <div class="text-h6">{{tags.tmplDef}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <cfgsettings v-model="cfg.val" ref="cfgSet" class="q-pa-md"
+   :confirmDlg="confirmDlg" :alertDlg="alertDlg" :item="cfg.item"
+   :service="service.name" :cfgTags="tags.cfgTags"
+   @update:modelValue="cfg.chged=true"></cfgsettings>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn :label="tags.save" color="primary" @click="save_cfg"
+    :disable="!cfg.chged"></q-btn>
+   <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
   </q-card-actions>
  </q-card>
 </q-dialog>
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
+<component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
+
 `
 }

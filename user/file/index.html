@@ -41,7 +41,7 @@ routes:[
 ]});
 
 //service定义
-const service = {name:"user",N_PAGE:10,N_SMPG:5,
+const service = {name:"user",N_PAGE:15,N_SMPG:5,
 services:[],roles:{},serviceNames:{},roleNames:{}, //用在授权页面
 get_roles(srv) {
     if(this.roles[srv]) {
@@ -98,6 +98,14 @@ go_back() { //返回，在页面中通过service.go_back调用
 },
 jumpTo(url) {
     router.push(url)
+},
+runtime:{},//运行时
+setRt(k,v) {
+    this.runtime[router.currentRoute.value.path+':'+k]=v;
+},
+getRt(k,def) {
+    var v=this.runtime[router.currentRoute.value.path+':'+k];
+    return v?v:def;
 }
 };
 
