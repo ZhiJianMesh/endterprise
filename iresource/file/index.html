@@ -159,7 +159,7 @@ goto(url) {
 const app = Vue.createApp({
 provide:{tags:tags, service:_service},
 created(){
-    registerIbf(app,router).then(userInfo => {
+    registerIbf(app,router,service.name).then(userInfo => {
         _service.userInfo=userInfo;
         this.$router.push('/home').catch(err => {err});
     });
