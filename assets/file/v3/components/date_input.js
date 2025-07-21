@@ -53,7 +53,7 @@ computed: {
 },
 template: `<q-input dense :label="label" v-model="value" readonly :disable="disable">
 <template v-slot:append>
-<q-icon name="event" class="cursor-pointer">
+<q-icon name="event" :class="$attrs.class">
  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
   <q-date minimal v-model="value" :mask="dateFormat" emit-immediately
    :locale="{daysShort:weekDays,months:months,monthsShort:months}"

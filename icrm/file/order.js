@@ -3,6 +3,7 @@ import UserInput from "/assets/v3/components/user_input.js";
 import DatetimeInput from "/assets/v3/components/datetime_input.js";
 import {sta2icon} from '/assets/v3/components/workflow.js';
 import {_WF_} from "/assets/v3/components/workflow.js"
+import {encodeExt,decodeExt} from '/assets/v3/settings/config.js';
 
 const EMPTY_PUR={expDate:'',descr:'',type:'SELL',receiver:'',buyer:[]};
 const EMPTY_BUSI={order:0,account:'',uid:0,cmt:'',reason:'',dest:'',start:'',end:''};
@@ -71,7 +72,7 @@ detail(tmpl) {
             dtl['cost']=0;
         }
         dtl.editable=dtl.status==0&&dtl.power=='O';
-        this.ext=this.ibf.decodeExt(dtl.comment, tmpl);
+        this.ext=decodeExt(dtl.comment, tmpl);
         this.dtl=dtl;
     });
 },
@@ -95,7 +96,7 @@ query_costs(pg) {
             l.createAt=datetime2str(dt);
             l.type=this.tags.cost.types[l.type];
             l.rmvAble=l.creator==opeartor&&l.flowid==0;//自己创建的才可以删除
-            l.ext=this.ibf.decodeExt(l.cmt, this.cost.tmpl);
+            l.ext=decodeExt(l.cmt, this.cost.tmpl);
             total+=l.val;
             return l;
         });
@@ -170,7 +171,7 @@ query_business() {
 },
 save_base() {
     var dta=copyObj(this.dtl,['price']);
-    dta['comment']=this.ibf.encodeExt(this.ext);
+    dta['comment']=encodeExt(this.ext);
     dta.id=this.id;
     request({method:"POST",url:"/api/order/setInfo",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -207,7 +208,7 @@ more_business() {
 add_cost() {
     var dta={customer:this.dtl.customer, order:this.id,
          cost:this.newCost.cost, type:this.newCost.type};
-    dta.comment=this.ibf.encodeExt(this.newCost.ext);
+    dta.comment=encodeExt(this.newCost.ext);
     request({method:"POST",url:"/api/cost/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -230,7 +231,7 @@ remove_cost(id) {
 add_payment() {
     var dta=copyObj(this.newPayment, ["amount","bank"]);
     dta.order=this.id;
-    dta.comment=this.ibf.encodeExt(this.newPayment.ext);
+    dta.comment=encodeExt(this.newPayment.ext);
     request({method:"POST",url:"/api/payment/create",data:dta}, this.service.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -266,15 +267,15 @@ open_new_payment() {
         //{a:{n:xxx,t:s/d/n},b:{}}
         this.newPayment.amount='';
         this.newPayment.bank='';
-        this.newPayment.ext=this.ibf.decodeExt('{}',tmpl);
+        this.newPayment.ext=decodeExt('{}',tmpl);
         this.payment.dlg=true
-    });
+    })
 },
 open_new_cost() {
     //{a:{n:xxx,t:s/d/n},b:{}}
     this.newCost.cost='';
     this.newCost.type='';
-    this.newCost.ext=this.ibf.decodeExt('{}',this.cost.tmpl);
+    this.newCost.ext=decodeExt('{}',this.cost.tmpl);
     this.cost.dlg=true
 },
 show_purchase() {

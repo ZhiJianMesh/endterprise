@@ -53,32 +53,6 @@ function registerIbf(app, router, service) { //注册ibf所需的路由
         showFlow(flowid,did,url) {
             this.goto(appendParas(url,{flow:flowid,did:did}));
         },
-        encodeExt(ext) { //打包扩展字段，[{k:k,v:yyy,n:xxx,t:n/s/d}...] => {k:yyy}
-            var dta={};
-            for(var e of ext) {
-              dta[e.k]=e.v;
-            }
-            return JSON.stringify(dta);
-        },
-        decodeExt(extStr,tmpl) { //解析扩展字段 [{k:tmpl.k,n:tmpl.n,v:extStr.v,t:tmpl.t}...]
-            var o={};
-            var ext=[];
-            var t,v;
-            try{o=JSON.parse(extStr);}catch(err){}
-            for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
-                t=tmpl[k];
-                v=o[k];
-                if(!v) {
-                  if(t.t=='b') {
-                    v=false; //vue3不必用this.$set方法
-                  } else {
-                    v='';
-                  }
-                }
-                ext.push({n:t.n, v:v, t:t.t, k:k});
-            }
-            return ext;
-        },
         template(n,url,def){
             var k=this.service+'.'+n;
             var tmpl=this.tmpl[k];

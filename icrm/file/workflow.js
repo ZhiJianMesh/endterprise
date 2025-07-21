@@ -3,6 +3,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js";
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import {_WF_} from "/assets/v3/components/workflow.js"
 import Language from "./language.js"
+import {decodeExt} from '/assets/v3/settings/config.js';
 
 //workflow会在其他服务中打开，不可以注入tags、service，所以单独加载，组件也需要单独加载
 const sole_tags = Platform.language().indexOf("zh") == 0 ? Language.zh : Language.en;
@@ -73,7 +74,7 @@ detail(tmpl, segments) {
             return;
         }
         var dta=_WF_.formDtlData(resp.data, segments);
-        var ext=this.ibf.decodeExt(dta.comment, tmpl);
+        var ext=decodeExt(dta.comment, tmpl);
         if(ext) {
             for(var d of ext) {
                 dta.push({k:d.n, v:d.v});

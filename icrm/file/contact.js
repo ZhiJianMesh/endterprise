@@ -1,3 +1,5 @@
+import {encodeExt,decodeExt} from '/assets/v3/settings/config.js';
+
 export default {
 inject:['service', 'tags', 'ibf'],
 data() {return {
@@ -53,7 +55,7 @@ detail(tmpl) {
         
         dtl.sex=dtl.sex;
         dtl.sex_s=this.tags.sexName[dtl.sex];
-        this.ext=this.ibf.decodeExt(dtl.comment, tmpl);
+        this.ext=decodeExt(dtl.comment, tmpl);
         this.dtl = dtl;
     });
 },
@@ -189,7 +191,7 @@ remove_relation(target){
 },
 save_base() {
     var dta=copyObj(this.dtl,['name','address','phone','sex','level','post']);
-    dta.comment=this.ibf.encodeExt(this.ext);
+    dta.comment=encodeExt(this.ext);
     dta.birthday=Math.ceil(new Date(this.dtl.birthday).getTime()/86400000); //转为天数
     dta.id=this.id;
 

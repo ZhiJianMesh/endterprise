@@ -131,7 +131,7 @@ computed: {
 },
 template: `<q-input dense :label="label" v-model="oldVal" readonly :disable="disable">
 <template v-slot:append>
-<q-icon name="event" class="cursor-pointer">
+<q-icon name="event" :class="$attrs.class">
  <q-popup-proxy cover transition-show="scale" transition-hide="scale" ref="_dt_input_dlg">
  <q-card>
   <q-card-section>

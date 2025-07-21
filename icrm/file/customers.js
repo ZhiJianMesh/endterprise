@@ -1,4 +1,5 @@
 import {sta2icon} from '/assets/v3/components/workflow.js';
+import {encodeExt,decodeExt} from '/assets/v3/settings/config.js';
 
 export default {
 inject:['service', 'tags', "ibf"],
@@ -78,7 +79,7 @@ onlyMineClk() {
 },
 create() {
     var dta=copyObj(this.newCust,['name','taxid','address','business','nextSigners']);
-    dta.comment=this.ibf.encodeExt(this.newCust.ext);
+    dta.comment=encodeExt(this.newCust.ext);
     var url="/api/customer/create";
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp => {
         if(resp.code != 0) {
@@ -97,7 +98,7 @@ show_create() {
     var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
     var url="/api/proxy/gettemplate?name=customer";
     this.ibf.template('customer', url, defaultVal).then(tmpl=>{//{k:"x",n:"y",t:"z"}..
-        this.newCust.ext=this.ibf.decodeExt("{}", tmpl);
+        this.newCust.ext=decodeExt("{}", tmpl);
         this.newCust.dlg=true
     });
 }

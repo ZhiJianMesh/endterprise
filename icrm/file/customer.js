@@ -1,4 +1,5 @@
 import {sta2icon} from '/assets/v3/components/workflow.js';
+import {encodeExt,decodeExt} from '/assets/v3/settings/config.js';
 
 export default {
 inject:['service', 'tags', 'ibf'],
@@ -46,7 +47,7 @@ detail(tmpl) {
         this.dtl=resp.data;//id,name,address,creator,createAt,ordNum,taxid,flowid,status,comment,power
         this.dtl.createAt=date2str(new Date(resp.data.createAt*60000));
         this.dtl.icon=sta2icon(this.dtl.status);
-        this.dtl.ext=this.ibf.decodeExt(this.dtl.comment, tmpl);
+        this.dtl.ext=decodeExt(this.dtl.comment, tmpl);
     });
 },
 query_orders(pg) {
@@ -139,7 +140,7 @@ create_order() {
     dta.customer=this.id;
     dta.pid=this.prjInput.id;
     dta.prjName=this.prjInput.name;
-    dta.comment=this.ibf.encodeExt(this.newOrder.ext);
+    dta.comment=encodeExt(this.newOrder.ext);
     var url="/api/order/create";
     request({method:"POST",url:url,data:dta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -154,7 +155,7 @@ create_order() {
 create_contact() {
     var dta=copyObj(this.newContact,['name','address','phone','sex','level','post']);
     dta['customer']=this.id;
-    dta['comment']=this.ibf.encodeExt(this.newContact.ext);
+    dta['comment']=encodeExt(this.newContact.ext);
     dta['birthday']=Math.ceil(new Date(this.newContact.birthday).getTime()/86400000); //转为天数
     var opts={method:"POST",url:"/api/contact/add",data:dta};
     request(opts, this.service.name).then(resp=>{
@@ -197,7 +198,7 @@ customer_flow(){
     this.$router.push(url);
 },
 save_base() {
-    var cmt=this.ibf.encodeExt(this.ext);
+    var cmt=encodeExt(this.ext);
     var url="/api/customer/setInfo";
     var req={id:this.id, name:this.dtl.name, comment:cmt,
      address:this.dtl.address, business:this.dtl.business};
@@ -214,7 +215,7 @@ open_create_order() {
     var url="/api/proxy/gettemplate?name=order";
     this.ibf.template('order', url, defaultVal).then(tmpl=> {
         this.newOrder.price='';
-        this.newOrder.ext=this.ibf.decodeExt("{}", tmpl);
+        this.newOrder.ext=decodeExt("{}", tmpl);
         this.skuInput={sku:{},num:'',price:this.tags.order.skuPrice,suppliers:[]}
         this.visible.newOrd=true;
     });
@@ -223,7 +224,7 @@ open_new_contact() {
     var defaultVal={cmt:{n:this.tags.cmt,t:'s'}};
     var url="/api/proxy/gettemplate?name=contact";
     this.ibf.template('contact', url, defaultVal).then(tmpl=> {
-        this.newContact.ext=this.ibf.decodeExt("{}", tmpl)
+        this.newContact.ext=decodeExt("{}", tmpl)
         this.visible.newContact=true;
     });
 },
