@@ -55,7 +55,7 @@ fmt_users(rows, cols) {
         for(var i in cols) {
             r[cols[i]]=row[i];
         }
-        r.p='';
+        r.p=this.tags.user.powerNull;
         if(r.power && r.power.length>=2) {
             var t=JStr.base64CharCode(r.power.charAt(0));
             var v=JStr.base64CharCode(r.power.charAt(1));
@@ -171,13 +171,13 @@ template:`
   <q-item-section><q-item-label caption>{{tags.user.account}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.user.nickName}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.power.role}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.power.ext}}</q-item-label></q-item-section>
+  <q-item-section side><q-item-label caption>{{tags.power.ext}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="u in users" clickable @click="show_user(u.id)">
   <q-item-section>{{u.account}}({{u.ustatus}})</q-item-section>
   <q-item-section>{{u.nickName}}</q-item-section>
   <q-item-section>{{roleNames[u.role]}}</q-item-section>
-  <q-item-section>{{u.p}}</q-item-section>
+  <q-item-section side>{{u.p}}</q-item-section>
  </q-item>
 </q-list>
     </q-page>

@@ -51,7 +51,7 @@ customer_detail(id) {
 },
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.home.payments}}</q-toolbar-title>

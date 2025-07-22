@@ -13,7 +13,7 @@ en:{
     setPrice:'Set price',
     chkPurchase:'Check purchase list'
   },
-  configTags:{
+  cfgTags:{
   },
   schTags:{
   }
@@ -60,17 +60,6 @@ zh:{
   schDef:'定时任务定义',
   settings:'配置',
   notOver:'尚未结束',
-  cfgTags : {
-      changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
-      needAz:'字段必须是a-z、A-Z字符的组合',
-      segTypes:{'s':'文字','n':"数值",'d':'日期'},
-
-      asMap:'模板格式',
-      segKey:'字段',
-      segName:"名称",
-      segType:"类型",
-      val:'配置内容'
-  },
   sex:{
     M:"先生",
     F:"女士",
@@ -406,15 +395,21 @@ zh:{
     setPrice:'设置采购价格',
     chkPurchase:'检查采购情况'
   },
-  configTags:{
-    //中文使用默认的工作流标签，英文需自定义，
-    //参照/assets/v3/settings/config.js的defaultTags
-  },
   schTags:{
     //中文使用默认的工作流标签，英文需自定义，
     //参照/assets/v3/settings/schedule.js的defaultTags
   },
+  cfgTags : {
+      changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
+      needAz:'字段必须是a-z、A-Z字符的组合',
+      segTypes:{'s':'文字','n':"数值",'d':'日期'},
 
+      asMap:'模板格式',
+      segKey:'字段',
+      segName:"名称",
+      segType:"类型",
+      val:'配置内容'
+  },
 
   //操作界面在ibf中的，返回码必须在此有定义，否则出错时不能显示合适的错误信息
   //icrm:11xxx,iresource:12xxx,ibusiness:13xxx,

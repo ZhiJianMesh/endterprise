@@ -8,7 +8,7 @@ data() {return {
     dtl:{},
     ext:[],
     pwd:{val:'',dlg:false},
-    baseChged:false,
+    chged:0, //0未变，1基本信息改变，2扩展信息改变
     roleNames:{},
     serviceNames:{}
 }},
@@ -77,6 +77,8 @@ reset_pwd() {
     })
 },
 save_baseinfo() {
+    var dt = Date.parse(this.dtl.sBirthday);
+    this.dtl.birthday=Math.ceil(dt/86400000);
     var opts={method:"POST",url:"/api/user/setBaseInfo",
         data:{
             uid:this.id,
@@ -92,7 +94,7 @@ save_baseinfo() {
         if(resp.code != RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
         } else {
-            this.baseChged=false;
+            this.chged &= 0x02;
         }
     })
 },
@@ -105,11 +107,6 @@ remove_power(service,i) {
             this.dtl.powers.splice(i, 1);
         }
     });
-},
-birthChged(v){
-    var dt = Date.parse(v);
-    this.dtl.birthday=Math.ceil(dt/86400000);
-    this.baseChged=true;
 },
 get_user_tmpl() {
     var tmpl=this.service.getRt("tmpl",{});
@@ -150,8 +147,18 @@ save_ext() {
     return request({method:"POST", url:"/user/setAppExt", data:dta}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
+        } else {
+            this.chged&=0x01;
         }
     })
+},
+save() {
+    if((this.chged & 0x01) != 0) {
+        this.save_baseinfo();
+    }
+    if((this.chged & 0x02) != 0) {
+        this.save_ext();
+    }
 }
 },
 template:`
@@ -160,7 +167,7 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
-    <q-btn flat icon="save" v-show="baseChged" @click="save_baseinfo" :label="tags.save"></q-btn>
+    <q-btn flat icon="save" v-show="chged!=0" @click="save" :label="tags.save"></q-btn>
     <q-btn flat :icon="dtl.status" @click="switch_active" :label="tags.user.status"></q-btn>
     <q-btn flat icon="lock_reset" v-if="id!=1" @click="reset_pwd" :label="tags.user.resetPwd"></q-btn>
    </q-toolbar>
@@ -175,8 +182,8 @@ template:`
  <tr>
   <th class="text-left">{{tags.user.nickName}}</th>
   <td>{{dtl.nickName}}
-   <q-popup-edit v-model="dtl.nickName" auto-save v-slot="scope" @save="baseChged=true">
-      <q-input v-model="scope.value" dense autofocus counter maxlength=80></q-input>
+   <q-popup-edit v-model="dtl.nickName" auto-save v-slot="scope" @save="chged|=1">
+    <q-input v-model="scope.value" dense autofocus counter maxlength=80></q-input>
    </q-popup-edit>
   </td>
  </tr>
@@ -184,28 +191,29 @@ template:`
   <th class="text-left">{{tags.user.sex}}</th>
   <td>
    <q-option-group v-model="dtl.sex" :options="tags.user.sexOpts" inline dense
-    color="primary" @update:model-value="baseChged=true"></q-option-group>
+    color="primary" @update:model-value="chged|=1"></q-option-group>
   </td>
  </tr>
  <tr>
   <th class="text-left">{{tags.user.type}}</th>
   <td>
    <q-option-group v-model="dtl.type" :options="tags.user.typeOpts" inline dense
-    color="primary" @update:model-value="baseChged=true"></q-option-group>
+    color="primary" @update:model-value="chged|=1"></q-option-group>
   </td>
  </tr>
  <tr>
   <th class="text-left">{{tags.user.birthday}}</th>
-  <td>
-   <component-date-input v-model="dtl.sBirthday"
-    max="today" min="1900/1/1" @update:modelValue="birthChged"
-    class="text-primary"></component-date-input>
+  <td>{{dtl.sBirthday}}
+   <q-popup-edit v-model="dtl.sBirthday" auto-save v-slot="scope" @save="chged|=1">
+    <component-date-input v-model="scope.value" max="today" min="1900/1/1"
+     class="text-primary"></component-date-input>
+   </q-popup-edit>
   </td>
  </tr>
  <tr>
   <th class="text-left">{{tags.user.mobile}}</th>
   <td>{{dtl.mobile}}
-   <q-popup-edit v-model="dtl.mobile" auto-save v-slot="scope" @save="baseChged=true">
+   <q-popup-edit v-model="dtl.mobile" auto-save v-slot="scope" @save="chged|=1">
     <q-input v-model="scope.value" dense autofocus counter
     :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]" maxlength=11></q-input>
    </q-popup-edit>
@@ -214,7 +222,7 @@ template:`
  <tr>
   <th class="text-left">{{tags.user.email}}</th>
   <td>{{dtl.email}}
-   <q-popup-edit v-model="dtl.email" auto-save v-slot="scope" @save="baseChged=true">
+   <q-popup-edit v-model="dtl.email" auto-save v-slot="scope" @save="chged|=1">
     <q-input v-model="scope.value" dense autofocus counter
      :rules="[v=>/^.+@.+$/.test(v)||tags.emailPls]" maxlength=100></q-input>
    </q-popup-edit>
@@ -238,7 +246,7 @@ template:`
  <tr v-for="e in ext">
   <th class="text-left">{{e.n}}</th>
   <td>{{e.v}}</td>
-  <q-popup-edit v-model="e.v" auto-save v-slot="scope" @save="save_ext">
+  <q-popup-edit v-model="e.v" auto-save v-slot="scope" @save="chged|=2">
    <div v-if="e.t=='d'">
     <component-date-input :close="tags.ok" :label="e.n"
      v-model="scope.value"></component-date-input>

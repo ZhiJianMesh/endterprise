@@ -46,7 +46,6 @@ zh:{
     title:'发薪',
     total:'总额',
     cfmAcc:'支付执行人',
-    mode:'支付方式',
     bank:'帐号信息',
     download:'下载',
     dlList:'下载列表',
@@ -74,8 +73,6 @@ zh:{
   balance:{
     title:'资产负债表',
     type:'类型',
-    start:'生效时间',
-    end:'失效时间',
     val:'金额(元)'
   },
   balLog:{

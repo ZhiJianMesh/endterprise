@@ -22,12 +22,7 @@ zh:{
   
   noRights:"无权限，请连续管理员申请权限",
   settings:"系统设置",
-  newSeg:"新增字段",
-  revenue:"新增收入(元)",
-  orderNum:"新增订单(个)",
-  logVal:"当天服务量",
-  logNum:"当天服务人次",
-  vipNum:"新增会员(个)",
+  birth:"生日",
   
   order:{
     title:'订单',
@@ -74,13 +69,6 @@ zh:{
     M:{i:"boy",n:"男"},
     U:{i:"no_accounts",n:"未知"}
   },
-  birth:"生日",
-  segTypes:{'s':'文字','n':"数值",'d':'日期','b':'是否'},
-  segKey:"字段名",
-  segKeyHint:"后期更改会导致原有内容丢失",
-  segName:"显示名称",
-  segType:"类型",
-  reportAt:"时间",
   cfgTags:{
       changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
       needAz:'字段必须是a-z、A-Z字符的组合',
@@ -97,30 +85,24 @@ zh:{
   mobile:"手机",
   email:'邮箱',
   createAt:"创建时间",
-  pwd:"密码",
   age:"岁",
   creator:"创建人",
   createAt:"创建时间",
   cfmOrder:"确认订单",
   cfmService:"确认服务单",
-  balance:"余额",
-  payment:"服务量",
   addVip:"增加会员",
   addOrder:"创建订单",
   addService:"增加服务单",
   serviceVal:"消费额",
   supplier:'服务人员',
   cmt:"备注",
-  template:"会员信息模板",
   mobilePls:"请输入11位手机号",
-  numberPls:"请输入正确的数值",
   namePls:"请输入正确的称呼",
   cfmOrderAlert:'订单确认后无法更改，请确定是否确认此订单？',
   rmvOrderAlert:'订单删除后无法恢复，请确定是否删除此订单？',
   cfmServiceAlert:'服务单确认后无法更改，请确定是否确认此服务单？',
   rmvServiceAlert:'服务单删除后无法恢复，请确定是否删除此服务单？',
 
-  exceedsDayNum:"报表周期最大可设为31天！",
   score:{
     total:'总数',
     vTotal:'总金额',
@@ -131,6 +113,7 @@ zh:{
     vService:'30日新增服务金额',
     vBrokerage:'30日新增提成'
   },
+
   report:{
     title:'报表',
     vip:'会员数',

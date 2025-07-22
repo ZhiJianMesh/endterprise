@@ -56,7 +56,7 @@ save_cfg(){
 },
 template:`
 <q-layout view="hHh lpr fFf">
- <q-header elevated>
+ <q-header>
   <q-toolbar>
    <q-btn flat round icon="arrow_back" dense @click="back"></q-btn>
    <q-toolbar-title>{{tags.settings}}</q-toolbar-title>

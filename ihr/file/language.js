@@ -28,7 +28,7 @@ zh:{
   sex:{
     M:"先生",
     F:"女士",
-    O:"未知"
+    U:"未知"
   },
   yesNo:{
     Y:'是',
@@ -136,7 +136,6 @@ zh:{
   pub:{
     account:"帐号",
     name:"姓名",
-    sex:"性别",
     contact:"联系方式",
     ability:"能力",
     phone:"联系电话",
@@ -157,7 +156,6 @@ zh:{
   employee:{
     title:"员工列表",
     detail:"员工",
-    name:"姓名",
     quali:"任职资格",
     post:"任职等级",
     worktime:"作息",
@@ -174,11 +172,9 @@ zh:{
     zone:"区域",
     office:"办公区",
     worktime:"作息",
-    attend:"考勤方式",
     holiday:"年休假(天)",
     weal:"福利假(小时)",
     sickRatio:"病假工资比率",
-    deduction:"税收专项扣除(元)",
     state:"状态",
     event:"关键事件",
     leave:"离职",
@@ -226,7 +222,6 @@ zh:{
     taxFunc:'计税函数',
     
     security:"社会保障",
-    val:"金额或比率",
     
     calendar:'工作日历',
     first:'上班时间(分钟)',
@@ -236,8 +231,7 @@ zh:{
     leadTime:'刷卡提前量(分钟)',
     maxEdit:'每月最大忘刷卡次数',
     
-    level:'等级',
-    month:'月'
+    level:'等级'
   },
   grpTp:{
     D:"部门",

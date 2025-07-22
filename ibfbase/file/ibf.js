@@ -149,7 +149,7 @@ created(){
 },
 methods:{
 query_prjs(pg) {
-    var pgSize=this.ibf.N_SMPG;
+    var pgSize=this.ibf.N_PAGE;
     var offset=(parseInt(pg)-1)*pgSize;
     var url='/project/my?offset='+offset+'&num='+pgSize;
     request({method:"GET", url:url}, this.ibf.SERVICE_PRJ).then(resp=>{

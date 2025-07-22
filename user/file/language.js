@@ -34,6 +34,7 @@ user:{
     birthday:"生日",
     sex:"性别",
     type:"类别",
+    powerNull:"无",
     serviceExt:"服务扩展信息",
     statusTypes:{N:"正常",L:"锁定",R:"删除"},
 	sexTitles:{"M":"男","F":"女","U":"未知"},

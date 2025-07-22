@@ -87,7 +87,6 @@ zh:{
     orders:"订单",
     payments:"回款",
     services:"服务单",
-    template:"模板设置",
     bulletin:"简报",
     balance:"结算"
   },
