@@ -20,7 +20,7 @@ zh:{
   start:'开始',
   stop:'结束',
   
-  noRights:"无权限，请连续管理员申请权限",
+  noRights:"无权限，请联系管理员申请权限",
   settings:"系统设置",
   birth:"生日",
   
@@ -35,7 +35,7 @@ zh:{
     name:'会员',
     total:'充值总额',
     balance:'余额',
-    code:"编码"
+    code:"会员编码"
   },
   service:{
     title:"服务",

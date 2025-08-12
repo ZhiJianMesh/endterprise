@@ -145,7 +145,9 @@ template:`
        <span class="text-white">{{scope.opt.label}}</span>
       </template>
      </q-select>
-     <q-btn flat icon="settings_ethernet" :label="tags.tmplDef" @click="cfg.dlg=true"></q-btn>
+     <q-btn flat icon="settings_ethernet" @click="cfg.dlg=true">
+      <q-badge color="orange" floating>{{tags.tmplDef}}</q-badge>
+     </q-btn>
    </q-toolbar>
   </q-header>
   <q-footer class="bg-white q-pa-md">

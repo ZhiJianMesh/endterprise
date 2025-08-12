@@ -122,7 +122,7 @@ template: `
     <q-input v-model="lgnDta.pwd" :label="tags.pwd" dense maxlength=20 :type="pwdVisible ? 'text':'password'">
      <template v-slot:append>
       <q-icon :name="pwdVisible ? 'visibility':'visibility_off'"
-        class="cursor-pointer" @click="pwdVisible = !pwdVisible"></q-icon>
+       class="cursor-pointer" @click="pwdVisible = !pwdVisible"></q-icon>
      </template>
     </q-input>
    </q-tab-panel>

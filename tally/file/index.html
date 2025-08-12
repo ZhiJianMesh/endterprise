@@ -85,8 +85,10 @@ getTemplate() {
         if(resp.code != RetCode.OK) {
             return {};
         }
-		if(resp.data.template) {
+		if(resp.data&&resp.data.template) {
 			this.template=resp.data.template; //{'name1':val1,...}
+		} else {
+			this.template={}
 		}
 		return this.template;
     });

@@ -16,7 +16,7 @@ newUser:"新增用户",
 mobilePls:"请输入11位正确的手机号！",
 emailPls:"请输入正确的邮箱地址！",
 save:"保存",
-tmplDef:'扩展字段定义',
+tmplDef:'扩展字段',
 
 user:{
     status:"激活/禁用", 

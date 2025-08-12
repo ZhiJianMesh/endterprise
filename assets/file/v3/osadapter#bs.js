@@ -795,6 +795,7 @@ const Server = {
 
 const Company={//used in server
     id(){return 50}, //storageGet(COMPANY_ID,'0')
+    name(){return "test"},
     register(creditCode,pwd,cfmPwd,name,country,province,city,county,info,verifyCode,session,jsCbId){
         var data={creditCode:creditCode,
             pwd:Secure.sha256(pwd),
@@ -1041,6 +1042,7 @@ const Platform={
     height() {return document.documentElement.clientHeight},
     portrait() {},
     landscape() {},
+    version(){return "browser_test_1.0.1"},
     undefineOrientation() {}
 }
 
