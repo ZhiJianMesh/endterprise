@@ -280,7 +280,7 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
     <sku-select v-model="skuCtrl.dta.sku" :label="tags.purchase.sku"></sku-select>
-    <q-input v-model.number="skuCtrl.dta.num" :label="tags.num"></q-input>
+    <q-input v-model.number="skuCtrl.dta.num" :label="tags.num" type="number"></q-input>
   </q-card-section>
   <q-card-actions align="right">
     <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>

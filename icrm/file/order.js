@@ -542,7 +542,7 @@ template:`
         :label="tags.cost.type" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
-        <q-input :label="tags.cost.val" v-model.number="newCost.cost" dense></q-input>
+        <q-input :label="tags.cost.val" v-model.number="newCost.cost" dense type="number"></q-input>
       </q-item-section></q-item>
       <!-- ext/comment -->
       <q-item v-for="e in newCost.ext"><q-item-section>
@@ -664,7 +664,7 @@ template:`
       :label="tags.purchase.sku"></component-sku-selector>
     </q-item-section>
     <q-item-section>
-     <q-input v-model.number="purchase.sku.num" :label="tags.order.skuNum" dense></q-input>
+     <q-input v-model.number="purchase.sku.num" :label="tags.order.skuNum" dense type="number"></q-input>
     </q-item-section>
     <q-item-section side>
      <q-icon name="add_circle" @click="add_purchase_sku" color="primary"></q-icon>

@@ -369,8 +369,8 @@ template:`
   <q-card-section><div class="text-h6">{{ctrl.tag}}</div></q-card-section>
   <q-card-section class="q-pt-none">
     <q-input :label="tags.name" v-model="edt.target.name"></q-input>
-    <q-input :label="tags.prj.base" v-model.number="edt.target.base"></q-input>
-    <q-input :label="tags.prj.challenge" v-model.number="edt.target.challenge"></q-input>
+    <q-input :label="tags.prj.base" v-model.number="edt.target.base" type="number"></q-input>
+    <q-input :label="tags.prj.challenge" v-model.number="edt.target.challenge" type="number"></q-input>
     <q-input :label="tags.cmt" v-model="edt.target.cmt" type="textarea" rows="2"></q-input>
   </q-card-section>
   <q-card-actions align="right">

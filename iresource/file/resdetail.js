@@ -212,7 +212,7 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
    <prj-select v-model="ctrl.prj" :label="tags.prjName"></prj-select>
-   <q-input v-model.number="ctrl.outDta.num" :label="tags.num" dense></q-input>
+   <q-input v-model.number="ctrl.outDta.num" :label="tags.num" dense type="number"></q-input>
    <q-input v-model="ctrl.outDta.cmt" :label="tags.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">
@@ -228,7 +228,7 @@ template:`
     <div class="text-h6">{{tags.storage.discard}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   <q-input v-model.number="ctrl.outDta.num" :label="tags.num" dense></q-input>
+   <q-input v-model.number="ctrl.outDta.num" :label="tags.num" dense type="number"></q-input>
    <q-input v-model="ctrl.outDta.cmt" :label="tags.cmt" dense></q-input>
   </q-card-section>
   <q-card-actions align="right">

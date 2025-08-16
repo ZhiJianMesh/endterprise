@@ -176,7 +176,7 @@ template:`
   <q-card-section class="q-pt-sm">
    <q-select v-model="ctrl.dta.type" :label="tags.balLog.type"
     :options="ctrl.opts" emit-value  map-options></q-select>
-   <q-input :label="tags.balLog.val" v-model.number="ctrl.dta.val" dense></q-input>
+   <q-input :label="tags.balLog.val" v-model.number="ctrl.dta.val" dense type="number"></q-input>
 
    <q-checkbox :label="tags.forEver" v-model="ctrl.dta.forEver"></q-checkbox>
    <date-input :label="tags.balLog.expireAt" v-model="ctrl.dta.expireAt_s" :disable="ctrl.dta.forEver"></date-input>

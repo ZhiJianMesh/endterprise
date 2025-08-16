@@ -181,13 +181,13 @@ template:`
         :label="tags.employee.firstEdu" dense map-options></q-select>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model.number="perInfo.quali" :label="tags.employee.quali" dense></q-input>
+       <q-input v-model.number="perInfo.quali" :label="tags.employee.quali" dense type="number"></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model.number="perInfo.expSalary" :label="tags.pool.expSalary" dense></q-input>
+       <q-input v-model.number="perInfo.expSalary" :label="tags.pool.expSalary" dense type="number"></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
-       <q-input v-model.number="perInfo.phone" :label="tags.pub.phone" dense maxlength=90></q-input>
+       <q-input v-model.number="perInfo.phone" :label="tags.pub.phone" dense maxlength=90 type="number"></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <date-input :close="tags.ok" :label="tags.pub.birth"

@@ -358,9 +358,9 @@ template:`
 <q-list dense v-else>
  <q-item>
   <q-item-section>
-    <q-input v-model.number="empInfo.holiday" :label="tags.employee.holiday"></q-input>
-    <q-input v-model.number="empInfo.weal" :label="tags.employee.weal"></q-input>
-    <q-input v-model.number="empInfo.sickRatio" :label="tags.employee.sickRatio"></q-input>
+    <q-input v-model.number="empInfo.holiday" :label="tags.employee.holiday" type="number"></q-input>
+    <q-input v-model.number="empInfo.weal" :label="tags.employee.weal" type="number"></q-input>
+    <q-input v-model.number="empInfo.sickRatio" :label="tags.employee.sickRatio" type="number"></q-input>
   </q-item-section>
   <q-item-section avatar>
    <q-btn icon="cancel" @click="ctrl.weal=false" flat color="primary"></q-btn>
@@ -486,9 +486,9 @@ template:`
       <div class="text-h6">{{tags.employee.setGrade}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-     <q-input v-model.number="grade.quali" :label="tags.employee.quali"></q-input>
-     <q-input v-model.number="grade.post" :label="tags.employee.post"></q-input>
-     <q-input v-model.number="grade.subsidy" :label="tags.employee.subsidy"></q-input>
+     <q-input v-model.number="grade.quali" :label="tags.employee.quali" type="number"></q-input>
+     <q-input v-model.number="grade.post" :label="tags.employee.post" type="number"></q-input>
+     <q-input v-model.number="grade.subsidy" :label="tags.employee.subsidy" type="number"></q-input>
      <q-input outlined v-model="grade.cmt" :label="tags.cmt" type="textarea"></q-input>
      <user-input :label="tags.employee.signer" v-model="signer"></user-input>
     </q-card-section>
@@ -505,7 +505,7 @@ template:`
       <div class="text-h6">{{tags.employee.setStock}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-     <q-input v-model.number="stock.stock" :label="tags.employee.stock"></q-input>
+     <q-input v-model.number="stock.stock" :label="tags.employee.stock" type="number"></q-input>
      <q-input outlined v-model="stock.cmt" :label="tags.cmt" type="textarea"></q-input>
      <user-input :label="tags.employee.signer" v-model="signer"></user-input>
     </q-card-section>
@@ -523,9 +523,9 @@ template:`
     </q-card-section>
     <q-card-section class="q-pt-none">
      <q-input v-model.number="salary.salary" :label="tags.employee.salary"
-     @update:model-value="salaryChange"></q-input>
-     <q-input v-model.number="salary.dSalary" :label="tags.employee.dSalary"></q-input>
-     <q-input v-model.number="salary.hSalary" :label="tags.employee.hSalary"></q-input>
+     @update:model-value="salaryChange" type="number"></q-input>
+     <q-input v-model.number="salary.dSalary" :label="tags.employee.dSalary" type="number"></q-input>
+     <q-input v-model.number="salary.hSalary" :label="tags.employee.hSalary" type="number"></q-input>
      <q-input outlined v-model="salary.cmt" :label="tags.cmt" type="textarea"></q-input>
      <user-input :label="tags.employee.signer" v-model="signer"></user-input>
     </q-card-section>

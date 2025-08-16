@@ -276,13 +276,13 @@ template:`
     :options="opts.edu" emit-value dense map-options></q-select>
   </q-item-section></q-item>
   <q-item><q-item-section>
-   <q-input v-model.number="ctrl.pi.quali" :label="tags.employee.quali" dense></q-input>
+   <q-input v-model.number="ctrl.pi.quali" :label="tags.employee.quali" dense type="number"></q-input>
   </q-item-section></q-item>
   <q-item><q-item-section>
-   <q-input v-model.number="ctrl.pi.expSalary" :label="tags.pool.expSalary" dense></q-input>
+   <q-input v-model.number="ctrl.pi.expSalary" :label="tags.pool.expSalary" dense type="number"></q-input>
   </q-item-section></q-item>
   <q-item><q-item-section>
-   <q-input v-model.number="ctrl.pi.phone" :label="tags.pool.phone" dense maxlength=90></q-input>
+   <q-input v-model.number="ctrl.pi.phone" :label="tags.pool.phone" dense maxlength=90 type="number"></q-input>
   </q-item-section></q-item>
   <q-item><q-item-section>
    <date-input v-model="ctrl.pi.birth_s" :label="tags.pool.birth"
@@ -354,18 +354,18 @@ template:`
     <q-card-section class="q-pt-none">
      <q-list>
       <q-item><q-item-section>
-       <q-input v-model.number="empInfo.account" :label="tags.pub.account" dense></q-input>
+       <q-input v-model.number="empInfo.account" :label="tags.pub.account" dense type="number"></q-input>
       </q-item-section></q-item>
       <q-item><q-item-section>
        <div class="row">
         <div class="col">
-         <q-input v-model.number="empInfo.quali" :label="tags.employee.quali" dense></q-input>
+         <q-input v-model.number="empInfo.quali" :label="tags.employee.quali" dense type="number"></q-input>
         </div>
         <div class="col">
-         <q-input v-model.number="empInfo.post" :label="tags.employee.post" dense></q-input>
+         <q-input v-model.number="empInfo.post" :label="tags.employee.post" dense type="number"></q-input>
         </div>
         <div class="col">
-         <q-input v-model.number="empInfo.subsidy" :label="tags.employee.subsidy" dense></q-input>
+         <q-input v-model.number="empInfo.subsidy" :label="tags.employee.subsidy" dense type="number"></q-input>
         </div>
        </div>
       </q-item-section></q-item>
@@ -390,13 +390,13 @@ template:`
        <div class="row">
         <div class="col">
          <q-input v-model.number="empInfo.salary" :label="tags.employee.salary"
-         @update:model-value="salaryChange" dense></q-input>
+         @update:model-value="salaryChange" dense type="number"></q-input>
         </div>
         <div class="col">
-         <q-input v-model.number="empInfo.dSalary" :label="tags.employee.dSalary" dense></q-input>
+         <q-input v-model.number="empInfo.dSalary" :label="tags.employee.dSalary" dense type="number"></q-input>
         </div>
         <div class="col">
-         <q-input v-model.number="empInfo.hSalary" :label="tags.employee.hSalary" dense></q-input>
+         <q-input v-model.number="empInfo.hSalary" :label="tags.employee.hSalary" dense type="number"></q-input>
         </div>
        </div>
       </q-item-section></q-item>

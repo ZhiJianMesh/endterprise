@@ -107,8 +107,8 @@ template:`
    <q-select :label="tags.sku.type" v-model="ctrl.dta.type" :options="ctrl.skuTypes" emit-value map-options></q-select>
    <q-input :label="tags.sku.noHead" v-model="ctrl.dta.noHead" dense></q-input>
    <q-input :label="tags.sku.monthDepr" v-model.number="ctrl.dta.monthDepr" dense
-   @update:model-value="monDeprChanged"></q-input>
-   <q-input :label="tags.sku.yearDepr" v-model.number="ctrl.dta.yearDepr" dense></q-input>
+   @update:model-value="monDeprChanged" type="number"></q-input>
+   <q-input :label="tags.sku.yearDepr" v-model.number="ctrl.dta.yearDepr" dense type="number"></q-input>
    <q-input :label="tags.sku.speci" v-model="ctrl.dta.speci" dense></q-input>
    <q-input :label="tags.cmt" v-model="ctrl.dta.cmt" dense></q-input>
   </q-card-section>

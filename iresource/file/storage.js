@@ -288,8 +288,8 @@ template:`
   <q-card-section class="q-pt-none">
    <prj-select v-model="resCtrl.prj" :label="tags.prjName"></prj-select>
    <sku-select v-model="sku" :label="tags.sku.title"></sku-select>
-   <q-input v-model.number="resCtrl.in.price" :label="tags.sku.price" dense></q-input>
-   <q-input v-model.number="resCtrl.in.num" :label="tags.num" :disable="sku.type!='CUR_INVT'"></q-input>
+   <q-input v-model.number="resCtrl.in.price" :label="tags.sku.price" dense type="number"></q-input>
+   <q-input v-model.number="resCtrl.in.num" :label="tags.num" :disable="sku.type!='CUR_INVT'" type="number"></q-input>
    <q-input v-model="resCtrl.in.cmt" :label="tags.cmt"></q-input>
   </q-card-section>
   <q-card-actions align="right">

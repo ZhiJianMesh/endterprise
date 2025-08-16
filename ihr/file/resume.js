@@ -125,7 +125,7 @@ template:`
       <div class="text-h6">{{ctrl.tag}}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-     <q-input v-model.number="rsInfo.org" :label="tags.resume.org"></q-input>
+     <q-input v-model.number="rsInfo.org" :label="tags.resume.org" type="number"></q-input>
      <q-select v-model="rsInfo.type" :options="opts.type"
       :label="tags.resume.type" dense map-options emit-value></q-select>
 

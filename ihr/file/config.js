@@ -318,12 +318,12 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
    <q-input :label="tags.name" v-model="edt.wt.name" dense></q-input>
-   <q-input :label="tags.cfg.first" v-model.number="edt.wt.first" dense></q-input>
-   <q-input :label="tags.cfg.second" v-model.number="edt.wt.second" dense></q-input>
-   <q-input :label="tags.cfg.third" v-model.number="edt.wt.third" dense></q-input>
-   <q-input :label="tags.cfg.forth" v-model.number="edt.wt.forth" dense></q-input>
-   <q-input :label="tags.cfg.leadTime" v-model.number="edt.wt.leadTime" dense></q-input>
-   <q-input :label="tags.cfg.maxEdit" v-model.number="edt.wt.maxEdit" dense></q-input>
+   <q-input :label="tags.cfg.first" v-model.number="edt.wt.first" dense type="number"></q-input>
+   <q-input :label="tags.cfg.second" v-model.number="edt.wt.second" dense type="number"></q-input>
+   <q-input :label="tags.cfg.third" v-model.number="edt.wt.third" dense type="number"></q-input>
+   <q-input :label="tags.cfg.forth" v-model.number="edt.wt.forth" dense type="number"></q-input>
+   <q-input :label="tags.cfg.leadTime" v-model.number="edt.wt.leadTime" dense type="number"></q-input>
+   <q-input :label="tags.cfg.maxEdit" v-model.number="edt.wt.maxEdit" dense type="number"></q-input>
    <q-select :label="tags.cfg.calendar" v-model="edt.wt.calendar" :options="calOpts"
    dense map-options emit-value></q-select>
    <div class="row items-center">

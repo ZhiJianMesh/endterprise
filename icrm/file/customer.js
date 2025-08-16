@@ -411,7 +411,7 @@ template:`
 <q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1" dense>
 {{tags.baseInfo}}
   <template v-slot:action>
-    <q-icon name="edit" color="primary" @click.stop="visible.editBase=true" v-if="dtl.power=='O'"></q-icon>
+   <q-icon name="edit" color="primary" @click.stop="visible.editBase=true" v-if="dtl.power=='O'"></q-icon>
   </template>
 </q-banner>
 <q-list dense>
@@ -637,7 +637,7 @@ template:`
        </q-item-section>
        <q-item-section side>{{skuInput.price}}
         <q-popup-edit v-model="skuInput.price" v-slot="scope" @before-show="get_suppliers()">
-         <q-input v-model.number="scope.value" dense autofocus @keyup.enter="scope.set">
+         <q-input v-model.number="scope.value" dense autofocus @keyup.enter="scope.set" type="number">
            <template v-slot:append>
             <q-icon name="save" color="primary" @click="scope.set"></q-icon>
            </template>
@@ -653,7 +653,7 @@ template:`
        </q-item>
        <q-item>
        <q-item-section>
-        <q-input v-model.number="skuInput.num" :label="tags.order.skuNum" dense></q-input>
+        <q-input v-model.number="skuInput.num" :label="tags.order.skuNum" dense type="number"></q-input>
        </q-item-section>
        <q-item-section side>
         <q-icon name="add_circle" @click="add_order_sku" color="primary"></q-icon>

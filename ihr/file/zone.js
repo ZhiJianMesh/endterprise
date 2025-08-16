@@ -211,12 +211,12 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
    <q-input :label="tags.name" v-model="edt.zone.name" dense></q-input>
-   <q-input :label="tags.cfg.salary" v-model.number="edt.zone.salary" dense></q-input>
-   <q-input :label="tags.cfg.wowSalary" v-model.number="edt.zone.wowSalary" dense></q-input>
-   <q-input :label="tags.cfg.oowSalary" v-model.number="edt.zone.oowSalary" dense></q-input>
-   <q-input :label="tags.cfg.fowSalary" v-model.number="edt.zone.fowSalary" dense></q-input>
-   <q-input :label="tags.cfg.subsidy" v-model.number="edt.zone.subsidy" dense></q-input>
-   <q-input :label="tags.cfg.timeOff" v-model.number="edt.zone.timeOff" dense></q-input>
+   <q-input :label="tags.cfg.salary" v-model.number="edt.zone.salary" dense type="number"></q-input>
+   <q-input :label="tags.cfg.wowSalary" v-model.number="edt.zone.wowSalary" dense type="number"></q-input>
+   <q-input :label="tags.cfg.oowSalary" v-model.number="edt.zone.oowSalary" dense type="number"></q-input>
+   <q-input :label="tags.cfg.fowSalary" v-model.number="edt.zone.fowSalary" dense type="number"></q-input>
+   <q-input :label="tags.cfg.subsidy" v-model.number="edt.zone.subsidy" dense type="number"></q-input>
+   <q-input :label="tags.cfg.timeOff" v-model.number="edt.zone.timeOff" dense type="number"></q-input>
    <q-input :label="tags.cfg.taxFunc" v-model="edt.zone.taxFunc" dense type="textarea"></q-input>
    <q-input :label="tags.cmt" v-model="edt.zone.cmt" dense type="textarea" rows="2"></q-input>
   </q-card-section>
@@ -252,7 +252,7 @@ template:`
     <q-radio v-model="edt.security.type"
      val="V" :label="tags.securityProp['V']"></q-radio>
    </div>
-   <q-input :label="tags.val" v-model.number="edt.security.val" dense></q-input>
+   <q-input :label="tags.val" v-model.number="edt.security.val" dense type="number"></q-input>
   </q-card-section>
   <q-card-actions class="row">
    <div class="col" v-if="ctrl.no>-1">

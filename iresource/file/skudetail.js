@@ -189,11 +189,11 @@ template:`
   </q-item>
   <q-item>
    <q-item-section>{{tags.sku.monthDepr}}</q-item-section>
-   <q-item-section><q-input v-model.number="ctrl.dta.monthDepr" dense></q-input></q-item-section>
+   <q-item-section><q-input v-model.number="ctrl.dta.monthDepr" dense type="number"></q-input></q-item-section>
   </q-item>
   <q-item>
    <q-item-section>{{tags.sku.yearDepr}}</q-item-section>
-   <q-item-section><q-input v-model.number="ctrl.dta.yearDepr" dense></q-input></q-item-section>
+   <q-item-section><q-input v-model.number="ctrl.dta.yearDepr" dense type="number"></q-input></q-item-section>
   </q-item>
   <q-item>
    <q-item-section>{{tags.sku.speci}}</q-item-section>
@@ -233,7 +233,7 @@ template:`
     <supplier-input v-model="edtSup.supplier" :label="tags.supplier.title"></supplier-input>
    </q-item-section>
    <q-item-section>
-    <q-input v-model.number="edtSup.price" :label="tags.sku.price" dense></q-input>
+    <q-input v-model.number="edtSup.price" :label="tags.sku.price" dense type="number"></q-input>
    </q-item-section>
    <q-item-section side>
    <q-btn :label="tags.ok" color="primary" @click="addSupplier" flat></q-btn>

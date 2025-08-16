@@ -241,7 +241,7 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
     <sku-select v-model="skuCtrl.sku" :label="tags.sku.title"></sku-select>
-    <q-input v-model.number="skuCtrl.dta.num" :label="tags.num"></q-input>
+    <q-input v-model.number="skuCtrl.dta.num" :label="tags.num" type="number"></q-input>
     <q-input v-model="skuCtrl.dta.cmt" :label="tags.cmt"></q-input>
   </q-card-section>
   <q-card-actions align="right">
