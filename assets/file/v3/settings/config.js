@@ -6,11 +6,15 @@
 // },...]
 //扩展内容：本质为一个json对象，格式为
 //{k1:v1,k2:v2...}，其中的k1、k2就是模板中定义的字段名k
-function decodeExt(extStr,tmpl) {
-    var o={};
+function decodeExt(extVal,tmpl) {
+    var o;
     var ext=[];
     var t,v;
-    try{o=JSON.parse(extStr);}catch(err){}
+    if(extVal !== null && typeof extVal === "object") {
+        o = extVal;
+    } else {
+        try{o=JSON.parse(extStr);}catch(err){}
+    }
     for(var k in tmpl) {//字段以模板中为准，{a:{n:xxx,t:s/n/d/b},b:{...}...}
         t=tmpl[k];
         v=o[k];
@@ -44,7 +48,7 @@ const _defaultCfgTags = {
     needAz:'字段必须是a-z、A-Z字符的组合',
     segTypes:{'s':'文字','n':"数值",'d':'日期'},
 
-    asMap:'模板格式',
+    asMap:'多字段模板格式',
     segKey:'字段',
     segName:"名称",
     segType:"类型",
@@ -56,6 +60,7 @@ props: {
     service:{type:String,required:true},
     item:{type:String,required:false,default:''},
     cfgTags:{type:Object, required:false},
+    showMap:{type:Boolean,required:false},
     confirmDlg:{type:Object, required:true},
     alertDlg:{type:Object, required:true}
 },
@@ -81,10 +86,7 @@ created(){
     } else {
         this.tags=_defaultCfgTags;
     }
-
-    for(var n in this.tags.segTypes){
-        this.segTypes.push({value:n,label:this.tags.segTypes[n]})
-    }
+    this.segTypes=Object.entries(this.tags.segTypes).map(([k,v])=>{return {value:k,label:v}})
     this.init();
 },
 methods:{
@@ -101,11 +103,7 @@ init() {
                 return this.cur.asMap?{}:'';
             }
             this.cfgs=resp.data.cfgs;
-            var opts=[];
-            for(var i in resp.data.cfgs) {
-                opts.push({value:i,label:resp.data.cfgs[i].k})
-            }
-            this.cfgOpts=opts;
+            this.cfgOpts=resp.data.cfgs.map((c,i)=>{return {value:i,label:c.k}});
             this.setCur(0);
         })
     } else { //设置了item，则只配置一个配置项
@@ -139,10 +137,9 @@ save(){
         if(resp.code != 0) {
             this.alertDlg.showErr(resp.code, resp.info);
             return false;
-        } else {
-            this.changed(false);
-            return true;
         }
+        this.changed(false);
+        return true;
     })
 },
 change_cfg(i) {
@@ -163,11 +160,10 @@ setCur(i) {
 parse(k,v) {
     var asMap=v.startsWith('{')&&v.endsWith('}');
     if(asMap) {
-        this.cur.tmpl=JSON.parse(v);
-        this.cur.v='';
         return {k:k,v:'',tmpl:JSON.parse(v),asMap:true};
     }
-    return {k:k,v:v,tmpl:{},asMap:false};
+    asMap=this.showMap!==undefined?this.showMap:false;
+    return {k:k,v:v,tmpl:{},asMap:asMap};
 },
 changed(chged) {
     this.chged=chged;
