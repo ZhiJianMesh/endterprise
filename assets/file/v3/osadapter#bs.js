@@ -859,7 +859,6 @@ const Companies={
     cid(){return currentCompany().id},
     insideAddr() {return currentCompany().insideAddr;},
     outsideAddr() {return currentCompany().outsideAddr;},
-    name(){return currentCompany().name},
 	accessCode(){return currentCompany().accessCode},
 	userService(){return currentCompany().id==1?SERVICE_UNIUSER:SERVICE_USER},
 	rootCompanyId(){return 1},

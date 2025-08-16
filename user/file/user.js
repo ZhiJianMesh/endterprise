@@ -238,7 +238,6 @@ template:`
  </tr>
 </q-markup-table>
 
-<q-list dense separator>
 <q-separator></q-separator>
 <q-expansion-item icon="extension" :label="tags.user.serviceExt"
  header-class="text-accent" v-if="app" @before-show="show_ext">
@@ -263,26 +262,27 @@ template:`
  </q-markup-table>
 </q-expansion-item>
 
+<q-separator></q-separator>
 <q-expansion-item icon="list" :label="tags.user.power"
  header-class="text-secondary">
  <q-markup-table flat>
  <tr>
   <th class="text-left">{{tags.power.service}}</th>
-  <th>{{tags.power.role}}</th>
-  <th>{{tags.power.ext}}</th>
+  <th class="text-right">{{tags.power.role}}</th>
+  <th class="text-right">{{tags.power.ext}}</th>
   <th></th>
  </tr>
  <tr v-for="(p,i) in dtl.powers">
   <th class="text-left">{{serviceNames[p.service]}}</th>
-  <td>{{p.role}}</td>
-  <td>{{p.power}}</td>
+  <td class="text-right">{{p.role}}</td>
+  <td class="text-right">{{p.power}}</td>
   <td class="text-right">
    <q-icon name="clear" @click="remove_power(p.service,i)" color="red"></q-icon>
   </td>
  </tr>
  </q-markup-table>
 </q-expansion-item>
-</q-list>
+
     </q-page>
   </q-page-container>
 </q-layout>

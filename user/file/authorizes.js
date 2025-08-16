@@ -171,13 +171,14 @@ template:`
 <q-list>
  <q-item>
   <q-item-section><q-item-label caption>{{tags.user.account}}</q-item-label></q-item-section>
-  <q-item-section><q-item-label caption>{{tags.user.nickName}}</q-item-label></q-item-section>
   <q-item-section><q-item-label caption>{{tags.power.role}}</q-item-label></q-item-section>
   <q-item-section side><q-item-label caption>{{tags.power.ext}}</q-item-label></q-item-section>
  </q-item>
  <q-item v-for="u in users" clickable @click="show_user(u.id)">
-  <q-item-section>{{u.account}}({{u.ustatus}})</q-item-section>
-  <q-item-section>{{u.nickName}}</q-item-section>
+  <q-item-section>
+   <q-item-label>{{u.account}}({{u.ustatus}})</q-item-label>
+   <q-item-label caption>{{u.nickName}}</q-item-label>
+  </q-item-section>
   <q-item-section>{{roleNames[u.role]}}</q-item-section>
   <q-item-section side>{{u.p}}</q-item-section>
  </q-item>
@@ -220,7 +221,7 @@ template:`
    <cfgsettings v-model="cfg.val" ref="cfgSet" class="q-pa-md"
    :confirmDlg="confirmDlg" :alertDlg="alertDlg" :item="cfg.item"
    :service="service.name" :cfgTags="tags.cfgTags"
-   @update:modelValue="cfg.chged=true"></cfgsettings>
+   @update:modelValue="cfg.chged=true" :showMap="false"></cfgsettings>
   </q-card-section>
   <q-card-actions align="right">
    <q-btn :label="tags.save" color="primary" @click="save_cfg"
