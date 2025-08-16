@@ -174,33 +174,35 @@ rangeFilter(dt) {
 
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header class="bg-grey-1 text-primary">
-   <q-toolbar>
-    <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
-    <q-toolbar-title>{{tags.report.title}}</q-toolbar-title>
-    <q-btn icon="event" flat dense>
-     <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-      <q-date v-model="proxyRange" range :options="rangeFilter">
-       <div class="row items-center justify-end">
-        <q-btn :label="tags.ok" color="primary" @click="dateChanged" v-close-popup></q-btn>
-        <q-btn :label="tags.close" color="primary" flat v-close-popup></q-btn>
-       </div>
-      </q-date>
-     </q-popup-proxy>
-     {{range.from}} => {{range.to}}
-    </q-btn>
-    <q-space></q-space>
-    <q-btn flat round dense icon="menu"><q-menu>
-     <q-option-group :options="byOpts" type="radio" v-model="type"
-      @update:model-value="stat()" style="min-width:10em"></q-option-group>
-    </q-menu></q-btn>
-   </q-toolbar>
-  </q-header>
-  <q-page-container>
-    <q-page class="q-pa-md">
-<div id="mainCharts" :style="{width:'95vw', height:'80vh'}"></div>
-    </q-page>
-  </q-page-container>
+<q-header class="bg-grey-1 text-primary">
+ <q-toolbar>
+  <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
+  <q-toolbar-title>{{tags.report.title}}</q-toolbar-title>
+  <q-space></q-space>
+  <q-btn flat round dense icon="menu"><q-menu>
+   <q-option-group :options="byOpts" type="radio" v-model="type"
+    @update:model-value="stat()" style="min-width:10em"></q-option-group>
+  </q-menu></q-btn>
+ </q-toolbar>
+</q-header>
+<q-page-container>
+ <q-page class="q-pa-md">
+  <div id="mainCharts" :style="{width:'95vw', height:'80vh'}"></div>
+  <div class="text-center">
+  <q-btn icon="event" flat dense>
+   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+    <q-date v-model="proxyRange" range :options="rangeFilter">
+     <div class="row items-center justify-end">
+      <q-btn :label="tags.ok" color="primary" @click="dateChanged" v-close-popup></q-btn>
+      <q-btn :label="tags.close" color="primary" flat v-close-popup></q-btn>
+     </div>
+    </q-date>
+   </q-popup-proxy>
+   {{range.from}} => {{range.to}}
+  </q-btn>
+  </div>
+ </q-page>
+</q-page-container>
 </q-layout>
 `
 }

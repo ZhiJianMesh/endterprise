@@ -29,7 +29,12 @@ zh:{
     val:"订单金额",
     state:'订单状态',
     bankAcc:'付款帐号',
-    refund:'退款金额'
+    refund:'退款金额',
+    states:{
+      OK:'已确认',
+      WAIT:'待确认',
+      ALL:'所有'
+    }
   },
   vip:{
     name:'会员',
@@ -50,7 +55,14 @@ zh:{
     unit:'分钟',
     busy:'服务中，不能接单',
     cmt:'评价',
-    noCmt:'尚无评价'
+    noCmt:'尚无评价',
+    states:{
+      OK:'已确认',
+      WAIT:'等待服务',
+      DOING:'服务中',
+      END:'已完成',
+      ALL:'所有'
+    }
   },
   brokerage:{
     title:'提成',
@@ -73,7 +85,7 @@ zh:{
       changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
       needAz:'字段必须是a-z、A-Z字符的组合',
       segTypes:{'s':'文字','n':"数值",'d':'日期'},
-      asMap:'模板格式',
+      asMap:'多字段模板格式',
       segKey:'字段',
       segName:"名称",
       segType:"类型",
@@ -124,11 +136,6 @@ zh:{
     vBrokerage:'提成',
     byDay:'按天统计',
     byHour:'按小时统计'
-  },
-  osState:{
-    OK:'已确认',
-    WAIT:'待确认',
-    ALL:'所有'
   },
   
   errMsgs:{

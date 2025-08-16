@@ -41,6 +41,9 @@ query_vips(pg) {
         }
     })
 },
+refresh() {
+	this.query_vips(this.ctrl.cur);
+},
 search_vips() {
     if(this.search=='') {
         this.query_vips(1);
@@ -107,23 +110,25 @@ template:`
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
-    <q-btn flat round dense icon="menu" v-if="role=='admin'"><q-menu>
-     <q-list style="min-width:20vw" class="text-primary">
+	<q-btn icon="refresh" flat dense @click="refresh"></q-btn>
+    <q-btn flat dense icon="menu" v-if="role=='admin'">
+    <q-menu>
+     <q-list class="text-primary">
       <q-item clickable @click="service.goto('/settings')">
-        <q-item-section avatar><q-icon name="settings"></q-icon></q-item-section>
-        <q-item-section>{{tags.settings}}</q-item-section>
-       </q-item-section>
+       <q-item-section avatar><q-icon name="settings"></q-icon></q-item-section>
+       <q-item-section>{{tags.settings}}</q-item-section>
       </q-item>
       <q-item clickable @click="service.goto('/reports')">
        <q-item-section avatar><q-icon name="bar_chart"></q-icon></q-item-section>
        <q-item-section>{{tags.report.title}}</q-item-section>
       </q-item>
-      </q-list>
-    </q-menu></q-btn>
+     </q-list>
+    </q-menu>
+    </q-btn>
    </q-toolbar>
    <q-card class="text-white q-mx-sm bg-indigo-8" flat>
     <q-card-action>
-    <q-markup-table flat dark style="background:radial-gradient(circle,#33a2ff 0%,#014aaa 100%)">
+    <q-markup-table flat dark dense style="background:radial-gradient(circle,#33a2ff 0%,#014aaa 100%)">
      <tr>
       <th>{{tags.score.total}}</th>
       <th>{{tags.score.vip}}</th>

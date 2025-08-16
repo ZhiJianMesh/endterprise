@@ -52,7 +52,7 @@ formatData(rows,cols) {
         }
         dt.setTime(r.createAt*MINUTE_MS);
         r.createAt=datetime2str(dt);
-        r.ratio=(r.ratio*100).toFixed(1);
+        r.ratio=this.service.formatNum(r.ratio*100,1);
         r.type=bts[r.type];
         return r;
     })

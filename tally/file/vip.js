@@ -1,5 +1,6 @@
 const EMPTY_ORDER={val:'',vip:0,cmt:'',bankAcc:''}
-const EMPTY_SERVICE={val:'',vip:0,cmt:'',suppplier:{}}
+const EMPTY_SERVICE={val:'', vip:0, cmt:'', suppliers:[]}
+const EMPTY_SUPPLIER={account:{},service_ratio:'',busy:false}
 import OrderDlg from "./orderdlg.js"
 import ServiceDlg from "./servicedlg.js"
 
@@ -11,14 +12,15 @@ components:{
 inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
-	ctrl:{ord:{cur:1,max:0,total:0},srv:{cur:1,max:0,total:0},showMore:false},
+    ctrl:{ord:{cur:1,max:0,total:0},srv:{cur:1,max:0,total:0},showMore:false},
     orders:[], //id,createAt,val,state,creator
     services:[], //id,createAt,val,state,creator,supplier
-    vip:{name:'',createAt:'',mobile:'',ext:{},creator:'',sex:'U',birth:'',age:0,code:''},
+    vip:{name:'',createAt:'',mobile:'',ext:{},creator:'',sex:'U',birth:'',age:0,code:'',show:false},
     ext:{},
     newOrder:{},
-	newService:{supplier:{},busy:false},
-	dlgs:{order:false,service:false}, 
+    newSupplier:{},
+    newService:{},
+    dlgs:{order:false,service:false}, 
     tmpl:{},
     extChanged:false,
     alertDlg:null,
@@ -26,8 +28,6 @@ data() {return {
     role:''
 }},
 created(){
-	this.newOrder.vip=this.id;
-    this.newService.vip=this.id;
     this.service.getTemplate().then(tpl=>{
         this.tmpl=tpl;
         this.query_info(); //放在template之后，是为了防止无template情况下，不能解析ext
@@ -51,11 +51,11 @@ query_info() {
             return;
         }
         this.vip=resp.data;//creator,createAt,name,mobile,ext,sex,birth
-		var d=new Date();
-		var year=d.getYear();
-		d.setTime(this.vip.birth*86400000);
+        var d=new Date();
+        var year=d.getYear();
+        d.setTime(this.vip.birth*86400000);
         this.vip.birth=date2str(d);
-		this.vip.age=year-d.getYear();
+        this.vip.age=year-d.getYear();
         d.setTime(this.vip.createAt*60000);
         this.vip.createAt=datetime2str(d);
         this.ext=!resp.data.ext?{}:resp.data.ext;
@@ -79,7 +79,7 @@ query_orders(pg) {
             }
             dt.setTime(o.createAt*60000);
             o.createAt=datetime2str(dt);
-            o.state_s=this.tags.osState[o.state];
+            o.state_s=this.tags.order.states[o.state];
             return o;
         });
         this.ctrl.ord.total=resp.data.total;
@@ -105,20 +105,7 @@ query_services(pg) {
             }
             dt.setTime(s.createAt*60000);
             s.createAt=datetime2str(dt);
-            s.interval=(s.end>s.start?(s.end-s.start):0)+this.tags.service.unit;
-            if(s.start<=0) {
-                s.start=this.tags.service.notStart;
-            } else {
-                dt.setTime(s.start*60000);
-                s.start=datetime2str(dt);
-            }
-            if(s.end<=0) {
-                s.end=this.tags.service.notEnd;
-            } else {
-                dt.setTime(s.end*60000);
-                s.end=datetime2str(dt);
-            }
-            s.state_s=this.tags.osState[s.state];
+            s.state_s=this.tags.service.states[s.state];
             return s;
         });
 
@@ -128,8 +115,8 @@ query_services(pg) {
     });
 },
 save_base(v, _v0){
-	var birth=new Date(v.birth);
-	var reqDta={id:this.id, name:v.name, mobile:v.mobile, sex:v.sex, code:v.code,
+    var birth=new Date(v.birth);
+    var reqDta={id:this.id, name:v.name, mobile:v.mobile, sex:v.sex, code:v.code,
         birth:Math.round(birth.getTime()/86400000)};
     var opts={method:"POST", url:"/api/vip/setBase",data:reqDta};
     request(opts, this.service.name).then(resp=>{
@@ -139,9 +126,9 @@ save_base(v, _v0){
         }
         this.vip.name=v.name;
         this.vip.mobile=v.mobile;
-		this.vip.sex=v.sex;
-		this.vip.birth=v.birth;
-		this.vip.age=new Date().getYear() - birth.getYear();
+        this.vip.sex=v.sex;
+        this.vip.birth=v.birth;
+        this.vip.age=new Date().getYear() - birth.getYear();
     })
 },
 create_order() {
@@ -176,13 +163,18 @@ save_ext() {
 },
 open_create_service() {
     copyObjTo(EMPTY_SERVICE, this.newService);
-	this.dlgs.service=true;
+    copyObjTo(EMPTY_SUPPLIER, this.newSupplier);
+    this.dlgs.service=true;
 },
 create_service(){
     var url="/api/service/create";
     var reqDta=copyObj(this.newService, ['val','cmt']);
     reqDta.vip=this.id;
-    reqDta.supplier=this.newService.supplier.account;
+    reqDta.suppliers=[];
+    for(var s of this.newService.suppliers) {
+        var r=this.service.formatNum(s.ratio/100,3);
+        reqDta.suppliers.push({account:s.account,ratio:r});
+    }
     request({method:"POST",url:url,data:reqDta}, this.service.name).then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -205,51 +197,77 @@ service_done(r) {
     }
     this.query_services(1);
 },
-check_busy(acc) {
-    var url="/api/service/isBusy?account="+acc.account;
+get_user_info(acc) {
+    var url="/api/userInfo?account="+acc.account;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
-        this.newService.busy=resp.code==RetCode.OK;
+        if(resp.code!=RetCode.OK) {
+            this.$refs.errMsg.showErr(resp.code, resp.info);
+            return;
+        }
+        var d=resp.data;
+        this.newSupplier.busy=d.taskNum>0;
+        if(d.ext&&d.ext.service_ratio) {
+            this.newSupplier.service_ratio=d.ext.service_ratio*100;
+        } else {
+            this.newSupplier.service_ratio=d.service_ratio*100; //默认用统一的设置
+        }
     })
+},
+remove_supplier(i){
+    this.newService.suppliers.splice(i,1);
+},
+add_supplier(){
+    var s=this.newSupplier;
+    this.newService.suppliers.push({account:s.account.account,ratio:s.service_ratio});
+    copyObjTo(EMPTY_SUPPLIER, this.newSupplier);
 }
 },
 
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header class="bg-grey-1 text-primary">
-    <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
-      <q-toolbar-title>{{vip.name}}/{{vip.code}}</q-toolbar-title>
-    </q-toolbar>
-  </q-header>
-  <q-page-container>
-    <q-page class="q-px-none">
+ <q-header class="bg-grey-1 text-primary">
+  <q-toolbar>
+   <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
+   <q-toolbar-title>{{vip.name}}</q-toolbar-title>
+  </q-toolbar>
+ </q-header>
+ <q-page-container>
+  <q-page class="q-px-none">
 <q-banner dense inline-actions class="text-dark bg-blue-grey-1">
   {{vip.name}}<q-icon :name="tags.sexInfo[vip.sex].i" color="primary" size="1.5em"></q-icon>({{vip.age}}{{tags.age}})
-  <template v-slot:action>
-    <q-icon name="edit" color="primary"></q-icon>
-    <q-popup-edit v-model="vip" cover="false" buttons auto-save v-slot="scope"
-      @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel" style="min-width:40vw">
-      <q-input v-model="scope.value.name" dense autofocus>
-       <template v-slot:append><q-icon name="person" color="accent"></q-icon></template>
-      </q-input>
-      <div class="q-gutter-sm">
-       <q-radio v-model="scope.value.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>
-       <q-radio v-model="scope.value.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
-       <q-radio v-model="scope.value.sex" val="U" :label="tags.sexInfo.U.n"></q-radio>
-      </div>
-      <q-input v-model="scope.value.code" dense :label="tags.vip.code"></q-input>
-      <q-input v-model="scope.value.mobile" dense :label="tags.mobile"
-      :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]">
-       <template v-slot:append>
-        <q-icon name="contact_phone" color="accent"></q-icon>
-       </template>
-      </q-input>
- 	  <component-date-input :close="tags.ok" :label="tags.birth"
-       v-model="scope.value.birth" max="today"></component-date-input>
-    </q-popup-edit>
-  </template>
+ <template v-slot:action>
+  <q-icon name="edit" color="primary" class="q-pr-lg">
+  <q-popup-edit v-model="vip" cover="false" buttons auto-save v-slot="scope"
+   @save="save_base" :label-set="tags.save" :label-cancel="tags.cancel" style="min-width:40vw">
+   <q-input v-model="scope.value.name" dense autofocus>
+    <template v-slot:append><q-icon name="person" color="accent"></q-icon></template>
+   </q-input>
+   <div class="q-gutter-sm">
+    <q-radio v-model="scope.value.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>
+    <q-radio v-model="scope.value.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
+    <q-radio v-model="scope.value.sex" val="U" :label="tags.sexInfo.U.n"></q-radio>
+   </div>
+   <q-input v-model="scope.value.code" dense :label="tags.vip.code"></q-input>
+   <q-input v-model="scope.value.mobile" dense :label="tags.mobile"
+   :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]">
+    <template v-slot:append>
+     <q-icon name="contact_phone" color="accent"></q-icon>
+    </template>
+   </q-input>
+   <component-date-input :close="tags.ok" :label="tags.birth"
+    v-model="scope.value.birth" max="today"></component-date-input>
+  </q-popup-edit>
+  </q-icon>
+  
+  <q-icon :name="vip.show?'expand_less':'expand_more'" @click="vip.show=!vip.show" color="primary"></q-icon>
+ </template>
 </q-banner>
-<q-list>
+<q-list v-show="vip.show">
+ <q-item>
+  <q-item-section avatar><q-icon name="closed_caption" color="primary"></q-icon></q-item-section>
+  <q-item-section>{{tags.vip.code}}</q-item-section>
+  <q-item-section side>{{vip.code}}</q-item-section>
+ </q-item>
  <q-item>
   <q-item-section avatar><q-icon name="date_range" color="primary"></q-icon></q-item-section>
   <q-item-section>{{tags.createAt}}</q-item-section>
@@ -348,14 +366,7 @@ template:`
    <q-item-label>{{s.creator}}</q-item-label>
    <q-item-label caption>{{s.createAt}}</q-item-label>
   </q-item-section>
-  <q-item-section>
-   <q-item-label>{{s.supplier}}</q-item-label>
-   <q-item-label caption>{{s.cmt}}</q-item-label>
-  </q-item-section>
-  <q-item-section>
-   <q-item-label>{{s.start}}->{{s.end}}</q-item-label>
-   <q-item-label caption>{{s.interval}}</q-item-label>
-  </q-item-section>
+  <q-item-section>{{s.cmt}}</q-item-section>
   <q-item-section side>
    <q-item-label>{{s.val}}</q-item-label>
    <q-item-label :class="s.state=='OK'?'text-caption':'text-primary'">{{s.state_s}}</q-item-label>
@@ -378,7 +389,7 @@ template:`
     </q-card-section>
     <q-card-section class="q-pt-none">
      <q-input v-model="newOrder.bankAcc" :label="tags.order.bankAcc" dense></q-input>
-     <q-input v-model.number="newOrder.val" :label="tags.order.val" dense></q-input>
+     <q-input v-model.number="newOrder.val" :label="tags.order.val" dense type="number"></q-input>
      <q-input v-model="newOrder.cmt" :label="tags.cmt" dense></q-input>
     </q-card-section>
     <q-card-actions align="right">
@@ -395,13 +406,32 @@ template:`
    <div class="text-h6">{{tags.addService}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-    <q-input v-model.number="newService.val" :label="tags.serviceVal" dense></q-input>
-    <component-user-input :label="tags.supplier" v-model="newService.supplier"
-     @update:modelValue="check_busy"></component-user-input>
-    <div v-if="newService.busy" class="text-red text-body2">
-    {{tags.service.busy}}
-    </div>
-    <q-input v-model="newService.cmt" :label="tags.cmt" dense autogrow></q-input>
+   <q-input v-model.number="newService.val" :label="tags.serviceVal" dense type="number"></q-input>
+   <q-input v-model="newService.cmt" :label="tags.cmt" dense autogrow></q-input>
+   <q-list separator class="q-pa-none">
+     <q-item v-for="(s,i) in newService.suppliers">
+      <q-item-section>{{s.account}}</q-item-section>
+      <q-item-section>{{s.ratio}}</q-item-section>
+      <q-item-section side>
+       <q-btn icon="delete" @click="remove_supplier(i)" dense flat></q-btn>
+      </q-item-section>
+     </q-item>
+     <q-item>
+      <q-item-section>
+       <component-user-input :label="tags.supplier" v-model="newSupplier.account"
+       @update:modelValue="get_user_info"></component-user-input>
+       <div v-if="newSupplier.busy" class="text-red text-body2">
+       {{tags.service.busy}}
+       </div>
+      </q-item-section>
+      <q-item-section>
+       <q-input v-model="newSupplier.service_ratio" :label="tags.brokerage.ratio" dense></q-input>
+      </q-item-section>
+      <q-item-section side>
+       <q-btn icon="add" @click="add_supplier()" dense flat></q-btn>
+      </q-item-section>
+     </q-item>
+   </q-list>
   </q-card-section>
   <q-card-actions align="right">
      <q-btn flat :label="tags.ok" color="primary" @click="create_service"></q-btn>
@@ -410,8 +440,8 @@ template:`
  </q-card>
 </q-dialog>
 
-<order-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" :service="service.name" @done="order_done" ref="orderDlg"></order-dlg>
-<service-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" :service="service.name" @done="service_done" ref="serviceDlg"></service-dlg>
+<order-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" @done="order_done" ref="orderDlg"></order-dlg>
+<service-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" @done="service_done" ref="serviceDlg"></service-dlg>
 <component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 `

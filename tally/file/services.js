@@ -16,12 +16,8 @@ data() {return {
     confirmDlg:null
 }},
 created(){
-    var oss=this.tags.osState;
-    this.stateOpts=[
-        {label:oss.ALL, value:'ALL'},
-        {label:oss.OK, value:'OK'},
-        {label:oss.WAIT, value:'WAIT'}
-    ];
+    this.stateOpts=Object.entries(this.tags.service.states).map(
+            ([k, v]) => {return {label:v, value:k}});
     this.service.getRole().then(role=>{
         this.role=role;
         this.query(1);
@@ -52,7 +48,6 @@ query(pg) {
 },
 formatData(rows,cols) {
     var dt=new Date();
-    var now=parseInt(dt.getTime()/60000);
     this.services=rows.map(l=>{
         var r={};
         for(var i in cols) {
@@ -60,31 +55,14 @@ formatData(rows,cols) {
         }
         dt.setTime(r.createAt*60000);
         r.createAt=datetime2str(dt);
-        
-        if(r.end>r.start) r.interval=r.end-r.start;
-        else r.interval=r.start>0?(now-r.start):0;
-        r.interval+=' '+this.tags.service.unit;
-
-        if(r.start<=0) {
-            r.start=this.tags.service.notStart;
-        } else {
-            dt.setTime(r.start*60000);
-            r.start=datetime2str(dt);
-        }
-        if(r.end<=0) {
-            r.end=this.tags.service.notEnd;
-        } else {
-            dt.setTime(r.end*60000);
-            r.end=datetime2str(dt);
-        }
-        r.state_s=this.tags.osState[r.state];
+        r.state_s=this.tags.service.states[r.state];
         return r;
     })
 },
 show_service(id) {
     this.$refs.serviceDlg.show(id);
 },
-service_done() {
+refresh() {
     this.query(this.ctrl.cur);
 }
 },
@@ -95,7 +73,8 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.service.title}}</q-toolbar-title>
-    <q-btn flat round dense icon="menu"><q-menu>
+	<q-btn icon="refresh" flat dense @click="refresh"></q-btn>
+    <q-btn flat dense icon="menu"><q-menu>
      <div v-if="role=='admin'">
       <q-checkbox v-model="ctrl.onlyMine" :label="tags.onlyMine"
        @update:model-value="query(1)"></q-checkbox>
@@ -107,7 +86,7 @@ template:`
    </q-toolbar>
    <q-card class="q-mx-sm" flat>
     <q-card-action>
-    <q-markup-table flat dark style="background:radial-gradient(circle,#33a2ff 0%,#014aaa 100%)">
+    <q-markup-table flat dark dense style="background:radial-gradient(circle,#33a2ff 0%,#014aaa 100%)">
      <tr>
       <th>{{tags.score.total}}</th>
       <th>{{tags.score.nService}}</th>
@@ -135,9 +114,8 @@ template:`
 <q-markup-table flat>
  <thead><tr>
   <th class="text-left">{{tags.vip.name}}</th>
-  <th class="text-right">{{tags.service.start}}/{{tags.service.end}}</th>
-  <th class="text-right">{{tags.creator}}/{{tags.supplier}}</th>
   <th class="text-right">{{tags.service.val}}</th>
+  <th class="text-right">{{tags.creator}}</th>
  </tr></thead>
  <tbody>
  <tr v-for="v in services" style="cursor:pointer;" @click="show_service(v.id)">
@@ -146,17 +124,12 @@ template:`
    <div class="text-caption">{{v.code}}</div>
   </td>
   <td class="text-right">
-   <div>{{v.start}}</div>
-   <div>{{v.end}}</div>
-   <div class="text-caption">{{v.interval}}</div>
-  </td>
-  <td class="text-right">
-   <div>{{v.creator}}/{{v.supplier}}</div>
-   <div class="text-caption">{{v.createAt}}</div>
-  </td>
-  <td class="text-right">
    <div>{{v.val}}</div>
    <div :class="v.state=='OK'?'text-caption':'text-primary'">{{v.state_s}}</div>
+  </td>
+  <td class="text-right">
+   <div>{{v.creator}}</div>
+   <div class="text-caption">{{v.createAt}}</div>
   </td>
  </tr>
  </tbody>
@@ -165,7 +138,7 @@ template:`
   </q-page-container>
 </q-layout>
 
-<service-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" :service="service.name" @done="service_done" ref="serviceDlg"></service-dlg>
+<service-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" @done="refresh" ref="serviceDlg"></service-dlg>
 <component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
 `

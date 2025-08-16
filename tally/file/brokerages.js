@@ -1,9 +1,15 @@
 const MINUTE_MS=60000;
 const YEAR_MS=31622400000;
 import {decodeExt} from '/assets/v3/settings/config.js';
+import ServiceDlg from "./servicedlg.js"
+import OrderDlg from "./orderdlg.js"
 
 export default {
 inject:['service', 'tags'],
+components:{
+    "service-dlg":ServiceDlg,
+    "order-dlg":OrderDlg
+},
 data() {return {
     role:'',
     list:[], //佣金列表
@@ -15,7 +21,7 @@ data() {return {
 }},
 created(){
     var dt=new Date();
-    var cur=parseInt(dt.getTime()/MINUTE_MS);
+    var cur=parseInt(dt.getTime()/MINUTE_MS)+1440;
     dt.setTime(cur*MINUTE_MS);
     this.range.to=date2str(dt);
     dt.setTime((cur-1440*6)*MINUTE_MS);
@@ -28,7 +34,7 @@ created(){
 },
 methods:{
 query(pg) {
-    var to=parseInt(new Date(this.range.to).getTime()/MINUTE_MS);
+    var to=parseInt(new Date(this.range.to).getTime()/MINUTE_MS)+1440;//包括最后一天
     var from=parseInt(new Date(this.range.from).getTime()/MINUTE_MS);
     var offset=(parseInt(pg)-1)*this.service.NUM_PER_PAGE;
     var url="/report/brokerages?offset="+offset
@@ -61,7 +67,7 @@ show_detail(owner) {
     this.query_dtl(1);
 },
 query_dtl(pg) {
-    var to=parseInt(new Date(this.range.to).getTime()/MINUTE_MS);
+    var to=parseInt(new Date(this.range.to).getTime()/MINUTE_MS)+1440; //包括最后一天
     var from=parseInt(new Date(this.range.from).getTime()/MINUTE_MS);
     var offset=(parseInt(pg)-1)*this.service.NUM_PER_SMPG;
     var url="/report/brokerage?offset="+offset
@@ -87,8 +93,8 @@ formatData(rows,cols) {
         }
         dt.setTime(r.createAt*MINUTE_MS);
         r.createAt=datetime2str(dt);
-        r.ratio=(r.ratio*100).toFixed(1);
-        r.type=bts[r.type];
+        r.ratio=this.service.formatNum(r.ratio*100,1);
+        r.type_s=bts[r.type];
         return r;
     })
 },
@@ -103,9 +109,11 @@ show_comments(owner) {
     this.query_cmt(1);
 },
 query_cmt(pg) {
+    var to=parseInt(new Date(this.range.to).getTime()/MINUTE_MS)+1440; //包括最后一天
+    var from=parseInt(new Date(this.range.from).getTime()/MINUTE_MS);
     var offset=(parseInt(pg)-1)*this.service.NUM_PER_SMPG;
     var url="/service/workerCmts?supplier="+this.cmt.owner+"&offset="+offset
-            +"&num="+this.service.NUM_PER_SMPG;
+            +"&num="+this.service.NUM_PER_SMPG+"&from="+from+"&to="+to;
     request({method:"GET", url:url}, this.service.name).then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.cmt.list=[];
@@ -166,12 +174,18 @@ show_user(acc) {
             }
             this.user.dtl=dtl;
             this.user.segs=segs;
-            this.user.tmpl=tmpl;            
+            this.user.tmpl=tmpl;
         })
     })
+},
+show_src(type,id) {
+    if(type=='ORD') {
+        this.$refs.orderDlg.show(id);
+    } else {
+        this.$refs.serviceDlg.show(id);
+    }
 }
 },
-
 template:`
 <q-layout view="hHh lpr fFf">
   <q-header class="bg-grey-1 text-primary">
@@ -203,17 +217,19 @@ template:`
  <thead><tr>
   <th class="text-left">{{tags.brokerage.owner}}</th>
   <th class="text-right">{{tags.brokerage.val}}</th>
+  <th class="text-right">{{tags.service.cmt}}</th>
  </tr></thead>
  <tbody>
- <tr v-for="v in list">
-  <td class="text-left" style="cursor:pointer;" @click="show_user(v.owner)">
+ <tr v-for="v in list" style="cursor:pointer;">
+  <td class="text-left" @click="show_user(v.owner)">
    {{v.owner}}
   </td>
-  <td class="text-left">
-    <q-icon name="comment" @click="show_comments(v.owner)" color="primary"></q-icon>
-  </td>
-  <td class="text-right" style="cursor:pointer;" @click="show_detail(v.owner)">
+  <td class="text-right" @click="show_detail(v.owner)">
    {{v.brokerage}}
+  </td>
+  <td class="text-right">
+    <q-btn icon="comment" @click="show_comments(v.owner)"
+     color="primary" flat dense></q-btn>
   </td>
  </tr>
  </tbody>
@@ -223,7 +239,7 @@ template:`
 </q-layout>
 
 <q-dialog v-model="dtl.dlg">
- <q-card style="min-width:70vw" class="q-pa-none">
+ <q-card style="min-width:80vw" class="q-pa-none">
   <q-card-section class="row items-center">
    <div class="text-h6">{{dtl.owner}}</div>
    <q-space></q-space>
@@ -232,16 +248,13 @@ template:`
   <q-card-section class="q-pt-none">
    <q-separator></q-separator>
    <q-markup-table flat>
-    <thead><tr>
-     <th class="text-left">{{tags.createAt}}</th>
-     <th class="text-right">{{tags.brokerage.val}}</th>
-     <th class="text-right">{{tags.brokerage.ratio}}</th>
-    </tr></thead>
     <tbody>
       <tr v-for="v in dtl.list">
        <td class="text-left">{{v.createAt}}</td>
        <td class="text-right">{{v.brokerage}}</td>
-       <td class="text-right">{{v.type}} {{v.ratio}}</td>
+       <td class="text-right text-primary" @click="show_src(v.type,v.did)" style="cursor:pointer;">
+        {{v.type_s}}/{{v.ratio}}%
+       </td>
       </tr>
     </tbody>
    </q-markup-table>
@@ -254,7 +267,7 @@ template:`
 </q-dialog>
 
 <q-dialog v-model="cmt.dlg">
- <q-card style="min-width:70vw" class="q-pa-none">
+ <q-card style="min-width:80vw" class="q-pa-none">
   <q-card-section class="row items-center">
    <div class="text-h6">{{cmt.owner}}</div>
    <q-space></q-space>
@@ -264,14 +277,11 @@ template:`
    <q-separator></q-separator>
    <div v-if="cmt.list.length>0">
     <q-markup-table flat >
-     <thead><tr>
-      <th class="text-left">{{tags.vip.name}}</th>
-      <th class="text-right">{{tags.service.cmt}}</th>
-     </tr></thead>
      <tbody>
       <tr v-for="v in cmt.list">
        <td class="text-left">
-        <div>{{v.name}}/{{v.code}}</div>
+        <div>{{v.name}}</div>
+        <div class="text-caption">{{v.code}}</div>
         <div class="text-caption">{{v.at}}</div>
        </td>
        <td class="text-right">
@@ -292,7 +302,7 @@ template:`
 </q-dialog>
 
 <q-dialog v-model="user.dlg">
- <q-card style="min-width:70vw" class="q-pa-none">
+ <q-card style="min-width:80vw" class="q-pa-none">
   <q-card-section class="row items-center">
    <div class="text-h6">{{user.account}}/{{user.dtl.nickName}}</div>
    <q-space></q-space>
@@ -314,7 +324,9 @@ template:`
  </q-card>
 </q-dialog>
 
+<service-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" ref="serviceDlg"></service-dlg>
+<order-dlg :tags="tags" :alertDlg="alertDlg" :confirmDlg="confirmDlg" :role="role" ref="orderDlg"></order-dlg>
+<component-confirm-dialog :title="tags.alert" :close="tags.cancel" :ok="tags.ok" ref="confirmDlg"></component-confirm-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" ref="errMsg"></component-alert-dialog>
-
 `
 }

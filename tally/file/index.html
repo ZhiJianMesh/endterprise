@@ -114,6 +114,13 @@ getRole() {
         return this.role;
     })
 },
+formatNum(n,accuracy) {
+  if(n % 1 === 0) {// 如果是整数
+    return n;
+  }
+  //如果有小数位，则保留两位小数
+  return parseFloat(n.toFixed(accuracy));
+},
 runtime:{},//运行时
 setRt(k,v) {
     this.runtime[router.currentRoute.value.path+':'+k]=v;
