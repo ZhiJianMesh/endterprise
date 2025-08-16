@@ -65,7 +65,7 @@ template: `
  <q-header class="bg-grey-1 text-primary">
     <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
-      <q-toolbar-title>{{tags.home.personal}} - {{account}}</q-toolbar-title>
+      <q-toolbar-title>{{tags.home.personal}} - {{userInfo.account}}</q-toolbar-title>
     </q-toolbar>
  </q-header>
   <q-page-container>

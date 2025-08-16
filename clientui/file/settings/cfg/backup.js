@@ -220,9 +220,9 @@ template: `
  <tr>
   <td>{{tags.cfg.backupAt}}</td>
   <td>
-   <time-input v-model="backup.atObj" :showSecond="false"
+   <time-input v-model.number="backup.atObj" :showSecond="false"
     @update:model-value="backupAtChanged"
-    :disable="backup.at<0"></time-input>
+    :disable="backup.at<0" type="number"></time-input>
   </td>
  </tr>
  <tr>
