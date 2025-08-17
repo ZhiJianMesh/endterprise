@@ -63,10 +63,10 @@ birthChged(v){
 template: `
 <q-layout view="hHh lpr fFf">
  <q-header class="bg-grey-1 text-primary">
-    <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
-      <q-toolbar-title>{{tags.home.personal}} - {{userInfo.account}}</q-toolbar-title>
-    </q-toolbar>
+  <q-toolbar>
+   <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+   <q-toolbar-title>{{tags.home.personal}} - {{userInfo.account}}</q-toolbar-title>
+  </q-toolbar>
  </q-header>
   <q-page-container>
    <q-page class="q-pa-md">
@@ -122,41 +122,41 @@ template: `
  
 <!-- change password dialog -->
 <q-dialog v-model="chgPwdDlg">
-  <q-card style="min-width:62vw;max-width:80vw">
-    <q-card-section>
-      <div class="text-h6">{{tags.chgPwd}}-{{account}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-      <q-input dense v-model="oldPwd" autofocus :type="hidePwd.o?'password':'text'"
-       :label="tags.oldPwd" :rules="[val => !!val || tags.oldPwd + '' + tags.cantbeNull]">
-         <template v-slot:append>
-          <q-icon :name="hidePwd.o ? 'visibility_off':'visibility'"
-            class="cursor-pointer" @click="hidePwd.o=!hidePwd.o"></q-icon>
-        </template>
-      </q-input>
-      <q-input dense v-model="newPwd" autofocus :type="hidePwd.n?'password':'text'"
-       :label="tags.newPwd" :rules="[val => !!val || tags.newPwd + '' + tags.cantbeNull]">
-         <template v-slot:append>
-          <q-icon :name="hidePwd.n ? 'visibility_off':'visibility'"
-            class="cursor-pointer" @click="hidePwd.n=!hidePwd.n"></q-icon>
-        </template>
-      </q-input>
-      <q-input dense v-model="cfmPwd" autofocus :type="hidePwd.c?'password':'text'"
-       :label="tags.cfmPwd" :rules="[
-        val => !!val || tags.cfmPwd + ' ' + tags.cantbeNull,
-        val => val==newPwd || tags.cfmPwd + ',' + tags.newPwd + ' ' + tags.mustbeEqual
-        ]">
-         <template v-slot:append>
-          <q-icon :name="hidePwd.c ? 'visibility_off':'visibility'"
-            class="cursor-pointer" @click="hidePwd.c=!hidePwd.c"></q-icon>
-        </template>
-      </q-input>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="changePwd"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup></q-btn>
-    </q-card-actions>
-  </q-card>
+ <q-card style="min-width:62vw;max-width:80vw">
+  <q-card-section>
+    <div class="text-h6">{{tags.chgPwd}}-{{account}}</div>
+  </q-card-section>
+  <q-card-section class="q-pt-none">
+   <q-input dense v-model="oldPwd" autofocus :type="hidePwd.o?'password':'text'"
+    :label="tags.oldPwd" :rules="[val => !!val || tags.oldPwd + '' + tags.cantbeNull]">
+      <template v-slot:append>
+       <q-icon :name="hidePwd.o ? 'visibility_off':'visibility'"
+         class="cursor-pointer" @click="hidePwd.o=!hidePwd.o"></q-icon>
+     </template>
+   </q-input>
+   <q-input dense v-model="newPwd" autofocus :type="hidePwd.n?'password':'text'"
+    :label="tags.newPwd" :rules="[val => !!val || tags.newPwd + '' + tags.cantbeNull]">
+      <template v-slot:append>
+       <q-icon :name="hidePwd.n ? 'visibility_off':'visibility'"
+         class="cursor-pointer" @click="hidePwd.n=!hidePwd.n"></q-icon>
+     </template>
+   </q-input>
+   <q-input dense v-model="cfmPwd" autofocus :type="hidePwd.c?'password':'text'"
+    :label="tags.cfmPwd" :rules="[
+     val => !!val || tags.cfmPwd + ' ' + tags.cantbeNull,
+     val => val==newPwd || tags.cfmPwd + ',' + tags.newPwd + ' ' + tags.mustbeEqual
+     ]">
+     <template v-slot:append>
+       <q-icon :name="hidePwd.c ? 'visibility_off':'visibility'"
+        class="cursor-pointer" @click="hidePwd.c=!hidePwd.c"></q-icon>
+     </template>
+   </q-input>
+  </q-card-section>
+  <q-card-actions align="right">
+   <q-btn color="primary" :label="tags.ok" @click="changePwd"></q-btn>
+   <q-btn color="primary" flat :label="tags.cancel" v-close-popup></q-btn>
+  </q-card-actions>
+ </q-card>
 </q-dialog>
 `
 }
