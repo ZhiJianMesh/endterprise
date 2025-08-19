@@ -168,10 +168,10 @@ template: `
 </q-layout>
 
 <q-dialog v-model="install.dlg" persistent>
-  <q-card style="min-width:62vw" class="q-pa-lg">
-     <q-linear-progress :value="install.percent/100" color="primary" size="xl"></q-linear-progress>
-     <div>{{install.info}}</div>
-  </q-card>
+ <q-card style="min-width:62vw" class="q-pa-lg">
+  <q-linear-progress :value="install.percent/100" color="primary" size="xl"></q-linear-progress>
+  <div>{{install.info}}</div>
+ </q-card>
 </q-dialog>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 `

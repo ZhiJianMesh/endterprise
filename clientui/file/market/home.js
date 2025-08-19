@@ -2,8 +2,8 @@ const APPS_TAB="apps_tab";
 export default {
 inject:['service', 'tags'],
 data() {return {
-    apps:[],
-    page:{cur:1, max:0},
+    pData:{cur:1, max:0, list:[]},
+    eData:{cur:1, max:0, list:[]},
     tab:storageGet(APPS_TAB, "enterprise")
 }},
 created(){
@@ -24,13 +24,14 @@ enterprise_apps(pg) {
     };
     request(opts, "company").then(resp=>{
         if(resp.code != RetCode.OK) {
-            this.page.max=0;
-            this.page.cur=1;
+            this.eData.max=0;
+            this.eData.cur=1;
             this.apps=[];
+            Console.info("error, code:" + resp.code + ",info:" + resp.info)
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, false);
+        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, false, this.eData);
     })
 },
 personal_apps(pg) {
@@ -41,19 +42,19 @@ personal_apps(pg) {
     };
     request(opts, "appstore").then(resp=>{
         if(resp.code != RetCode.OK) {
-            this.page.max=0;
-            this.page.cur=1;
-            this.$refs.errDlg.showErr(resp.code, resp.info);
+            this.pData.max=0;
+            this.pData.cur=1;
+            Console.info("error, code:" + resp.code + ",info:" + resp.info)
             return;
         }
-        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, true);
+        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, true, this.pData);
     })
 },
 detail(service) {
     this.$router.push('/detail?service='+service+"&cid="+Companies.cid())
 },
-format_apps(total, cols, data, cloud) {
-    this.page.max=Math.ceil(total/this.service.N_PAGE);
+format_apps(total, cols, data, cloud, ctrl) {
+    ctrl.max=Math.ceil(total/this.service.N_PAGE);
     var apps=[];
     for(var d of data) {
         var o={};
@@ -71,12 +72,11 @@ format_apps(total, cols, data, cloud) {
             o['icon'] = iconUrl;
         }
 		o['cloud']=cloud;
-        var v = parseInt(o.version);
-        o.sVer=Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);
+        o.sVer=App.intToVer(parseInt(o.version));
         this.service.list[o.service]=o;
         apps.push(o);
     }
-    this.apps = apps;
+    ctrl.list=apps;
 },
 queryApps(pg) {
     storageSet(APPS_TAB, this.tab);
@@ -99,23 +99,44 @@ template: `
    <q-tab name="personal" icon="person" :label="tags.personal"></q-tab>
   </q-tabs>
  </q-header>
- <q-page-container><q-page class="q-pa-md">
-  <div class="q-pa-sm flex flex-center" v-if="page.max>1">
-    <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"
+<q-page-container><q-page class="q-pa-md">
+ <q-tab-panels v-model="tab">
+  <q-tab-panel name="enterprise">
+   <div class="q-pa-sm flex flex-center" v-if="eData.max>1">
+    <q-pagination v-model="eData.cur" color="primary" :max="eData.max" max-pages="10"
      boundary-numbers="false" @update:model-value="queryApps"></q-pagination>
-  </div>
-  <q-list separator>
-     <q-item clickable v-ripple v-for="a in apps" @click="detail(a.service)">
-       <q-item-section avatar><q-avatar square>
-         <img :src="a.icon">
-       </q-avatar></q-item-section>
-       <q-item-section>
-        <q-item-label>{{a.displayName}}/{{a.service}}</q-item-label>
-        <q-item-label>{{a.author}}</q-item-label>
-       </q-item-section>
-     </q-item>
-  </q-list>
- </q-page></q-page-container>
+   </div>
+   <q-list separator>
+    <q-item clickable v-ripple v-for="a in eData.list" @click="detail(a.service)">
+     <q-item-section avatar><q-avatar square>
+      <img :src="a.icon">
+     </q-avatar></q-item-section>
+     <q-item-section>
+      <q-item-label>{{a.displayName}}/{{a.service}}</q-item-label>
+      <q-item-label>{{a.author}}</q-item-label>
+     </q-item-section>
+    </q-item>
+   </q-list>
+  </q-tab-panel>
+  <q-tab-panel name="personal">
+   <div class="q-pa-sm flex flex-center" v-if="pData.max>1">
+    <q-pagination v-model="pData.cur" color="primary" :max="pData.max" max-pages="10"
+     boundary-numbers="false" @update:model-value="queryApps"></q-pagination>
+   </div>
+   <q-list separator>
+    <q-item clickable v-ripple v-for="a in pData.list" @click="detail(a.service)">
+     <q-item-section avatar><q-avatar square>
+      <img :src="a.icon">
+     </q-avatar></q-item-section>
+     <q-item-section>
+      <q-item-label>{{a.displayName}}/{{a.service}}</q-item-label>
+      <q-item-label>{{a.author}}</q-item-label>
+     </q-item-section>
+    </q-item>
+   </q-list>
+  </q-tab-panel>
+ </q-tab-panels>
+</q-page></q-page-container>
 </q-layout>
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
 `}

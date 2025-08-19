@@ -32,8 +32,7 @@
     <div class="text-caption q-pt-sm">{{gw}}</div>
     <div>
      <q-chip><q-avatar color="primary" text-color="white" icon="folder_special"></q-avatar>{{cid}}</q-chip>
-     <q-chip><q-avatar color="primary" text-color="white" icon="bookmark_border"></q-avatar>{{apiCalls}}</q-chip>
-     <q-chip><q-avatar color="secondary" text-color="white" icon="bookmark"></q-avatar>{{fileCalls}}</q-chip>
+     <q-chip><q-avatar color="secondary" text-color="white" icon="bookmark"></q-avatar>{{name}}</q-chip>
     </div>
     <div class="q-pt-sm">
      <q-circular-progress :indeterminate="state==2" size="7em" show-value
@@ -69,9 +68,8 @@ data(){return{
     startupAt:"",
     address:"",
     gw:"", //外部映射地址
+    name:"", //公司名称
     statusImg:"./imgs/static_gears.png",
-    apiCalls:0,
-    fileCalls:0,
     state:0,
     progVal:0,
     cid:0,
@@ -125,8 +123,6 @@ displayState(resp) {
     var hour=parseInt(t/60);
     t%=60;
     this.runtime=day+this.tags.day+hour+this.tags.hour+t+this.tags.minute;
-    this.apiCalls=Server.apiCalls();
-    this.fileCalls=Server.fileCalls();
     this.address=Server.address();
     this.gw=Server.gw();
 },
@@ -147,6 +143,7 @@ init() {
     this.address=Server.address();
     this.gw=Server.gw();
     this.cid=Company.id();
+    this.name=Company.name();
     this.refresh();
     if(this.timer != null) {
         clearInterval(this.timer)
