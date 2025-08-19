@@ -168,12 +168,10 @@ template:`
     <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
     <q-btn flat icon="save" v-show="chged!=0" @click="save" :label="tags.save"></q-btn>
-    <q-btn flat :icon="dtl.status" @click="switch_active" :label="tags.user.status"></q-btn>
-    <q-btn flat icon="lock_reset" v-if="id!=1" @click="reset_pwd" :label="tags.user.resetPwd"></q-btn>
    </q-toolbar>
   </q-header>
   <q-page-container>
-    <q-page class="q-pa-md">
+   <q-page class="q-pa-md">
 <q-markup-table flat>
  <tr>
   <th class="text-left">{{tags.user.account}}</th>
@@ -283,6 +281,13 @@ template:`
  </q-markup-table>
 </q-expansion-item>
 
+<!-- 必须防止page的最后 -->
+<q-page-sticky position="bottom-right" :offset="[18,18]">
+ <q-fab icon="build" direction="up" color="secondary" v-if="id!=1">
+  <q-fab-action @click="switch_active" color="accent" :icon="dtl.status" :label="tags.user.status" external-label label-position="left"></q-fab-action>
+  <q-fab-action @click="reset_pwd" color="primary" icon="lock_reset" :label="tags.user.resetPwd" external-label label-position="left"></q-fab-action>
+ </q-fab>
+</q-page-sticky>
     </q-page>
   </q-page-container>
 </q-layout>

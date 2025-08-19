@@ -52,7 +52,7 @@ cfgTags:{
     changeNotSaved:"修改的内容尚未保存，请确认是否放弃修改？",
     needAz:'字段必须是a-z、A-Z字符的组合',
     segTypes:{'s':'文字','n':"数值",'d':'日期'},
-    asMap:'模板格式',
+    asMap:'多字段模板格式',
     segKey:'字段',
     segName:"名称",
     segType:"类型",
