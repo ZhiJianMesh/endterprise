@@ -114,7 +114,7 @@ template:`
     <q-btn flat dense icon="menu" v-if="role=='admin'">
     <q-menu>
      <q-list class="text-primary">
-      <q-item clickable @click="service.goto('/settings')">
+      <q-item clickable @click="service.goto('/settings')" v-if="service.account=='admin'">
        <q-item-section avatar><q-icon name="settings"></q-icon></q-item-section>
        <q-item-section>{{tags.settings}}</q-item-section>
       </q-item>

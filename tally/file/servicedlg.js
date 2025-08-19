@@ -46,7 +46,7 @@ show(id) {
             }
             s.ratio=this.service.formatNum(s.ratio*100,1);
             if(s.start==0)s.interval='0';
-            else if(s.end>s.start)s.interval=s.end-s.start;
+            else if(s.end>=s.start)s.interval=s.end-s.start;
             else s.interval=now-s.start;
             s.interval+=this.tags.service.unit;
         }
@@ -146,7 +146,8 @@ template: `
   <tr v-for="s in dtl.suppliers">
    <td>{{s.account}}</td>
    <td>
-    <div class="text-caption">{{s.start_s}} -> {{s.end_s}}</div>
+    <div class="text-caption">{{s.start_s}}</div>
+    <div class="text-caption">{{s.end_s}}</div>
     <div class="text-caption">{{tags.service.useTime}}:{{s.interval}}</div>
     <div class="text-caption">{{tags.brokerage.ratio}}:{{s.ratio}}</div>
    </td>

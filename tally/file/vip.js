@@ -163,6 +163,7 @@ save_ext() {
 },
 open_create_service() {
     copyObjTo(EMPTY_SERVICE, this.newService);
+    this.newService.suppliers=[];//对象拷贝的是引用，所以它改变时，直接修改了EMPTY_SERVICE.suppliers
     copyObjTo(EMPTY_SUPPLIER, this.newSupplier);
     this.dlgs.service=true;
 },

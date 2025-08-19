@@ -193,7 +193,7 @@ template:`
 </q-layout>
 
 <q-dialog v-model="ctrl.dlg" @hide="cmts=[]">
-<q-card style="min-width:60vw;max-width:90vw">
+<q-card style="min-width:80vw;max-width:90vw">
 <q-card-section class="row items-center q-pb-none">
   <div class="text-h6">{{dtl.name}}</div>
   <q-space></q-space>
