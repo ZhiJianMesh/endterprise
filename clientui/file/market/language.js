@@ -24,7 +24,7 @@ zh:{
   releaseAt:"更新时间",
   aboutApp:"关于此应用",
   failToCall:"调用失败",
-  personal:"个人服务",
+  personal:"通用服务",
   enterprise:"公司服务",
   notLogin:"尚未接入任何公司，无法查询公司应用！",
   errMsgs:{

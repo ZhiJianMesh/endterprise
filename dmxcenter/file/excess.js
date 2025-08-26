@@ -10,7 +10,7 @@ created(){
 methods:{
 query(pg) {
 	var offset=(parseInt(pg)-1)*+this.service.N_PAGE;
-    var url="/api/err/list?offset="+offset+"&num="+this.service.N_PAGE
+    var url="/api/err/excess?offset="+offset+"&num="+this.service.N_PAGE
     request({method:"GET",url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
 			this.list=[];
@@ -20,22 +20,22 @@ query(pg) {
 		var colNum=cols.length;
 		var list=[];
 		var dt=new Date();
-        for(var l of resp.data.errs) {
-			var err={};
+        for(var l of resp.data.list) {
+			var req={};
 			for(var i=0;i<colNum;i++) {
-				err[cols[i]]=l[i];
+				req[cols[i]]=l[i];
 			}
-			dt.setTime(err.update_time);
-			err.at=datetime2str(dt);
-			list.push(err);
+			dt.setTime(req.day*86400000);
+			req.at=date2str(dt);
+			list.push(req);
 		}
 		this.list=list;
 		this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
-
-remove(device) {
-    var opts={method:"delete",url:"/api/err/remove?code="+encodeURIComponent(device)};
+remove(device,day) {
+    var encCode=encodeURIComponent(device);
+    var opts={method:"delete",url:"/api/err/removeExcess?code="+encCode+"&day="+day};
     request(opts, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
@@ -50,7 +50,7 @@ template:`
   <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
-    <q-toolbar-title>{{tags.homeMenus.err.name}}</q-toolbar-title>
+    <q-toolbar-title>{{tags.homeMenus.excess.name}}</q-toolbar-title>
    </q-toolbar>
   </q-header>
 <q-page-container>
@@ -61,11 +61,11 @@ template:`
   boundary-numbers="false" @update:model-value="query"></q-pagination>
 </div>
 <q-list separator>
-<q-item v-for="er in list">
- <q-item-section>{{er.device}}</q-item-section>
- <q-item-section>{{er.times}}</q-item-section>
- <q-item-section>{{er.at}}</q-item-section>
- <q-item-section side><q-icon name="delete" color="red" @click="remove(er.device)"></q-icon></q-item-section>
+<q-item v-for="l in list">
+ <q-item-section>{{l.device}}</q-item-section>
+ <q-item-section>{{l.times}}</q-item-section>
+ <q-item-section>{{l.at}}</q-item-section>
+ <q-item-section side><q-icon name="delete" color="red" @click="remove(l.device,l.day)"></q-icon></q-item-section>
 </q-item>
 </q-list>
     </q-page>

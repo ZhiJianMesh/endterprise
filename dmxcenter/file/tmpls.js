@@ -62,7 +62,7 @@ showEdit(i) {
 },
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
     <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.homeMenus.tpl.name}}</q-toolbar-title>

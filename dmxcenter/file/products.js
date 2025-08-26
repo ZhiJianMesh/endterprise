@@ -63,13 +63,13 @@ showEdit(i) {
 },
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header elevated>
-   <q-toolbar>
-    <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
-    <q-toolbar-title>{{tags.homeMenus.prt.name}}</q-toolbar-title>
-    <q-btn flat dense color="white" icon="playlist_add" @click="showEdit(-1)"></q-btn>
-   </q-toolbar>
-  </q-header>
+ <q-header>
+  <q-toolbar>
+   <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
+   <q-toolbar-title>{{tags.homeMenus.prt.name}}</q-toolbar-title>
+   <q-btn flat dense color="white" icon="playlist_add" @click="showEdit(-1)"></q-btn>
+  </q-toolbar>
+ </q-header>
 <q-page-container>
     <q-page class="q-pa-md">
 <q-list separator>

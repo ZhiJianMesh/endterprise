@@ -134,7 +134,7 @@ add_batch(codes, prt, createAt, start) {
 },
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
     <q-toolbar-title>{{tags.deviceMng}}</q-toolbar-title>

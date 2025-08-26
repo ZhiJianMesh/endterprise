@@ -181,7 +181,7 @@ rmvCustomer() {
 },
 template:`
 <q-layout view="hHh lpr fFf">
-  <q-header elevated>
+  <q-header>
    <q-toolbar>
       <q-btn flat round icon="arrow_back" dense @click="service.go_back" v-if="service.role!='customer'"></q-btn>
       <q-toolbar-title><span v-if="id!=0&&service.role!='customer'">{{tags.cust.name}}-</span>{{custInfo.name}}</q-toolbar-title>

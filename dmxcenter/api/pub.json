@@ -18,7 +18,8 @@
         "rights":{
             "admin":"*",
             "product":"*",
-            "msgtpl":"*"
+            "msgtpl":"*",
+            "err":"*"
         }
     },
     

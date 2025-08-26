@@ -30,9 +30,10 @@ zh:{
   notTaken:"未取走",
   exceedsDayNum:"报表查询时间超过366天",
   homeMenus:{
-      prt:{name:"产品", url:"/products",icon:"settings_remote"},
-      tpl:{name:"消息模板", url:"/tmpls", icon:"speaker_notes"},
-      err:{name:"错误请求", url:"/errreqs", icon:"error"}
+      prt:{name:"产品", url:"/products",icon:"settings_remote",color:"teal"},
+      tpl:{name:"消息模板", url:"/tmpls", icon:"speaker_notes",color:"primary"},
+      err:{name:"错误请求", url:"/errreqs", icon:"error",color:"orange"},
+      excess:{name:"过量请求", url:"/excess", icon:"warning",color:"negative"}
   },
   reports:{name:"报表",url:"/reports",icon:"svguse:/assets/imgs/meshicons.svg#barChart",
     sendMsg:"发送消息",
