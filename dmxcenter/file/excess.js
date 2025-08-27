@@ -2,10 +2,14 @@ export default {
 inject:['service', 'tags'],
 data() {return {
 	page:{cur:1, max:0},
-    list:[]
+    list:[],
+    alertDlg:null
 }},
 created(){
     this.query(1);
+},
+mounted(){//不能在created中赋值，更不能在data中
+    this.alertDlg=this.$refs.errDlg;
 },
 methods:{
 query(pg) {
@@ -43,6 +47,9 @@ remove(device,day) {
 			this.query(this.page.cur);
 		}
     })
+},
+showMsg(code) {
+    this.$refs.msgDlg.show(code);
 }
 },
 template:`
@@ -61,7 +68,7 @@ template:`
   boundary-numbers="false" @update:model-value="query"></q-pagination>
 </div>
 <q-list separator>
-<q-item v-for="l in list">
+<q-item v-for="l in list" @click="showMsg(l.device)" clickable>
  <q-item-section>{{l.device}}</q-item-section>
  <q-item-section>{{l.times}}</q-item-section>
  <q-item-section>{{l.at}}</q-item-section>
@@ -73,5 +80,7 @@ template:`
 </q-layout>
 
 <component-alert-dialog :title="tags.failToCall" :errMsgs="tags.errMsgs" :close="tags.close" ref="errDlg"></component-alert-dialog>
+<component-msg-dialog ref="msgDlg" :alertDlg="alertDlg" :tags="tags"
+ :serviceName="service.name"></component-msg-dialog>
 `
 }

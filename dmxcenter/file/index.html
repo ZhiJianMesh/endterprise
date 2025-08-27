@@ -22,6 +22,7 @@ import AlertDialog from "/assets/v3/components/alert_dialog.js"
 import ConfirmDialog from "/assets/v3/components/confirm_dialog.js"
 import UserSelector from "/assets/v3/components/user_selector.js"
 import MsgSender from "./msg_sender.js"
+import MsgDialog from "./msgdlg.js"
 
 const l=Platform.language();
 const tags = l.indexOf("zh") == 0 ? Language.zh : Language.en;
@@ -177,6 +178,8 @@ app.component('component-confirm-dialog', ConfirmDialog);
 app.component('component-date-input', DateInput);
 app.component('component-user-selector', UserSelector);
 app.component('component-msg-sender', MsgSender);
+app.component('component-msg-dialog', MsgDialog);
+
 //启动APP
 app.mount('#app');
 </script>

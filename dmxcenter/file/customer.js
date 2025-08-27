@@ -1,4 +1,3 @@
-const CUST_SEGS=['id','name','address','createAt','cmt','contact','deviceNum'];
 export default {
 inject:['service', 'tags'],
 data() {return {
@@ -8,8 +7,8 @@ data() {return {
     admins:[],
     search:'',
     page:{cur:1, max:0},
+    alertDlg:null,
     adminInfo:{newAcc:[],expend:false},
-    msg:{dlg:false, code:'', downmsg:'', upmsgs:[], downtime:'',setAt:''},
     custInfo:{dlg:false,id:0,name:'',address:'',createAt:'',cmt:'',contact:'',deviceNum:0,expend:false}
 }},
 created(){
@@ -21,6 +20,9 @@ created(){
         }
         this.query_devices(1);
     });
+},
+mounted(){//不能在created中赋值，更不能在data中
+    this.alertDlg=this.$refs.errDlg;
 },
 methods:{
 showMsgSender() {
@@ -41,39 +43,7 @@ getCust() {
     })
 },
 showMsg(code) {
-    var url="/device/getmessage?code="+code;
-    request({method:"GET",url:url}, this.service.name).then(resp =>{
-        if(resp.code!=RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        var dt=new Date();
-        if(resp.data.downmsg) {
-            this.msg.downmsg=resp.data.downmsg;
-            dt.setTime(resp.data.setAt);
-            this.msg.setAt=datetime2str(dt,true);
-            if(resp.data.downtime>resp.data.setAt) {
-                dt.setTime(resp.data.downtime);
-                this.msg.downtime=datetime2str(dt,true);
-            } else {
-                this.msg.downtime=this.tags.notTaken;
-            }
-        } else {
-            this.msg.downmsg='';
-            this.msg.downtime='';
-            this.msg.setAt='';
-        }
-        var upmsgs=[];
-        if(resp.data.upmsgs) {
-            for(var m of resp.data.upmsgs) {
-                dt.setTime(m.at);
-                upmsgs.push({msg:m.msg,at:datetime2str(dt,true)});
-            }
-        }
-        this.msg.upmsgs=upmsgs;
-        this.msg.code=code;
-        this.msg.dlg=true;
-    })
+    this.$refs.msgDlg.show(code);
 },
 query_devices(pg){
     this.search='';
@@ -183,7 +153,8 @@ template:`
 <q-layout view="hHh lpr fFf">
   <q-header>
    <q-toolbar>
-      <q-btn flat round icon="arrow_back" dense @click="service.go_back" v-if="service.role!='customer'"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.go_back"
+       v-if="service.role!='customer'"></q-btn>
       <q-toolbar-title><span v-if="id!=0&&service.role!='customer'">{{tags.cust.name}}-</span>{{custInfo.name}}</q-toolbar-title>
    </q-toolbar>
   </q-header>
@@ -234,7 +205,7 @@ template:`
 </q-card></q-expansion-item>
 
 <!-- devices -->
-<q-banner dense inline-actions class="q-mb-md text-dark bg-blue-grey-1" dense>
+<q-banner dense inline-actions class="q-pl-md text-dark bg-blue-grey-1" dense>
 {{tags.cust.devices}}
  <template v-slot:action>
   <q-input v-model="search" dense @keyup.enter="get_devices(1)">
@@ -280,6 +251,8 @@ template:`
 <component-msg-sender :title="tags.sendMsg" ref="msgSender"
  :custId="id" :tags="tags.sender" :custName="custInfo.name" :service="service.name">
 </component-msg-sender>
+<component-msg-dialog ref="msgDlg" :alertDlg="alertDlg" :tags="tags"
+:serviceName="service.name"></component-msg-dialog>
 
 <!-- 修改客户 -->
 <q-dialog v-model="custInfo.dlg">
@@ -305,40 +278,6 @@ template:`
     </q-card-section>
     <q-card-actions align="right">
       <q-btn :label="tags.ok" color="primary" @click="setCustomer"></q-btn>
-      <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
-    </q-card-actions>
-  </q-card>
-</q-dialog>
-
-<!-- 显示消息 -->
-<q-dialog v-model="msg.dlg">
-  <q-card style="min-width:75vw">
-    <q-card-section>
-      <div class="text-h6">{{msg.code}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-     <q-list>
-      <q-item>
-       <q-item-section>{{tags.cust.downmsg}}</q-item-section>
-      </q-item>
-      <q-item>
-        <q-item-section>
-          <q-item-label>{{msg.downmsg}}</q-item-label>
-          <q-item-label caption>{{msg.setAt}} / {{msg.downtime}}</q-item-label>
-        </q-item-section>
-      </q-item>
-      <q-item>
-        <q-item-section>{{tags.cust.upmsg}}</q-item-section>
-      </q-item>
-      <q-item v-for="m in msg.upmsgs">
-        <q-item-section>
-          <q-item-label>{{m.msg}}</q-item-label>
-          <q-item-label caption>{{m.at}}</q-item-label>
-        </q-item-section>
-      </q-item>
-     </q-list>
-    </q-card-section>
-    <q-card-actions align="right">
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>
     </q-card-actions>
   </q-card>
