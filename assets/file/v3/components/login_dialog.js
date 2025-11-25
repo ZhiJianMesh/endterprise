@@ -52,8 +52,8 @@ template: `
     </q-card-section>
 	<q-separator></q-separator>
     <q-card-section class="q-pt-none">
-      <q-input dense v-model="loginAcc" autofocus :label="account"></q-input>
-      <q-input dense v-model="loginPwd" autofocus :type="hidePwd?'password':'text'" :label="pwd">
+      <q-input v-model="loginAcc" autofocus :label="account"></q-input>
+      <q-input v-model="loginPwd" autofocus :type="hidePwd?'password':'text'" :label="pwd">
         <template v-slot:append>
           <q-icon :name="hidePwd ? 'visibility_off':'visibility'"
             class="cursor-pointer" @click="hidePwd=!hidePwd"></q-icon>

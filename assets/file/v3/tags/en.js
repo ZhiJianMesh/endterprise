@@ -16,6 +16,7 @@ const __err_infos={
 '113':"request a irrelevant node",
 '114':"third party error",
 '115':"balance unsufficient",
+'118':'request has been denied',
 '150':"unknown error",
 '2000':"not exists",
 '2001':"already exists",

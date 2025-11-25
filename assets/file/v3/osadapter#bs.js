@@ -29,6 +29,7 @@ NO_NODE:112, //没有合适的节点
 INVALID_NODE:113, //不合适的节点
 THIRD_PARTY_ERR:114, //第三方服务错误
 PAST_DUE:115, //欠费
+FORBIDDEN:118,//禁止访问
 UNKNOWN_ERROR:150,
 EXISTS:2000,
 NOT_EXISTS:2001,
@@ -134,11 +135,14 @@ function sendRequest(opts, service) {
         url+=location.host;
     }
     url+="/"+service;*/
-    var url=location.protocol+"//"+location.host+"/"+service;
-    if(opts.url.startsWith("/api/")) {
-        url += opts.url;
-    } else {
-        url += "/api" + opts.url;
+    var url=opts.url;
+    if(!url.startsWith("http://")&&!url.startsWith("https://")) {
+        url=location.protocol+"//"+location.host+"/"+service;
+        if(opts.url.startsWith("/api/")) {
+            url += opts.url;
+        } else {
+            url += "/api" + opts.url;
+        }
     }
     __traceid++;
     var hh = opts.headers;
@@ -733,6 +737,16 @@ const Server = {
             __default_jscb(jsCbId,resp);
         });
     },
+    setBiosSrvs(biosSrvs,jsCbId) {
+        this.command({cmd:"setInfo", biosSrvs:biosSrvs}).then(resp => {
+            __default_jscb(jsCbId,resp);
+        });
+    },
+    setDbSrvs(dbSrvs,jsCbId) {
+        this.command({cmd:"setInfo", dbSrvs:dbSrvs}).then(resp => {
+            __default_jscb(jsCbId,resp);
+        });
+    },
     setLocation(province,city,county,jsCbId) {
         this.command({cmd:"setInfo",
             province:province,
@@ -781,6 +795,10 @@ const Server = {
                 data[i]=["240e:3af:c40:9110:de5f:9919:bf8f:79f9",
                 "240e:3af:c40:9110:b5c5:2d97:f998:2df4",
                 "240e:3af:c40:9110::1000"]
+            } else if(item == "dbsrvs") {
+                data[i]="192.168.0.102:8523,192.168.0.103:8523"
+            } else if(item == "biossrvs") {
+                data[i]="192.168.0.102:8523,192.168.0.103:8523"
             } else {
                 Console.warn("Invalid query item " + i);
             }
@@ -892,7 +910,8 @@ const Companies={
     },
     add(cid,accessCode,insideAddr,jsCbId) {
         var token=Secure.sha256(accessCode);
-        var opts={method:'GET',url:'/api/company/entrance?id='+cid,headers:{access_token:token},private:false};
+        var opts={method:'GET',url:'/api/company/entrance?id='+cid,
+            headers:{access_token:token,cid:cid},private:false};
         sendRequest(opts, "httpdns").then(resp => {
             if(resp.code!=RetCode.OK) {
                 __default_jscb(jsCbId, resp);
@@ -1177,7 +1196,7 @@ function storageRmv(k) {
     if(s) {
         __companies=JSON.parse(s);
     } else {
-        __companies=[{id:1,name:"zhijian.net.cn",accessCode:"ABCDEFGHIJ",tokens:{}}]
+        __companies=[{id:1,name:"通用服务中心",accessCode:"ABCDEFGHIJ",tokens:{}}]
     }
     __curCompany=localStorage.getItem("curCompany");
     if(!__curCompany || __curCompany >= __companies.length) {
