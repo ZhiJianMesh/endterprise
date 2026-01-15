@@ -1,4 +1,5 @@
 const __err_infos={
+'0':"Success",
 '1':"deprecated",
 '100':"system internal errror",
 '101':"network error",

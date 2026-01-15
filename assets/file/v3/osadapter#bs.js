@@ -701,7 +701,7 @@ const Server = {
 			__default_jscb(jsCbId,{code:RetCode.OK});
 		})
 	},
-    resetAccessToken(){return '1234567890123456'},
+    resetTokenPwd(){return '1234567890123456'},
     resetAccessCode(jsCbId){
         __default_jscb(jsCbId,{code:RetCode.OK, data:{code:"723456"}});
     },
@@ -811,7 +811,7 @@ const Server = {
     SRV_ALTERING() {return 2;}
 }
 
-const Company={//used in server
+const Company={//used in server ui
     id(){return 50}, //storageGet(COMPANY_ID,'0')
     name(){return "test"},
     register(creditCode,pwd,cfmPwd,name,country,province,city,county,info,verifyCode,session,jsCbId){

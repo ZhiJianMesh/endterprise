@@ -3,10 +3,12 @@ inject:['service', 'tags'],
 data() {return {
  creditCode:"",
  companyName:"",
+ biosSrvs:"",
+ dbSrvs:"",
  location:{province:'',city:'',county:''},
  cid:"",
  accessCode:"", //8位服务器接入码
- accessToken:'', //10位调测令牌
+ tokenPwd:'', //10位调测令牌
  outsideAddr:"",
  logo:"/assets/imgs/logo_example.png",
  logLevel:'DEBUG',
@@ -68,7 +70,8 @@ init() {
             this.logo=png;
         }
     }));
-    var items = "accessCode,creditCode,companyName,province,city,county,logLevel,outsideAddr,externAddrs";
+    var items = "accessCode,creditCode,companyName,province,"
+       +"city,county,logLevel,outsideAddr,externAddrs,biosSrvs,dbSrvs";
     Server.query(items, __regsiterCallback(resp => {
         var info=resp.data;
         this.accessCode=info.accessCode;
@@ -77,6 +80,8 @@ init() {
         this.location={province:info.province, city:info.city, county:info.county};
         this.logLevel=info.logLevel;
         this.outsideAddr=info.outsideAddr;
+        this.dbSrvs=info.dbSrvs;
+        this.biosSrvs=info.biosSrvs;
 
         var l=[];
         for(var addr of info.externAddrs) {
@@ -150,7 +155,21 @@ nameChged(){
         }
     }));
 },
-outsideAddrAdded(val, initVal) {
+biosSrvChged() {
+    Server.setBiosSrvs(this.biosSrvs,__regsiterCallback(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
+    }));
+},
+dbSrvChged() {
+    Server.setDbSrvs(this.dbSrvs,__regsiterCallback(resp=>{
+        if(resp.code!=RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
+    }));
+},
+outsideAddrAdded(val, _oldV) {
     if(!Http.isIPv4(val) && !Http.isIPv6(val)) {
         return;
     }
@@ -175,7 +194,7 @@ outsideAddrChged() {
       }  
     }));
 },
-saveAccessCode(val, initVal) { //httpdns接入码
+saveAccessCode(val, _oldV) { //httpdns接入码
     if(Server.startupAt()<=0) { //服务没启动
         this.$refs.alertDlg.show(this.tags.serverNotStart);
         return;
@@ -204,8 +223,8 @@ resetAccessCode() { //远程调测接入码
 setLogLevel() {
     Server.setLogLevel(this.logLevel);
 },
-resetAccessToken(){//用于重置公司调测服务的令牌
-    this.accessToken = Server.resetAccessToken();
+resetTokenPwd(){//用于重置公司调测服务的令牌
+    this.tokenPwd = Server.resetTokenPwd();
 },
 locationChged() {
     Server.setLocation(this.location.province, this.location.city, this.location.county,
@@ -252,14 +271,14 @@ changePwd() {
 template: `
 <q-layout view="hHh lpr fFf">
 <q-header elevated>
-   <q-toolbar>
-      <q-avatar square><q-icon name="settings"></q-icon></q-avatar>
-      <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
-      <q-chip clickable color="primary" text-color="white" @click="register">
-        <q-avatar><q-icon name="beenhere"></q-icon></q-avatar>
-        {{cid?tags.reRegister:(tags.login+'/'+tags.register)}}
-      </q-chip>
-   </q-toolbar>
+ <q-toolbar>
+  <q-avatar square><q-icon name="settings"></q-icon></q-avatar>
+  <q-toolbar-title>{{tags.settings}}</q-toolbar-title>
+  <q-chip clickable color="primary" text-color="white" @click="register">
+   <q-avatar><q-icon name="beenhere"></q-icon></q-avatar>
+   {{cid?tags.reRegister:(tags.login+'/'+tags.register)}}
+  </q-chip>
+ </q-toolbar>
 </q-header>
 <q-page-container>
  <q-page>
@@ -268,27 +287,31 @@ template: `
   <td class="text-bold">{{tags.baseSettings}}</td><td></td>
  </tr>
  <tr>
-   <td>{{tags.companyId}}</td>
-   <td>{{cid}}<q-badge color="primary" @click="chgPwdDta.dlg=true" class="q-ml-md">{{tags.chgPwd}}</q-badge></td>
+  <td>{{tags.companyId}}</td>
+  <td>{{cid}}<q-badge color="primary" @click="chgPwdDta.dlg=true" class="q-ml-md">{{tags.chgPwd}}</q-badge></td>
  </tr>
  <tr>
-   <td>{{tags.creditCode}}</td>
-   <td>{{creditCode}}</td>
+  <td>{{tags.creditCode}}</td>
+  <td>{{creditCode}}</td>
  </tr>
  <tr>
-   <td>{{tags.companyName}}</td>
-   <td class="cursor-pointer">{{companyName}}
-    <q-popup-edit v-model="companyName" v-slot="scope" @update:model-value="nameChged"
-     buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
-      <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
-    </q-popup-edit>
-   </td>
+  <td>{{tags.companyName}}</td>
+  <td class="cursor-pointer">{{companyName}}
+   <q-popup-edit v-model="companyName" v-slot="scope" @update:model-value="nameChged"
+    buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+    <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+   </q-popup-edit>
+  </td>
  </tr>
  <tr>
-   <td>{{tags.address}}</td>
-   <td class="cursor-pointer">
-    <address-dialog v-model="location" @confirm:model-value="locationChged"></address-dialog>
-   </td>
+  <td>{{tags.address}}</td>
+  <td class="cursor-pointer">
+   <address-dialog v-model="location" @confirm:model-value="locationChged"></address-dialog>
+  </td>
+ </tr>
+ <tr>
+  <td>{{tags.platformVersion}}</td>
+  <td>{{platformVersion}}</td>
  </tr>
  <tr>
   <td>{{tags.logo}}</td>
@@ -296,72 +319,94 @@ template: `
    <q-img :src="logo" style="width:5em;height:5em;" @click="logoOpts.dlg=true"></q-img>
   </td>
  </tr>
- <tr v-show="cid>0">
-   <td>{{tags.backup}}</td>
-   <td @click="service.jump('/backup')">
-    <q-icon name="cloud_sync" color="primary" size="2em" class="q-ml-md"></q-icon>
-   </td>
- </tr>
- <tr>
-    <td>{{tags.platformVersion}}</td>
-    <td>{{platformVersion}}</td>
- </tr>
+
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
   <td>{{tags.nwSettings}}</td><td></td>
  </tr>
  <tr>
-   <td>{{tags.accessCode}}</td>
-   <td>
-    <span>{{accessCode}}
-     <q-popup-edit v-slot="scope" @save="saveAccessCode" v-model="accessCode"
-      buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
-      <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
-     </q-popup-edit>
-    </span>
-    <q-btn round dense flat icon="auto_mode" text-color="secondary"
-     @click="resetAccessCode" class="q-ml-md"></q-btn>
-   </td>
+  <td>{{tags.accessCode}}</td>
+  <td>
+   <span>{{accessCode}}
+    <q-popup-edit v-slot="scope" @save="saveAccessCode" v-model="accessCode"
+     buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+     <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+    </q-popup-edit>
+   </span>
+   <q-btn round dense flat icon="auto_mode" text-color="secondary"
+    @click="resetAccessCode" class="q-ml-md"></q-btn>
+  </td>
  </tr>
  <tr>
   <td>{{tags.pubGwIp}}</td>
   <td>
    <q-option-group dense color="primary" v-model="outsideAddr" :options="addrList"
     @update:model-value="outsideAddrChged" style="overflow-wrap: break-all;"></q-option-group>
-   
-   <span>
-    <q-btn round dense flat icon="add_circle" color="primary" class="q-ma-none">
-    <q-popup-edit v-slot="scope" @save="outsideAddrAdded"
-     buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
-     <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
-    </q-popup-edit>
-    {{tags.addGw}}</q-btn>
-   </span>
-
-   <span v-show="outsideAddr!=''">
-    <q-circular-progress :indeterminate="testing" show-value size="3em"
-     @click="connectionTest" thickness="0.3" color="yellow"
+   <div v-show="outsideAddr!=''">
+    <span>
+     <q-btn :label="tags.addGw" round dense flat icon="add_circle" color="primary" class="q-ma-none">
+     <q-popup-edit v-slot="scope" @save="outsideAddrAdded"
+      buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+      <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+     </q-popup-edit>
+     </q-btn>
+    </span>
+    <span>
+     <q-circular-progress :indeterminate="testing" show-value size="3em"
+      @click="connectionTest" thickness="0.3" color="yellow"
       track-color="transparent" class="text-white q-ml-lg" dense>
-     <q-icon name="leak_add" color="secondary" class="q-ma-none" size="2em"></q-icon>
-    </q-circular-progress>{{tags.testGw}}
-   </span>
+      <q-icon name="leak_add" color="secondary" class="q-ma-none" size="2em"></q-icon>
+     </q-circular-progress>{{tags.testGw}}
+    </span>
+   </div>
   </td>
  </tr>
- <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.testSettings}}</td><td></td></tr>
- <tr>
-   <td>{{tags.accessToken}}</td>
-   <td>
-    <q-chip style="min-width:11em" dense>
-     <q-avatar color="orange" icon="key" @click="resetAccessToken" size="2em"></q-avatar>{{accessToken}}
-    </q-chip>
-   </td>
+
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold">
+  <td>{{tags.nwStruct}}</td><td></td>
+ </tr>
+ <tr v-show="cid>0">
+  <td>{{tags.backup}}</td>
+  <td>
+   <q-btn icon="cloud_sync" color="primary" flat dense
+    @click="service.jump('/backup')"></q-btn>
+  </td>
  </tr>
  <tr>
-   <td>{{tags.logLevel}}</td>
-   <td>
-    <q-option-group dense color="primary"
-     v-model="logLevel" :options="logLevels" @update:model-value="setLogLevel"></q-option-group>
-   </td>
-  </tr>
+  <td>{{tags.biosServers}}</td>
+  <td class="cursor-pointer">{{biosSrvs}}
+   <q-popup-edit v-model="biosSrvs" v-slot="scope" @update:model-value="biosSrvChged"
+    buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+    <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+   </q-popup-edit>
+  </td>
+ </tr>
+ <tr>
+  <td>{{tags.dbServers}}</td>
+  <td class="cursor-pointer">{{dbSrvs}}
+   <q-popup-edit v-model="dbSrvs" v-slot="scope" @update:model-value="dbSrvChged"
+    buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
+    <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
+   </q-popup-edit>
+  </td>
+ </tr>
+ 
+ <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.testSettings}}</td><td></td></tr>
+ <tr>
+  <td>{{tags.tokenPwd}}</td>
+  <td>
+   <q-chip style="min-width:11em" dense>
+    <q-avatar color="orange" icon="key" @click="resetTokenPwd" size="2em"></q-avatar>{{tokenPwd}}
+   </q-chip>
+  </td>
+ </tr>
+ <tr>
+  <td>{{tags.logLevel}}</td>
+  <td>
+   <q-option-group dense color="primary"
+    v-model="logLevel" :options="logLevels" @update:model-value="setLogLevel"></q-option-group>
+  </td>
+ </tr>
+
 </q-markup-table>
  </q-page>
 </q-page-container>
@@ -369,25 +414,25 @@ template: `
 
 <q-dialog v-model="logoOpts.dlg">
  <q-card bordered>
-   <q-card-section>
-    <div class="row no-wrap">
-     <div>
-      <!-- logoOpts必须用v-bind不能用v-model -->
-      <vue-cropper ref="cropper" v-bind="logoOpts" :style="{width:logoOpts.width+'px',height:logoOpts.width+'px'}"></vue-cropper>
-     </div>
-     <div class="column items-start">
-        <q-btn flat icon="burst_mode" color="primary" @click="selectImg" size="1.4em"></q-btn>
-        <q-btn flat icon="zoom_in" color="accent" @click="zoom(1)" size="1.2em"></q-btn>
-        <q-btn flat icon="zoom_out" color="accent" @click="zoom(-1)" size="1.2em"></q-btn>
-        <q-btn flat icon="rotate_left" color="accent" @click="rotate(1)" size="1.2em"></q-btn>
-        <q-btn flat icon="rotate_right" color="accent" @click="rotate(-1)" size="1.2em"></q-btn>
-     </div>
+  <q-card-section>
+   <div class="row no-wrap">
+    <div>
+     <!-- logoOpts必须用v-bind不能用v-model -->
+     <vue-cropper ref="cropper" v-bind="logoOpts" :style="{width:logoOpts.width+'px',height:logoOpts.width+'px'}"></vue-cropper>
     </div>
-   </q-card-section>
-   <q-inner-loading :showing="logoOpts.loading"><q-spinner-gears size="4em" color="primary"></q-spinner-gears></q-inner-loading>
-   <q-card-actions align="right" class="text-primary">
-    <q-btn flat :label="tags.ok" @click="setLogo"></q-btn>
-    <q-btn flat :label="tags.cancel" v-close-popup></q-btn>
+    <div class="column items-start">
+     <q-btn flat icon="burst_mode" color="primary" @click="selectImg" size="1.4em"></q-btn>
+     <q-btn flat icon="zoom_in" color="accent" @click="zoom(1)" size="1.2em"></q-btn>
+     <q-btn flat icon="zoom_out" color="accent" @click="zoom(-1)" size="1.2em"></q-btn>
+     <q-btn flat icon="rotate_left" color="accent" @click="rotate(1)" size="1.2em"></q-btn>
+     <q-btn flat icon="rotate_right" color="accent" @click="rotate(-1)" size="1.2em"></q-btn>
+    </div>
+   </div>
+  </q-card-section>
+  <q-inner-loading :showing="logoOpts.loading"><q-spinner-gears size="4em" color="primary"></q-spinner-gears></q-inner-loading>
+  <q-card-actions align="right" class="text-primary">
+   <q-btn flat :label="tags.ok" @click="setLogo"></q-btn>
+   <q-btn flat :label="tags.cancel" v-close-popup></q-btn>
   </q-card-actions>
  </q-card>
  <input type="file" ref="logoImg" v-show="false"
@@ -408,14 +453,14 @@ template: `
     <q-input v-model="chgPwdDta.newPwd" :label="tags.newPwd" dense :type="chgPwdDta.vis ? 'text':'password'">
      <template v-slot:append>
       <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
-        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+       class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
      </template>
     </q-input>
     <q-input v-model="chgPwdDta.cfmPwd" :label="tags.cfmPwd" dense :type="chgPwdDta.vis ? 'text':'password'"
      :rules="[v=>chgPwdDta.newPwd==chgPwdDta.cfmPwd||tags.invalidCfmPwd]">
      <template v-slot:append>
       <q-icon :name="chgPwdDta.vis ? 'visibility':'visibility_off'"
-        class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
+       class="cursor-pointer" @click="chgPwdDta.vis=!chgPwdDta.vis"></q-icon>
      </template>
     </q-input>
    </q-card-section>

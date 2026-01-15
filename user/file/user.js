@@ -30,7 +30,7 @@ detail() {
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-        this.dtl=resp.data;//account,nickName,mobile,email,loginTime,createAt,birthday,sex,powers[],groups[]
+        this.dtl=resp.data;//account,nickName,mobile,email,loginTime,createAt,birthday,sex,powers[]
         var dt = new Date(this.dtl.loginTime);
         this.dtl['loginAt']=datetime2str(dt);
         dt.setTime(this.dtl.createAt?this.dtl.createAt:0)//老版本没有此字段

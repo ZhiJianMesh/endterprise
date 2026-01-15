@@ -1,6 +1,6 @@
 export default {
 en:{
-app_name:"groups management",
+app_name:"Account management",
 failToCall:"Failed",
 close:"Close",
 ok:"OK"

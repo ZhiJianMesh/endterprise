@@ -28,26 +28,38 @@ enterprise_apps(pg) {
             this.eData.cur=1;
             this.apps=[];
             Console.info("error, code:" + resp.code + ",info:" + resp.info)
-            this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
         this.format_apps(resp.data.total, resp.data.cols, resp.data.services, false, this.eData);
     })
 },
 personal_apps(pg) {
-    var offset=(parseInt(pg)-1) * this.service.N_PAGE;
-    var opts={
-        method:"GET", private:false, cloud:true,
-        url:"/service/personal?offset=" + offset + "&num=" + this.service.N_PAGE
-    };
-    request(opts, "appstore").then(resp=>{
-        if(resp.code != RetCode.OK) {
-            this.pData.max=0;
-            this.pData.cur=1;
-            Console.info("error, code:" + resp.code + ",info:" + resp.info)
-            return;
+    request({method:"GET", url:"/getomauth", cloud:true}, "om").then(ar => {
+        var level;
+        if(ar.code!=RetCode.OK) {
+            level=1;
+        } else {
+            for(var l of ar.data.list) {
+                if(l.service=='om'||l.serivce=='*') {
+                    level=0; //拥有om权限的才可以显示level为0的服务
+                }
+            }
         }
-        this.format_apps(resp.data.total, resp.data.cols, resp.data.services, true, this.pData);
+        var offset=(parseInt(pg)-1) * this.service.N_PAGE;
+        var opts={
+            method:"GET", private:false, cloud:true,
+            url:"/service/personal?offset=" + offset
+             + "&num=" + this.service.N_PAGE + "&level=" + level
+        };
+        request(opts, "appstore").then(resp=>{
+            if(resp.code != RetCode.OK) {
+                this.pData.max=0;
+                this.pData.cur=1;
+                Console.info("error, code:" + resp.code + ",info:" + resp.info)
+                return;
+            }
+            this.format_apps(resp.data.total, resp.data.cols, resp.data.services, true, this.pData);
+        })    
     })
 },
 detail(service) {

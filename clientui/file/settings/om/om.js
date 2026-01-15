@@ -29,37 +29,51 @@ template: `
   <q-page-container>
     <q-page class="q-pa-md">
 <q-list>
-  <q-item clickable v-ripple @click="jumpTo('execsqls')">
-    <q-item-section avatar>
-      <q-icon color="primary" name="storage"></q-icon>
-    </q-item-section>
-
-    <q-item-section>{{tags.om.execsqls}}</q-item-section>
-    <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
-    </q-item-section>
-  </q-item>
-  
-  <q-item clickable v-ripple @click="jumpTo('servicestate')">
-    <q-item-section avatar>
-      <q-icon color="primary" name="insert_chart"></q-icon>
-    </q-item-section>
-
-    <q-item-section>{{tags.om.serviceState}}</q-item-section>
-    <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
-    </q-item-section>
-  </q-item>
-  
-  <q-item clickable v-ripple @click="jumpTo('serverlogs')">
-    <q-item-section avatar>
-      <q-icon color="primary" name="subject"></q-icon>
-    </q-item-section>
-    <q-item-section>{{tags.om.serverlogs}}</q-item-section>
-    <q-item-section avatar>
-      <q-icon name="chevron_right" class="text-primary"></q-icon>
-    </q-item-section>
-  </q-item>
+<q-item clickable @click="jumpTo('services')">
+ <q-item-section avatar>
+  <q-icon color="primary" name="apps"></q-icon>
+ </q-item-section>
+ <q-item-section>{{tags.om.serviceMng}}</q-item-section>
+ <q-item-section avatar>
+  <q-icon name="chevron_right" class="text-primary"></q-icon>
+ </q-item-section>
+</q-item>
+<q-item clickable @click="jumpTo('srvnodes')">
+ <q-item-section avatar>
+  <q-icon color="primary" name="miscellaneous_services"></q-icon>
+ </q-item-section>
+ <q-item-section>{{tags.om.srvNodes}}</q-item-section>
+ <q-item-section avatar>
+  <q-icon name="chevron_right" class="text-primary"></q-icon>
+ </q-item-section>
+</q-item>
+<q-item clickable @click="jumpTo('dbnodes')">
+ <q-item-section avatar>
+  <q-icon color="primary" name="storage"></q-icon>
+ </q-item-section>
+ <q-item-section>{{tags.om.dbNodes}}</q-item-section>
+ <q-item-section avatar>
+  <q-icon name="chevron_right" class="text-primary"></q-icon>
+ </q-item-section>
+</q-item>
+<q-item clickable v-ripple @click="jumpTo('execsqls')">
+ <q-item-section avatar>
+  <q-icon color="primary" name="subscriptions"></q-icon>
+ </q-item-section>
+ <q-item-section>{{tags.om.execsqls}}</q-item-section>
+ <q-item-section avatar>
+  <q-icon name="chevron_right" class="text-primary"></q-icon>
+ </q-item-section>
+</q-item>
+<q-item clickable v-ripple @click="jumpTo('serverlogs')">
+ <q-item-section avatar>
+  <q-icon color="primary" name="subject"></q-icon>
+ </q-item-section>
+ <q-item-section>{{tags.om.serverlogs}}</q-item-section>
+ <q-item-section avatar>
+  <q-icon name="chevron_right" class="text-primary"></q-icon>
+ </q-item-section>
+</q-item>
 </q-list>
     </q-page>
   </q-page-container>

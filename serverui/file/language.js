@@ -35,7 +35,7 @@ zh:{
   nwSettings:"网络接入",
   backupNow:"立即备份",
   restore:"恢复数据",
-  accessToken:"调测令牌",
+  tokenPwd:"临时令牌密码",
   neverBackup:"尚无备份",
   startup:"启用",
   shutdown:'停用',
@@ -43,6 +43,10 @@ zh:{
   backupAt:"每日备份时间点",
   buckets:"备份站点",
   pubGwIp:"公网IP",
+  
+  nwStruct:"组网",
+  biosServers:"BIOS服务器",
+  dbServers:"DB服务器",
   
   locServices:"已安装应用",
 

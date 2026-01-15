@@ -40,7 +40,13 @@ import Backup from "./settings/cfg/backup.js"
 import OmHome from "./settings/om/om.js"
 import ExecSqls from "./settings/om/execsqls.js"
 import ServerLogs from "./settings/om/serverlogs.js"
-import ServiceState from "./settings/om/servicestate.js"
+import ServiceState from "./settings/om/service_state.js"
+import SrvNodes from "./settings/om/srvnodes.js"
+import DbNodes from "./settings/om/dbnodes.js"
+
+import Services from './settings/om/services.js'
+import ServiceDetail from './settings/om/service_detail.js'
+
 import MktHome from './settings/mkt/home.js'
 import MktDetail from './settings/mkt/detail.js'
 
@@ -60,11 +66,16 @@ routes:[
  {path:'/om/execsqls', component:ExecSqls},
  {path:'/om/serverlogs', component:ServerLogs},
  {path:'/om/servicestate', component:ServiceState},
+ {path:'/om/dbnodes', component:DbNodes},
+ {path:'/om/srvnodes', component:SrvNodes},
+ {path:'/om/services', component:Services},
+ {path:'/om/servicedetail', component:ServiceDetail},
  {path:'/mkt', component:MktHome},
  {path:'/mkt/detail', component:MktDetail}
 ]});
 //-------------------------------------------service定义
 const service={name:"settings",N_PAGE:10,N_SMPG:5,
+runtime:{},//运行时
 cdns:[], introductions:{}, cmdList:{},
 comTokens:{}, users:{},services:[],
 curCompany() {return JSON.parse(Companies.curCompany());},
@@ -196,6 +207,13 @@ copyToClipboard(txt){
   area.remove();
   return new Promise(resolve=>{resolve()});
 },
+setRt(k,v) {
+    this.runtime[router.currentRoute.value.path+':'+k]=v;
+},
+getRt(k,def) {
+    var v=this.runtime[router.currentRoute.value.path+':'+k];
+    return v?v:def;
+},
 go_back() { //返回，在页面中通过service.go_back调用
     router.back();
 },
@@ -238,4 +256,5 @@ app.component('component-date-input', DateInput);
 //--------------------------启动APP
 app.mount('#app');
 </script>
+<script src="/assets/v3/echarts.js"></script>
 </html>

@@ -316,21 +316,21 @@ template: `
    <q-separator></q-separator>
    <q-tab-panels v-model="dlg.comTab" animated>
     <q-tab-panel name="checkin">
-     <q-input dense v-model="addComDta.id" autofocus :label="tags.cfg.id"></q-input>
-     <q-input dense v-model="addComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
-     <q-input dense v-model="addComDta.insideAddr" :label="tags.insideAddr" v-show="addComDta.needInside"></q-input>
+     <q-input v-model="addComDta.id" autofocus :label="tags.cfg.id"></q-input>
+     <q-input v-model="addComDta.accessCode" :label="tags.cfg.accessCode"></q-input>
+     <q-input v-model="addComDta.insideAddr" :label="tags.insideAddr" v-show="addComDta.needInside"></q-input>
     </q-tab-panel>
     <q-tab-panel name="register">
-     <q-input autofocus v-model="regComDta.creditCode" :label="tags.cfg.creditCode" dense maxlength=18
+     <q-input autofocus v-model="regComDta.creditCode" :label="tags.cfg.creditCode" maxlength=18
      :rules="[v=>chkCredit(v)||tags.creditCodePls]"></q-input>
-     <q-input v-model="regComDta.name" :label="tags.cfg.name" maxlength=50 dense></q-input>
-     <q-input v-model="regComDta.pwd" :label="tags.pwd" dense maxlength=20 :type="regComDta.pwdVis ? 'text':'password'">
+     <q-input v-model="regComDta.name" :label="tags.cfg.name" maxlength=50></q-input>
+     <q-input v-model="regComDta.pwd" :label="tags.pwd" maxlength=20 :type="regComDta.pwdVis ? 'text':'password'">
       <template v-slot:append>
        <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
         class="cursor-pointer" @click="regComDta.pwdVis=!regComDta.pwdVis"></q-icon>
       </template>
      </q-input>
-     <q-input v-model="regComDta.cfmPwd" :label="tags.cfmPwd" dense maxlength=20
+     <q-input v-model="regComDta.cfmPwd" :label="tags.cfmPwd" maxlength=20
       :type="regComDta.pwdVis ? 'text':'password'" :rules="[v=>v==regComDta.pwd||tags.invalidCfmPwd]">
       <template v-slot:append>
        <q-icon :name="regComDta.pwdVis ? 'visibility':'visibility_off'"
@@ -358,14 +358,14 @@ template: `
    <div class="text-h6">{{tags.home.registerAcc}}</div>
   </q-card-section>
   <q-card-section class="q-pt-none">
-   <q-input dense v-model="newUsrDta.account" autofocus :label="tags.account"></q-input>
-   <q-input dense v-model="newUsrDta.pwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.pwd">
+   <q-input v-model="newUsrDta.account" autofocus :label="tags.account"></q-input>
+   <q-input v-model="newUsrDta.pwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.pwd">
     <template v-slot:append>
      <q-icon :name="newUsrDta.pwdVis ? 'visibility' : 'visibility_off'"
       class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>
     </template>
    </q-input>
-   <q-input dense v-model="newUsrDta.confirmPwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.cfmPwd">
+   <q-input v-model="newUsrDta.confirmPwd" autofocus :type="newUsrDta.pwdVis?'text':'password'" :label="tags.cfmPwd">
     <template v-slot:append>
      <q-icon :name="newUsrDta.pwdVis ? 'visibility':'visibility_off'"
       class="cursor-pointer" @click="newUsrDta.pwdVis=!newUsrDta.pwdVis"></q-icon>

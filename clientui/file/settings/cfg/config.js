@@ -8,11 +8,11 @@ company:{
     location:{province:'',city:'',county:''},
     accessCode:"",
     logLevel:'DEBUG',
-    accessToken:"",
+    tokenPwd:"",
 	runMode:'SINGLETON',
     logo:"/assets/imgs/logo_example.png"
 },
-cmds:{setloglevel:false,setoutsideaddr:false,resetaccesstoken:false},
+cmds:{setloglevel:false,setoutsideaddr:false,resettokenpwd:false},
 outsideAddr:'', //为空时，表示不开启
 addrList:[],
 chgPwdDta:{oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false},
@@ -57,7 +57,7 @@ created(){
     this.service.supportedCmds().then(list=> {
         this.cmds.setloglevel=findInArray(list,'setloglevel')>=0;
         this.cmds.setoutsideaddr=findInArray(list,'setoutsideaddr')>=0;
-        this.cmds.resetaccesstoken=findInArray(list,'resetaccesstoken')>=0;
+        this.cmds.resettokenpwd=findInArray(list,'resettokenpwd')>=0;
     });
 },
 methods:{
@@ -117,10 +117,10 @@ saveAccessCode(val, initVal) { //用于保存httpdns服务接入码
         }
     });
 },
-resetAccessToken(){//用于重置公司调测服务的令牌
-    this.service.command({cmd:"resetAccessToken"}).then(resp=>{
+resetTokenPwd(){//用于重置公司调测服务的令牌
+    this.service.command({cmd:"resettokenpwd"}).then(resp=>{
         if(resp.code==RetCode.OK) {
-            this.company.accessToken=resp.data.token;
+            this.company.tokenPwd=resp.data.token;
         }
     });
 },
@@ -330,13 +330,13 @@ template: `
   </td>
  </tr>
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"
-  v-if="cmds.resetaccesstoken||cmds.setloglevel">
+  v-if="cmds.resettokenpwd||cmds.setloglevel">
   <td>{{tags.cfg.remoteTest}}</td><td></td>
  </tr>
- <tr v-if="cmds.resetaccesstoken">
-   <td>{{tags.cfg.accessToken}}<q-icon name="key"></q-icon></td>
-   <td>{{company.accessToken}}
-      <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetAccessToken" size="1.5em"></q-icon>
+ <tr v-if="cmds.resettokenpwd">
+   <td>{{tags.cfg.tokenPwd}}<q-icon name="key"></q-icon></td>
+   <td>{{company.tokenPwd}}
+      <q-icon name="refresh" class="q-ml-md" color="primary" @click="resetTokenPwd" size="1.5em"></q-icon>
    </td>
  </tr>
  <tr v-if="cmds.setloglevel">

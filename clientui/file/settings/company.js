@@ -80,7 +80,7 @@ copy() {
 },
 onAuth() {
     var shaPwd=Secure.sha256(this.auth.pwd);
-    var dta={pwd:shaPwd, services:["company","httpdns","backend"]};
+    var dta={pwd:shaPwd, services:["company","httpdns","backend","bios","appstore"]};
     request({method:"POST",url:"/token", data:dta, private:false},"company").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
