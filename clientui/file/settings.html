@@ -21,7 +21,6 @@
 <script src="/assets/v3/quasar.js"></script>
 <script src="/assets/v3/osadapter.js"></script>
 <script src="/assets/v3/vue-cropper.js"></script>
-<script src="/assets/v3/echarts.js"></script>
 <script type="module">
 import Language from "./settings/language.js"
 import AlertDialog from "/assets/v3/components/alert_dialog.js"
@@ -37,10 +36,9 @@ import Personal from "./settings/personal.js"
 import Company from "./settings/company.js"
 import Config from "./settings/cfg/config.js"
 import Backup from "./settings/cfg/backup.js"
-import OmHome from "./settings/om/om.js"
+import Advance from "./settings/advance.js"
 import ExecSqls from "./settings/om/execsqls.js"
 import ServerLogs from "./settings/om/serverlogs.js"
-import ServiceState from "./settings/om/service_state.js"
 import SrvNodes from "./settings/om/srvnodes.js"
 import DbNodes from "./settings/om/dbnodes.js"
 
@@ -62,10 +60,9 @@ routes:[
  {path:'/company', component:Company},
  {path:'/cfg', component:Config},
  {path:'/cfg/backup', component:Backup},
- {path:'/om', component:OmHome},
+ {path:'/advance', component:Advance},
  {path:'/om/execsqls', component:ExecSqls},
  {path:'/om/serverlogs', component:ServerLogs},
- {path:'/om/servicestate', component:ServiceState},
  {path:'/om/dbnodes', component:DbNodes},
  {path:'/om/srvnodes', component:SrvNodes},
  {path:'/om/services', component:Services},
@@ -74,10 +71,10 @@ routes:[
  {path:'/mkt/detail', component:MktDetail}
 ]});
 //-------------------------------------------service定义
-const service={name:"settings",N_PAGE:10,N_SMPG:5,
+const service={name:"settings",N_PAGE:10,N_SMPG:5,mode:'SINGLETON',
 runtime:{},//运行时
 cdns:[], introductions:{}, cmdList:{},
-comTokens:{}, users:{},services:[],
+comTokens:{}, users:{}, services:[],
 curCompany() {return JSON.parse(Companies.curCompany());},
 getUserInfo() {
     if(this.users[Companies.curCompanyId()]) {
@@ -101,10 +98,9 @@ clrUserInfo() {
         this.users[Companies.curCompanyId()] = undefined
     }
 },
-refreshState() {
-    var opts={method:"GET", url:"/api/servicestate",
-        private:false, headers:{access_token:this.getToken('backend')}};
-    request(opts, 'backend').then(resp => {
+initServiceList() {
+    var opts={method:"GET", url:"/api/service/list"};
+    request(opts, 'bios').then(resp => {
         if(resp.code != RetCode.OK) {
             this.services=[];
             return;

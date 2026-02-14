@@ -9,7 +9,7 @@ company:{
     accessCode:"",
     logLevel:'DEBUG',
     tokenPwd:"",
-	runMode:'SINGLETON',
+    runMode:'SINGLETON',
     logo:"/assets/imgs/logo_example.png"
 },
 cmds:{setloglevel:false,setoutsideaddr:false,resettokenpwd:false},

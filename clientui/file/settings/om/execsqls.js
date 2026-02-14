@@ -10,7 +10,6 @@ data(){return {
     services:[]
 }},
 created() {
-    this.service.refreshState();
     var sl=[];
     for(var s of this.service.services) {
 		sl.push(s.name);

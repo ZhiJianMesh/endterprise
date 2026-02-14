@@ -3,8 +3,6 @@ inject:['service', 'tags'],
 data() {return {
  creditCode:"",
  companyName:"",
- biosSrvs:"",
- dbSrvs:"",
  location:{province:'',city:'',county:''},
  cid:"",
  accessCode:"", //8位服务器接入码
@@ -71,7 +69,7 @@ init() {
         }
     }));
     var items = "accessCode,creditCode,companyName,province,"
-       +"city,county,logLevel,outsideAddr,externAddrs,biosSrvs,dbSrvs";
+       +"city,county,logLevel,outsideAddr,externAddrs";
     Server.query(items, __regsiterCallback(resp => {
         var info=resp.data;
         this.accessCode=info.accessCode;
@@ -80,8 +78,6 @@ init() {
         this.location={province:info.province, city:info.city, county:info.county};
         this.logLevel=info.logLevel;
         this.outsideAddr=info.outsideAddr;
-        this.dbSrvs=info.dbSrvs;
-        this.biosSrvs=info.biosSrvs;
 
         var l=[];
         for(var addr of info.externAddrs) {
@@ -150,20 +146,6 @@ setLogo() {
 },
 nameChged(){
     Server.setName(this.companyName,__regsiterCallback(resp=>{
-        if(resp.code!=RetCode.OK) {
-            this.$refs.alertDlg.showErr(resp.code, resp.info);
-        }
-    }));
-},
-biosSrvChged() {
-    Server.setBiosSrvs(this.biosSrvs,__regsiterCallback(resp=>{
-        if(resp.code!=RetCode.OK) {
-            this.$refs.alertDlg.showErr(resp.code, resp.info);
-        }
-    }));
-},
-dbSrvChged() {
-    Server.setDbSrvs(this.dbSrvs,__regsiterCallback(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         }
@@ -371,25 +353,6 @@ template: `
     @click="service.jump('/backup')"></q-btn>
   </td>
  </tr>
- <tr>
-  <td>{{tags.biosServers}}</td>
-  <td class="cursor-pointer">{{biosSrvs}}
-   <q-popup-edit v-model="biosSrvs" v-slot="scope" @update:model-value="biosSrvChged"
-    buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
-    <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
-   </q-popup-edit>
-  </td>
- </tr>
- <tr>
-  <td>{{tags.dbServers}}</td>
-  <td class="cursor-pointer">{{dbSrvs}}
-   <q-popup-edit v-model="dbSrvs" v-slot="scope" @update:model-value="dbSrvChged"
-    buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save>
-    <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set"></q-input>
-   </q-popup-edit>
-  </td>
- </tr>
- 
  <tr class="q-mb-sm text-dark bg-blue-grey-1 text-bold"><td>{{tags.testSettings}}</td><td></td></tr>
  <tr>
   <td>{{tags.tokenPwd}}</td>

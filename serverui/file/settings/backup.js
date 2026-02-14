@@ -28,7 +28,11 @@ init() {
         }
         this.bucketOpts=opts;
     });
-    Server.query("backupAt", __regsiterCallback(resp => {
+    Server.getBackupAt(__regsiterCallback(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+            return;
+        }
         var info=resp.data;
         if(info.recent<=0) {
             this.backup.recent=this.tags.neverBackup;

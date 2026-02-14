@@ -681,26 +681,26 @@ const Server = {
     startupAt() {return 1657157855534},
     getServiceVer(s){return 1000},
     serviceIcon(s) {return "/" + s + "/favicon.png"},
-	installService(s,jsCbId){
-		for(var i=0;i<100;i++) {
-			sleep(30 * i).then(()=>{
-				installProgress(1,"test"+i);
-			})
-		}
-		sleep(2000).then(()=>{
-			__default_jscb(jsCbId,{code:RetCode.OK});
-		})
-	},
-	unInstallService(s,jsCbId){
-		sleep(2000).then(()=>{
-			__default_jscb(jsCbId,{code:RetCode.OK});
-		})
-	},
-	updateService(s,jsCbId){
-		sleep(2000).then(()=>{
-			__default_jscb(jsCbId,{code:RetCode.OK});
-		})
-	},
+    installService(s,jsCbId){
+        for(var i=0;i<100;i++) {
+            sleep(30 * i).then(()=>{
+                installProgress(1,"test"+i);
+            })
+        }
+        sleep(2000).then(()=>{
+            __default_jscb(jsCbId,{code:RetCode.OK});
+        })
+    },
+    unInstallService(s,jsCbId){
+        sleep(2000).then(()=>{
+            __default_jscb(jsCbId,{code:RetCode.OK});
+        })
+    },
+    updateService(s,jsCbId){
+        sleep(2000).then(()=>{
+            __default_jscb(jsCbId,{code:RetCode.OK});
+        })
+    },
     resetTokenPwd(){return '1234567890123456'},
     resetAccessCode(jsCbId){
         __default_jscb(jsCbId,{code:RetCode.OK, data:{code:"723456"}});
@@ -734,16 +734,6 @@ const Server = {
     },
     setName(name,jsCbId) {
         this.command({cmd:"setInfo", name:name}).then(resp => {
-            __default_jscb(jsCbId,resp);
-        });
-    },
-    setBiosSrvs(biosSrvs,jsCbId) {
-        this.command({cmd:"setInfo", biosSrvs:biosSrvs}).then(resp => {
-            __default_jscb(jsCbId,resp);
-        });
-    },
-    setDbSrvs(dbSrvs,jsCbId) {
-        this.command({cmd:"setInfo", dbSrvs:dbSrvs}).then(resp => {
             __default_jscb(jsCbId,resp);
         });
     },
@@ -795,10 +785,6 @@ const Server = {
                 data[i]=["240e:3af:c40:9110:de5f:9919:bf8f:79f9",
                 "240e:3af:c40:9110:b5c5:2d97:f998:2df4",
                 "240e:3af:c40:9110::1000"]
-            } else if(item == "dbsrvs") {
-                data[i]="192.168.0.102:8523,192.168.0.103:8523"
-            } else if(item == "biossrvs") {
-                data[i]="192.168.0.102:8523,192.168.0.103:8523"
             } else {
                 Console.warn("Invalid query item " + i);
             }
@@ -877,10 +863,10 @@ const Companies={
     cid(){return currentCompany().id},
     insideAddr() {return currentCompany().insideAddr;},
     outsideAddr() {return currentCompany().outsideAddr;},
-	accessCode(){return currentCompany().accessCode},
-	userService(){return currentCompany().id==1?SERVICE_UNIUSER:SERVICE_USER},
-	rootCompanyId(){return 1},
-	refreshEntrance(){},
+    accessCode(){return currentCompany().accessCode},
+    userService(){return currentCompany().id==1?SERVICE_UNIUSER:SERVICE_USER},
+    rootCompanyId(){return 1},
+    refreshEntrance(){},
     authorized(){return (this.userService() in currentCompany().tokens)},
     login(acc,pwd,tp,jsCbId) {
         var company=currentCompany();

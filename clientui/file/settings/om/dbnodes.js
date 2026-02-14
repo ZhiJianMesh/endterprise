@@ -35,7 +35,7 @@ query() {
     })
 },
 query_status(noList, nodes) {
-    var opts={method:"POST",url:"/status/status",data:{list:noList}};
+    var opts={method:"POST",url:"/status/dbstatus",data:{list:noList}};
     this.service.request_private(opts, "bios").then(resp=>{
         if(resp.code != RetCode.OK) {
             this.nodes=nodes;

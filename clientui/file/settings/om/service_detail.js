@@ -313,15 +313,16 @@ template:`
 
 <q-banner rounded class="bg-grey-3 text-h5 q-mt-lg" dense inline-actions>{{tags.service.db}}
  <template v-slot:action>
+  <q-btn flat dense :label="dbNo">
+   <q-popup-edit v-model="dbNo" v-slot="scope" @update:model-value="set_dbNo"
+   buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save ref="dlg_set_dbNo">
+   <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" type="text"></q-input>
+   </q-popup-edit>
+  </q-btn>
   <q-btn text-color="primary" icon="history" flat dense @click="initDbs"></q-btn>
  </template>
 </q-banner>
-<div>{{dbNo}}
- <q-popup-edit v-model="dbNo" v-slot="scope" @update:model-value="set_dbNo"
-  buttons :label-set="tags.ok" :label-cancel="tags.cancel" auto-save ref="dlg_set_dbNo">
-  <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" type="text"></q-input>
- </q-popup-edit>
-</div>
+
 <q-list>
  <q-item v-for="db in dbList">
   <q-item-section>{{db.name}}</q-item-section>

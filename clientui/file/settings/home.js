@@ -35,7 +35,7 @@ init() {
                 }
             }))
         }
-    }))
+    }));
 
     this.account=this.tags.account;
     this.nickName=this.tags.nickName;

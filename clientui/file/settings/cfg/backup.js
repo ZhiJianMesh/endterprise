@@ -28,22 +28,32 @@ created(){
 },
 methods:{
 init() {
-    var dta = {cmd:"query", items:["backupAt","companyId"]};
-    this.service.command(dta).then(resp=>{
+    this.getBackup();
+
+    //从云侧查询bucket列表
+    this.service.request_cloud({method:"GET",url:"/oss/allbuckets"},"company").then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.bucketOpts=[];
+            return;
+        }
+        var opts=[];
+        for(var b of resp.data.buckets) {
+            opts.push({label:b.city,value:''+b.id});
+        }
+        this.bucketOpts=opts;
+    })
+},
+getBackup() {
+    this.service.request_cloud({method:"GET",url:"/webdb/getBackupAt"}, "company").then(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
             return;
         }
         var info=resp.data;
-        if(Companies.curCompanyId() != info.companyId) {
-            this.$refs.alertDlg.show(this.tags.invalidCid);
-            return;
-        }
-        
         if(!info.recent || info.recent<=0) {
             this.backup.recent=this.tags.neverBackup;
         } else {
-            this.backup.recent=new Date(info.recent).toLocaleString();
+            this.backup.recent=datetime2str(new Date(info.recent));
         }
         this.backup.at=info.backupAt;
         if(info.backupAt >= 0) {
@@ -59,26 +69,14 @@ init() {
         } else {
             this.backup.atObj='';
         }
-        //从云侧获取已选中的bucket
-        this.service.request_cloud({method:"GET",url:"/service/getinfo?service=backup"},"company").then(resp => {
-            if(resp.code != RetCode.OK) return;
-            this.backup.balance=resp.data.balance;
-            this.backup.buckets=resp.data.ext.split(',');
-        })
     });
 
-    //从云侧查询bucket列表
-    this.service.request_cloud({method:"GET",url:"/oss/allbuckets"},"company").then(resp => {
-        if(resp.code != RetCode.OK) {
-            this.bucketOpts=[];
-            return;
-        }
-        var opts=[];
-        for(var b of resp.data.buckets) {
-            opts.push({label:b.city,value:''+b.id});
-        }
-        this.bucketOpts=opts;
-    })
+    //从云侧获取已选中的bucket
+    this.service.request_cloud({method:"GET",url:"/service/getinfo?service=backup"},"company").then(resp => {
+        if(resp.code != RetCode.OK) return;
+        this.backup.balance=resp.data.balance;
+        this.backup.buckets=resp.data.ext.split(',');
+    }) 
 },
 switchBackup() {
     if(this.backup.at<0) {
@@ -196,7 +194,7 @@ template: `
   <q-btn icon="arrow_back" dense @click="service.go_back" flat round></q-btn>
   <q-toolbar-title>{{tags.cfg.backup}}</q-toolbar-title>
   <q-btn icon="power_settings_new" :label="backup.at<0?tags.startup:tags.shutdown"
-    @click="switchBackup" dense v-if="cmds.setbackup" rounded color="primary"></q-btn>
+    @click="switchBackup" dense flat v-if="cmds.setbackup" rounded color="primary"></q-btn>
  </q-toolbar>
 </q-header>
 <q-page-container>

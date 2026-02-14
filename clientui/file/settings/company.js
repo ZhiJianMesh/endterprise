@@ -1,4 +1,3 @@
-const OM_PAGES=["/cfg", "/om", "mkt"];
 export default {
 inject:['service', 'tags'],
 data(){return {
@@ -11,8 +10,8 @@ data(){return {
     authorized:false,
     changed:false,
     saveAt:0,
-	logo:'',
-	auth:{dlg:false,pwd:'',visible:false,pg:0},
+    logo:'',
+    auth:{dlg:false,pwd:'',visible:false},
 }},
 created() {
     this.init();
@@ -26,14 +25,15 @@ init() {
     this.outsideAddr=c.outsideAddr;
     this.accessCode=c.accessCode;
     this.authorized=c.authorized;
-	this.runMode=c.runMode;
-	Companies.getLogo(c.id, __regsiterCallback(png=>{
-		if(png) {
-			this.logo="img:"+png;
-		} else {
-			this.logo="/assets/imgs/logo_example.png";
-		}
-	}));
+    this.runMode=c.runMode;
+    this.service.mode=c.runMode;
+    Companies.getLogo(c.id, __regsiterCallback(png=>{
+        if(png) {
+        	this.logo="img:"+png;
+        } else {
+        	this.logo="/assets/imgs/logo_example.png";
+        }
+    }));
 },
 save() {
     var cur = new Date().getTime();
@@ -60,14 +60,6 @@ save() {
         this.$refs.alertDlg.show(this.tags.successToConnect);
     }));
 },
-showPage(pg) {
-    this.auth.pg=pg;
-    if(this.service.getToken("company",this.cid)) {
-        this.service.go_to(OM_PAGES[pg]+'?id='+this.cid);
-    } else {
-        this.auth.dlg=true;
-    }
-},
 copy() {
     var txt=this.cid+"\n"
         +this.companyName+"\n"
@@ -77,6 +69,13 @@ copy() {
     this.service.copyToClipboard(txt).then(()=>{
         this.$q.notify(this.tags.copied);
     });
+},
+showAdvance() {
+    if(this.service.getToken("company",this.cid)) {
+        this.service.go_to("/advance");
+    } else {
+        this.auth.dlg=true;
+    }
 },
 onAuth() {
     var shaPwd=Secure.sha256(this.auth.pwd);
@@ -90,7 +89,7 @@ onAuth() {
             this.service.setToken(i,resp.data[i]);
         }
         this.auth.dlg=false;
-        this.service.go_to(OM_PAGES[this.auth.pg]+'?id='+this.cid);
+        this.service.go_to('/advance');
     });
 },
 refresh() {
@@ -109,24 +108,8 @@ template: `
     <q-toolbar>
       <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.home.company}}</q-toolbar-title>
-      <q-btn flat dense color="primary" :label="tags.advanced" icon="menu" v-if="authorized">
-       <q-menu>
-         <q-list style="min-width: 100px">
-          <q-item clickable v-close-popup @click="showPage(0)">
-            <q-item-section side><q-icon color="primary" name="settings"></q-icon></q-item-section>
-            <q-item-section no-wrap>{{tags.cfg.title}}</q-item-section>
-          </q-item>
-          <q-item clickable v-close-popup @click="showPage(1)" v-if="runMode!='ROOT'">
-            <q-item-section side><q-icon color="primary" name="menu_open"></q-icon></q-item-section>
-            <q-item-section no-wrap>{{tags.om.title}}</q-item-section>
-          </q-item>
-          <q-item clickable v-close-popup @click="showPage(2)">
-            <q-item-section side><q-icon color="primary" name="shop_two"></q-icon></q-item-section>
-            <q-item-section no-wrap>{{tags.mkt.title}}</q-item-section>
-          </q-item>
-         </q-list>
-       </q-menu>
-      </q-btn>
+      <q-btn flat dense color="primary" icon="settings" v-if="authorized"
+       :label="tags.advanced" @click="showAdvance"></q-btn>
     </q-toolbar>
   </q-header>
   <q-page-container>

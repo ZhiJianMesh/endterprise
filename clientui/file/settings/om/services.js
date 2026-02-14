@@ -1,7 +1,8 @@
 export default {
 inject:['service', 'tags'],
 data() {return {
-    services:{},
+    services:[],
+	cdns:[],
     serviceNum:0,
     search:'',
     install:{service:'',addr:'',dlg:false,start:0,end:32768},
@@ -10,67 +11,62 @@ data() {return {
 created(){
     var cur=this.service.getRt("cur", 1);
     this.page.cur=cur;
-    this.fetch_services(cur);
+    this.query_services(cur);
 },
 methods:{
 service_detail(sn) {
     this.service.go_to('/om/servicedetail?service='+sn);
 },
-fetch_services(pg) {
-    this.service.setRt("cur", pg);
-    if(this.services.length>0) {
-        this.fetch_list(pg);
-        return;
-    }
-    this.service.request_private({method:"GET",url:"/service/list"}, "bios").then(resp=>{
-        if(resp.code != 0) {
+query_services(pg) {
+    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
+    var opts={method:"GET", url:"/service/list?offset="+offset+"&num="+this.service.N_PAGE};
+    this.service.request_private(opts, "company").then(resp=>{
+        if(resp.code != RetCode.OK) {
             console.warn("request failed:" + resp.code + ",info:" + resp.info);
+            this.services=[];
+            this.page.max=0;
+            this.page.cur=1;
             return;
         }
-
-        var ss={};
-        var num=0;
-        for(var i in resp.data.services) {
-            var sv = resp.data.services[i];
-            var tp = this.tags.service.types[sv.type]
-            var ui = sv.visible!=0?this.tags.service.haveUi:this.tags.service.noUi;
-            ss[i] = {dispName:sv.dispName, type:tp, ui:ui};
-            num++;
-        }
-        this.serviceNum=num;
-        this.services=ss;
-        this.fetch_list(pg);
+        this.service.setRt("cur", pg);
+        this.fmt_services(resp.data);
+        this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 search_service() {
-    var s=this.search;
-    if(!s)return;
-    var ss={};
-    for(var i in this.services) {
-        var sv=this.services[i];
-        if(i.indexOf(s)>=0||sv.dispName.indexOf(s)>=0) {
-            ss[i] = sv;
+    if(this.search=='') {
+        this.query_services(1);
+        return;
+    }
+    var opts={method:"GET", url:"/service/list?search="+this.search};
+    this.service.request_private(opts, "company").then(resp=>{
+        if(resp.code != RetCode.OK) {
+            console.warn("request failed:" + resp.code + ",info:" + resp.info);
+            this.services=[];
+            this.page.max=0;
+            this.page.cur=1;
+            return;
         }
-    }
-    this.page.max=1;
-    this.services=ss;
+        this.fmt_services(resp.data);
+        this.page.max=1;
+    })
 },
-fetch_list(pg) {
-    var offset=(parseInt(pg)-1)*this.service.N_PAGE;
-    this.page.max=Math.ceil(this.serviceNum/this.service.N_PAGE);
-    var ss={};
-    var end=offset+this.service.N_PAGE;
-    if(end>this.serviceNum) {
-        end=this.serviceNum;
+fmt_services(rows) {
+    var cols=rows.cols;//service,displayName,author,type,level,version
+    var data=rows.services;
+    var services=[];
+    var row,s;
+    for(var i in data) {
+        row=data[i];
+        s={};
+        for(var c in cols) {
+            s[cols[c]]=row[c];
+        }
+        s.icon = '/'+s.service+"/favicon.png";
+        s.version=App.intToVer(s.version);
+        services.push(s);
     }
-    var j = 0;
-    for(var i in this.services) {
-        j++;
-        if(j <= offset) continue;
-        if(j > end) break;
-        ss[i]=this.services[i];
-    }
-    this.services=ss;
+    this.services=services;
 },
 install_service() {
     var dta={service:this.install.service};
@@ -85,8 +81,8 @@ install_service() {
         this.service.request_om(opts, "httpdns").then(resp=>{
             this.install.dlg=false;
             this.install.service="";
-            this.services={}; //刷新服务列表
-            this.fetch_services(1);
+            this.services=[]; //刷新服务列表
+            this.query_services(1);
         });
     })
 }
@@ -96,13 +92,13 @@ template: `
  <q-header class="bg-grey-1 text-primary">
   <q-toolbar>
    <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
-   <q-toolbar-title>{{tags.tab_service}}</q-toolbar-title>
+   <q-toolbar-title>{{tags.om.serviceMng}}</q-toolbar-title>
   </q-toolbar>
  </q-header>
  <q-footer class="bg-white q-pa-md">
   <q-input v-model="search" :placeholder="tags.search" dense @keyup.enter="search_service" outlined>
    <template v-slot:append>
-    <q-icon v-if="search!==''" name="close" @click="search='';fetch_services(1)" class="cursor-pointer"></q-icon>
+    <q-icon v-if="search!==''" name="close" @click="search='';query_services(1)" class="cursor-pointer"></q-icon>
     <q-icon name="search" @click="search_service"></q-icon>
    </template>
    <template v-slot:after>
@@ -115,17 +111,18 @@ template: `
   <q-page class="q-pa-md">
 <div class="q-pa-sm flex flex-center" v-if="page.max>1">
  <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"
-  boundary-numbers="false" @update:model-value="fetch_services"></q-pagination>
+  boundary-numbers="false" @update:model-value="query_services"></q-pagination>
 </div>
 <q-list separator>
- <q-item clickable v-ripple v-for="(s,n) in services" @click="service_detail(n)">
-  <q-item-section>
-   <q-item-label>{{n}}</q-item-label>
-   <q-item-label caption>{{s.dispName}}</q-item-label>
+ <q-item clickable v-ripple v-for="s in services" @click="service_detail(s.service)">
+  <q-item-section avatar top>
+    <q-avatar square><img :src="s.icon" style="max-height:2em"></q-avatar>
   </q-item-section>
-  <q-item-section>{{s.type}}</q-item-section>
-  <q-item-section side>{{s.ui}}</q-item-section>
- </q-item>
+  <q-item-section>
+    <q-item-label lines="1">{{s.displayName}}/{{s.service}}</q-item-label>
+    <q-item-label caption>{{s.author}}</q-item-label>
+  </q-item-section>
+  <q-item-section side>{{s.version}}</q-item-section>
 </q-list>
     </q-page>
   </q-page-container>

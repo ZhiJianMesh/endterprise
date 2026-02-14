@@ -166,9 +166,9 @@ en:{
     cfmUpdate:"Confirm updating",
     cfmInstall:"Confirm installing",
     cfmUninstall:"Confirm uninstalling",
-	successToInstall:"Succeed to install",
-	successToUnInstall:"Succeed to uninstall"
-    }
+    successToInstall:"Succeed to install",
+    successToUnInstall:"Succeed to uninstall"
+  }
 },
 zh:{
   app_name:"设置",
@@ -335,7 +335,6 @@ zh:{
     cfmRmvDbNode:'确定删除数据库节点吗？',
     advRmvService:'数据缺失，是否删除它？'
   },
-
   mkt:{
     title:"应用管理",
     services:"应用市场",

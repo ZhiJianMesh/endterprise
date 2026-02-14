@@ -35,12 +35,10 @@ enterprise_apps(pg) {
 },
 personal_apps(pg) {
     request({method:"GET", url:"/getomauth", cloud:true}, "om").then(ar => {
-        var level;
-        if(ar.code!=RetCode.OK) {
-            level=1;
-        } else {
+        var level=1;
+        if(ar.code==RetCode.OK) {
             for(var l of ar.data.list) {
-                if(l.service=='om'||l.serivce=='*') {
+                if(l.service=='om'||l.service=='*') {
                     level=0; //拥有om权限的才可以显示level为0的服务
                 }
             }
