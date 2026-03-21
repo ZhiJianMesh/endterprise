@@ -31,11 +31,11 @@ query() {
             var show=old&&old.show;
             nodes[addr]={show:show, list:list};
         }
-        this.query_status(noList, nodes); //请求status成功后再更新，防止界面刷新时状态错误
+        this.query_status(noList.join(','), nodes); //请求status成功后再更新，防止界面刷新时状态错误
     })
 },
 query_status(noList, nodes) {
-    var opts={method:"POST",url:"/status/dbstatus",data:{list:noList}};
+    var opts={method:"GET",url:"/status/dbstatus?list="+noList};
     this.service.request_private(opts, "bios").then(resp=>{
         if(resp.code != RetCode.OK) {
             this.nodes=nodes;
