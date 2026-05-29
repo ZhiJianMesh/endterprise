@@ -2,13 +2,13 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
-	pages:{cur:1,max:0},
+    pages:{cur:1,max:0},
     orders:[], //id,createAt,pkgName,balance
     vip:{name:'',createAt:'',mobile:'',ext:{},creator:'',sex:'U',birth:'',age:0},
     ext:{},
     newOrder:{pkgId:'',pwd:'',price:0,vip:0},
-	newConsume:{order:0,pwd:'',val:'',vip:0,comment:''},
-	dlgs:{order:false,consume:false,chkOrd:false,extName:'',chkOrdResult:2/*不显示结果*/}, 
+    newConsume:{order:0,pwd:'',val:'',vip:0,comment:''},
+    dlgs:{order:false,consume:false,chkOrd:false,extName:'',chkOrdResult:2/*不显示结果*/}, 
     chkOrder:{id:'',pwd:'',createAt:'',balance:0},
     packages:[],
     packageOpts:[],
@@ -17,7 +17,7 @@ data() {return {
     extChanged:false
 }},
 created(){
-	this.newOrder.vip=this.id;
+    this.newOrder.vip=this.id;
     this.query_orders(0);
     this.service.getTemplate().then(tpl=>{
         this.tmpl=tpl;
@@ -35,11 +35,11 @@ query_info() {
             return;
         }
         this.vip=resp.data;//creator,createAt,name,mobile,ext,sex,birth
-		var d=new Date();
-		var year=d.getYear();
-		d.setTime(this.vip.birth*86400000);
-		this.vip.age=year - d.getYear();
-		this.vip.birth=d.toLocaleDateString();
+        var d=new Date();
+        var year=d.getYear();
+        d.setTime(this.vip.birth*86400000);
+        this.vip.age=year - d.getYear();
+        this.vip.birth=d.toLocaleDateString();
         d.setTime(this.vip.createAt);
         this.vip.createAt = d.toLocaleDateString();
         this.ext = !resp.data.ext?{}:resp.data.ext;
@@ -60,8 +60,8 @@ change_page(page) {
     this.query_orders((parseInt(page)-1)*this.service.NUM_PER_SMPG);
 },
 save_base(v, v0){
-	var birth=new Date(v.birth);
-	var reqDta={id:this.id,name:v.name,mobile:v.mobile,sex:v.sex,birth:Math.round(birth.getTime()/86400000)};
+    var birth=new Date(v.birth);
+    var reqDta={id:this.id,name:v.name,mobile:v.mobile,sex:v.sex,birth:Math.round(birth.getTime()/86400000)};
     var opts={method:"POST", url:"/api/vip/setBase",data:reqDta};
     request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -70,9 +70,9 @@ save_base(v, v0){
         }
         this.vip.name=v.name;
         this.vip.mobile=v.mobile;
-		this.vip.sex=v.sex;
-		this.vip.birth=v.birth;
-		this.vip.age=new Date().getYear() - birth.getYear();
+        this.vip.sex=v.sex;
+        this.vip.birth=v.birth;
+        this.vip.age=new Date().getYear() - birth.getYear();
     });
 },
 create_order() {
@@ -138,8 +138,8 @@ check_order(){
 },
 open_create_consume(orderId, name){
     this.newConsume={order:orderId, val:'', pwd:'', vip:this.id, comment:''};
-	this.dlgs.consume=true;
-	this.dlgs.extName='-'+name;
+    this.dlgs.consume=true;
+    this.dlgs.extName='-'+name;
 },
 create_consume(){
     var url="/api/consume/create";
@@ -176,8 +176,8 @@ template:`
       :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]">
        <template v-slot:prepend><q-icon name="contact_phone"></q-icon></template>
       </q-input>
- 	  <component-date-input :close="tags.ok" :label="tags.birth" v-model="scope.value.birth" max="today"></component-date-input>
-	  <div class="q-gutter-sm">
+       <component-date-input :close="tags.ok" :label="tags.birth" v-model="scope.value.birth" max="today"></component-date-input>
+      <div class="q-gutter-sm">
        <q-radio v-model="scope.value.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
        <q-radio v-model="scope.value.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>
       </div>

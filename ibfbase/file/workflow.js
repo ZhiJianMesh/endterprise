@@ -8,7 +8,7 @@ inject:['ibf'],
 components:{
     "alert-dialog":AlertDialog,
     "confirm-dialog":ConfirmDialog,
-	"workflow":Workflow
+    "workflow":Workflow
 },
 data() {return {
     service:this.$route.query.service, //ibf本身不是服务，所以需要指定服务名
@@ -17,7 +17,7 @@ data() {return {
     tags:this.ibf.tags,
     alertDlg:null,
     dtl:[],
-	flow:{}//流程定义信息{name,maxStep,steps}
+    flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
     _WF_.flowDef(this.flowid).then(fd=>{

@@ -119,12 +119,12 @@ function getToken(service) {
         headers:{access_token:at}
     };
     return sendRequest(opts, userService).then(resp => {
-	    if(resp.code == RetCode.OK) {
-	        company.tokens[service]=resp.data.access_token;
-	        saveCompanies();
+        if(resp.code == RetCode.OK) {
+            company.tokens[service]=resp.data.access_token;
+            saveCompanies();
         }
         return resp;
-	});
+    });
 }
 
 function sendRequest(opts, service) {
@@ -454,12 +454,12 @@ const JStr={
         }
     },
     isLanIP(ip) {
-		if(ip.indexOf(':') > 0) {
-			if(ip.startsWith("fe8")||ip.startsWith("fec")) {
-				return true;
-			}
-			return false;
-		}
+        if(ip.indexOf(':') > 0) {
+            if(ip.startsWith("fe8")||ip.startsWith("fec")) {
+                return true;
+            }
+            return false;
+        }
         if(ip.startsWith("192.168.") || ip.startsWith("10.")) {
             return true;
         }
@@ -662,13 +662,13 @@ const Server = {
     apiCalls() {return 1000},
     alter(jsCbId) {
         if(this.state!=this.SRV_RUNNING()) {
-			this.state=this.SRV_ALTERING();
+            this.state=this.SRV_ALTERING();
             sleep(2000).then(()=> {
                 this.state=this.SRV_RUNNING();
                 __default_jscb(jsCbId,{code:0,data:{state:this.state}});
             })
         } else {
-			this.state=this.SRV_ALTERING();
+            this.state=this.SRV_ALTERING();
             sleep(1000).then(()=> {
                 this.state=this.SRV_CLOSED();
                 __default_jscb(jsCbId,{code:0,data:{state:this.state}});
@@ -719,9 +719,9 @@ const Server = {
         ]}};
         __default_jscb(jsCbId,data);
     },
-	serviceStarted() {return true},
+    serviceStarted() {return true},
     setLogLevel(level) {},
-	setOutsideAddr(addr, jsCbId) {
+    setOutsideAddr(addr, jsCbId) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:'Success'});
     },
     setBackupAt(at, jsCbId) {
@@ -791,7 +791,7 @@ const Server = {
         }
         __default_jscb(jsCbId,{code:RetCode.OK,info:"Success", data:data});
     },
-	intToVer(v) {return	Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);},
+    intToVer(v) {return    Math.floor(v/1000000)+'.'+(Math.floor(v/1000)%1000)+'.'+(v%1000);},
     SRV_RUNNING() { return 3;},
     SRV_CLOSED() {return 4;},
     SRV_ALTERING() {return 2;}
@@ -843,18 +843,18 @@ const Http={
         }
         return url + uri;
     },
-	isLanIP(ip) { //用在serverui中，仅用于测试
-		return JStr.isLanIP(ip);
+    isLanIP(ip) { //用在serverui中，仅用于测试
+        return JStr.isLanIP(ip);
     },
     isIPv4(ip) {
         return JStr.isIPv4(ip);
     },
     isIPv6(ip) {
-		return JStr.isIPv6(ip);
+        return JStr.isIPv6(ip);
     },
-	localIPs() {
-		return "192.168.1.25,240e:3af:c40:c280:545b:3fea:e8e0:7794,fe80::3943:28bb:6a80:d0ac%3";
-	}
+    localIPs() {
+        return "192.168.1.25,240e:3af:c40:c280:545b:3fea:e8e0:7794,fe80::3943:28bb:6a80:d0ac%3";
+    }
 };
 
 var __companies=[];
@@ -968,15 +968,15 @@ const Companies={
     },
     curCompany(){
         var c = __companies[__curCompany];
-		if(c) {
-	        c.userService=c.id==1?SERVICE_UNIUSER:SERVICE_USER;
-	        return JSON.stringify(c);
-		}
-		return "{}";
+        if(c) {
+            c.userService=c.id==1?SERVICE_UNIUSER:SERVICE_USER;
+            return JSON.stringify(c);
+        }
+        return "{}";
     },
-	curCompanyId() {
-		return __companies[__curCompany].id;
-	},
+    curCompanyId() {
+        return __companies[__curCompany].id;
+    },
     list(jsCbId) {
         __default_jscb(jsCbId,{code:RetCode.OK,info:"success",data:{list:__companies}});
     },
@@ -1070,10 +1070,10 @@ const Database = {
     dbs:{},
     open(name) {
         var db = this.dbs[name];
-		if(!db) {
-			db = openDatabase(name, '1.0', '', 10 * 1024 * 1024);
-	        this.dbs[name]=db;
-		}
+        if(!db) {
+            db = openDatabase(name, '1.0', '', 10 * 1024 * 1024);
+            this.dbs[name]=db;
+        }
     },
     close(name) {},
     remove(name) {},

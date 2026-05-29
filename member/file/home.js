@@ -4,7 +4,7 @@ data() {return {
     isOwner:false,
     vips:[], //会员列表
     search:'',
-	vipPg:{cur:1,max:0,searchTag:''},
+    vipPg:{cur:1,max:0,searchTag:''},
     newVip:{name:'',mobile:'',pwd:'',sex:'',birth:'',dlg:false}
 }},
 created(){
@@ -29,7 +29,7 @@ query_vips(offset) {
             this.vipPg.searchTag=this.tags.search;
         } else {
             this.formatData(resp.data.vips);
-			this.vipPg.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
+            this.vipPg.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
             this.vipPg.searchTag=this.tags.search + '(' + resp.data.total + ')';
         }
     })
@@ -52,24 +52,24 @@ search_vips() {
 formatData(rows) {
     var vips=[];
     var dt=new Date();
-	var updAt, birth, age;
-	var nowYear = dt.getFullYear();
+    var updAt, birth, age;
+    var nowYear = dt.getFullYear();
     for(var r of rows) {
         dt.setTime(r.update_time);
-		updAt = dt.toLocaleDateString();
-		dt.setTime(r.birth*86400000);
-		age=nowYear-dt.getFullYear();
-		birth = dt.toLocaleDateString();
+        updAt = dt.toLocaleDateString();
+        dt.setTime(r.birth*86400000);
+        age=nowYear-dt.getFullYear();
+        birth = dt.toLocaleDateString();
         vips.push({id:r.id, name:r.name, birth:birth, updateAt:updAt,
-			sex:this.tags.sexInfo[r.sex].n, age:age});
+            sex:this.tags.sexInfo[r.sex].n, age:age});
     }
     this.vips=vips;
 },
 add_vip() {
     var url="/api/vip/add";
-	var d=this.newVip;
-	var birth=Math.round(new Date(d.birth).getTime()/86400000);
-	var reqDta={name:d.name, mobile:d.mobile, pwd:d.pwd, sex:d.sex, birth:birth};
+    var d=this.newVip;
+    var birth=Math.round(new Date(d.birth).getTime()/86400000);
+    var reqDta={name:d.name, mobile:d.mobile, pwd:d.pwd, sex:d.sex, birth:birth};
     request({method:"POST",url:url,data:reqDta}, this.service.name).then(resp => {
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, resp.info);
@@ -83,7 +83,7 @@ change_vip_page(page) {
     this.query_vips((parseInt(page)-1)*this.service.NUM_PER_PAGE);
 },
 open_newvip_dlg() {
-	this.newVip={name:'',mobile:'',pwd:'',birth:'',sex:'', dlg:true};
+    this.newVip={name:'',mobile:'',pwd:'',birth:'',sex:'', dlg:true};
 }
 },
 
@@ -157,7 +157,7 @@ template:`
      :rules="[v=>/^1[0-9]{10}$/.test(v)|| tags.mobilePls]" dense></q-input>
      <q-input v-model="newVip.pwd" :label="tags.pwd" type="password" dense
      :rules="[/^[0-9]{4,20}$/.test(v)|| tags.pwdPls]"></q-input>
- 	 <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth" max="today"></component-date-input>
+      <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth" max="today"></component-date-input>
      <div class="q-gutter-sm">
       <q-radio v-model="newVip.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
       <q-radio v-model="newVip.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>

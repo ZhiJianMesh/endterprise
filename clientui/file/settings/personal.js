@@ -16,8 +16,8 @@ methods:{
 get_userbase() {
     this.service.getUserInfo().then(ui=>{
         this.userInfo=ui;
-		var dt = new Date();
-		dt.setTime(ui.birthday?ui.birthday*86400000:0)
+        var dt = new Date();
+        dt.setTime(ui.birthday?ui.birthday*86400000:0)
         this.userInfo['sBirthday']=dt.toLocaleDateString();
     });
 },
@@ -39,16 +39,16 @@ changePwd() {
 saveChanges(){
     var company=this.service.curCompany();
     var req = {
-		nickName:this.userInfo.nickName,
-		mobile:this.userInfo.mobile,
-		email:this.userInfo.email,
-		birthday:this.userInfo.birthday,
-		sex:this.userInfo.sex
-	};
+        nickName:this.userInfo.nickName,
+        mobile:this.userInfo.mobile,
+        email:this.userInfo.email,
+        birthday:this.userInfo.birthday,
+        sex:this.userInfo.sex
+    };
     request({method:"POST", url:"/api/setBaseInfo", data:req, cloud:company.cloud}, company.userService).then(resp => {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
-			return;
+            return;
         }
         this.changed=false;
     });

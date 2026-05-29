@@ -105,15 +105,15 @@ initServiceList() {
             this.services=[];
             return;
         }
-		var sl=[];
-		var cols=resp.data.cols;
-		for(var l of resp.data.list) {
-			var ln={};
-			for(var i in cols) {
-				ln[cols[i]]=l[i];//name,queries,cpuTime,reportAt,hasDb,ver
-			}
-			sl.push(ln);
-		}
+        var sl=[];
+        var cols=resp.data.cols;
+        for(var l of resp.data.list) {
+            var ln={};
+            for(var i in cols) {
+                ln[cols[i]]=l[i];//name,queries,cpuTime,reportAt,hasDb,ver
+            }
+            sl.push(ln);
+        }
         this.services=sl;
     });
 },

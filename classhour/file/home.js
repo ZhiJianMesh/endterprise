@@ -4,13 +4,13 @@ data() {return {
     isOwner:false,
     students:[], //学员列表
     search:'',
-	studentPg:{cur:1,max:0,searchTag:''},
+    studentPg:{cur:1,max:0,searchTag:''},
     newStudent:{name:'',mobile:'',sex:'',birth:'',points:0},
     newConsume:{pkgId:0,val:'',students:{},comment:'',point:'',percent:0,msg:''},
-	dlgs:{student:false,consume:false,packages:[],packageOpts:[]},
-	stuOpts:{opts:[],//供选择的学员列表
-		values:null //选中项，不能赋值[]，会显示一个空选项
-	}
+    dlgs:{student:false,consume:false,packages:[],packageOpts:[]},
+    stuOpts:{opts:[],//供选择的学员列表
+        values:null //选中项，不能赋值[]，会显示一个空选项
+    }
 }},
 created(){
     var url="/power/get?service="+this.service.name;
@@ -31,11 +31,11 @@ query_students(offset) {
         if(resp.code!=RetCode.OK) {
             this.students=[];
             this.studentPg.max=0;
-			this.studentPg.searchTag=this.tags.search;
+            this.studentPg.searchTag=this.tags.search;
         } else {
             this.formatData(resp.data.students);
             this.studentPg.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
-			this.studentPg.searchTag=this.tags.search + '(' + resp.data.total + ')';
+            this.studentPg.searchTag=this.tags.search + '(' + resp.data.total + ')';
         }
     })
 },
@@ -57,16 +57,16 @@ search_students() {
 formatData(rows) {
     var students=[];
     var dt=new Date();
-	var updateAt, birth, age;
-	var nowYear=dt.getFullYear();
+    var updateAt, birth, age;
+    var nowYear=dt.getFullYear();
     for(var r of rows) {
         dt.setTime(r.update_time);
-		updateAt=dt.toLocaleDateString();
-		dt.setTime(r.birth*86400000);
-		birth=dt.toLocaleDateString();
-		age=nowYear-dt.getFullYear();
+        updateAt=dt.toLocaleDateString();
+        dt.setTime(r.birth*86400000);
+        birth=dt.toLocaleDateString();
+        age=nowYear-dt.getFullYear();
         students.push({id:r.id, name:r.name,points:r.points,sex:this.tags.sexInfo[r.sex].n,
-		updateAt:updateAt,birth:birth,age:age});
+        updateAt:updateAt,birth:birth,age:age});
     }
     this.students=students;
 },
@@ -88,15 +88,15 @@ change_student_page(page) {
     this.query_students((parseInt(page)-1)*this.service.NUM_PER_PAGE);
 },
 open_create_consume(student){
-	this.newConsume.val='';
-	this.newConsume.students={};
-	this.newConsume.point='';
-	this.newConsume.comment='';
-	this.newConsume.msg='';
-	this.newConsume.percent=0;
-	this.stuOpts.opts=[];
-	this.stuOpts.values=null;
-	this.service.getPackages().then(resp=>{
+    this.newConsume.val='';
+    this.newConsume.students={};
+    this.newConsume.point='';
+    this.newConsume.comment='';
+    this.newConsume.msg='';
+    this.newConsume.percent=0;
+    this.stuOpts.opts=[];
+    this.stuOpts.values=null;
+    this.service.getPackages().then(resp=>{
         if(resp.code != 0) {
             this.$refs.errMsg.showErr(resp.code, [resp.info, this.tags.nodlgs.packages]);
             return;
@@ -105,67 +105,67 @@ open_create_consume(student){
         this.dlgs.packageOpts=resp.opts;
         var pkg=this.dlgs.packages[0];
         this.newConsume.pkgId=pkg.id;
-		this.dlgs.consume=true;
+        this.dlgs.consume=true;
     }).catch(err=>{
         Console.info(err);
     });
 },
 create_consumes(){
-	var c=this.newConsume;
-	if(Object.keys(c.students).length==0) {//{id:name}
-		return; //没有选定学员，不做任何操作
-	}
-	var students=[];
-	for(var stu in c.students) {
-		students.push(parseInt(stu));
-	}
-	var progressStep=1.0/students.length;
-	var reqDta={students:students,pkgId:c.pkgId,val:c.val};
+    var c=this.newConsume;
+    if(Object.keys(c.students).length==0) {//{id:name}
+        return; //没有选定学员，不做任何操作
+    }
+    var students=[];
+    for(var stu in c.students) {
+        students.push(parseInt(stu));
+    }
+    var progressStep=1.0/students.length;
+    var reqDta={students:students,pkgId:c.pkgId,val:c.val};
     request({method:"POST",url:"/api/consume/getOrders",data:reqDta}, this.service.name).then(resp=>{
-		var orders={};
-		var num=0;
+        var orders={};
+        var num=0;
         if(resp.code == RetCode.OK) {
-			for(var ord of resp.data.list) {//id,balance,student
-			  var stu=ord.student;
-			  if(!orders[stu]) {//可能存在多个订单，已经有了，不必再插入
-				orders[stu]={order:ord.id,balance:ord.balance};
-				num++;
-			  }
-			}
+            for(var ord of resp.data.list) {//id,balance,student
+              var stu=ord.student;
+              if(!orders[stu]) {//可能存在多个订单，已经有了，不必再插入
+                orders[stu]={order:ord.id,balance:ord.balance};
+                num++;
+              }
+            }
         }
-		
-		if(num!=students.length) {
-			var msg="";
-			for(var stu of students) {
-				if(!orders[stu]) {
-					if(msg!='') {
-						msg += ",";
-					}
-					msg += c.students[stu];
-				}
-			}
-			this.newConsume.msg=this.tags.noBalance + ":" + msg;
-			return;
-		}
-		c.percent=0.1; //显示进度条
-		
-		var url="/api/consume/create";
-		for(var stu in c.students) {
-			var reqData={order:orders[stu].order,val:c.val,student:stu,comment:c.comment,point:c.point};
-			request({method:"POST",url:url,data:reqData}, this.service.name).then(resp=>{
-				if(resp.code != RetCode.OK) {
-					if(msg!='') {
-						msg += ",";
-					}
-					msg += this.newConsume.students[stu].name;
-				}
-				c.percent+=progressStep;
-				if(c.percent>=1.0) {
-					this.dlgs.consume=false;
-					this.$refs.errMsg.show(this.tags.oprSuccess);
-				}				
-			})
-		}
+        
+        if(num!=students.length) {
+            var msg="";
+            for(var stu of students) {
+                if(!orders[stu]) {
+                    if(msg!='') {
+                        msg += ",";
+                    }
+                    msg += c.students[stu];
+                }
+            }
+            this.newConsume.msg=this.tags.noBalance + ":" + msg;
+            return;
+        }
+        c.percent=0.1; //显示进度条
+        
+        var url="/api/consume/create";
+        for(var stu in c.students) {
+            var reqData={order:orders[stu].order,val:c.val,student:stu,comment:c.comment,point:c.point};
+            request({method:"POST",url:url,data:reqData}, this.service.name).then(resp=>{
+                if(resp.code != RetCode.OK) {
+                    if(msg!='') {
+                        msg += ",";
+                    }
+                    msg += this.newConsume.students[stu].name;
+                }
+                c.percent+=progressStep;
+                if(c.percent>=1.0) {
+                    this.dlgs.consume=false;
+                    this.$refs.errMsg.show(this.tags.oprSuccess);
+                }                
+            })
+        }
     })
 },
 //处理学员选择的三个函数
@@ -190,7 +190,7 @@ filter_student(val,update) {
         }
         this.stuOpts.opts=opts;
     })
-  })	
+  })    
 },
 input_student(val, done) {
   if (val.length > 0) {
@@ -199,9 +199,9 @@ input_student(val, done) {
 },
 student_changed() {
     this.newConsume.students={}
-	for(var c of this.stuOpts.values) {
-		this.newConsume.students[c.value]=c.label;
-	}
+    for(var c of this.stuOpts.values) {
+        this.newConsume.students[c.value]=c.label;
+    }
 }
 },
 
@@ -240,7 +240,7 @@ template:`
  <tr v-for="v in students" @click="service.jumpTo('/student?id='+v.id)">
   <td class="text-left">
    <list dense><q-item-section>
-	<q-item-label>{{v.name}}({{v.sex}},{{v.age}})</q-item-label>
+    <q-item-label>{{v.name}}({{v.sex}},{{v.age}})</q-item-label>
     <q-item-label caption>{{tags.birth}}:{{v.birth}}</q-item-label>
    </q-item-section></list>
   </td>
@@ -296,18 +296,18 @@ template:`
   <q-card-section class="q-pt-none">
     <q-select v-model="newConsume.pkgId" emit-value map-options
      :options="dlgs.packageOpts" @update:model-value="pkg_changed"></q-select>
-	<q-select v-model="stuOpts.values" :label="tags.student" :options="stuOpts.opts"
-	  use-input use-chips multiple
-	  hide-dropdown-icon input-debounce=200 dense
-	  @new-value="input_student" @filter="filter_student"
-	  @update:model-value="student_changed">
-	 <template v-slot:selected-item="scope">
-	  <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"
-		:tabindex="scope.tabindex" class="q-ma-none">
-		{{scope.opt.label}}
-	  </q-chip>
-	 </template>
-	</q-select>
+    <q-select v-model="stuOpts.values" :label="tags.student" :options="stuOpts.opts"
+      use-input use-chips multiple
+      hide-dropdown-icon input-debounce=200 dense
+      @new-value="input_student" @filter="filter_student"
+      @update:model-value="student_changed">
+     <template v-slot:selected-item="scope">
+      <q-chip removable dense @remove="scope.removeAtIndex(scope.index)"
+        :tabindex="scope.tabindex" class="q-ma-none">
+        {{scope.opt.label}}
+      </q-chip>
+     </template>
+    </q-select>
     <q-input v-model="newConsume.val" :label="tags.consumeVal" dense
      :rules="[v=>/^[0-9]+(.[0-9]{1,2})?$/.test(v)|| tags.numberPls]"></q-input>
     <q-input v-model="newConsume.point" :label="tags.consumePoint" type="number"></q-input>

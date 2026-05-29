@@ -53,7 +53,7 @@ show(id) {
 
         this.dtl=dtl;
         this.ctrl.dlg=true;
-		this.ctrl.operable=this.role=='admin'||dtl.creator==this.service.account;
+        this.ctrl.operable=this.role=='admin'||dtl.creator==this.service.account;
     })
 },
 confirm() {
@@ -161,7 +161,7 @@ template: `
    <td>
     <div class="text-caption">{{c.cmt}}</div>
     <q-rating v-model="c.level" size="1em" color="orange" readonly></q-rating>
-	<div class="text-caption">{{c.at_s}}</div>
+    <div class="text-caption">{{c.at_s}}</div>
    </td>
    <td class="text-right">
     <q-btn color="red" icon="cancel" @click="rmv_cmt(c.at)" flat dense></q-btn>

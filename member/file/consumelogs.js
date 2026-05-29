@@ -7,7 +7,7 @@ data() {return {
     vipName:'',
     creatorName:'',
     dlgs:{detail:false, dl:false},
-	dlList:[],
+    dlList:[],
     logDetail:{id:0,creator:0,createAt:'',val:0,comment:''}
 }},
 created(){
@@ -63,7 +63,7 @@ dldocx(){
         } else {
             this.dlList.splice(0,0,{file:fn, size:0, bg:'#884444'})
         }
-		this.dlgs.dl=true;
+        this.dlgs.dl=true;
     })
 }
 },
@@ -84,17 +84,17 @@ template:`
   <q-markup-table flat>
    <thead><tr>
     <th class="text-left">{{tags.createAt}}</th>
-	<th class="text-right">{{tags.comment}}</th>
-	<th></th>
+    <th class="text-right">{{tags.comment}}</th>
+    <th></th>
    </tr></thead>
    <tbody>
    <tr v-for="(l,i) in logs">
     <td class="text-left">
-	 <list dense><q-item-section>
+     <list dense><q-item-section>
       <q-item-label>{{l.createAt}}</q-item-label>
       <q-item-label caption>{{tags.payment}}:{{l.val}}, {{tags.balance}}:{{l.balance}}</q-item-label>
      </q-item-section></list>
-	</td>
+    </td>
     <td class="text-right">{{l.comment}}</td>
     <td class="text-right"><q-icon name="edit" @click="detail(i)" color="primary"></q-icon></td>
    </tr>
@@ -110,7 +110,7 @@ template:`
 <q-page-sticky position="bottom-right" :offset="[18,18]">
   <q-btn round color="accent" @click="dldocx" icon="svguse:/assets/imgs/meshicons.svg#word"></q-btn>
 </q-page-sticky>
-	</q-page>
+    </q-page>
   </q-page-container>
 </q-layout>
 

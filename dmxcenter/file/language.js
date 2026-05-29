@@ -77,17 +77,17 @@ zh:{
   },
   sender:{
     code:'设备号',
-	message:'消息',
-	confirm:'确定',
-	close:'关闭',
+    message:'消息',
+    confirm:'确定',
+    close:'关闭',
     byCust:"客户全部设备",
-	byCodes:"指定设备号群发",
-	byMsgs:"指定设备号单发",
-	failed:"发生错误，错误码:",
+    byCodes:"指定设备号群发",
+    byMsgs:"指定设备号单发",
+    failed:"发生错误，错误码:",
     codePrompt:"指定设备号，所有设备发送相同的消息",
     msgPrompt:"指定设备号与消息，每个设备可以发送不同的消息",
-	codeFmt:"格式：设备号+换行+设备号+换行+...",
-	msgFmt:"格式：设备号1+换行+消息1+设备号2+换行+消息2+..."
+    codeFmt:"格式：设备号+换行+设备号+换行+...",
+    msgFmt:"格式：设备号1+换行+消息1+设备号2+换行+消息2+..."
   },
   failToCall:"调用失败",
   errMsgs:{}

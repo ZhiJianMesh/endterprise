@@ -16,7 +16,7 @@ data() {return {
     },
     addrList:[],
     cmds:{backup:false,restore:false,setbackup:false},
-	bucketOpts:[]//[{label:'xxx',value:123}...]
+    bucketOpts:[]//[{label:'xxx',value:123}...]
 }},
 created(){
     this.init();
@@ -91,7 +91,7 @@ switchBackup() {
         this.turnOn('backup');
     } else {
         this.backup.at=-1;
-		this.backup.atObj='';
+        this.backup.atObj='';
         if(this.backup.balance<=0) {
             this.turnOff('backup');
         }

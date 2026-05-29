@@ -2,23 +2,23 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     id:this.$route.query.id,
-	pages:{cur:1,max:0},
+    pages:{cur:1,max:0},
     orders:[], //id,createAt,pkgName,balance
     student:{name:'',createAt:'',mobile:'',points:0,birth:'',sex:'U',ext:{},creator:'',age:0},
     ext:{},
     newOrder:{pkgId:'',price:0,val:0,student:0},
     chgOrder:{orderId:0,price:0,val:0},
-	newConsume:{order:0,val:'',student:0,comment:''},
-	dlgs:{order:false,consume:false,extName:'',chgOrder:false},
+    newConsume:{order:0,val:'',student:0,comment:''},
+    dlgs:{order:false,consume:false,extName:'',chgOrder:false},
     packages:[],
     packageOpts:[],
     isMore:false,
     tmpl:{},
-	usePoint:null, //兑换积分数
+    usePoint:null, //兑换积分数
     extChanged:false
 }},
 created(){
-	this.newOrder.student=this.id;
+    this.newOrder.student=this.id;
     this.query_orders(0);
     this.service.getTemplate().then(tpl=>{
         this.tmpl=tpl;
@@ -36,10 +36,10 @@ query_info() {
             return;
         }
         this.student=resp.data;//creator,createAt,name,mobile,point,ext,sex,birth,points
-		var d=new Date();
-		var year=d.getYear();
-		d.setTime(this.student.birth*86400000);
-		this.student.age=year - d.getYear();
+        var d=new Date();
+        var year=d.getYear();
+        d.setTime(this.student.birth*86400000);
+        this.student.age=year - d.getYear();
         this.student.birth = d.toLocaleDateString();
         d.setTime(this.student.createAt);
         this.student.createAt = d.toLocaleDateString();
@@ -61,8 +61,8 @@ change_page(page) {
     this.query_orders((parseInt(page)-1)*this.service.NUM_PER_SMPG);
 },
 save_base(v, v0){
-	var birth=new Date(v.birth);
-	var reqDta={id:this.id,name:v.name,mobile:v.mobile,sex:v.sex,birth:Math.round(birth.getTime()/86400000)};
+    var birth=new Date(v.birth);
+    var reqDta={id:this.id,name:v.name,mobile:v.mobile,sex:v.sex,birth:Math.round(birth.getTime()/86400000)};
     var opts={method:"POST", url:"/api/student/setBase",data:reqDta};
     request(opts, this.service.name).then(resp=>{
         if(resp.code != 0) {
@@ -71,9 +71,9 @@ save_base(v, v0){
         }
         this.student.name=v.name;
         this.student.mobile=v.mobile;
-		this.student.sex=v.sex;
-		this.student.birth=v.birth;
-		this.student.age=new Date().getYear() - birth.getYear();
+        this.student.sex=v.sex;
+        this.student.birth=v.birth;
+        this.student.age=new Date().getYear() - birth.getYear();
     });
 },
 create_order() {
@@ -109,7 +109,7 @@ open_crt_order(){
         this.dlgs.order=true;
         var pkg=this.packages[0];
         this.newOrder.pkgId=pkg.id;
-		this.newOrder.price=pkg.price;
+        this.newOrder.price=pkg.price;
         this.newOrder.val=pkg.val;
     }).catch(err=>{
         Console.info(err);
@@ -144,13 +144,13 @@ exchange(v, v0) {
             return;
         }
         this.student.points-=v;
-		this.usePoint=null;
+        this.usePoint=null;
     })
 },
 open_create_consume(orderId,name){
     this.newConsume={order:orderId, val:'', student:this.id, comment:''};
-	this.dlgs.consume=true;
-	this.dlgs.extName='-' + name;
+    this.dlgs.consume=true;
+    this.dlgs.extName='-' + name;
 },
 create_consume(){
     var url="/api/consume/create";
@@ -187,8 +187,8 @@ template:`
       :rules="[v=>/^1[0-9]{10}$/.test(v)||tags.mobilePls]">
        <template v-slot:prepend><q-icon name="contact_phone"></q-icon></template>
       </q-input>
- 	  <component-date-input :close="tags.ok" :label="tags.birth" v-model="scope.value.birth" max="today"></component-date-input>
-	  <div class="q-gutter-sm">
+       <component-date-input :close="tags.ok" :label="tags.birth" v-model="scope.value.birth" max="today"></component-date-input>
+      <div class="q-gutter-sm">
        <q-radio v-model="scope.value.sex" val="F" :label="tags.sexInfo.F.n"></q-radio>
        <q-radio v-model="scope.value.sex" val="M" :label="tags.sexInfo.M.n"></q-radio>
       </div>
@@ -323,7 +323,7 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
     <q-input v-model="newConsume.val" :label="tags.consumeVal" dense type="number"></q-input>
-	<q-input v-model="newConsume.point" :label="tags.consumePoint" type="number"></q-input>
+    <q-input v-model="newConsume.point" :label="tags.consumePoint" type="number"></q-input>
     <q-input v-model="newConsume.comment" :label="tags.comment" dense
      type="textarea" autogrow></q-input>
   </q-card-section>

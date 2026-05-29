@@ -10,7 +10,7 @@ data() {return {
     action: this.tags.waitting,
     imgWidth:'90vw',
     cdns:[],
-	localVer:0
+    localVer:0
 }},
 created() {
     if(document.documentElement.clientWidth>document.documentElement.clientHeight) {
@@ -41,7 +41,7 @@ getDetail() {
 
         var dt=new Date(resp.data.recentUpd);
         this.app['updateAt']=dt.toLocaleDateString();
-		this.refreshUI();
+        this.refreshUI();
         return this.service.getExternalRes({url:this.baseUrl + "/introduction.json"});
     }).then((s)=> {
         if(!s) {return}
@@ -76,45 +76,45 @@ scroll(event) {
     }
 },
 install(service) {
-	this.$refs.procDlg.show(this.tags.mkt.install,
+    this.$refs.procDlg.show(this.tags.mkt.install,
         this.tags.mkt.cfmInstall+service+'?', 'clear',
         (dlg)=> {
             dlg.setInfo(this.tags.mkt.waitting);
-			return new Promise(resolve=>{
-				Server.installService(service, __regsiterCallback(resp=> {
-					resolve(resp)
-				}));
-			});
+            return new Promise(resolve=>{
+                Server.installService(service, __regsiterCallback(resp=> {
+                    resolve(resp)
+                }));
+            });
         },
         (dlg,resp) => {
-		  if(resp.code!=RetCode.OK) {
-			dlg.setInfo(formatErr(resp.code, resp.info));
-		  } else {
-			dlg.setInfo(this.tags.mkt.successToInstall);
-			this.refreshUI();
-		  }
-		}
+          if(resp.code!=RetCode.OK) {
+            dlg.setInfo(formatErr(resp.code, resp.info));
+          } else {
+            dlg.setInfo(this.tags.mkt.successToInstall);
+            this.refreshUI();
+          }
+        }
     )
 },
 update(service) {
-	this.$refs.procDlg.show(this.tags.mkt.update,
+    this.$refs.procDlg.show(this.tags.mkt.update,
         this.tags.mkt.cfmUpdate+this.name+'?', 'clear',
         (dlg)=> {
             dlg.setInfo(this.tags.mkt.waitting);
-			return new Promise(resolve=>{
-				Server.updateService(service, __regsiterCallback(resp=> {
-					resolve(resp)
-				}));
-			});
+            return new Promise(resolve=>{
+                Server.updateService(service, __regsiterCallback(resp=> {
+                    resolve(resp)
+                }));
+            });
         },
         (dlg,resp) => {
-		  if(resp.code!=RetCode.OK) {
-			dlg.setInfo(formatErr(resp.code, resp.info));
-		  } else {
-			dlg.setInfo(this.tags.mkt.successToUpdate);
-			this.refreshUI();
-		  }
-		}
+          if(resp.code!=RetCode.OK) {
+            dlg.setInfo(formatErr(resp.code, resp.info));
+          } else {
+            dlg.setInfo(this.tags.mkt.successToUpdate);
+            this.refreshUI();
+          }
+        }
     )
 },
 appAction() {
@@ -122,7 +122,7 @@ appAction() {
     if (this.localVer>0) {
         this.update(this.name);
     } else {
-		this.install(this.name);
+        this.install(this.name);
     }
 },
 refreshUI() {
@@ -140,24 +140,24 @@ emptyDtl() {
      installs:0, cmt:'', recentUpd:'', baseUrl:''}
 },
 unInstall() {
-	this.$refs.procDlg.show(this.tags.mkt.unInstall,
+    this.$refs.procDlg.show(this.tags.mkt.unInstall,
         this.tags.mkt.cfmUninstall+this.name+'?', 'clear',
         (dlg)=> {
             dlg.setInfo(this.tags.mkt.waitting);
-			return new Promise(resolve=>{
-				Server.unInstallService(this.name, __regsiterCallback(resp=> {
-					resolve(resp)
-				}));
-			});
+            return new Promise(resolve=>{
+                Server.unInstallService(this.name, __regsiterCallback(resp=> {
+                    resolve(resp)
+                }));
+            });
         },
         (dlg,resp) => {
-		  if(resp.code!=RetCode.OK) {
-			dlg.setInfo(formatErr(resp.code, resp.info));
-		  } else {
-			dlg.setInfo(this.tags.mkt.successToUnInstall);
-			this.refreshUI();
-		  }
-		}
+          if(resp.code!=RetCode.OK) {
+            dlg.setInfo(formatErr(resp.code, resp.info));
+          } else {
+            dlg.setInfo(this.tags.mkt.successToUnInstall);
+            this.refreshUI();
+          }
+        }
     )
 }
 },
@@ -182,7 +182,7 @@ template: `
   <q-footer bordered class="bg-grey-2">
     <q-toolbar class="row justify-center">
       <q-btn rounded color="primary" :label="action" @click="appAction" v-show="localVer<=0"></q-btn>
-	  <q-btn outline rounded color="primary" :label="tags.mkt.unInstall" @click="unInstall" v-show="localVer>0&&app.level>4"></q-btn>
+      <q-btn outline rounded color="primary" :label="tags.mkt.unInstall" @click="unInstall" v-show="localVer>0&&app.level>4"></q-btn>
     </q-toolbar>
   </q-footer>
 
@@ -203,7 +203,7 @@ template: `
   <q-scroll-area style="height:60vh;width:100%;" horizontal @scroll="scroll">
   <div class="row no-wrap">
    <div v-for="img in intro.images" class="q-pa-sm">
-	<q-img :src="img.src" :style="{width:imgWidth}" @click="subTitle=img.info"></q-img>
+    <q-img :src="img.src" :style="{width:imgWidth}" @click="subTitle=img.info"></q-img>
    </div>
   </div>
   </q-scroll-area>

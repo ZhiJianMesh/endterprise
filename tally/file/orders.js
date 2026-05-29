@@ -10,7 +10,7 @@ data() {return {
     stateOpts:[],
     role:'',
     orders:[], //订单列表
-	ctrl:{cur:1,max:0,onlyMine:false},
+    ctrl:{cur:1,max:0,onlyMine:false},
     score:{nOrder:0,vOrder:0,vBrokerage:0,total:0},
     alertDlg:null,
     confirmDlg:null
@@ -43,7 +43,7 @@ query(pg) {
             this.score.vOrder=resp.data.vOrder;
             this.score.vBrokerage=resp.data.vBrokerage;
             this.formatData(resp.data.list, resp.data.cols);
-			this.ctrl.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
+            this.ctrl.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
         }
     })
 },
@@ -74,7 +74,7 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.order.title}}</q-toolbar-title>
-	<q-btn icon="refresh" flat dense @click="refresh"></q-btn>
+    <q-btn icon="refresh" flat dense @click="refresh"></q-btn>
     <q-btn flat round dense icon="menu"><q-menu>
      <div v-if="role=='admin'">
       <q-checkbox v-model="ctrl.onlyMine" :label="tags.onlyMine"

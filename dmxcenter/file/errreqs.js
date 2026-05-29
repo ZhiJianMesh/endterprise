@@ -1,7 +1,7 @@
 export default {
 inject:['service', 'tags'],
 data() {return {
-	page:{cur:1, max:0},
+    page:{cur:1, max:0},
     list:[]
 }},
 created(){
@@ -9,28 +9,28 @@ created(){
 },
 methods:{
 query(pg) {
-	var offset=(parseInt(pg)-1)*+this.service.N_PAGE;
+    var offset=(parseInt(pg)-1)*+this.service.N_PAGE;
     var url="/api/err/list?offset="+offset+"&num="+this.service.N_PAGE
     request({method:"GET",url:url}, this.service.name).then(resp => {
         if(resp.code != RetCode.OK) {
-			this.list=[];
+            this.list=[];
             return;
         }
-		var cols=resp.data.cols;
-		var colNum=cols.length;
-		var list=[];
-		var dt=new Date();
+        var cols=resp.data.cols;
+        var colNum=cols.length;
+        var list=[];
+        var dt=new Date();
         for(var l of resp.data.errs) {
-			var err={};
-			for(var i=0;i<colNum;i++) {
-				err[cols[i]]=l[i];
-			}
-			dt.setTime(err.update_time);
-			err.at=datetime2str(dt);
-			list.push(err);
-		}
-		this.list=list;
-		this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
+            var err={};
+            for(var i=0;i<colNum;i++) {
+                err[cols[i]]=l[i];
+            }
+            dt.setTime(err.update_time);
+            err.at=datetime2str(dt);
+            list.push(err);
+        }
+        this.list=list;
+        this.page.max=Math.ceil(resp.data.total/this.service.N_PAGE);
     })
 },
 
@@ -40,8 +40,8 @@ remove(device) {
         if(resp.code != RetCode.OK) {
             this.$refs.errDlg.showErr(resp.code, resp.info);
         } else {
-			this.query(this.page.cur);
-		}
+            this.query(this.page.cur);
+        }
     })
 }
 },
@@ -55,7 +55,7 @@ template:`
   </q-header>
 <q-page-container>
     <q-page class="q-pa-md">
-	
+    
 <div class="q-pa-sm flex flex-center" v-if="page.max>1">
  <q-pagination v-model="page.cur" color="primary" :max="page.max" max-pages="10"
   boundary-numbers="false" @update:model-value="query"></q-pagination>

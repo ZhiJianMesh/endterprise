@@ -77,20 +77,20 @@ const service = {name:"tally",NUM_PER_PAGE:10,NUM_PER_SMPG:5,
 template:{}, //模板定义
 getTemplate() {
     if(Object.keys(this.template).length > 0) {
-		return new Promise(resolve=>{
-			resolve(this.template);
-		});
+        return new Promise(resolve=>{
+            resolve(this.template);
+        });
     }
     return request({method:"GET", url:"/getVipTmpl"}, this.name).then(resp=>{
         if(resp.code != RetCode.OK) {
             return {};
         }
-		if(resp.data&&resp.data.template) {
-			this.template=resp.data.template; //{'name1':val1,...}
-		} else {
-			this.template={}
-		}
-		return this.template;
+        if(resp.data&&resp.data.template) {
+            this.template=resp.data.template; //{'name1':val1,...}
+        } else {
+            this.template={}
+        }
+        return this.template;
     });
 },
 role:'',

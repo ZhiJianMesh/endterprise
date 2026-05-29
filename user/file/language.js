@@ -37,10 +37,10 @@ user:{
     powerNull:"无",
     serviceExt:"服务扩展信息",
     statusTypes:{N:"正常",L:"锁定",R:"删除"},
-	sexTitles:{"M":"男","F":"女","U":"未知"},
+    sexTitles:{"M":"男","F":"女","U":"未知"},
     typeTitles:{"I":"内部员工","O":"外部人员","D":"设备"},
-	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}],
-	typeOpts:[{label:"内部员工",value:"I"},{label:"外部人员",value:"O"},{label:"设备",value:"D"}]
+    sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}],
+    typeOpts:[{label:"内部员工",value:"I"},{label:"外部人员",value:"O"},{label:"设备",value:"D"}]
 },
 power:{
     service:"服务名",

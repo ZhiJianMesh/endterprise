@@ -73,7 +73,7 @@ template:`
    <q-toolbar>
     <q-btn flat round icon="arrow_back" dense @click="service.back"></q-btn>
     <q-toolbar-title>{{tags.service.title}}</q-toolbar-title>
-	<q-btn icon="refresh" flat dense @click="refresh"></q-btn>
+    <q-btn icon="refresh" flat dense @click="refresh"></q-btn>
     <q-btn flat dense icon="menu"><q-menu>
      <div v-if="role=='admin'">
       <q-checkbox v-model="ctrl.onlyMine" :label="tags.onlyMine"

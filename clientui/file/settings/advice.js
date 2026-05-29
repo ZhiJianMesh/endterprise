@@ -49,7 +49,7 @@ template: `
 </q-card>
 <q-card class="q-mt-lg">
  <q-card-section>
-	<div class="text-h6">{{tags.openSrcs}}</div>
+    <div class="text-h6">{{tags.openSrcs}}</div>
  </q-card-section>
  <q-separator dark></q-separator>
  <q-card-section>

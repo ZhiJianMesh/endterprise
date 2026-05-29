@@ -3,10 +3,10 @@ inject:['service', 'tags'],
 data(){return {
     cid:'',
     companyName:'',
-	runMode:'SINGLETON',
+    runMode:'SINGLETON',
     accessCode:'',
     insideAddr:'',
-	outsideAddr:'',
+    outsideAddr:'',
     authorized:false,
     changed:false,
     saveAt:0,
@@ -29,9 +29,9 @@ init() {
     this.service.mode=c.runMode;
     Companies.getLogo(c.id, __regsiterCallback(png=>{
         if(png) {
-        	this.logo="img:"+png;
+            this.logo="img:"+png;
         } else {
-        	this.logo="/assets/imgs/logo_example.png";
+            this.logo="/assets/imgs/logo_example.png";
         }
     }));
 },
@@ -117,22 +117,22 @@ template: `
 <q-card>
  <q-card-section>
   <q-list><q-item>
-	<q-item-section avatar>
-	  <q-avatar size="3em"><q-icon :name="logo" size="2em"></q-icon></q-avatar>
-	</q-item-section>
-	<q-item-section class="text-h6">
-	  <q-item-label>{{companyName}}</q-item-label>
-	  <q-item-label caption>{{tags.cfg.id}}:{{cid}}</q-item-label>
-	</q-item-section>
-	<q-item-section side v-show="changed">
-	  <q-btn icon="save" @click="save" color="primary" :loading="saveAt>0" rounded flat></q-btn>
-	</q-item-section>
+    <q-item-section avatar>
+      <q-avatar size="3em"><q-icon :name="logo" size="2em"></q-icon></q-avatar>
+    </q-item-section>
+    <q-item-section class="text-h6">
+      <q-item-label>{{companyName}}</q-item-label>
+      <q-item-label caption>{{tags.cfg.id}}:{{cid}}</q-item-label>
+    </q-item-section>
+    <q-item-section side v-show="changed">
+      <q-btn icon="save" @click="save" color="primary" :loading="saveAt>0" rounded flat></q-btn>
+    </q-item-section>
     <q-item-section side>
       <q-icon name="content_copy" @click="copy" color="secondary"></q-icon>
     </q-item-section>
-   	<q-item-section side>
-	  <q-icon name="refresh" @click="refresh" color="primary"></q-icon>
-	</q-item-section>
+       <q-item-section side>
+      <q-icon name="refresh" @click="refresh" color="primary"></q-icon>
+    </q-item-section>
   </q-item></q-list>
  </q-card-section>
 </q-card>
@@ -161,7 +161,7 @@ template: `
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-input dense v-model="auth.pwd" autofocus :type="auth.visible?'text':'password'"
-	  :label="tags.cfg.pwd" @keyup.enter="onAuth">
+      :label="tags.cfg.pwd" @keyup.enter="onAuth">
         <template v-slot:append>
           <q-icon :name="auth.visible ? 'visibility_off':'visibility'"
             class="cursor-pointer" @click="auth.visible=!auth.visible"></q-icon>

@@ -7,14 +7,14 @@ data() {return {
     packages:[],
     newSeg:{k:'',n:'',t:'s'},
     newPackage:{name:'',price:'',val:'',ext:{}},
-	dlg:{pkg:false,seg:false}
+    dlg:{pkg:false,seg:false}
 }},
 created(){
     for(var n in this.tags.segTypes){
         this.segTypes.push({value:n,label:this.tags.segTypes[n]})
     }
-	this.query_pkgs();
-	this.query_tmpls();    
+    this.query_pkgs();
+    this.query_tmpls();    
 },
 
 methods:{
@@ -62,8 +62,8 @@ save_tpl(){
             this.$refs.errMsg.showErr(resp.code, resp.info);
             return;
         }
-		this.newSeg={k:'',n:'',t:'s'};
-		this.dlg.seg=false;
+        this.newSeg={k:'',n:'',t:'s'};
+        this.dlg.seg=false;
     });
 },
 rmv_package(id,n){
@@ -85,7 +85,7 @@ add_package(){
         }
         this.query_pkgs();
         this.newPackage={name:'',price:'',val:'',ext:{}};
-		this.dlg.pkg=false;
+        this.dlg.pkg=false;
     });
 }
 },
@@ -115,9 +115,9 @@ template:`
     <q-separator></q-separator>
     <q-item v-for="(tpl,k) in template">
      <q-item-section>
-	  <q-item-label>{{tpl.n}}</q-item-label>
-	  <q-item-label caption>{{tags.segKey}}:{{k}}, {{tags.segType}}:{{tags.segTypes[tpl.t]}}</q-item-label>
-	 </q-item-section>
+      <q-item-label>{{tpl.n}}</q-item-label>
+      <q-item-label caption>{{tags.segKey}}:{{k}}, {{tags.segType}}:{{tags.segTypes[tpl.t]}}</q-item-label>
+     </q-item-section>
      <q-item-section avatar><q-icon name="cancel" color="green" @click="rmv_tpl_seg(k)"></q-icon></q-item-section>
     </q-item>
    </q-list>
@@ -139,8 +139,8 @@ template:`
     <q-separator></q-separator>
     <q-item v-for="(p,n) in packages">
      <q-item-section>
-	  <q-item-label>{{p.name}}</q-item-label>
-	  <q-item-label caption>{{tags.pkgPrice}}:{{p.price}}, {{tags.pkgVal}}:{{p.val}}{{tags.unit.T}}</q-item-label>
+      <q-item-label>{{p.name}}</q-item-label>
+      <q-item-label caption>{{tags.pkgPrice}}:{{p.price}}, {{tags.pkgVal}}:{{p.val}}{{tags.unit.T}}</q-item-label>
      </q-item-section>
      <q-item-section avatar><q-icon color="green" name="cancel" @click="rmv_package(p.id,n)"></q-icon></q-item-section>
     </q-item>

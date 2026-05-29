@@ -33,8 +33,8 @@ getDetail() {
             this.$refs.errDlg.showErr(resp.code, resp.info);
             return;
         }
-		var cdnNum=this.cdns.length;
-		var cdnNo=Math.floor(Math.random()*cdnNum);
+        var cdnNum=this.cdns.length;
+        var cdnNo=Math.floor(Math.random()*cdnNum);
         this.app = resp.data;
         var s = this.cdns[cdnNo]+this.app.service;
         this.app['icon'] = s+"/favicon.png";
@@ -101,7 +101,7 @@ update(service) {
         dlg.setInfo(formatErr(resp.code, resp.info));
       } else {
         this.localVer = this.app.ver;
-		dlg.setInfo(this.tags.mkt.successToInstall);
+        dlg.setInfo(this.tags.mkt.successToInstall);
         this.action='';
       }
     }
@@ -120,7 +120,7 @@ install(service) {
       } else {
         this.localVer = this.app.ver;
         this.action='';
-		dlg.setInfo(this.tags.mkt.successToInstall);
+        dlg.setInfo(this.tags.mkt.successToInstall);
       }
     }
   )

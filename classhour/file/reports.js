@@ -10,9 +10,9 @@ data() {return {
     date:'',
     dateStr:'',
     packageOpts:[],
-	mainList:[],
-	pkgList:[],
-	dlgs:{main:false,pkg:false}
+    mainList:[],
+    pkgList:[],
+    dlgs:{main:false,pkg:false}
 }},
 created(){
     var end=new Date();
@@ -22,7 +22,7 @@ created(){
      +"  "+end.getFullYear()+'-'+(end.getMonth()+1)+'-'+end.getDate();
 },
 mounted(){
-	//必须Vue.markRaw，否则首次会出错，提示‘Cannot read properties of undefined (reading ‘type‘)’
+    //必须Vue.markRaw，否则首次会出错，提示‘Cannot read properties of undefined (reading ‘type‘)’
     this.mainCharts=Vue.markRaw(echarts.init(document.getElementById('mainCharts')));
     this.pkgCharts=Vue.markRaw(echarts.init(document.getElementById('pkgCharts')));
     this.revenueCharts=Vue.markRaw(echarts.init(document.getElementById('revenueCharts')));
@@ -41,7 +41,7 @@ query_main() {
     var beginTime=Math.ceil(this.beginTime/7200000);
     var url="/api/report/main?beginTime="+beginTime+"&days="+this.days;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
-		var list=resp.code==RetCode.OK?resp.data.data:[];
+        var list=resp.code==RetCode.OK?resp.data.data:[];
         //reportAt,stuNum,revenue,orderNum,logNum
         var stuNum=[];
         var revenue=[];
@@ -49,24 +49,24 @@ query_main() {
         var reportAt=[];
         var dt=new Date();
         var foreDay='', dayNo;
-		var xDt;
-		var mainList=[];
+        var xDt;
+        var mainList=[];
 
         for(var l of list) {
             dt.setTime(l[0]*7200000);//按2小时为时长汇总
             dayNo=(dt.getMonth()+1)+'.'+dt.getDate();
-			
+            
             if(foreDay==dayNo) {
-				xDt=dt.getHours()+':00';
+                xDt=dt.getHours()+':00';
             } else {
-				xDt=dayNo+'/'+dt.getHours()+':00';
+                xDt=dayNo+'/'+dt.getHours()+':00';
                 foreDay=dayNo;
             }
             reportAt.push(xDt);
             stuNum.push(l[1]);
             revenue.push(l[2]);
             orderNum.push(l[3]);
-			mainList.push([dt.toLocaleString(), l[1], l[2], l[3], l[4]])
+            mainList.push([dt.toLocaleString(), l[1], l[2], l[3], l[4]])
         }
         this.mainList = mainList;
         var series=[
@@ -89,26 +89,26 @@ query_pkg() {
     var beginTime=Math.ceil(this.beginTime/86400000);
     var url="/api/report/package?beginTime="+beginTime+"&days="+this.days+"&pkgId="+this.pkgId;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
-		var list=resp.code==RetCode.OK?resp.data.data:[];
+        var list=resp.code==RetCode.OK?resp.data.data:[];
         //reportAt,revenue,orderNum,orderBal,logNum,logVal
         var revenue=[];
         var orderBal=[];
         var logVal=[];
         var reportAt=[];
         var dt=new Date();
-		var xDt;
-		var pkgList=[];
+        var xDt;
+        var pkgList=[];
         
         for(var l of list) {
             dt.setTime(l[0]*86400000);
-			xDt = (dt.getMonth()+1)+'.'+dt.getDate();
+            xDt = (dt.getMonth()+1)+'.'+dt.getDate();
             reportAt.push(xDt);
             revenue.push(l[1]);
             orderBal.push(l[3]);
             logVal.push(l[5]);
-			pkgList.push([xDt, l[1], l[2], l[3], l[4], l[5]]);
+            pkgList.push([xDt, l[1], l[2], l[3], l[4], l[5]]);
         }
-		this.pkgList = pkgList;
+        this.pkgList = pkgList;
         var series=[
             {name:this.tags.revenue,type:'line',data:revenue,yAxisIndex:0,itemStyle:{color:"#ff0011"}}, //新增收入(元)
             {name:this.tags.orderBal,type:'bar',data:orderBal,yAxisIndex:1,stack:'balance',itemStyle:{color:"#11ff00"}},//剩余课时
@@ -155,13 +155,13 @@ query_revenue() {
             dt.setTime(l[1]*86400000);
             xDt = (dt.getMonth()+1)+'.'+dt.getDate();
             if(xDt != oldDt) { //按日期排序后返回
-				n = reportAt.length;
+                n = reportAt.length;
                 for(var i in pkgList) {
                     if(pkgList[i].length<n) {
                         pkgList[i].push(0); //不是每个套餐每天都有数据，所以补齐缺少的数据
                     }
                 }
-				oldDt=xDt;
+                oldDt=xDt;
                 reportAt.push(xDt);
             }
             pkgList[l[0]].push(l[2]);
@@ -199,7 +199,7 @@ date_range_end(range) {
     if(this.days <= 31) {
         this.query_pkg();
         this.query_main();
-		this.query_revenue();
+        this.query_revenue();
     } else {
         this.$refs.errMsg.show(this.tags.exceedsDayNum);
     }
@@ -251,20 +251,20 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
    <q-markup-table flat><tbody>
-	 <thead><tr>
-	  <th class="text-left">{{tags.reportAt}}</th>
-	  <th class="text-right">{{tags.stuNum}}</th>
-	  <th class="text-right">{{tags.revenue}}</th>
-	  <th class="text-right">{{tags.orderNum}}</th>
-	  <th class="text-right">{{tags.logNum}}</th>
-	 </tr></thead>
-	 <tbody><tr v-for="l in mainList" clickable>
-	  <td class="text-left">{{l[0]}}</td>
-	  <td class="text-right">{{l[1]}}</td>
-	  <td class="text-right">{{l[2]}}</td>
-	  <td class="text-right">{{l[3]}}</td>
-	  <td class="text-right">{{l[4]}}</td>
-	 </tr></tbody>
+     <thead><tr>
+      <th class="text-left">{{tags.reportAt}}</th>
+      <th class="text-right">{{tags.stuNum}}</th>
+      <th class="text-right">{{tags.revenue}}</th>
+      <th class="text-right">{{tags.orderNum}}</th>
+      <th class="text-right">{{tags.logNum}}</th>
+     </tr></thead>
+     <tbody><tr v-for="l in mainList" clickable>
+      <td class="text-left">{{l[0]}}</td>
+      <td class="text-right">{{l[1]}}</td>
+      <td class="text-right">{{l[2]}}</td>
+      <td class="text-right">{{l[3]}}</td>
+      <td class="text-right">{{l[4]}}</td>
+     </tr></tbody>
   </q-markup-table>
  </q-card>
 </q-dialog>
@@ -278,22 +278,22 @@ template:`
   </q-card-section>
   <q-card-section class="q-pt-none">
    <q-markup-table flat><tbody>
-	 <thead><tr>
-	  <th class="text-left">{{tags.reportAt}}</th>
-	  <th class="text-right">{{tags.revenue}}</th>
-	  <th class="text-right">{{tags.orderNum}}</th>
-	  <th class="text-right">{{tags.orderBal}}</th>
-	  <th class="text-right">{{tags.logNum}}</th>
-	  <th class="text-right">{{tags.logVal}}</th>
-	 </tr></thead>
-	 <tbody><tr v-for="l in pkgList" clickable>
-	  <td class="text-left">{{l[0]}}</td>
-	  <td class="text-right">{{l[1]}}</td>
-	  <td class="text-right">{{l[2]}}</td>
-	  <td class="text-right">{{l[3]}}</td>
-	  <td class="text-right">{{l[4]}}</td>
-	  <td class="text-right">{{l[5]}}</td>
-	 </tr></tbody>
+     <thead><tr>
+      <th class="text-left">{{tags.reportAt}}</th>
+      <th class="text-right">{{tags.revenue}}</th>
+      <th class="text-right">{{tags.orderNum}}</th>
+      <th class="text-right">{{tags.orderBal}}</th>
+      <th class="text-right">{{tags.logNum}}</th>
+      <th class="text-right">{{tags.logVal}}</th>
+     </tr></thead>
+     <tbody><tr v-for="l in pkgList" clickable>
+      <td class="text-left">{{l[0]}}</td>
+      <td class="text-right">{{l[1]}}</td>
+      <td class="text-right">{{l[2]}}</td>
+      <td class="text-right">{{l[3]}}</td>
+      <td class="text-right">{{l[4]}}</td>
+      <td class="text-right">{{l[5]}}</td>
+     </tr></tbody>
   </q-markup-table>
  </q-card>
 </q-dialog>

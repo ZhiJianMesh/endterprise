@@ -10,14 +10,14 @@ data() {return {
         author: "",
         level: 100,
         icon: "",
-		cloud:false //个人服务，都访问云侧
+        cloud:false //个人服务，都访问云侧
     },
     intro: {},
     subTitle: '',
     preImgNo:0,
     imgWidth:'90vw',
     isNormal:true,
-	isInstalled:true,
+    isInstalled:true,
     action: '',
     install:{percent:0,info:"",dlg:false}
 }},
@@ -51,7 +51,7 @@ created() {
         this.intro=intro;
     });
 
-	this.refreshUI();
+    this.refreshUI();
 },
 methods: {
 scroll(event) {
@@ -71,48 +71,48 @@ appAction() {
     this.install.info="";
     var jsCbId=__regsiterCallback(this.refreshUI)
     if(this.action==this.tags.install) {
-		App.install(this.name, this.app.cloud, jsCbId);
+        App.install(this.name, this.app.cloud, jsCbId);
     } else {
         App.update(this.name, jsCbId);
     }
     this.action=this.tags.waitting;
 },
 unInstall() {
-	if(!this.isNormal) {
-		return;
-	}
-	App.unInstall(this.name, __regsiterCallback(this.refreshUI));
-	this.action=this.tags.waitting;
+    if(!this.isNormal) {
+        return;
+    }
+    App.unInstall(this.name, __regsiterCallback(this.refreshUI));
+    this.action=this.tags.waitting;
 },
 progress(inc,info){
     if(this.install.percent+inc>100) {
- 		this.install.percent=100;
- 	} else {
- 		this.install.percent+=inc;
- 	}
+         this.install.percent=100;
+     } else {
+         this.install.percent+=inc;
+     }
     this.install.info=info;
 },
 refreshUI(r) {
-	if(r && r.code != RetCode.OK) {
+    if(r && r.code != RetCode.OK) {
         this.$refs.errDlg.showErr(r.code, r.info);
     }
     this.install={dlg:false,percent:0,info:""};
-	this.isInstalled=App.isInstalled(this.name);
-	if (this.isInstalled){
-		request({method:"GET",url:"/api/client_info",private:false}, this.name).then(resp => {
-			if (resp.code!=RetCode.OK) {
-				Console.warn("Fail to get client info " + resp);
-				return;
-			}
-			if(this.app.version<resp.data.version) {
-				this.action=this.tags.update;
-			} else {
-				this.action="";
-			}
-		});
-	} else {
-		this.action = this.tags.install;
-	}
+    this.isInstalled=App.isInstalled(this.name);
+    if (this.isInstalled){
+        request({method:"GET",url:"/api/client_info",private:false}, this.name).then(resp => {
+            if (resp.code!=RetCode.OK) {
+                Console.warn("Fail to get client info " + resp);
+                return;
+            }
+            if(this.app.version<resp.data.version) {
+                this.action=this.tags.update;
+            } else {
+                this.action="";
+            }
+        });
+    } else {
+        this.action = this.tags.install;
+    }
 }
 },
 template: `

@@ -135,7 +135,7 @@ skuList(pg) {
     if(pg==1&&this.skus.length>0){ //只缓存第一页
         return new Promise(resolve=>{ resolve(this.skus) });
     }
-	var offset=(pg-1)*this.N_PAGE;
+    var offset=(pg-1)*this.N_PAGE;
     var url="/api/sku/list?offset="+offset+"&num="+this.N_PAGE;
     return request({method:"GET",url:url}, this.name).then(resp=>{
         if(resp.code != 0) {

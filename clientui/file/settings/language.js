@@ -246,10 +246,10 @@ zh:{
     '5102':"没有合适的服务器可以使用"
   },
   user:{
-	createAt:"创建时间",
+    createAt:"创建时间",
     birthday:"生日",
     sex:"性别",
-	sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}]
+    sexOpts:[{label:"男",value:"M"},{label:"女",value:"F"}]
   },
   home:{
     personal:"帐号信息",

@@ -40,7 +40,7 @@ query(pg) {
     })
 },
 refresh() {
-	this.query(this.ctrl.cur);
+    this.query(this.ctrl.cur);
 },
 formatData(rows,cols) {
     var dt=new Date();
@@ -134,7 +134,7 @@ template:`
      v-if="role=='admin'||role=='sales'"></q-btn>
     <q-avatar square v-else><img src="./favicon.png"></q-avatar>
     <q-toolbar-title>{{tags.service.myTask}}</q-toolbar-title>
-	<q-btn icon="refresh" flat dense @click="refresh"></q-btn>
+    <q-btn icon="refresh" flat dense @click="refresh"></q-btn>
     <q-btn flat round dense icon="menu"><q-menu>
      <q-option-group :options="stateOpts" type="radio" v-model="state"
       @update:model-value="query(1)" style="min-width:10em"></q-option-group>
@@ -236,7 +236,7 @@ template:`
     <td>
      <div class="text-caption">{{c.cmt}}</div>
      <q-rating v-model="c.level" size="1em" color="orange" readonly></q-rating>
-	 <div class="text-caption">{{c.at_s}}</div>
+     <div class="text-caption">{{c.at_s}}</div>
     </td>
    </tr>
   </q-markup-table>

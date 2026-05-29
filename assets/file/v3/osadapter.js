@@ -42,25 +42,25 @@ const MAX_TASK_NUM=256;//最多MAX_TASK_NUM个并发任务
 const __callback_funs=new Array(MAX_TASK_NUM);
 var __call_id=0;
 function request(opts,service) {
-	var jsonOpts = JSON.stringify(opts);
+    var jsonOpts = JSON.stringify(opts);
     return new Promise(resolve=>{
         Http.request(jsonOpts, service,  __regsiterCallback(resp => {
-			resolve(resp);
-		}));
+            resolve(resp);
+        }));
     });
 }
 
 function getExternal(opts) {
-	var jsonOpts = JSON.stringify(opts);
+    var jsonOpts = JSON.stringify(opts);
     return new Promise(resolve=>{
         Http.getExternal(jsonOpts, __regsiterCallback(resp => {
-			resolve(resp);
-		}));
+            resolve(resp);
+        }));
     });
 }
 
 function download(opts, service) {
-	var jsonOpts = JSON.stringify(opts);
+    var jsonOpts = JSON.stringify(opts);
     return new Promise(resolve=>{
         Http.download(jsonOpts, service, __regsiterCallback(resp => {
             resolve(resp); //{code:xx,info:'',data:{size:yy,path:'path of local saved file'}}

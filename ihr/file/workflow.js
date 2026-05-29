@@ -44,7 +44,7 @@ inject:['ibf'],
 components:{
     "confirm-dialog":ConfirmDialog,
     "alert-dialog":AlertDialog,
-	"workflow":Workflow
+    "workflow":Workflow
 },
 data() {return {
     flowid:this.$route.query.flow,
@@ -55,10 +55,10 @@ data() {return {
     curStep:0,
     info:{account:'',name:'',list:[],dlg:false}, //用于显示详情标题
     dtl:[],
-	flow:{}//流程定义信息{name,maxStep,steps}
+    flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
-	_WF_.flowDef(this.flowid).then(fd=>{
+    _WF_.flowDef(this.flowid).then(fd=>{
         this.flow=fd;
 
         var tags=this.tags;

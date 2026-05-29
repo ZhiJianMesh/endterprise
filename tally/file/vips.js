@@ -6,7 +6,7 @@ data() {return {
     score:{total:0,vip:0},
     vips:[], //会员列表
     search:'',
-	ctrl:{cur:1,max:0,searchTag:''},
+    ctrl:{cur:1,max:0,searchTag:''},
     newVip:{dlg:false}
 }},
 created(){
@@ -36,13 +36,13 @@ query_vips(pg) {
             this.score.nOrder=resp.data.nOrder;
             this.score.nService=resp.data.nService;
             this.formatData(resp.data.list, resp.data.cols);
-			this.ctrl.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
+            this.ctrl.max=Math.ceil(resp.data.total/this.service.NUM_PER_PAGE);
             this.ctrl.searchTag=this.tags.search + '(' + resp.data.total + ')';
         }
     })
 },
 refresh() {
-	this.query_vips(this.ctrl.cur);
+    this.query_vips(this.ctrl.cur);
 },
 search_vips() {
     if(this.search=='') {
@@ -61,7 +61,7 @@ search_vips() {
 },
 formatData(rows,cols) {
     var dt=new Date();
-	var nowYear = dt.getFullYear();
+    var nowYear = dt.getFullYear();
     this.vips=rows.map(l=>{
         var r={};
         for(var i in cols) {
@@ -78,8 +78,8 @@ formatData(rows,cols) {
 },
 add_vip() {
     var url="/api/vip/add";
-	var d=this.newVip;
-	var birth=Math.round(new Date(this.newVip.birth).getTime()/86400000);
+    var d=this.newVip;
+    var birth=Math.round(new Date(this.newVip.birth).getTime()/86400000);
     var reqDta=copyObj(this.newVip);
     reqDta.birth=birth;
     request({method:"POST",url:url,data:reqDta}, this.service.name).then(resp => {
@@ -93,7 +93,7 @@ add_vip() {
 },
 open_newvip_dlg() {
     copyObjTo(EMPTY_VIP, this.newVip);
-	this.newVip.dlg=true;
+    this.newVip.dlg=true;
 },
 showBrokerage() {
     if(this.role=='admin') {
@@ -110,7 +110,7 @@ template:`
    <q-toolbar>
     <q-avatar square><img src="./favicon.png"></q-avatar>
     <q-toolbar-title>{{tags.app_name}}</q-toolbar-title>
-	<q-btn icon="refresh" flat dense @click="refresh"></q-btn>
+    <q-btn icon="refresh" flat dense @click="refresh"></q-btn>
     <q-btn flat dense icon="menu" v-if="role=='admin'">
     <q-menu>
      <q-list class="text-primary">
@@ -214,7 +214,7 @@ template:`
      <q-input v-model="newVip.code" :label="tags.vip.code" dense></q-input>
      <q-input v-model="newVip.mobile" :label="tags.mobile" maxlength=11
      :rules="[v=>/^1[0-9]{10}$/.test(v)|| tags.mobilePls]" dense></q-input>
- 	 <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth" max="today"></component-date-input>
+      <component-date-input :close="tags.ok" :label="tags.birth" v-model="newVip.birth" max="today"></component-date-input>
     </q-card-section>
     <q-card-actions align="right">
       <q-btn flat :label="tags.close" color="primary" v-close-popup></q-btn>

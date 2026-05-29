@@ -20,7 +20,7 @@ created(){
         {label:this.tags.report.byHour,value:'hour'}]
 },
 mounted(){
-	//必须Vue.markRaw，否则首次会出错，提示‘Cannot read properties of undefined (reading ‘type‘)’
+    //必须Vue.markRaw，否则首次会出错，提示‘Cannot read properties of undefined (reading ‘type‘)’
     this.mainCharts=Vue.markRaw(echarts.init(document.getElementById('mainCharts')));
     this.query();
 },
@@ -34,7 +34,7 @@ query() {
     this.range.iFrom=parseInt(dt.getTime()/HOUR_MS);
     var url="/api/report/stats?from="+this.range.iFrom+"&to="+this.range.iTo;
     request({method:"GET",url:url}, this.service.name).then(resp=>{
-		var list=resp.code==RetCode.OK?resp.data.data:[];
+        var list=resp.code==RetCode.OK?resp.data.data:[];
         this.list=list;
         this.stat();
     })

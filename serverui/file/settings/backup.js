@@ -10,7 +10,7 @@ data() {return {
         buckets:[] //id list
     },
     addrList:[],
-	bucketOpts:[]//[{label:'xxx',value:123}...]
+    bucketOpts:[]//[{label:'xxx',value:123}...]
 }},
 created(){
     this.init();
@@ -74,7 +74,7 @@ switchBackup() {
         this.turnOn('backup');
     } else {
         this.backup.at=-1;
-		this.backup.atObj='';
+        this.backup.atObj='';
         if(this.backup.balance<=0) {
             this.turnOff('backup');
         }
@@ -82,18 +82,18 @@ switchBackup() {
     this.saveBackupAt();
 },
 turnOn(service) {
-	//只是在服务侧登记服务，并没有充值
-	request({method:"PUT",url:"/api/service/turnon", data:{service:service}, cloud:true}, 'company').then(resp => {
-		if(resp.code != RetCode.OK) {
-			this.$refs.alertDlg.showErr(resp.code, resp.info);
-		}
+    //只是在服务侧登记服务，并没有充值
+    request({method:"PUT",url:"/api/service/turnon", data:{service:service}, cloud:true}, 'company').then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
     })
 },
 turnOff(service) {
-	request({method:"DELETE",url:"/api/service/turnoff?service="+service, cloud:true}, 'company').then(resp => {
-		if(resp.code != RetCode.OK) {
-			this.$refs.alertDlg.showErr(resp.code, resp.info);
-		}
+    request({method:"DELETE",url:"/api/service/turnoff?service="+service, cloud:true}, 'company').then(resp => {
+        if(resp.code != RetCode.OK) {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        }
     })
 },
 bucketChanged() {

@@ -30,7 +30,7 @@ inject:['ibf'],
 components:{
     "confirm-dialog":ConfirmDialog,
     "alert-dialog":AlertDialog,
-	"workflow":Workflow
+    "workflow":Workflow
 },
 data() {return {
     flowid:this.$route.query.flow,
@@ -39,7 +39,7 @@ data() {return {
     tags:sole_tags,
     alertDlg:null,
     dtl:[],
-	flow:{}//流程定义信息{name,maxStep,steps}
+    flow:{}//流程定义信息{name,maxStep,steps}
 }},
 created(){
     _WF_.flowDef(this.flowid).then(fd=>{

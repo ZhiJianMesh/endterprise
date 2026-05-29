@@ -3,7 +3,7 @@ inject:['service', 'tags'],
 data(){return {
     logs:[],
     dlList:[],
-    dlState:{dlg:false, progressing:true}	
+    dlState:{dlg:false, progressing:true}    
 }},
 created() {
     this.listLogs();
@@ -25,8 +25,8 @@ dl(f){
     var token=this.service.getToken('backend');
     var hh={access_token:token,cid:Companies.curCompanyId()};
     var url='/downloadlog?n=' + encodeURIComponent(f);
-	this.dlState.dlg=true;
-	this.dlState.progressing=true;
+    this.dlState.dlg=true;
+    this.dlState.progressing=true;
     download({private:false, file:true, file_name:fn, headers:hh, url:url, timeout:30000}, 'backend').then(resp => {
         if(resp.code == RetCode.OK) {
             this.dlList.splice(0,0,{file:resp.data.saveAs,size:resp.data.size,bg:'#00000000'})

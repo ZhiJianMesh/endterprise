@@ -82,15 +82,15 @@ init() {
         this.outsideAddr=info.outsideAddr;
         
         var l=[];
-		if(info.mode) {
-			this.runMode=info.mode;
-			if(info.mode!='ROOT') {
-				for(var addr of info.externAddrs) {
-					l.push({label:addr, value:addr})
-				}
-				l.push({label:this.tags.dontSet, value:""});
-			}
-		}
+        if(info.mode) {
+            this.runMode=info.mode;
+            if(info.mode!='ROOT') {
+                for(var addr of info.externAddrs) {
+                    l.push({label:addr, value:addr})
+                }
+                l.push({label:this.tags.dontSet, value:""});
+            }
+        }
         this.addrList=l;
         Companies.getLogo(this.cid, __regsiterCallback(png=> {
             if(png) {
@@ -239,9 +239,9 @@ changePwd() {
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         } else {
-    		this.chgPwdDta={oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false};
-	        this.$refs.alertDlg.show(this.tags.successToChgPwd);
-		}
+            this.chgPwdDta={oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false};
+            this.$refs.alertDlg.show(this.tags.successToChgPwd);
+        }
     });
 }
 },

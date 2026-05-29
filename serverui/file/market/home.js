@@ -79,45 +79,45 @@ detail(service) {
     this.$router.push('/detail?service='+service)
 },
 update(service) {
-	this.$refs.procDlg.show(this.tags.mkt.update,
+    this.$refs.procDlg.show(this.tags.mkt.update,
         this.tags.mkt.cfmUpdate+service+'?', 'clear',
         (dlg)=> {
             dlg.setInfo(this.tags.mkt.waitting);
-			return new Promise(resolve=>{
-				Server.updateService(service, __regsiterCallback(resp=> {
-					resolve(resp)
-				}));
-			});
+            return new Promise(resolve=>{
+                Server.updateService(service, __regsiterCallback(resp=> {
+                    resolve(resp)
+                }));
+            });
         },
         (dlg,resp)=> {
-		  if(resp.code!=RetCode.OK) {
-			dlg.setInfo(formatErr(resp.code, resp.info));
-		  } else {
-			dlg.setInfo(this.tags.mkt.successToUpdate);
-			this.getLocServices();
-		  }
-		}
+          if(resp.code!=RetCode.OK) {
+            dlg.setInfo(formatErr(resp.code, resp.info));
+          } else {
+            dlg.setInfo(this.tags.mkt.successToUpdate);
+            this.getLocServices();
+          }
+        }
     )
 },
 unInstall(service) {
-	this.$refs.procDlg.show(this.tags.mkt.unInstall,
+    this.$refs.procDlg.show(this.tags.mkt.unInstall,
         this.tags.mkt.cfmUninstall+service+'?', 'clear',
         (dlg)=> {
             dlg.setInfo(this.tags.mkt.waitting);
-			return new Promise(resolve=>{
-				Server.unInstallService(service, __regsiterCallback(resp=> {
-					resolve(resp)
-				}));
-			});
+            return new Promise(resolve=>{
+                Server.unInstallService(service, __regsiterCallback(resp=> {
+                    resolve(resp)
+                }));
+            });
         },
         (dlg,resp)=> {
-		  if(resp.code!=RetCode.OK) {
-			dlg.setInfo(formatErr(resp.code, resp.info));
-		  } else {
-			dlg.setInfo(this.tags.mkt.successToUnInstall);
-			this.getLocServices();
-		  }
-		}
+          if(resp.code!=RetCode.OK) {
+            dlg.setInfo(formatErr(resp.code, resp.info));
+          } else {
+            dlg.setInfo(this.tags.mkt.successToUnInstall);
+            this.getLocServices();
+          }
+        }
     )
 },
 getLocServices() {
@@ -185,16 +185,16 @@ template: `
        </q-item-section>
        <q-item-section class="text-left">
          <q-item-label overline>{{s.displayName}}/{{s.name}}
-		  <q-badge :label="tags.mkt.unInstall" @click="unInstall(s.name)" v-if="s.level>4"></q-badge>
-		 </q-item-label>
+          <q-badge :label="tags.mkt.unInstall" @click="unInstall(s.name)" v-if="s.level>4"></q-badge>
+         </q-item-label>
          <q-item-label caption>{{s.author}}</q-item-label>
        </q-item-section>
        <q-item-section side v-if="s.updatable">
-	    <q-item-label class="q-mt-xs text-weight-bold text-primary"
-	    @click="update(s.name)">{{tags.mkt.update}}</q-item-label>
-		<q-item-label caption>{{s.version}} -> {{s.srvVer}}</q-item-label>
-	   </q-item-section>
-	   <q-item-section side v-else>
+        <q-item-label class="q-mt-xs text-weight-bold text-primary"
+        @click="update(s.name)">{{tags.mkt.update}}</q-item-label>
+        <q-item-label caption>{{s.version}} -> {{s.srvVer}}</q-item-label>
+       </q-item-section>
+       <q-item-section side v-else>
         <q-item-label caption>{{s.version}}</q-item-label>
        </q-item-section>
      </q-item>

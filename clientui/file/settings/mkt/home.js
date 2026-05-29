@@ -104,7 +104,7 @@ unInstall(service) {
           if(resp.code!=RetCode.OK) {
             dlg.setInfo(formatErr(resp.code, resp.info));
           } else {
-			dlg.setInfo(this.tags.mkt.successToUnInstall);
+            dlg.setInfo(this.tags.mkt.successToUnInstall);
             this.getLocServices();
           }
         }
@@ -118,16 +118,16 @@ getLocServices() {
             return;
         }
 
-		var cdnNum=this.cdns.length;
+        var cdnNum=this.cdns.length;
         this.locServices=resp.data.services.map(s=>{
-			if(!s.icon) {
-				if(cdnNum>0){
-					var cdnNo=Math.floor(Math.random()*cdnNum);
-					s.icon = this.cdns[cdnNo]+s.name+"/favicon.png";
-				}
-			}
-			return s;
-		});
+            if(!s.icon) {
+                if(cdnNum>0){
+                    var cdnNo=Math.floor(Math.random()*cdnNum);
+                    s.icon = this.cdns[cdnNo]+s.name+"/favicon.png";
+                }
+            }
+            return s;
+        });
     });
 }
 },

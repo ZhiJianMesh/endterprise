@@ -75,13 +75,13 @@ format_apps(total, cols, data, cloud, ctrl) {
         if(icon!="") {
             o['icon']=icon;
         } else {
-			var iconUrl="/" + o.service + "/favicon.png";
-			if(cloud) {//个人应用从云上获得，此参数需要端侧浏览器处理
-				iconUrl += "?cloud=true";
-			}
+            var iconUrl="/" + o.service + "/favicon.png";
+            if(cloud) {//个人应用从云上获得，此参数需要端侧浏览器处理
+                iconUrl += "?cloud=true";
+            }
             o['icon'] = iconUrl;
         }
-		o['cloud']=cloud;
+        o['cloud']=cloud;
         o.sVer=App.intToVer(parseInt(o.version));
         this.service.list[o.service]=o;
         apps.push(o);

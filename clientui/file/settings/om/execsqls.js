@@ -12,7 +12,7 @@ data(){return {
 created() {
     var sl=[];
     for(var s of this.service.services) {
-		sl.push(s.name);
+        sl.push(s.name);
     }
     this.serviceName=sl[0];
     this.services=sl;

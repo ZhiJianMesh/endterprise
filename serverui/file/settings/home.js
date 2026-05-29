@@ -41,7 +41,7 @@ data() {return {
     fixed: true,
     fixedNumber: [1, 1],
 
-	dlg:false,
+    dlg:false,
     width:0,
     loading:false
  }
@@ -114,7 +114,7 @@ startCropLogo(e) {
       data = e.target.result
     }
     this.logoOpts.img = data
-	this.logoOpts.loading=false;
+    this.logoOpts.loading=false;
   }
   // reader.readAsDataURL(file)// 转化为base64
   reader.readAsArrayBuffer(file)// 转化为blob
@@ -183,8 +183,8 @@ saveAccessCode(val, _oldV) { //httpdns接入码
     }
     Server.saveAccessCode(val, __regsiterCallback(resp => {
         if(resp.code!=RetCode.OK) {
-			this.$refs.alertDlg.showErr(resp.code, resp.info);
-		} else {
+            this.$refs.alertDlg.showErr(resp.code, resp.info);
+        } else {
             this.accessCode=val;
         }
     }));
@@ -240,13 +240,13 @@ connectionTest() {
 },
 changePwd() {
     Company.changePwd(this.chgPwdDta.oldPwd,this.chgPwdDta.newPwd,this.chgPwdDta.cfmPwd,
-	__regsiterCallback(resp=>{
+    __regsiterCallback(resp=>{
         if(resp.code!=RetCode.OK) {
             this.$refs.alertDlg.showErr(resp.code, resp.info);
         } else {
-    		this.chgPwdDta={oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false};
-	        this.$refs.alertDlg.show(this.tags.successToChgPwd);
-		}
+            this.chgPwdDta={oldPwd:'',newPwd:'',cfmPwd:'',vis:false,dlg:false};
+            this.$refs.alertDlg.show(this.tags.successToChgPwd);
+        }
     }));
 }
 },

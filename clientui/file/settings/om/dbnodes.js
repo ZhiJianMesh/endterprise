@@ -2,7 +2,7 @@ const _NODE_SEGS=['level','no','shardStart','shardEnd','type','slaves'];
 export default {
 inject:['service', 'tags'],
 data() {return {
-	nodes:{}, //[{show:false,list:[]}...]
+    nodes:{}, //[{show:false,list:[]}...]
     newAddr:'',
     node:{dlg:false, idx:0, addr:'', level:0, no:'', shardStart:0, shardEnd:32768, type:"SQLITE", slaves:[]}
 }},
@@ -165,7 +165,7 @@ template:`
 <q-layout view="hHh lpr fFf">
   <q-header class="bg-grey-1 text-primary">
     <q-toolbar>
-	  <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
+      <q-btn flat round icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.om.dbNodes}}</q-toolbar-title>
       <q-btn flat dense icon="beenhere" @click="check" color="purple"></q-btn>
     </q-toolbar>
@@ -203,7 +203,7 @@ template:`
   </template>
  </q-banner>
 </div>
-	</q-page>
+    </q-page>
   </q-page-container>
 </q-layout>
 

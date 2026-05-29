@@ -2,7 +2,7 @@ export default {
 inject:['service', 'tags'],
 data() {return {
     services:[],
-	cdns:[],
+    cdns:[],
     serviceNum:0,
     search:'',
     install:{service:'',addr:'',dlg:false,start:0,end:32768},

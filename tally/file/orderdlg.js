@@ -29,7 +29,7 @@ show(id) {
         dtl.refund=dtl.val;
         this.dtl=dtl;
         this.ctrl.dlg=true;
-		this.ctrl.operable=this.role=='admin'&&dtl.state=='WAIT';
+        this.ctrl.operable=this.role=='admin'&&dtl.state=='WAIT';
     })
 },
 confirm() {

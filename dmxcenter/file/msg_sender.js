@@ -38,38 +38,38 @@ sendMessage() {
     if(this.type==1) {
         this.send_by_customer(this.custId, this.msg);
     } else if(this.type==2) {
-		var codes=this.batch.split(/[(\r\n)\r\n;]+/);
-		this.percent.val=0;
-		if(codes.length<this.batchNum) {
-			this.percent.each=0;//不显示
-		} else {
-			var n=Math.ceil(codes.length/this.batchNum);
-			this.percent.each=1.0/n;
-		}
-		this.send_by_codes(codes,this.msg,0);
-	} else {
-		var msgs=this.batch.split(/[(\r\n)\r\n]+/);
-		this.percent.val=0;
-		if(msgs.length<this.batchNum*2) {
-			this.percent.each=0;//不显示
-		} else {
-			var n=Math.ceil(msgs.length/(this.batchNum*2));
-			this.percent.each=1.0/n;
-		}
-		this.send_by_msgs(msgs,0);
-	}
+        var codes=this.batch.split(/[(\r\n)\r\n;]+/);
+        this.percent.val=0;
+        if(codes.length<this.batchNum) {
+            this.percent.each=0;//不显示
+        } else {
+            var n=Math.ceil(codes.length/this.batchNum);
+            this.percent.each=1.0/n;
+        }
+        this.send_by_codes(codes,this.msg,0);
+    } else {
+        var msgs=this.batch.split(/[(\r\n)\r\n]+/);
+        this.percent.val=0;
+        if(msgs.length<this.batchNum*2) {
+            this.percent.each=0;//不显示
+        } else {
+            var n=Math.ceil(msgs.length/(this.batchNum*2));
+            this.percent.each=1.0/n;
+        }
+        this.send_by_msgs(msgs,0);
+    }
 },
 send_by_customer(customer, msg) {
-	var url=this.customer>0?"/msg/send_by_customer":"/msg/pro_send_by_customer";
-	var dta={customer:customer,msg:msg,maxTimes:1};
-	request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
-		if(resp.code!=RetCode.OK) {
-			this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
-			return;
-		}
-		this.errMsg='';
-		this.dlg=false;
-	});
+    var url=this.customer>0?"/msg/send_by_customer":"/msg/pro_send_by_customer";
+    var dta={customer:customer,msg:msg,maxTimes:1};
+    request({method:"POST",url:url,data:dta}, this.service).then(resp =>{
+        if(resp.code!=RetCode.OK) {
+            this.errMsg=this.tags.failed + resp.code + ',' + resp.info;
+            return;
+        }
+        this.errMsg='';
+        this.dlg=false;
+    });
 },
 send_by_codes(codes,msg,start) {
     var dta={msg:msg,codes:[],maxTimes:1};
@@ -144,9 +144,9 @@ template: `
     </q-card-section>
     <q-card-section class="q-pt-none">
     <div class="q-gutter-sm">
-	 <q-radio v-model="type" :label="tags.byCust" val="1"></q-radio>
-	 <q-radio v-model="type" :label="tags.byCodes" val="2"></q-radio>
-	 <q-radio v-model="type" :label="tags.byMsgs" val="3"></q-radio>
+     <q-radio v-model="type" :label="tags.byCust" val="1"></q-radio>
+     <q-radio v-model="type" :label="tags.byCodes" val="2"></q-radio>
+     <q-radio v-model="type" :label="tags.byMsgs" val="3"></q-radio>
     </div>
     <q-list v-show="type<3">
       <q-item><q-item-section>
@@ -157,14 +157,14 @@ template: `
        <q-input v-model="msg" :label="tags.message" dense maxlength=300></q-input>
       </q-item-section></q-item>
       <q-item v-show="type==2"><q-item-section>
-	   {{tags.codePrompt}}<br><span class="text-red">{{tags.codeFmt}}</span>
+       {{tags.codePrompt}}<br><span class="text-red">{{tags.codeFmt}}</span>
        <q-input v-model="batch" :label="tags.code"
         dense maxlength=100000 type="textarea" rows="12"></q-input>
       </q-item-section></q-item>
     </q-list>
     <q-list v-show="type==3">
       <q-item><q-item-section>
-	   {{tags.msgPrompt}}<br><span class="text-red">{{tags.msgFmt}}</span>
+       {{tags.msgPrompt}}<br><span class="text-red">{{tags.msgFmt}}</span>
        <q-input v-model="batch" :label="tags.message"
         dense maxlength=100000 type="textarea" rows="12"></q-input>
       </q-item-section></q-item>
