@@ -7,11 +7,9 @@ data(){return {
     accessCode:'',
     insideAddr:'',
     outsideAddr:'',
-    authorized:false,
     changed:false,
     saveAt:0,
-    logo:'',
-    auth:{dlg:false,pwd:'',visible:false},
+    logo:''
 }},
 created() {
     this.init();
@@ -24,7 +22,6 @@ init() {
     this.insideAddr=c.insideAddr;
     this.outsideAddr=c.outsideAddr;
     this.accessCode=c.accessCode;
-    this.authorized=c.authorized;
     this.runMode=c.runMode;
     this.service.mode=c.runMode;
     Companies.getLogo(c.id, __regsiterCallback(png=>{
@@ -70,28 +67,6 @@ copy() {
         this.$q.notify(this.tags.copied);
     });
 },
-showAdvance() {
-    if(this.service.getToken("company",this.cid)) {
-        this.service.go_to("/advance");
-    } else {
-        this.auth.dlg=true;
-    }
-},
-onAuth() {
-    var shaPwd=Secure.sha256(this.auth.pwd);
-    var dta={pwd:shaPwd, services:["company","httpdns","backend","bios","appstore"]};
-    request({method:"POST",url:"/token", data:dta, private:false},"company").then(resp=>{
-        if(resp.code!=RetCode.OK) {
-            this.$refs.alertDlg.showErr(resp.code, resp.info);
-            return;
-        }
-        for(var i in resp.data) {
-            this.service.setToken(i,resp.data[i]);
-        }
-        this.auth.dlg=false;
-        this.service.go_to('/advance');
-    });
-},
 refresh() {
     Companies.refreshEntrance(__regsiterCallback(resp => {
         if(resp.code!=RetCode.OK) {
@@ -108,8 +83,6 @@ template: `
     <q-toolbar>
       <q-btn flat icon="arrow_back" dense @click="service.go_back"></q-btn>
       <q-toolbar-title>{{tags.home.company}}</q-toolbar-title>
-      <q-btn flat dense color="primary" icon="settings" v-if="authorized"
-       :label="tags.advanced" @click="showAdvance"></q-btn>
     </q-toolbar>
   </q-header>
   <q-page-container>
@@ -153,27 +126,6 @@ template: `
     </q-page>
   </q-page-container>
 </q-layout>
-
-<q-dialog v-model="auth.dlg"> <!-- admin登录公司获得公司级token -->
-  <q-card style="min-width:62vw;max-width:80vw">
-    <q-card-section>
-      <div class="text-h6">{{tags.cfg.auth}}</div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-      <q-input dense v-model="auth.pwd" autofocus :type="auth.visible?'text':'password'"
-      :label="tags.cfg.pwd" @keyup.enter="onAuth">
-        <template v-slot:append>
-          <q-icon :name="auth.visible ? 'visibility_off':'visibility'"
-            class="cursor-pointer" @click="auth.visible=!auth.visible"></q-icon>
-        </template>
-      </q-input>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn color="primary" :label="tags.ok" @click="onAuth"></q-btn>
-      <q-btn color="primary" flat :label="tags.cancel" v-close-popup></q-btn>
-    </q-card-actions>
-  </q-card>
-</q-dialog>
 
 <component-alert-dialog :title="tags.alert" :errMsgs="tags.errMsgs"
  :close="tags.close" ref="alertDlg"></component-alert-dialog>

@@ -14,7 +14,7 @@ data() {return {
     dbNo:0,
     pubSrvs:[],
     vipSrvs:[],
-    stats:{dlg:false,chart:null,width:0,date:{from:'',to:''},proxyDate:{from:'',to:''}}
+    stats:{dlg:false,chart:null,width:0,date:{from:'',to:''},proxyDate:{from:'',to:''},errMsg:''}
 }},
 created() {
     var dt=new Date();
@@ -177,13 +177,14 @@ initDbs() {//调用服务的initdb接口，初始化数据库
 },
 showStats(){
     this.stats.dlg=true;
+    this.stats.errMsg='';
     this.stats.chart=Vue.markRaw(echarts.init(document.getElementById('stats_chart')));
     var from=parseInt(new Date(this.stats.date.from).getTime()/HOUR_MS);
     var to=parseInt(new Date(this.stats.date.to).getTime()/HOUR_MS)
     var opts={method:"GET", url:"/stats/companyServiceStats?service="+this.name+"&from="+from+"&to="+to};
     this.service.request_cloud(opts, "appstore").then(resp=>{
         if(resp.code != RetCode.OK) {
-            this.$refs.errDlg.showErr(resp.code, resp.info);
+            this.stats.errMsg=formatErr(resp.code, resp.info, '');
             return;
         }
         if(resp.data.stats.length==0) {
@@ -426,7 +427,8 @@ template:`
    <q-btn icon="close" flat round dense v-close-popup></q-btn>
   </q-card-section>
   <q-card-section class="q-pt-none">
-    <div id="stats_chart" style="width:78vw;height:70vh;"></div>
+    <div id="stats_chart" style="width:78vw;height:70vh;"
+     class="flex justify-center items-center">{{stats.errMsg}}</div>
   </q-card-section>
  </q-card>
 </q-dialog>
