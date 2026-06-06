@@ -50,7 +50,7 @@ template: `
     <q-card-section>
       <div class="text-h6">{{label}}</div>
     </q-card-section>
-	<q-separator></q-separator>
+    <q-separator></q-separator>
     <q-card-section class="q-pt-none">
       <q-input v-model="loginAcc" autofocus :label="account"></q-input>
       <q-input v-model="loginPwd" autofocus :type="hidePwd?'password':'text'" :label="pwd">

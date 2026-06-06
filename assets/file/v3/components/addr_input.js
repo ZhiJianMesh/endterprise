@@ -71,7 +71,7 @@ value: {
   },
   set(v) {//选中项的编号，从0开始
     var a=this.maps[v];
-	if(!a) return;
+    if(!a) return;
 
     var ss=a.fName.split(/[\/,-,., ]+/);
     var addr={code:a.zip}

@@ -1,16 +1,16 @@
 //一边输入名称，一边过滤服务的组件
 export default {
 data() {return {
-	opts:[],//选择项，调用search获得
+    opts:[],//选择项，调用search获得
     oldLen:0,
-	values:null //选中项，不能赋值[]，会显示一个空选项
+    values:null //选中项，不能赋值[]，会显示一个空选项
 }},
 props: {
     services:{type:Array,required:true}, //复杂对象，可以在组件中修改
     label:{type:String,required:false,default:''},
     type:{type:String,required:false,default:"enterprise"},
-	multi:{type:Boolean,required:false,default:true}, //:multi="false"
-	extOpt:{type:Object,required:false,default:null}, //扩展选择，比如“{label:'所有服务',value:'*'}”
+    multi:{type:Boolean,required:false,default:true}, //:multi="false"
+    extOpt:{type:Object,required:false,default:null}, //扩展选择，比如“{label:'所有服务',value:'*'}”
     useid:{type:Boolean,required:false,default:false} //是否返回服务ID,:useid="true"
 },
 methods:{
@@ -44,9 +44,9 @@ get_opts(val,update) {
             val=this.useid ? s[idIdx] : s[srvIdx]
             opts.push({value:val, label:s[dispIdx]});
         }
-		if(this.extOpt) {
-			opts.push(this.extOpt);
-		}
+        if(this.extOpt) {
+            opts.push(this.extOpt);
+        }
         this.opts=opts;
     })
   })
