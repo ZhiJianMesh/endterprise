@@ -223,7 +223,7 @@ template:`
       <q-popup-proxy transition-show="scale" transition-hide="scale">
         <q-date v-model="date" range @range-end="date_range_end">
           <div class="row items-center justify-end">
-            <q-btn v-close-popup :label="tags.close" color="primary" flat />
+            <q-btn v-close-popup :label="tags.close" color="primary" flat></q-btn>
           </div>
         </q-date>
       </q-popup-proxy>

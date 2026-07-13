@@ -1,0 +1,112 @@
+import purchaseOrderCreator from './components/purchase_order_creator.js';
+
+export default {
+inject:['tags','service'],
+components:{purchaseOrderCreator},
+data(){return{
+  orders:[],
+  ctrl:{cur:1,max:0,status:-1}
+}},
+
+created(){
+  this.query(1);
+},
+
+methods:{
+  query(pg){
+    this.ctrl.cur=pg;
+    var url="/api/purchase/listOrders?page="+pg+"&pageSize="+this.service.PAGE_SIZE;
+    if(this.ctrl.status>=0) {
+        url += "&status="+this.ctrl.status;
+    }
+    request({method:"GET",url:url},this.service.name).then(resp=>{
+      if(resp.code!=RetCode.OK) {
+        this.orders=[];
+        this.ctrl.max=0;
+        return;
+      };
+      var dt = new Date();
+      this.orders=resp.data.list.map(e => {
+        dt.setTime(e.createAt);
+        e.createAt = datetime2str(dt);
+        return e;
+      });
+      this.ctrl.max=Math.ceil(resp.data.total/this.service.PAGE_SIZE);
+    });
+  },
+
+  showCreate(){
+    this.$refs.orderCreator.showCreate();
+  },
+
+  onOrderCreated(){
+    this.query(1);
+  },
+
+  onOrderCanceled(){
+    this.query(this.ctrl.cur);
+  },
+  onStatusChanged() {
+    this.query(1);
+  },
+  viewOrder(orderId){
+    this.$refs.orderCreator.showDetail(orderId);
+  }
+},
+
+template:`
+<q-layout view="lHh lpr lFf" container style="height:100vh">
+<q-header elevated class="bg-primary text-white">
+  <q-toolbar>
+    <q-btn flat icon="arrow_back" @click="$router.push('/home')"></q-btn>
+    <q-toolbar-title>{{tags.purchaseOrder}}</q-toolbar-title>
+  </q-toolbar>
+</q-header>
+
+<q-page-container>
+<q-page padding>
+  <div class="row items-center q-mb-md">
+    <div class="text-h5">{{tags.purchaseOrder}}</div>
+    <q-space></q-space>
+    <q-select v-model="ctrl.status" :options="tags.orderStatus" @update:model-value="onStatusChanged"
+     emit-value map-options class="q-px-md"></q-select>
+    <q-btn color="primary" icon="add" :label="tags.createOrder" @click="showCreate"></q-btn>
+  </div>
+
+  <q-table :rows="orders" :columns="[
+    {name:'id',label:tags.orderNo,field:'id'},
+    {name:'supplierName',label:tags.supplierName,field:'supplierName'},
+    {name:'totalAmount',label:tags.totalAmount,field:'totalAmount'},
+    {name:'status',label:tags.status,field:'status'},
+    {name:'creator',label:tags.creator,field:'creator'},
+    {name:'createAt',label:tags.createTime,field:'createAt'},
+    {name:'action',label:tags.operation,field:'action'}
+  ]" row-key="id" flat hide-bottom>
+    <template v-slot:body-cell-status="props">
+      <q-td :props="props">
+        <q-badge :color="props.row.status===1?'positive':'warning'">
+          {{props.row.status===1?tags.completed:tags.pending}}
+        </q-badge>
+      </q-td>
+    </template>
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <q-btn flat dense color="primary" icon="visibility" @click="viewOrder(props.row.id)"></q-btn>
+      </q-td>
+    </template>
+  </q-table>
+
+  <!-- 分页 -->
+  <div class="row justify-center q-mt-md" v-if="ctrl.max>1">
+    <q-pagination v-model="ctrl.cur" :max="ctrl.max" :max-pages="10" @update:model-value="query"></q-pagination>
+  </div>
+
+  <!-- 采购订单对话框 -->
+  <purchase-order-creator ref="orderCreator" @orderCompleted="onOrderCreated" @orderCanceled="onOrderCanceled"></purchase-order-creator>
+
+  <component-alert-dialog ref="errMsg"></component-alert-dialog>
+</q-page>
+</q-page-container>
+</q-layout>
+`
+}

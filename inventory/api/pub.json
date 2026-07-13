@@ -1,0 +1,24 @@
+{
+    "roles": {
+        "admin":{
+            "name":"店长",
+            "rights":{
+                "product":"*",
+                "category":"*",
+                "report":"*"
+            }
+        },
+        "salesperson":{
+            "name":"销售人员",
+            "rights":{
+            }
+        },
+        "purchaser":{
+            "name":"采购人员",
+            "rights":{
+                "product":"*",
+                "category":"*"
+            }
+        }
+    }
+}
