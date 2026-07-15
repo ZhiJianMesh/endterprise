@@ -43,7 +43,7 @@ data(){return{
 created() {
     this.paymentOpts=Object.entries(this.tags.paymentMethods).map(([k,v])=>{return {value:k,label:v}})
 },
-emits:['orderCompleted'],
+emits:['orderCompleted','orderCanceled','hide'],
 
 methods:{
   addItemToList(){
@@ -128,6 +128,7 @@ methods:{
     request({method:"GET",url:"/api/sales/getOrder?id="+orderId},this.service.name).then(resp=>{
       if(resp.code!=RetCode.OK) return;
       this.curOrder=resp.data;
+      this.curOrder.customer={id:resp.data.customerId, name:resp.data.customerName};
       this.status=resp.data.status;
       this.orderItems=resp.data.items;
       var dt = new Date();
@@ -135,6 +136,12 @@ methods:{
       this.curOrder.createAt = datetime2str(dt);
       var pm = this.tags.paymentMethods[this.curOrder.payMethod];
       this.curOrder.payMethodName=pm?pm:this.curOrder.payMethod;
+      var totalAmount = 0;
+      for(var item of resp.data.items) {
+        totalAmount+=item.subTotal;
+      }
+      this.curOrder.totalAmount=totalAmount;
+      this.curOrder.finalAmount=((1-this.curOrder.discount)*totalAmount).toFixed(2);
       this.showDialog=true;
     });
   },
@@ -175,12 +182,15 @@ methods:{
         return;
       }
     });
+  },
+  onHide() {
+    this.$emit('hide');
   }
 },
 
 template:`
 <!-- 创建订单对话框 -->
-<q-dialog v-model="showDialog" persistent maximized>
+<q-dialog v-model="showDialog" persistent maximized @hide="onHide">
   <q-card>
     <q-card-section class="row items-center q-pb-none">
       <div class="text-h6">{{tags.createSalesOrder}}</div>
@@ -218,7 +228,7 @@ template:`
       </q-table>
       <q-separator class="q-mt-md"></q-separator>
       <div class="text-subtitle2 q-mb-sm q-mt-md">{{tags.summary}}</div>
-      <div v-if="status==2">
+      <div v-if="status!=1">
         <customer-selector v-model="curOrder.customer" :serviceName="service.name" :label="tags.customerName"
         @update:model-value="onCustomerChanged" dense></customer-selector>
         <div class="row q-col-gutter-sm q-mt-sm">

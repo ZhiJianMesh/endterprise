@@ -45,6 +45,7 @@ methods:{
       this.recentOrders=resp.data.list.map(e =>{
         dt.setTime(e.createAt);
         e.createAt = datetime2str(dt);
+        e.sStatus = e.status===1?this.tags.completed:this.tags.pending
         return e;
       });
     });
@@ -54,8 +55,10 @@ methods:{
     this.$refs.salesOrderCreator.showCreate();
   },
 
-  onSalesOrderDone(){
-    this.loadStats();
+  onSalesOrderDone(ignore){
+    if(!ignore) {
+        this.loadStats();
+    }
     this.loadRecentOrders();
   },
 
@@ -166,14 +169,14 @@ template:`
         {name:'id',label:tags.orderNo,field:'id'},
         {name:'customerName',label:tags.customerName,field:'customerName'},
         {name:'finalAmount',label:tags.finalAmount,field:'finalAmount'},
-        {name:'status',label:tags.status,field:'status'},
+        {name:'status',label:tags.status,field:'sStatus'},
         {name:'createAt',label:tags.createTime,field:'createAt'},
         {name:'action',label:tags.operation,field:'action'}
       ]" row-key="id" flat dense hide-bottom>
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <q-badge :color="props.row.status===1?'positive':'warning'">
-              {{props.row.status===1?tags.completed:tags.pending}}
+              {{props.row.sStatus}}
             </q-badge>
           </q-td>
         </template>
@@ -187,7 +190,8 @@ template:`
     </q-card-section>
   </q-card>
 
-  <sales-order-creator ref="salesOrderCreator" @orderCompleted="onSalesOrderDone" @orderCanceled="onSalesOrderDone"></sales-order-creator>
+  <sales-order-creator ref="salesOrderCreator" @orderCompleted="onSalesOrderDone(false)"
+   @orderCanceled="onSalesOrderDone(false)" @hide="onSalesOrderDone(true)"></sales-order-creator>
 </q-page>
 </q-page-container>
 </q-layout>

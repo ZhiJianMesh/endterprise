@@ -1,12 +1,15 @@
 import salesOrderCreator from './components/sales_order_creator.js';
-import {completeOrder, cancelOrder} from './components/sales_order_creator.js';
+import {completeOrder} from './components/sales_order_creator.js';
 
 export default {
 inject:['tags','service'],
 components:{salesOrderCreator},
 data(){return{
   orders:[],
-  ctrl:{cur:1,max:0,status:-1}
+  ctrl:{cur:1,max:0,status:-1},
+  titles: [this.tags.orderNo,
+      this.tags.customerName,this.tags.totalAmount,this.tags.finalAmount,
+      this.tags.status,this.tags.createTime,this.tags.operation]
 }},
 
 created(){
@@ -31,6 +34,7 @@ methods:{
       this.orders=resp.data.list.map(e => {
         dt.setTime(e.createAt);
         e.createAt = datetime2str(dt);
+        e.sStatus = e.status===1?this.tags.completed:this.tags.pending
         return e;
       });
       this.ctrl.max=Math.ceil(resp.data.total/this.service.PAGE_SIZE);
@@ -41,12 +45,12 @@ methods:{
     this.$refs.orderCreator.showCreate();
   },
 
-  onOrderDone(){
-    this.query(1);
+  onOrderDone(isCancel){
+    this.query(isCancel?this.ctrl.cur:1);
   },
 
   onCompleteOrder(id) {
-    completeOrder(id, ()=>{
+    completeOrder(id, -1, ()=>{
       this.query(this.ctrl.cur);
     },(code, info)=>{
       this.$refs.errMsg.showErr(code,info);
@@ -80,29 +84,25 @@ template:`
     <q-btn color="primary" icon="add" :label="tags.createOrder" @click="showCreate"></q-btn>
   </div>
 
-  <q-table :rows="orders" :columns="[
-    {name:'id',label:tags.orderNo,field:'id'},
-    {name:'customerName',label:tags.customerName,field:'customerName'},
-    {name:'totalAmount',label:tags.totalAmount,field:'totalAmount'},
-    {name:'finalAmount',label:tags.finalAmount,field:'finalAmount'},
-    {name:'status',label:tags.status,field:'status'},
-    {name:'createAt',label:tags.createTime,field:'createAt'},
-    {name:'action',label:tags.operation,field:'action'}
-  ]" row-key="id" flat hide-bottom>
-    <template v-slot:body-cell-status="props">
-      <q-td :props="props">
-        <q-badge :color="props.row.status===1?'positive':'warning'">
-          {{props.row.status===1?tags.completed:tags.pending}}
-        </q-badge>
-      </q-td>
-    </template>
-    <template v-slot:body-cell-action="props">
-      <q-td :props="props">
-        <q-btn flat dense color="primary" icon="visibility" @click="viewOrder(props.row.id)"></q-btn>
-        <q-btn v-if="props.row.status===0" flat dense color="green" icon="check" @click="completeOrder(props.row.id)"></q-btn>
-      </q-td>
-    </template>
-  </q-table>
+  <q-markup-table flat>
+  <thead><tr>
+   <th v-for="t in titles">{{t}}</th>
+  </tr></thead>
+  <tbody>
+   <tr v-for="o in orders">
+    <td class="text-left">{{o.id}}</td>
+    <td>{{o.customerName}}</td>
+    <td>{{o.totalAmount}}</td>
+    <td>{{o.finalAmount}}</td>
+    <td><q-badge :color="o.status===1?'positive':'warning'">{{o.sStatus}}</q-badge></td>
+    <td>{{o.createAt}}</td>
+    <td class="text-right">
+     <q-btn flat dense color="primary" icon="visibility" @click="viewOrder(o.id)"></q-btn>
+     <q-btn v-if="o.status===0" flat dense color="green" icon="check" @click="onCompleteOrder(o.id)"></q-btn>
+    </td>
+   </tr>
+  </tbody>
+  </q-markup-table>
 
   <!-- 分页 -->
   <div class="row justify-center q-mt-md" v-if="ctrl.max>1">
@@ -110,7 +110,8 @@ template:`
   </div>
 
   <!-- 创建订单对话框 -->
-  <sales-order-creator ref="orderCreator" @orderCompleted="onOrderDone" @orderCanceled="onOrderDone"></sales-order-creator>
+  <sales-order-creator ref="orderCreator" @orderCompleted="onOrderDone(false)"
+   @orderCanceled="onOrderDone(true)" @hide="onOrderDone(true)"></sales-order-creator>
   <component-alert-dialog ref="errMsg"></component-alert-dialog>
 </q-page>
 </q-page-container>

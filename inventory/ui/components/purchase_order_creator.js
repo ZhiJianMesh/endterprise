@@ -35,7 +35,7 @@ data(){return{
   curOrder:{id:null, supplier:{id:0, name:'Unknown'},totalAmount:0,remark:''}
 }},
 
-emits:['orderCompleted','orderCanceled'],
+emits:['orderCompleted','orderCanceled','hide'],
 
 methods:{
   addItemToList(){
@@ -117,11 +117,17 @@ methods:{
     request({method:"GET",url:"/api/purchase/getOrder?id="+orderId},this.service.name).then(resp=>{
       if(resp.code!=RetCode.OK) return;
       this.curOrder=resp.data;
+      this.curOrder.supplier={id:resp.data.supplierId, name:resp.data.supplierName};
       this.status=resp.data.status;
       this.orderItems=resp.data.items||[];
       var dt = new Date();
       dt.setTime(this.curOrder.createAt);
       this.curOrder.createAt = datetime2str(dt);
+      var totalAmount = 0;
+      for(var item of resp.data.items) {
+        totalAmount+=item.subTotal;
+      }
+      this.curOrder.totalAmount=totalAmount;
       this.showDialog=true;
     });
   },
@@ -162,12 +168,15 @@ methods:{
         return;
       }
     });
+  },
+  onHide() {
+    this.$emit('hide');
   }
 },
 
 template:`
 <!-- 采购订单对话框 -->
-<q-dialog v-model="showDialog" persistent maximized>
+<q-dialog v-model="showDialog" persistent maximized @hide="onHide">
   <q-card>
     <q-card-section class="row items-center q-pb-none">
       <div class="text-h6">{{status===2?tags.createOrder:tags.orderDetail}}</div>
@@ -204,7 +213,7 @@ template:`
       </q-table>
       <q-separator class="q-mt-md"></q-separator>
       <div class="text-subtitle2 q-mb-sm q-mt-md">{{tags.summary}}</div>
-      <div v-if="status==2">
+      <div v-if="status!=1">
         <supplier-selector v-model="curOrder.supplier" :serviceName="service.name" :label="tags.supplierName"
         @update:model-value="onSupplierChanged" dense></supplier-selector>
         <div><q-input v-model="curOrder.remark" :label="tags.remark" dense></q-input></div>
